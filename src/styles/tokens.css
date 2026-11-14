@@ -1,0 +1,107 @@
+/* Design tokens. Every text/background pair is checked for WCAG 2.2 AA (see research/COLOR_AUDIT.md). */
+:root {
+  color-scheme: light;
+  --bg: #FFF9F2;
+  --surface: #FFFFFF;
+  --surface-2: #F6EEE4;
+  --surface-3: #EFE4D7;
+  --text: #1E1B2E;
+  --text-muted: #57536B;
+  --border: #8C879E;
+  --hairline: #E8DED2;
+
+  --primary: #B3125F;
+  --primary-ledge: #7A0A40;
+  --on-primary: #FFFFFF;
+  --primary-soft: #FBE3EE;
+
+  --correct: #0A6C80;
+  --correct-bg: #E2F3F6;
+  --incorrect: #B93A1E;
+  --incorrect-bg: #FCEAE4;
+
+  --gold: #FFC94D;
+  --gold-ledge: #C9921A;
+  --on-gold: #1E1B2E;
+  --gold-text: #8A5A00;
+  --flame: #B4470A;
+  --flame-fill: #FF9248;
+  --focus: #1D4ED8;
+
+  /* section accents (decorative only, always paired with emoji + name) */
+  --sec-fund: #8A5A00;
+  --sec-auto: #0B7A5C;
+  --sec-ui: #B3125F;
+  --sec-test: #0A6C80;
+  --sec-perf: #B4470A;
+
+  --shadow-1: 0 1px 2px rgb(30 27 46 / 0.06), 0 2px 8px rgb(30 27 46 / 0.06);
+  --shadow-2: 0 4px 10px rgb(30 27 46 / 0.08), 0 12px 32px rgb(30 27 46 / 0.10);
+
+  --radius-s: 12px;
+  --radius-m: 18px;
+  --radius-l: 26px;
+
+  --font-body: 'Atkinson Hyperlegible', system-ui, sans-serif;
+  --font-code: 'JetBrains Mono', ui-monospace, monospace;
+  --text-scale: 1;
+  --fs-body: calc(17px * var(--text-scale));
+  --fs-small: calc(14.5px * var(--text-scale));
+  --fs-q: calc(20px * var(--text-scale));
+  --fs-h1: calc(28px * var(--text-scale));
+  --fs-code: calc(14px * var(--text-scale));
+
+  --dur-instant: 90ms;
+  --dur-quick: 180ms;
+  --dur-standard: 280ms;
+  --ease: cubic-bezier(0.2, 0, 0, 1);
+  --ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  --nav-h: 68px;
+  --safe-b: env(safe-area-inset-bottom, 0px);
+  --safe-t: env(safe-area-inset-top, 0px);
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --bg: #14111C;
+  --surface: #1F1B2B;
+  --surface-2: #2A253A;
+  --surface-3: #352F48;
+  --text: #F3F0FA;
+  --text-muted: #B9B4CC;
+  --border: #6E6985;
+  --hairline: #2F2A40;
+
+  --primary: #FF7AB8;
+  --primary-ledge: #B8467E;
+  --on-primary: #14111C;
+  --primary-soft: #3A1E31;
+
+  --correct: #5CD0E8;
+  --correct-bg: #10303A;
+  --incorrect: #FF9B80;
+  --incorrect-bg: #3A1D16;
+
+  --gold: #FFC94D;
+  --gold-ledge: #A8771A;
+  --on-gold: #14111C;
+  --gold-text: #FFC94D;
+  --flame: #FF9248;
+  --flame-fill: #FF9248;
+  --focus: #7FB2FF;
+
+  --sec-fund: #FFC94D;
+  --sec-auto: #5EE0B4;
+  --sec-ui: #FF7AB8;
+  --sec-test: #5CD0E8;
+  --sec-perf: #FF9248;
+
+  --shadow-1: 0 1px 2px rgb(0 0 0 / 0.3), 0 2px 8px rgb(0 0 0 / 0.25);
+  --shadow-2: 0 4px 12px rgb(0 0 0 / 0.35), 0 16px 40px rgb(0 0 0 / 0.35);
+}
+
+/* Calm mode: quieter accents, no gradients, shorter celebrations */
+:root[data-calm='true'] {
+  --primary-soft: var(--surface-2);
+}

@@ -1,0 +1,1546 @@
+{
+  "id": "test",
+  "title": "Testing, Debugging, and Deployment",
+  "weight": 20,
+  "emoji": "🧪",
+  "summary": "Prove your code works, find out why it doesn't, and ship it safely to production.",
+  "lessons": [
+    {
+      "id": "test-1",
+      "title": "Test Data That Never Lies",
+      "minutes": 3,
+      "objective": "Given a scenario, determine how to test Apex classes and triggers, including the use of mocks and stubs (HttpCalloutMock, Stub API, Test.startTest/stopTest, test data).",
+      "cards": [
+        {
+          "type": "text",
+          "title": "Empty org by default",
+          "body": "Since API **24.0**, tests **can't see org data**. Every test starts with an empty database (except setup-ish objects like **User, Profile, RecordType, Organization**). You build the data you need."
+        },
+        {
+          "type": "code",
+          "title": "Test data factory",
+          "lang": "apex",
+          "code": "@isTest\npublic class TestDataFactory {\n  public static List<Account> createAccounts(Integer n, Boolean doInsert) {\n    List<Account> accts = new List<Account>();\n    for (Integer i = 0; i < n; i++) {\n      accts.add(new Account(Name = 'Test ' + i));\n    }\n    if (doInsert) insert accts;\n    return accts;\n  }\n}",
+          "body": "One place to build records. A new required field? Fix it once, every test is green again."
+        },
+        {
+          "type": "code",
+          "title": "@TestSetup",
+          "lang": "apex",
+          "code": "@isTest\nprivate class InvoiceTest {\n  @TestSetup\n  static void makeData() {\n    TestDataFactory.createAccounts(5, true);\n  }\n  @isTest\n  static void closesInvoices() {\n    List<Account> accts = [SELECT Id FROM Account];\n    // ...act + assert\n  }\n}",
+          "body": "Runs **once per class**. Each test method gets a **fresh copy**: changes in one method are rolled back before the next."
+        },
+        {
+          "type": "code",
+          "title": "Data from a CSV",
+          "lang": "apex",
+          "code": "List<sObject> accts = Test.loadData(Account.sObjectType, 'TestAccounts');",
+          "body": "**Test.loadData** reads a CSV **static resource** and inserts the rows. Good when admins own the sample data."
+        },
+        {
+          "type": "trap",
+          "body": "**SeeAllData=true** makes tests depend on whatever is in the org, so they break between sandboxes. Also: **@TestSetup is not supported** in a class annotated @isTest(SeeAllData=true)."
+        },
+        {
+          "type": "tip",
+          "body": "SOSL returns **nothing** in tests until you call **Test.setFixedSearchResults(ids)**. Think: \"SOSL is shy in tests - give it a script.\""
+        }
+      ],
+      "check": [
+        "test-q1",
+        "test-q2",
+        "test-q5"
+      ]
+    },
+    {
+      "id": "test-2",
+      "title": "startTest, stopTest, Async Magic",
+      "minutes": 4,
+      "objective": "Given a scenario, determine how to test Apex classes and triggers, including the use of mocks and stubs (HttpCalloutMock, Stub API, Test.startTest/stopTest, test data).",
+      "cards": [
+        {
+          "type": "list",
+          "title": "Test.startTest() / stopTest() do 2 things",
+          "items": [
+            "Code between them gets a **fresh set of governor limits**",
+            "Async work queued between them (future, queueable, batch, scheduled) **runs synchronously at stopTest()**",
+            "Only **one** startTest/stopTest pair per test method"
+          ]
+        },
+        {
+          "type": "code",
+          "title": "Testing Batch Apex",
+          "lang": "apex",
+          "code": "@isTest\nstatic void runsBatch() {\n  insert TestDataFactory.createAccounts(50, false);\n  Test.startTest();\n  Database.executeBatch(new CleanupBatch(), 200);\n  Test.stopTest(); // batch finishes here\n  Assert.areEqual(0, [SELECT COUNT() FROM Account WHERE Needs_Cleanup__c = true]);\n}",
+          "body": "Assert **after** stopTest. A test can only run **one execute()** chunk, so keep records within the scope size."
+        },
+        {
+          "type": "text",
+          "title": "Scheduled Apex",
+          "body": "Call **System.schedule** between start/stop. The job's execute() runs at **stopTest()**, no matter what the cron says. You can also query **CronTrigger** to check the cron expression and next fire time."
+        },
+        {
+          "type": "code",
+          "title": "Platform events",
+          "lang": "apex",
+          "code": "Test.startTest();\nEventBus.publish(new Order_Event__e(Order_Id__c = 'A1'));\nTest.getEventBus().deliver(); // deliver now\nTest.stopTest(); // also delivers\n// assert what the subscriber trigger did",
+          "body": "Events published in a test are held in a **test event bus** until stopTest() or **Test.getEventBus().deliver()**."
+        },
+        {
+          "type": "trap",
+          "body": "Queueable **chaining isn't allowed in tests** (enqueueing a job from a queueable throws an error). Docs suggest guarding the chain call with **Test.isRunningTest()**."
+        },
+        {
+          "type": "tip",
+          "body": "\"**Stop** means **Go**\": async code doesn't run until you hit **stopTest()**. Assertions before it see the world before the job ran."
+        }
+      ],
+      "check": [
+        "test-q6",
+        "test-q7",
+        "test-q9"
+      ]
+    },
+    {
+      "id": "test-3",
+      "title": "Run As, Assert, Don't Cheat",
+      "minutes": 3,
+      "objective": "Given a scenario, determine how to test Apex classes and triggers, including the use of mocks and stubs (HttpCalloutMock, Stub API, Test.startTest/stopTest, test data).",
+      "cards": [
+        {
+          "type": "text",
+          "title": "System.runAs(user)",
+          "body": "Runs a block as another user. It enforces **record sharing** only. It does **not** enforce **object or field permissions** for code running in system mode."
+        },
+        {
+          "type": "tip",
+          "body": "runAs = \"**R**ecords, not **R**ights\". To test permissions, the code itself must check them (e.g., **WITH USER_MODE**, **AccessLevel.USER_MODE**, stripInaccessible) - then runAs makes those checks use the test user."
+        },
+        {
+          "type": "text",
+          "title": "Mixed DML fix",
+          "body": "Inserting a **User** (setup object) and an **Account** in one test throws **MIXED_DML_OPERATION**. Wrap the setup-object DML in **System.runAs()**, or move it to an **@future** method."
+        },
+        {
+          "type": "code",
+          "title": "Assert class + expected exceptions",
+          "lang": "apex",
+          "code": "try {\n  OrderService.submit(null);\n  Assert.fail('Expected an exception');\n} catch (OrderService.OrderException e) {\n  Assert.isTrue(e.getMessage().contains('required'));\n}",
+          "body": "**Assert.fail** guarantees the test fails if no exception is thrown. Also: areEqual(expected, actual), isNull, isInstanceOfType."
+        },
+        {
+          "type": "trap",
+          "body": "**if (Test.isRunningTest())** branches mean tests run **different code than production**. Coverage looks fine, real bugs hide. Prefer mocks and dependency injection."
+        }
+      ],
+      "check": [
+        "test-q11",
+        "test-q12",
+        "test-q14"
+      ]
+    },
+    {
+      "id": "test-4",
+      "title": "Fake the Internet: Callout Mocks",
+      "minutes": 4,
+      "objective": "Given a scenario, determine how to test Apex classes and triggers, including the use of mocks and stubs (HttpCalloutMock, Stub API, Test.startTest/stopTest, test data).",
+      "cards": [
+        {
+          "type": "text",
+          "title": "No real callouts in tests",
+          "body": "Test methods **can't make real callouts**. Without a mock, the test fails. You register a fake with **Test.setMock()**."
+        },
+        {
+          "type": "code",
+          "title": "HttpCalloutMock",
+          "lang": "apex",
+          "code": "@isTest\npublic class WeatherMock implements HttpCalloutMock {\n  public HttpResponse respond(HttpRequest req) {\n    HttpResponse res = new HttpResponse();\n    res.setHeader('Content-Type', 'application/json');\n    res.setBody('{\"temp\":21.5}');\n    res.setStatusCode(200);\n    return res;\n  }\n}\n// in the test method:\nTest.setMock(HttpCalloutMock.class, new WeatherMock());",
+          "body": "One method: **respond(HttpRequest)** returns an **HttpResponse**."
+        },
+        {
+          "type": "code",
+          "title": "Many endpoints, static resources",
+          "lang": "apex",
+          "code": "MultiStaticResourceCalloutMock multi = new MultiStaticResourceCalloutMock();\nmulti.setStaticResource('https://api.example.com/rates', 'RatesJson');\nmulti.setStaticResource('https://api.example.com/fees', 'FeesJson');\nmulti.setStatusCode(200);\nmulti.setHeader('Content-Type', 'application/json');\nTest.setMock(HttpCalloutMock.class, multi);",
+          "body": "One endpoint? Use **StaticResourceCalloutMock**. Several? **MultiStaticResourceCalloutMock**."
+        },
+        {
+          "type": "code",
+          "title": "SOAP (WSDL2Apex)",
+          "lang": "apex",
+          "code": "global class CalcMock implements WebServiceMock {\n  global void doInvoke(Object stub, Object request,\n      Map<String, Object> response, String endpoint,\n      String soapAction, String requestName, String responseNS,\n      String responseName, String responseType) {\n    CalcService.AddResponse_element r = new CalcService.AddResponse_element();\n    r.AddResult = 42;\n    response.put('response_x', r);\n  }\n}\n// Test.setMock(WebServiceMock.class, new CalcMock());",
+          "body": "SOAP mocks put the fake response into the map under **response_x**."
+        },
+        {
+          "type": "trap",
+          "body": "\"**You have uncommitted work pending**\": do your test **DML before Test.startTest()**, then make the callout **inside** startTest/stopTest."
+        }
+      ],
+      "check": [
+        "test-q15",
+        "test-q16",
+        "test-q19"
+      ]
+    },
+    {
+      "id": "test-5",
+      "title": "Stub API: Mock Your Own Classes",
+      "minutes": 3,
+      "objective": "Given a scenario, determine how to test Apex classes and triggers, including the use of mocks and stubs (HttpCalloutMock, Stub API, Test.startTest/stopTest, test data).",
+      "cards": [
+        {
+          "type": "text",
+          "title": "Why stub?",
+          "body": "Unit test class A without running real class B (slow queries, callouts, complex setup). The **Stub API** builds a fake B at runtime."
+        },
+        {
+          "type": "code",
+          "title": "StubProvider",
+          "lang": "apex",
+          "code": "@isTest\npublic class PricingStub implements System.StubProvider {\n  public Object handleMethodCall(Object stubbedObject,\n      String stubbedMethodName, Type returnType,\n      List<Type> listOfParamTypes, List<String> listOfParamNames,\n      List<Object> listOfArgs) {\n    if (stubbedMethodName == 'getDiscount') return 0.25;\n    return null;\n  }\n}",
+          "body": "Every call on the stub lands in **handleMethodCall**. You decide the return value by method name/args."
+        },
+        {
+          "type": "code",
+          "title": "Create and inject",
+          "lang": "apex",
+          "code": "PricingService svc = (PricingService) Test.createStub(\n    PricingService.class, new PricingStub());\nQuoteBuilder qb = new QuoteBuilder(svc); // dependency injection\n",
+          "body": "**Test.createStub(Type, StubProvider)** returns an Object - cast it. Then inject it into the class under test."
+        },
+        {
+          "type": "list",
+          "title": "Can't be stubbed",
+          "items": [
+            "**Static** methods (incl. future)",
+            "**Private** methods",
+            "Properties (getters/setters)",
+            "Triggers, inner classes, system types",
+            "Batchable classes, classes with only private constructors"
+          ]
+        },
+        {
+          "type": "tip",
+          "body": "Stub API needs a **seam**: the class under test must accept the dependency (constructor/setter). No injection point = nothing to swap."
+        }
+      ],
+      "check": [
+        "test-q20",
+        "test-q21",
+        "test-q22"
+      ]
+    },
+    {
+      "id": "test-6",
+      "title": "Testing LWC (Jest) and VF Controllers",
+      "minutes": 4,
+      "objective": "Given a scenario, identify how to test and debug Lightning web components, Aura components, Visualforce, and JavaScript (including Jest unit tests for LWC).",
+      "cards": [
+        {
+          "type": "text",
+          "title": "Jest = local unit tests",
+          "body": "LWC tests run in **Node.js with Jest** via **@salesforce/sfdx-lwc-jest**. No org, no browser. Files live in a **__tests__** folder as ***.test.js**. They **don't count** toward Apex coverage."
+        },
+        {
+          "type": "code",
+          "title": "Mock a wire adapter",
+          "lang": "js",
+          "code": "import { createElement } from 'lwc';\nimport AccountCard from 'c/accountCard';\nimport { getRecord } from 'lightning/uiRecordApi';\nconst mockRecord = require('./data/getRecord.json');\n\nit('renders name', async () => {\n  const el = createElement('c-account-card', { is: AccountCard });\n  document.body.appendChild(el);\n  getRecord.emit(mockRecord);\n  await Promise.resolve();\n  expect(el.shadowRoot.querySelector('h2').textContent).toBe('Acme');\n});",
+          "body": "Wire adapters are test adapters: **.emit(data)** pushes data, **.error()** pushes an error."
+        },
+        {
+          "type": "code",
+          "title": "Mock imperative Apex",
+          "lang": "js",
+          "code": "import getAccounts from '@salesforce/apex/AccountController.getAccounts';\njest.mock(\n  '@salesforce/apex/AccountController.getAccounts',\n  () => ({ default: jest.fn() }),\n  { virtual: true }\n);\n// in a test:\ngetAccounts.mockResolvedValue([{ Id: '001', Name: 'Acme' }]);",
+          "body": "**virtual: true** because the Apex module doesn't exist on disk."
+        },
+        {
+          "type": "trap",
+          "body": "DOM updates are **async**. After setting a property or emitting data, **await Promise.resolve()** (or a flushPromises helper) before asserting."
+        },
+        {
+          "type": "code",
+          "title": "Visualforce extension test",
+          "lang": "apex",
+          "code": "Account acc = new Account(Name = 'Acme');\ninsert acc;\nTest.setCurrentPage(Page.AccountSummary);\nApexPages.currentPage().getParameters().put('id', acc.Id);\nAccountSummaryExt ext =\n    new AccountSummaryExt(new ApexPages.StandardController(acc));",
+          "body": "Set the page and URL params, build the **StandardController**, then call action methods and check **ApexPages.getMessages()**."
+        }
+      ],
+      "check": [
+        "test-q23",
+        "test-q24",
+        "test-q26"
+      ]
+    },
+    {
+      "id": "test-7",
+      "title": "Debug Like a Detective",
+      "minutes": 4,
+      "objective": "Given a scenario, determine why Apex code is not behaving as expected and how to debug it (debug logs, checkpoints, Apex Replay Debugger).",
+      "cards": [
+        {
+          "type": "list",
+          "title": "Log levels (quiet to loud)",
+          "items": [
+            "NONE",
+            "ERROR",
+            "WARN",
+            "INFO",
+            "DEBUG",
+            "FINE",
+            "FINER",
+            "FINEST"
+          ]
+        },
+        {
+          "type": "tip",
+          "body": "\"**Every Wise Investigator Digs For Finer Facts**\" = Error, Warn, Info, Debug, Fine, Finer, Finest. A System.debug at level X shows only if the **Apex Code** category is X or louder."
+        },
+        {
+          "type": "text",
+          "title": "Trace flags",
+          "body": "A **trace flag** = who/what to log + a **debug level** + a time window (max **24 hours**). Set on a **user**, **Apex class/trigger**, or Automated Process. **Class/trigger flags override** the levels for that code - great for muting a chatty class."
+        },
+        {
+          "type": "text",
+          "title": "Apex Replay Debugger",
+          "body": "Free, in **VS Code**. Capture a debug log (Apex Code **FINEST**), then \"replay\" it: **breakpoints**, variables, call stack. Add **checkpoints** to capture heap dumps. Works on any org, even production, because it only reads logs."
+        },
+        {
+          "type": "text",
+          "title": "Developer Console",
+          "body": "Logs, **checkpoints** (up to **5**, heap snapshot at a line, no code changes), Query Editor, **Execution Overview** / Timeline for slow spots."
+        },
+        {
+          "type": "code",
+          "title": "Limits class",
+          "lang": "apex",
+          "code": "System.debug(Limits.getQueries() + ' of ' + Limits.getLimitQueries() + ' SOQL used');\nSystem.debug('CPU ms: ' + Limits.getCpuTime());",
+          "body": "getX() = used so far; getLimitX() = the max."
+        },
+        {
+          "type": "trap",
+          "body": "Unhandled exception emails go to the **last developer who modified** the class/trigger, plus anyone added in Setup > **Apex Exception Email**."
+        }
+      ],
+      "check": [
+        "test-q28",
+        "test-q29",
+        "test-q30"
+      ]
+    },
+    {
+      "id": "test-8",
+      "title": "Orgs, CLI, Packages, Change Sets",
+      "minutes": 4,
+      "objective": "Given a scenario, formulate the deployment process, supporting tools, and mechanisms for source-driven development (Salesforce CLI, scratch orgs, packages, metadata/destructive changes).",
+      "cards": [
+        {
+          "type": "list",
+          "title": "Sandbox cheat sheet",
+          "items": [
+            "**Developer**: metadata only, no prod data (200 MB), refresh daily",
+            "**Developer Pro**: metadata only, more storage (1 GB), refresh daily",
+            "**Partial Copy**: metadata + sample data via **sandbox template**, refresh every **5 days**",
+            "**Full**: complete copy, refresh every **29 days** - perf/UAT/staging"
+          ]
+        },
+        {
+          "type": "code",
+          "title": "Scratch org loop (sf CLI)",
+          "lang": "bash",
+          "code": "sf org create scratch --definition-file config/project-scratch-def.json \\\n  --alias feature1 --duration-days 7 --target-dev-hub DevHub\nsf project deploy start --target-org feature1\nsf project retrieve start --target-org feature1",
+          "body": "Scratch orgs: disposable (1-30 days), built from source, **source tracking** on. Created from a **Dev Hub**."
+        },
+        {
+          "type": "text",
+          "title": "Packages",
+          "body": "**Unlocked packages** (2GP) = versioned, upgradeable bundles of your metadata built from source with a Dev Hub. To **promote** a version to released, it needs **75% Apex code coverage** (create it with **--code-coverage**)."
+        },
+        {
+          "type": "trap",
+          "body": "**Change sets**: only between orgs tied to the **same production org**, need a **deployment connection**, and **can't delete** components. To delete, use **destructiveChanges.xml** with the Metadata API / CLI."
+        },
+        {
+          "type": "code",
+          "title": "Deleting metadata",
+          "lang": "xml",
+          "code": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<Package xmlns=\"http://soap.sforce.com/2006/04/metadata\">\n  <types>\n    <members>LegacyHelper</members>\n    <name>ApexClass</name>\n  </types>\n</Package>",
+          "body": "destructiveChanges(Pre/Post).xml + a package.xml. CLI: **--pre-destructive-changes / --post-destructive-changes**."
+        },
+        {
+          "type": "tip",
+          "body": "**DevOps Center** = click-based, Git-backed pipeline (work items, stages) - the modern replacement for change sets."
+        }
+      ],
+      "check": [
+        "test-q33",
+        "test-q34",
+        "test-q36"
+      ]
+    },
+    {
+      "id": "test-9",
+      "title": "Test Levels, Coverage, Quick Deploy",
+      "minutes": 3,
+      "objective": "Given a scenario, formulate the deployment process, supporting tools, and mechanisms for source-driven development (Salesforce CLI, scratch orgs, packages, metadata/destructive changes).",
+      "cards": [
+        {
+          "type": "list",
+          "title": "Production deploy rules",
+          "items": [
+            "**75%** org-wide Apex coverage",
+            "Every **trigger** has some coverage",
+            "All tests that run must **pass**",
+            "Test classes and System.debug lines don't count toward coverage"
+          ]
+        },
+        {
+          "type": "list",
+          "title": "Test levels",
+          "items": [
+            "**NoTestRun** - default for non-production (not allowed in prod for Apex)",
+            "**RunSpecifiedTests** - only listed tests; **each** class/trigger deployed needs **75%** from them",
+            "**RunLocalTests** - all except managed-package tests; prod default when deploying Apex",
+            "**RunAllTestsInOrg** - everything, including managed packages"
+          ]
+        },
+        {
+          "type": "code",
+          "title": "Validate now, deploy later",
+          "lang": "bash",
+          "code": "sf project deploy validate --source-dir force-app \\\n  --test-level RunLocalTests --target-org prod\nsf project deploy quick --job-id 0AfXXXXXXXXXXXXXXX --target-org prod",
+          "body": "**Quick deploy** skips re-running tests if validation passed within the last **10 days**."
+        },
+        {
+          "type": "trap",
+          "body": "RunSpecifiedTests checks coverage **per component**, not org-wide. 85% org-wide does not save a class sitting at 60%."
+        },
+        {
+          "type": "text",
+          "title": "Flows too",
+          "body": "If \"**Deploy processes and flows as active**\" is on, production needs enough flow test coverage (75% of active autolaunched flows/processes) from tests that fire them."
+        }
+      ],
+      "check": [
+        "test-q38",
+        "test-q39",
+        "test-q40"
+      ]
+    }
+  ],
+  "flashcards": [
+    {
+      "id": "test-f1",
+      "front": "Default data visibility in Apex tests?",
+      "back": "Since API 24.0 tests see no org data, except setup-type objects like User, Profile, RecordType, Organization. Use SeeAllData=true only when unavoidable."
+    },
+    {
+      "id": "test-f2",
+      "front": "@TestSetup runs how often?",
+      "back": "Once per test class. Each test method gets the records fresh; changes made in one method are rolled back before the next."
+    },
+    {
+      "id": "test-f3",
+      "front": "Can @TestSetup be used with SeeAllData=true?",
+      "back": "No. Test setup methods are not supported in classes annotated @isTest(SeeAllData=true)."
+    },
+    {
+      "id": "test-f4",
+      "front": "Test.loadData(...)",
+      "back": "Inserts records from a CSV static resource: Test.loadData(Account.sObjectType, 'ResourceName'). Returns List<sObject>."
+    },
+    {
+      "id": "test-f5",
+      "front": "Why does SOSL return nothing in a test?",
+      "back": "SOSL returns empty results in tests. Call Test.setFixedSearchResults(List<Id>) to define what it returns."
+    },
+    {
+      "id": "test-f6",
+      "front": "Two jobs of Test.startTest()/stopTest()",
+      "back": "1) Fresh governor limits for the code between them. 2) Async work queued inside runs synchronously when stopTest() is called."
+    },
+    {
+      "id": "test-f7",
+      "front": "How many startTest/stopTest per test method?",
+      "back": "One pair per test method."
+    },
+    {
+      "id": "test-f8",
+      "front": "Batch Apex in tests: key limit",
+      "back": "Only one execute() chunk can run, so insert no more records than the batch scope. Assert after Test.stopTest()."
+    },
+    {
+      "id": "test-f9",
+      "front": "Delivering platform events in a test",
+      "back": "Test.stopTest() or Test.getEventBus().deliver(). Test.getEventBus().fail() simulates a failed publish."
+    },
+    {
+      "id": "test-f10",
+      "front": "Scheduled Apex in a test",
+      "back": "System.schedule inside start/stop; the job runs at stopTest() regardless of cron. Query CronTrigger to verify the schedule."
+    },
+    {
+      "id": "test-f11",
+      "front": "What does System.runAs enforce?",
+      "back": "Record sharing of the given user. Not object or field permissions for system-mode code."
+    },
+    {
+      "id": "test-f12",
+      "front": "Fix MIXED_DML_OPERATION in tests",
+      "back": "Wrap setup-object DML (User, Group, PermissionSetAssignment) in System.runAs(), or do it in an @future method."
+    },
+    {
+      "id": "test-f13",
+      "front": "Assert class: expected first or actual?",
+      "back": "Assert.areEqual(expected, actual, optionalMessage). Also isTrue, isFalse, isNull, isNotNull, isInstanceOfType, fail."
+    },
+    {
+      "id": "test-f14",
+      "front": "Why avoid Test.isRunningTest() branches?",
+      "back": "Tests then run different code than production, so real paths go untested. Prefer mocks or dependency injection."
+    },
+    {
+      "id": "test-f15",
+      "front": "HttpCalloutMock method",
+      "back": "HttpResponse respond(HttpRequest req). Register: Test.setMock(HttpCalloutMock.class, new MyMock())."
+    },
+    {
+      "id": "test-f16",
+      "front": "WebServiceMock method",
+      "back": "doInvoke(stub, request, response map, endpoint, soapAction, requestName, responseNS, responseName, responseType). Put the result in response with key 'response_x'."
+    },
+    {
+      "id": "test-f17",
+      "front": "StaticResourceCalloutMock vs Multi...",
+      "back": "Static: one canned response from a static resource. Multi: map different endpoints to different static resources."
+    },
+    {
+      "id": "test-f18",
+      "front": "\"You have uncommitted work pending\" in a test",
+      "back": "Do DML before Test.startTest(); perform the mocked callout between startTest and stopTest."
+    },
+    {
+      "id": "test-f19",
+      "front": "Create a stub",
+      "back": "(MyType) Test.createStub(MyType.class, new MyStubProvider()); the provider implements System.StubProvider.handleMethodCall."
+    },
+    {
+      "id": "test-f20",
+      "front": "What can't the Stub API mock?",
+      "back": "Static and private methods, properties, constructors-only-private classes, triggers, inner classes, system types, Batchable classes."
+    },
+    {
+      "id": "test-f21",
+      "front": "Where do LWC Jest tests run?",
+      "back": "Locally in Node.js using @salesforce/sfdx-lwc-jest. Files in __tests__ named *.test.js. No org needed."
+    },
+    {
+      "id": "test-f22",
+      "front": "Push mock data through a wire adapter in Jest",
+      "back": "Call adapter.emit(data) (e.g. getRecord.emit(mock)); adapter.error() for errors. Then await Promise.resolve()."
+    },
+    {
+      "id": "test-f23",
+      "front": "Why jest.mock(..., { virtual: true }) for Apex?",
+      "back": "@salesforce/apex/... modules don't exist on disk; virtual lets Jest mock a module that can't be resolved."
+    },
+    {
+      "id": "test-f24",
+      "front": "Debug log levels in order",
+      "back": "NONE, ERROR, WARN, INFO, DEBUG, FINE, FINER, FINEST."
+    },
+    {
+      "id": "test-f25",
+      "front": "Max trace flag duration",
+      "back": "24 hours."
+    },
+    {
+      "id": "test-f26",
+      "front": "Class-level trace flag use",
+      "back": "Overrides log levels for that class/trigger - e.g. set Apex Code to ERROR to mute a noisy utility class."
+    },
+    {
+      "id": "test-f27",
+      "front": "Apex Replay Debugger needs...",
+      "back": "A debug log captured with Apex Code at FINEST, replayed in VS Code. Breakpoints, variables, checkpoints (heap dumps)."
+    },
+    {
+      "id": "test-f28",
+      "front": "Developer Console checkpoints",
+      "back": "Up to 5; capture heap and variable state at a line without changing code."
+    },
+    {
+      "id": "test-f29",
+      "front": "Sandbox refresh intervals",
+      "back": "Developer & Developer Pro: 1 day. Partial Copy: 5 days. Full: 29 days."
+    },
+    {
+      "id": "test-f30",
+      "front": "Delete metadata from production",
+      "back": "Metadata API deploy with destructiveChanges.xml (or Pre/Post) plus package.xml. Change sets can't delete."
+    },
+    {
+      "id": "test-f31",
+      "front": "RunSpecifiedTests coverage rule",
+      "back": "Each Apex class and trigger in the deployment needs at least 75% coverage from the specified tests."
+    },
+    {
+      "id": "test-f32",
+      "front": "Quick deploy window",
+      "back": "A successful validation (tests passed, coverage met) can be quick-deployed within 10 days."
+    }
+  ],
+  "questions": [
+    {
+      "id": "test-q1",
+      "lesson": "test-1",
+      "difficulty": 1,
+      "q": "A new test method queries Accounts and gets zero rows, even though the sandbox has thousands of Accounts. The class has a plain @isTest annotation. What explains this?",
+      "options": [
+        "Sharing rules hide Accounts from the running test user",
+        "Tests can't see existing org data by default; the test must create its own records",
+        "SOQL is blocked in test methods unless wrapped in Test.startTest()",
+        "The query must use ALL ROWS to see records in tests"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "Since API 24.0, test methods are isolated from org data unless SeeAllData=true. Tests should create their own data.",
+      "wrong": [
+        "Tests run in system mode and the issue is isolation, not sharing.",
+        "",
+        "SOQL works anywhere in a test method.",
+        "ALL ROWS returns deleted/archived rows; it doesn't reveal org data to tests."
+      ],
+      "source": "Apex Developer Guide: Testing Apex - Isolation of Test Data from Organization Data"
+    },
+    {
+      "id": "test-q2",
+      "lesson": "test-1",
+      "difficulty": 2,
+      "q": "A test class has an @TestSetup method that inserts an Account with Rating = 'Warm'. Test method A updates it to 'Hot'. Test method B then queries the Account and checks Rating. What does B see?",
+      "options": [
+        "'Hot', because @TestSetup data is shared and committed across methods",
+        "An error, because the record was modified by another method",
+        "'Warm', because each method gets its own copy of the setup data",
+        "It depends on the method execution order, which is alphabetical"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "Records from @TestSetup are rolled back after each test method, so every method starts with the original values.",
+      "wrong": [
+        "Changes in one method are rolled back before the next.",
+        "No locking error happens; each method is isolated.",
+        "",
+        "Results don't depend on order because each method gets a clean copy."
+      ],
+      "source": "Apex Developer Guide: Testing Apex - Using Test Setup Methods"
+    },
+    {
+      "id": "test-q3",
+      "lesson": "test-1",
+      "difficulty": 2,
+      "q": "A test runs without SeeAllData. Which two kinds of existing records can it query without creating them first? (Choose 2)",
+      "options": [
+        "Profile records",
+        "Existing Account records",
+        "Custom setting records",
+        "RecordType records",
+        "Existing Case records"
+      ],
+      "answer": [
+        0,
+        3
+      ],
+      "explain": "Setup-type objects such as User, Profile, RecordType and Organization are visible to tests without SeeAllData. Business data and custom setting data are not.",
+      "wrong": [
+        "",
+        "Business data like Accounts is hidden from tests by default.",
+        "Custom setting data must be inserted by the test.",
+        "",
+        "Cases are org data and are hidden by default."
+      ],
+      "source": "Apex Developer Guide: Testing Apex - Isolation of Test Data from Organization Data"
+    },
+    {
+      "id": "test-q4",
+      "lesson": "test-1",
+      "difficulty": 1,
+      "q": "An admin maintains a spreadsheet of 30 realistic Accounts that several test classes should use. The developer wants tests to stay independent of org data. What is the best approach?",
+      "options": [
+        "Load the data with Data Loader and use @isTest(SeeAllData=true)",
+        "Query the CSV from a Document record inside @TestSetup",
+        "Hard-code the Account IDs from the sandbox in the tests",
+        "Upload the CSV as a static resource and call Test.loadData"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "Test.loadData inserts rows from a CSV static resource inside the test, so the data stays isolated and is easy for admins to update.",
+      "wrong": [
+        "SeeAllData ties tests to org contents that differ between environments.",
+        "Documents are org data and aren't visible to tests without SeeAllData.",
+        "IDs differ between orgs and the records won't be visible.",
+        ""
+      ],
+      "source": "Apex Developer Guide: Testing Apex - Loading Test Data"
+    },
+    {
+      "id": "test-q5",
+      "lesson": "test-1",
+      "difficulty": 2,
+      "q": "A method under test runs a SOSL search. In the test, the search always returns no results even though the test inserted matching Contacts. What should the developer do?",
+      "options": [
+        "Call Test.setFixedSearchResults with the IDs the search should return",
+        "Add SeeAllData=true so SOSL can use the search index",
+        "Wait for indexing by calling Test.stopTest() before the search",
+        "Replace the SOSL in production code with a SOQL LIKE query"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "SOSL in test context returns empty results unless Test.setFixedSearchResults defines the records to return.",
+      "wrong": [
+        "",
+        "SeeAllData doesn't make SOSL return the test's own records.",
+        "stopTest runs async jobs; it doesn't index records.",
+        "Changing production code to fit a test is the wrong fix."
+      ],
+      "source": "Apex Developer Guide: Testing Apex - Adding SOSL Queries to Unit Tests"
+    },
+    {
+      "id": "test-q6",
+      "lesson": "test-2",
+      "difficulty": 1,
+      "q": "What are two effects of wrapping code in Test.startTest() and Test.stopTest()? (Choose 2)",
+      "options": [
+        "The code between them gets a fresh set of governor limits",
+        "Records inserted between them are committed to the org",
+        "Asynchronous work queued between them runs when stopTest() is called",
+        "Validation rules are skipped between them",
+        "Callouts between them are allowed without a mock"
+      ],
+      "answer": [
+        0,
+        2
+      ],
+      "explain": "startTest/stopTest give the enclosed code its own limits and force queued async Apex to finish at stopTest.",
+      "wrong": [
+        "",
+        "Test data is never committed.",
+        "",
+        "Validation rules still run.",
+        "Callouts still need Test.setMock."
+      ],
+      "source": "Apex Developer Guide: Testing Apex - Using Limits, startTest, and stopTest"
+    },
+    {
+      "id": "test-q7",
+      "lesson": "test-2",
+      "difficulty": 2,
+      "q": "A test calls Database.executeBatch between Test.startTest() and Test.stopTest(), but its Assert statements are placed right after executeBatch and before stopTest. The assertions fail. What is the fix?",
+      "options": [
+        "Increase the batch scope to 2000",
+        "Move the assertions after Test.stopTest()",
+        "Call the batch's execute() method twice",
+        "Add SeeAllData=true so the job can see its records"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "The batch only runs when stopTest() is called, so assertions must come after it.",
+      "wrong": [
+        "Scope size doesn't change when the job runs.",
+        "",
+        "Calling execute manually isn't needed and skips start/finish.",
+        "The job sees the test's own records already."
+      ],
+      "source": "Apex Developer Guide: Testing Batch Apex"
+    },
+    {
+      "id": "test-q8",
+      "lesson": "test-2",
+      "difficulty": 2,
+      "q": "An Apex trigger subscribes to Order_Event__e and creates a Task. A test publishes the event with EventBus.publish and immediately queries Tasks, finding none. What should the developer add before the query?",
+      "options": [
+        "A call to System.enqueueJob for the trigger",
+        "SeeAllData=true on the test class",
+        "A Thread-style wait loop until the Task appears",
+        "Test.getEventBus().deliver() or Test.stopTest()"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "In tests, published events are held on a test event bus until Test.stopTest() or Test.getEventBus().deliver() delivers them to subscribers.",
+      "wrong": [
+        "Event triggers aren't queueables.",
+        "Data visibility isn't the issue.",
+        "Apex has no sleep; delivery must be forced.",
+        ""
+      ],
+      "source": "Platform Events Developer Guide: Testing Your Platform Event in Apex"
+    },
+    {
+      "id": "test-q9",
+      "lesson": "test-2",
+      "difficulty": 3,
+      "q": "A Schedulable class is scheduled in a test with a cron expression for next January. The test calls System.schedule between Test.startTest() and Test.stopTest(). What happens to the job in the test?",
+      "options": [
+        "It never runs; the test must call execute() directly to cover it",
+        "The test waits until the cron time and then times out",
+        "Its execute() runs at Test.stopTest(), so its effects can be asserted afterwards",
+        "It runs only if the test class has SeeAllData=true"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "Async work scheduled after startTest runs synchronously at stopTest, including scheduled jobs, regardless of the cron time. CronTrigger can also be queried to check the schedule.",
+      "wrong": [
+        "The job does run at stopTest.",
+        "Tests don't wait for real time.",
+        "",
+        "Scheduling doesn't depend on SeeAllData."
+      ],
+      "source": "Apex Developer Guide: Testing the Apex Scheduler"
+    },
+    {
+      "id": "test-q10",
+      "lesson": "test-2",
+      "difficulty": 3,
+      "q": "A Queueable job re-enqueues itself to process the next chunk of records. Its test fails with an error when the job tries to chain. What is the documented way to keep the job testable?",
+      "options": [
+        "Guard the chaining call with Test.isRunningTest() and test one link of the chain",
+        "Call Test.stopTest() twice to run each chained job",
+        "Mark the test with @isTest(SeeAllData=true)",
+        "Convert the chain to a for loop inside one execute() call"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "Chained queueable jobs can't run in an Apex test. The Queueable docs suggest checking Test.isRunningTest() before chaining so the test exercises a single job.",
+      "wrong": [
+        "",
+        "Only one startTest/stopTest pair is allowed per test method.",
+        "SeeAllData doesn't affect queueable chaining.",
+        "That defeats the reason for chaining (fresh limits per job)."
+      ],
+      "source": "Apex Developer Guide: Queueable Apex"
+    },
+    {
+      "id": "test-q11",
+      "lesson": "test-3",
+      "difficulty": 2,
+      "q": "A developer tests that a user without access to the Salary__c field can't read it. Inside System.runAs(limitedUser), a SOQL query in a \"with sharing\" class returns Salary__c values. Why?",
+      "options": [
+        "runAs only works with users inserted in @TestSetup",
+        "runAs enforces record sharing, not field-level security, so the query must run in user mode (e.g. WITH USER_MODE)",
+        "Field-level security is never enforced in tests",
+        "The class must be declared \"inherited sharing\" for runAs to apply"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "System.runAs enforces record sharing only. To have FLS checked for the test user, the code must enforce it, for example with WITH USER_MODE or stripInaccessible.",
+      "wrong": [
+        "runAs works with any user, inserted or not.",
+        "",
+        "FLS is enforced in tests when the code enforces it, such as user mode queries.",
+        "Sharing keywords control record access, not FLS."
+      ],
+      "source": "Apex Developer Guide: Using the runAs Method"
+    },
+    {
+      "id": "test-q12",
+      "lesson": "test-3",
+      "difficulty": 3,
+      "q": "A test inserts a User with a specific Profile, then inserts an Account owned by that User, and fails with MIXED_DML_OPERATION. Which two changes fix it? (Choose 2)",
+      "options": [
+        "Wrap the User insert in a System.runAs() block",
+        "Insert the User and Account in a single List<SObject>",
+        "Use Database.insert with allOrNone set to false",
+        "Insert the User from an @future method called inside Test.startTest()/stopTest()",
+        "Add SeeAllData=true to the test class"
+      ],
+      "answer": [
+        0,
+        3
+      ],
+      "explain": "Setup and non-setup DML can't mix in one transaction. In tests, putting the setup DML in a runAs block or in a future method separates them.",
+      "wrong": [
+        "",
+        "Mixing types in one list still mixes setup and non-setup DML.",
+        "Partial success doesn't change the mixed DML rule.",
+        "",
+        "Data visibility doesn't affect mixed DML."
+      ],
+      "source": "Apex Developer Guide: Setup and Non-Setup Objects in DML"
+    },
+    {
+      "id": "test-q13",
+      "lesson": "test-3",
+      "difficulty": 1,
+      "q": "A test must prove that OrderService.submit(null) throws OrderService.OrderException. Which pattern makes the test fail if no exception is thrown?",
+      "options": [
+        "Call the method and then Assert.isNull(result)",
+        "Wrap the call in try/catch and leave the catch block empty",
+        "Use Assert.areEqual(OrderException.class, OrderService.submit(null))",
+        "Call the method in try, follow it with Assert.fail(), and assert on the exception in the catch block"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "Assert.fail() right after the call only runs when no exception happens, so the test fails as it should. The catch block then checks the exception.",
+      "wrong": [
+        "If an exception is thrown, the assert never runs, and the check proves nothing.",
+        "An empty catch passes whether or not an exception occurs.",
+        "This doesn't compile into a meaningful exception check.",
+        ""
+      ],
+      "source": "Apex Reference Guide: Assert Class"
+    },
+    {
+      "id": "test-q14",
+      "lesson": "test-3",
+      "difficulty": 3,
+      "q": "A class contains: if (Test.isRunningTest()) { return fakeRate; } else { return callRateApi(); }. Tests pass with 90% coverage, but production keeps failing. Which two statements are true? (Choose 2)",
+      "options": [
+        "The real callout path never runs in tests, so its defects stay hidden",
+        "Test.isRunningTest() throws an exception in production orgs",
+        "This is the recommended pattern for avoiding callouts in tests",
+        "Replacing the branch with an HttpCalloutMock registered via Test.setMock lets tests run the real code path",
+        "Branches that use Test.isRunningTest() are excluded from coverage calculations"
+      ],
+      "answer": [
+        0,
+        3
+      ],
+      "explain": "Test-only branches make tests run different code than production. A callout mock lets the real code run in tests with a fake response.",
+      "wrong": [
+        "",
+        "It just returns false in production.",
+        "Docs recommend mocks for callouts, not test-only branches.",
+        "",
+        "Those lines are counted like any other code."
+      ],
+      "source": "Apex Developer Guide: Testing HTTP Callouts"
+    },
+    {
+      "id": "test-q15",
+      "lesson": "test-4",
+      "difficulty": 1,
+      "q": "Which method must a class implement to act as an HttpCalloutMock?",
+      "options": [
+        "HttpResponse respond(HttpRequest req)",
+        "void doInvoke(Object stub, Object request, Map<String, Object> response, ...)",
+        "Object handleMethodCall(Object stubbedObject, String stubbedMethodName, ...)",
+        "HttpRequest send(HttpResponse res)"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "HttpCalloutMock has a single method that takes the request and returns a fake HttpResponse.",
+      "wrong": [
+        "",
+        "doInvoke belongs to WebServiceMock (SOAP).",
+        "handleMethodCall belongs to StubProvider.",
+        "No such method; the signature is reversed."
+      ],
+      "source": "Apex Developer Guide: Testing HTTP Callouts by Implementing the HttpCalloutMock Interface"
+    },
+    {
+      "id": "test-q16",
+      "lesson": "test-4",
+      "difficulty": 2,
+      "q": "A test inserts an Account and then calls a method that makes an HTTP callout. Test.setMock is set, but the test fails with \"You have uncommitted work pending\". What should the developer change?",
+      "options": [
+        "Use SeeAllData=true so no DML is needed",
+        "Replace the HttpCalloutMock with a WebServiceMock",
+        "Insert the Account before Test.startTest() and make the callout between Test.startTest() and Test.stopTest()",
+        "Make the callout from a trigger on Account"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "Putting the DML before startTest and the callout inside the startTest/stopTest block avoids the uncommitted-work error in tests.",
+      "wrong": [
+        "Relying on org data breaks isolation and isn't the fix.",
+        "The mock type depends on REST vs SOAP, not on DML.",
+        "",
+        "Triggers can't make synchronous callouts."
+      ],
+      "source": "Apex Developer Guide: Performing DML Operations and Mock Callouts"
+    },
+    {
+      "id": "test-q17",
+      "lesson": "test-4",
+      "difficulty": 2,
+      "q": "A method calls a rates endpoint and a fees endpoint in the same transaction. The team keeps sample JSON for each in separate static resources. Which mock fits best?",
+      "options": [
+        "StaticResourceCalloutMock",
+        "MultiStaticResourceCalloutMock",
+        "WebServiceMock",
+        "A StubProvider for the Http class"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "MultiStaticResourceCalloutMock maps each endpoint to its own static resource, so one mock covers both callouts.",
+      "wrong": [
+        "It returns the same single resource for every callout.",
+        "",
+        "WebServiceMock is for SOAP callouts from WSDL2Apex classes.",
+        "System types like Http can't be stubbed."
+      ],
+      "source": "Apex Developer Guide: Testing HTTP Callouts Using MultiStaticResourceCalloutMock"
+    },
+    {
+      "id": "test-q18",
+      "lesson": "test-4",
+      "difficulty": 2,
+      "q": "A developer used WSDL2Apex to generate a SOAP client. How should the test supply a fake response?",
+      "options": [
+        "Implement HttpCalloutMock and return XML in the body",
+        "Use Test.createStub on the generated port class",
+        "Set the endpoint to a Remote Site of localhost",
+        "Implement WebServiceMock and put the response element into the map with key 'response_x'"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "SOAP callouts made through WSDL2Apex classes are mocked with WebServiceMock and Test.setMock(WebServiceMock.class, ...).",
+      "wrong": [
+        "HttpCalloutMock covers HTTP callouts made with the Http class.",
+        "The Stub API isn't the documented approach for WSDL2Apex callouts.",
+        "Tests can't make real callouts at all.",
+        ""
+      ],
+      "source": "Apex Developer Guide: Test Web Service Callouts"
+    },
+    {
+      "id": "test-q19",
+      "lesson": "test-4",
+      "difficulty": 3,
+      "q": "A WeatherMock class implementing HttpCalloutMock exists in the org. The test below fails. What is the most likely cause?",
+      "code": "@isTest\nprivate class WeatherServiceTest {\n  @isTest\n  static void returnsTemp() {\n    Test.startTest();\n    Decimal t = WeatherService.getTemp('Paris');\n    Test.stopTest();\n    Assert.areEqual(21.5, t);\n  }\n}",
+      "lang": "apex",
+      "options": [
+        "Callout tests require @isTest(SeeAllData=true)",
+        "Test.setMock(HttpCalloutMock.class, new WeatherMock()) is never called, so the test tries a real callout",
+        "A Remote Site Setting for the endpoint is missing",
+        "Assert.areEqual parameters are in the wrong order, which always fails"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "A mock only takes effect once registered with Test.setMock. Without it, the callout is not allowed in a test and the test fails.",
+      "wrong": [
+        "Callout mocks don't need org data.",
+        "",
+        "Remote site settings don't matter for mocked callouts; the issue is the missing mock.",
+        "Argument order affects the failure message, not the result."
+      ],
+      "source": "Apex Developer Guide: Testing HTTP Callouts"
+    },
+    {
+      "id": "test-q20",
+      "lesson": "test-5",
+      "difficulty": 2,
+      "q": "A developer wants to use the Stub API to replace a dependency in a unit test. Which member of the dependency class can be stubbed?",
+      "options": [
+        "A public static method",
+        "A private instance method",
+        "A public instance method",
+        "A property getter"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "The Stub API can intercept public (and protected/global) instance methods. Static methods, private methods and properties can't be stubbed.",
+      "wrong": [
+        "Static methods can't be stubbed.",
+        "Private methods can't be stubbed.",
+        "",
+        "Properties (getters/setters) can't be stubbed."
+      ],
+      "source": "Apex Developer Guide: Build a Mocking Framework with the Stub API"
+    },
+    {
+      "id": "test-q21",
+      "lesson": "test-5",
+      "difficulty": 1,
+      "q": "How does a test create a stubbed instance of the PricingService class using a StubProvider named PricingStub?",
+      "options": [
+        "(PricingService) Test.createStub(PricingService.class, new PricingStub())",
+        "Test.setMock(PricingService.class, new PricingStub())",
+        "new PricingService(new PricingStub())",
+        "PricingStub.createStub(PricingService.class)"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "Test.createStub(Type, StubProvider) returns an Object that you cast to the stubbed type.",
+      "wrong": [
+        "",
+        "Test.setMock is for callout mocks only.",
+        "That just calls a real constructor.",
+        "No such static method exists on StubProvider."
+      ],
+      "source": "Apex Reference Guide: Test.createStub"
+    },
+    {
+      "id": "test-q22",
+      "lesson": "test-5",
+      "difficulty": 3,
+      "q": "Given the stub provider and test code below, what are the values of d and label?",
+      "code": "public class PricingStub implements System.StubProvider {\n  public Object handleMethodCall(Object stubbedObject,\n      String stubbedMethodName, Type returnType,\n      List<Type> listOfParamTypes, List<String> listOfParamNames,\n      List<Object> listOfArgs) {\n    if (stubbedMethodName == 'getDiscount') {\n      return 0.25;\n    }\n    return null;\n  }\n}\n// in the test\nPricingService svc = (PricingService)\n    Test.createStub(PricingService.class, new PricingStub());\nDecimal d = svc.getDiscount('GOLD');\nString label = svc.getTierLabel('GOLD');",
+      "lang": "apex",
+      "options": [
+        "d = 0.25 and label = 'GOLD'",
+        "Both are null; stubs need an explicit when() setup",
+        "A runtime error, because the provider must return a non-null value for every method",
+        "d = 0.25 and label = null"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "Every call on the stub goes to handleMethodCall. getDiscount matches and returns 0.25; getTierLabel falls through to return null. The real methods never run.",
+      "wrong": [
+        "The real getTierLabel never runs, so nothing returns 'GOLD'.",
+        "Apex has no when() API; the provider decides returns.",
+        "Returning null is allowed.",
+        ""
+      ],
+      "source": "Apex Developer Guide: Build a Mocking Framework with the Stub API"
+    },
+    {
+      "id": "test-q23",
+      "lesson": "test-6",
+      "difficulty": 1,
+      "q": "Where do Lightning Web Component Jest tests run?",
+      "options": [
+        "In the connected org, as part of Apex test runs",
+        "In the browser via the Lightning Testing Service only",
+        "Locally in Node.js using @salesforce/sfdx-lwc-jest, with no org needed",
+        "In a scratch org, during sf project deploy start"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "LWC Jest tests are local unit tests run with Jest in Node. They don't run in an org and don't count toward Apex code coverage.",
+      "wrong": [
+        "Jest tests are separate from Apex tests.",
+        "Jest runs in Node with jsdom, not in an org browser session.",
+        "",
+        "Deployments run Apex tests, not Jest."
+      ],
+      "source": "LWC Developer Guide: Test Lightning Web Components"
+    },
+    {
+      "id": "test-q24",
+      "lesson": "test-6",
+      "difficulty": 2,
+      "q": "The Jest test below fails: the paragraph still shows the old greeting. What should the developer change?",
+      "code": "it('shows greeting', () => {\n  const el = createElement('c-greeting', { is: Greeting });\n  document.body.appendChild(el);\n  el.name = 'Ada';\n  const p = el.shadowRoot.querySelector('p');\n  expect(p.textContent).toBe('Hello, Ada');\n});",
+      "lang": "js",
+      "options": [
+        "Use document.querySelector instead of shadowRoot.querySelector",
+        "Make the test async and await Promise.resolve() after setting el.name, then query the DOM",
+        "Set el.name before calling createElement",
+        "Call el.connectedCallback() manually after setting the property"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "LWC re-renders asynchronously. Awaiting a resolved promise lets the re-render finish before the assertion.",
+      "wrong": [
+        "Component content lives in the shadow tree.",
+        "",
+        "Properties are set on the created element, not before it exists.",
+        "The engine calls lifecycle hooks; the problem is timing."
+      ],
+      "source": "LWC Developer Guide: Write Jest Tests for Lightning Web Components"
+    },
+    {
+      "id": "test-q25",
+      "lesson": "test-6",
+      "difficulty": 2,
+      "q": "A component uses @wire(getRecord, ...) from lightning/uiRecordApi. How should a Jest test supply record data to the component?",
+      "options": [
+        "Import getRecord in the test and call getRecord.emit(mockData)",
+        "Call Test.setMock(getRecord, mockData)",
+        "Assign the data to el.record directly from the test",
+        "Deploy sample records to an org and run the test there"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "sfdx-lwc-jest supplies test wire adapters. Calling emit() on the imported adapter pushes mock data into the component's wired property or function.",
+      "wrong": [
+        "",
+        "Test.setMock is an Apex method.",
+        "Wired properties are private to the component and not settable from outside.",
+        "Jest tests don't use org data."
+      ],
+      "source": "LWC Developer Guide: Test Wire Service"
+    },
+    {
+      "id": "test-q26",
+      "lesson": "test-6",
+      "difficulty": 3,
+      "q": "A component calls the Apex method AccountController.getAccounts imperatively. Which two steps let a Jest test control its result? (Choose 2)",
+      "options": [
+        "Deploy the Apex class and run the Jest test against the org",
+        "Call Test.setMock inside the Jest test file",
+        "Use jest.mock on '@salesforce/apex/AccountController.getAccounts' with { virtual: true }, returning { default: jest.fn() }",
+        "Register the method as a wire adapter with createLdsTestWireAdapter",
+        "Use mockResolvedValue or mockRejectedValue on the mocked function to simulate success or an error"
+      ],
+      "answer": [
+        2,
+        4
+      ],
+      "explain": "Apex imports are mocked as virtual modules whose default export is a jest.fn(); the test then sets its resolved or rejected value.",
+      "wrong": [
+        "Jest tests don't call real Apex.",
+        "Test.setMock is Apex, not JavaScript.",
+        "",
+        "Imperative calls aren't wire adapters, and that helper is deprecated.",
+        ""
+      ],
+      "source": "LWC Developer Guide: Mock Apex Methods in Jest Tests"
+    },
+    {
+      "id": "test-q27",
+      "lesson": "test-6",
+      "difficulty": 2,
+      "q": "A Visualforce page uses an extension of the Account standard controller and reads the id URL parameter. How should the test set up the controller?",
+      "options": [
+        "Construct the extension with a null controller and set the id with a static variable",
+        "Use SeeAllData=true and open the page URL with PageReference.getContent()",
+        "Call the extension's constructor from an @future method",
+        "Call Test.setCurrentPage, put the id into ApexPages.currentPage().getParameters(), then pass a new ApexPages.StandardController(acc) to the extension"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "Test.setCurrentPage plus page parameters recreate the request context, and a StandardController wraps the test record for the extension.",
+      "wrong": [
+        "The extension needs a real StandardController.",
+        "getContent can't be used this way for controller testing, and tests should create their own data.",
+        "Async context is not needed.",
+        ""
+      ],
+      "source": "Visualforce Developer Guide: Testing Custom Controllers and Controller Extensions"
+    },
+    {
+      "id": "test-q28",
+      "lesson": "test-7",
+      "difficulty": 2,
+      "q": "The Apex Code log category is set to DEBUG. A statement System.debug(LoggingLevel.FINE, msg) does not appear in the log. Why?",
+      "options": [
+        "FINE is more verbose than DEBUG, so Apex Code must be set to FINE, FINER or FINEST",
+        "System.debug only logs messages at ERROR level by default",
+        "FINE messages are only shown in the Apex Replay Debugger",
+        "The Profiling category must be set to FINE"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "A debug statement appears only when the category level is at least as verbose as the statement level. FINE sits below DEBUG in the order.",
+      "wrong": [
+        "",
+        "Without a level argument, System.debug uses DEBUG.",
+        "Replay Debugger reads the same log; it can't show missing lines.",
+        "Apex Code controls System.debug output."
+      ],
+      "source": "Salesforce Help: Debug Log Levels"
+    },
+    {
+      "id": "test-q29",
+      "lesson": "test-7",
+      "difficulty": 3,
+      "q": "Debug logs for a transaction hit the size limit because a utility class writes thousands of FINEST lines. The developer still needs full detail from OrderService. What should they do?",
+      "options": [
+        "Delete the System.debug statements from the utility class in production",
+        "Set the user trace flag to NONE for all categories",
+        "Add a class-level trace flag on the utility class with a debug level that sets Apex Code to ERROR",
+        "Enable Event Monitoring for Apex execution"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "Class and trigger trace flags override the log levels for that code, so the noisy class can be muted while the user's trace flag keeps full detail elsewhere.",
+      "wrong": [
+        "Editing production code just to fix logging is risky and unnecessary.",
+        "That would hide OrderService output too.",
+        "",
+        "Event Monitoring doesn't control debug log verbosity."
+      ],
+      "source": "Salesforce Help: Set Up Debug Logging (Trace Flags)"
+    },
+    {
+      "id": "test-q30",
+      "lesson": "test-7",
+      "difficulty": 2,
+      "q": "A bug only happens in production. The org has no Apex Interactive Debugger sessions. The developer wants to step through the code and inspect variable values. What should they use?",
+      "options": [
+        "Developer Console Query Editor",
+        "Apex Replay Debugger in VS Code, using a debug log captured with Apex Code at FINEST",
+        "Test.startTest() in Anonymous Apex",
+        "A change set with extra System.debug statements"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "The Apex Replay Debugger replays a captured debug log, offering breakpoints, variables and call stacks without a live debugging session.",
+      "wrong": [
+        "The Query Editor runs SOQL; it doesn't step through code.",
+        "",
+        "startTest is only for test methods.",
+        "This changes production code and still gives no stepping."
+      ],
+      "source": "Salesforce Extensions for VS Code: Apex Replay Debugger"
+    },
+    {
+      "id": "test-q31",
+      "lesson": "test-7",
+      "difficulty": 3,
+      "q": "A developer needs to see the heap contents and variable values at a specific line in a deployed class without changing its code. Which two options work? (Choose 2)",
+      "options": [
+        "Set a checkpoint on the line in the Developer Console, run the code, and inspect it in the Checkpoints tab",
+        "Add System.debug statements and deploy them to production",
+        "Use the Apex Replay Debugger with checkpoints and breakpoints on a captured log",
+        "Re-run the test with @isTest(SeeAllData=true)",
+        "Call Limits.getHeapSize() from Anonymous Apex"
+      ],
+      "answer": [
+        0,
+        2
+      ],
+      "explain": "Developer Console checkpoints (up to 5) and Replay Debugger checkpoints both capture heap state at a line without code changes.",
+      "wrong": [
+        "",
+        "That requires a code change and a deployment.",
+        "",
+        "Data visibility doesn't reveal variable state.",
+        "It returns a number, not the variable contents at that line."
+      ],
+      "source": "Salesforce Help: Set Checkpoints in Apex Code"
+    },
+    {
+      "id": "test-q32",
+      "lesson": "test-7",
+      "difficulty": 1,
+      "q": "A developer wants code to check, at runtime, how many SOQL queries remain before the limit. Which approach is correct?",
+      "options": [
+        "Read the SOQL count from the debug log header",
+        "Call System.getQueryCount()",
+        "Use Test.getQueries() in production code",
+        "Compare Limits.getQueries() with Limits.getLimitQueries()"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "Limits.getQueries() returns queries used so far and Limits.getLimitQueries() returns the maximum for the context.",
+      "wrong": [
+        "Code can't read its own debug log.",
+        "That method doesn't exist.",
+        "That method doesn't exist.",
+        ""
+      ],
+      "source": "Apex Reference Guide: Limits Class"
+    },
+    {
+      "id": "test-q33",
+      "lesson": "test-8",
+      "difficulty": 1,
+      "q": "An Apex class must be removed from production. The team usually deploys with change sets. What should they use?",
+      "options": [
+        "An outbound change set that excludes the class",
+        "A Metadata API deployment with destructiveChanges.xml (e.g. via sf CLI)",
+        "Delete the class in Setup in production",
+        "Rename the class in a sandbox and deploy the renamed class"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "Change sets can't delete components, and Apex can't be edited directly in production. A destructive changes manifest deployed via the Metadata API removes it.",
+      "wrong": [
+        "Leaving a class out of a change set doesn't delete it.",
+        "",
+        "Production doesn't allow Apex edits or deletes in Setup.",
+        "That just adds a second class."
+      ],
+      "source": "Metadata API Developer Guide: Deleting Components from an Organization"
+    },
+    {
+      "id": "test-q34",
+      "lesson": "test-8",
+      "difficulty": 2,
+      "q": "A team wants each developer to work in a short-lived org built from the Git repo, with automatic tracking of local and org changes. What should they use?",
+      "options": [
+        "Scratch orgs created from a Dev Hub",
+        "One shared Full sandbox",
+        "Change sets between Developer sandboxes",
+        "A Partial Copy sandbox per developer"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "Scratch orgs are disposable, source-driven orgs with source tracking, created from a Dev Hub.",
+      "wrong": [
+        "",
+        "A shared Full sandbox is slow to refresh and not per-feature.",
+        "Change sets don't track source or use Git.",
+        "Partial Copy sandboxes are for testing with sample data, refresh only every 5 days, and are a poor fit per feature."
+      ],
+      "source": "Salesforce DX Developer Guide: Scratch Orgs"
+    },
+    {
+      "id": "test-q35",
+      "lesson": "test-8",
+      "difficulty": 2,
+      "q": "QA needs an environment with all production metadata plus a representative sample of Accounts and Opportunities chosen by a template. It should be refreshable about weekly. Which sandbox fits?",
+      "options": [
+        "Developer",
+        "Developer Pro",
+        "Partial Copy",
+        "Full"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "Partial Copy sandboxes include metadata plus data selected by a sandbox template and can be refreshed every 5 days.",
+      "wrong": [
+        "Developer sandboxes copy no production data.",
+        "Developer Pro also copies no production data.",
+        "",
+        "Full copies all data and only refreshes every 29 days."
+      ],
+      "source": "Salesforce Help: Sandbox Types and Templates"
+    },
+    {
+      "id": "test-q36",
+      "lesson": "test-8",
+      "difficulty": 3,
+      "q": "Which two statements about change sets are true? (Choose 2)",
+      "options": [
+        "They can move metadata between any two Salesforce orgs",
+        "The target org must authorize a deployment connection from the source org",
+        "They can delete components in the target org",
+        "They can't delete components; destructive changes need the Metadata API",
+        "They automatically add every dependent component"
+      ],
+      "answer": [
+        1,
+        3
+      ],
+      "explain": "Change sets only work between orgs linked to the same production org, need a deployment connection, and only add or update components.",
+      "wrong": [
+        "Only orgs affiliated with the same production org.",
+        "",
+        "Deletion isn't supported.",
+        "",
+        "You must add dependencies yourself (there is a \"View/Add Dependencies\" helper)."
+      ],
+      "source": "Salesforce Help: Change Sets"
+    },
+    {
+      "id": "test-q37",
+      "lesson": "test-8",
+      "difficulty": 3,
+      "q": "A CI job creates an unlocked package version and then runs sf package version promote, which fails. Tests pass locally. What is the most likely cause?",
+      "options": [
+        "Unlocked packages can't contain Apex",
+        "The package has no namespace",
+        "The Dev Hub must be a sandbox",
+        "The version was created without --code-coverage, or its coverage is below 75%"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "To promote a package version to released, Apex code coverage must be computed during version creation and be at least 75%.",
+      "wrong": [
+        "Unlocked packages can include Apex.",
+        "Unlocked packages can be created without a namespace.",
+        "A Dev Hub is a production or Developer Edition org, not a sandbox.",
+        ""
+      ],
+      "source": "Salesforce DX Developer Guide: Release an Unlocked Package"
+    },
+    {
+      "id": "test-q38",
+      "lesson": "test-9",
+      "difficulty": 1,
+      "q": "A deployment to production includes Apex classes, and no test level is specified. Which tests run by default?",
+      "options": [
+        "All local tests (RunLocalTests)",
+        "No tests (NoTestRun)",
+        "All tests including managed packages (RunAllTestsInOrg)",
+        "Only tests named like the deployed classes"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "For production deployments that contain Apex, the default is to run all local tests, excluding managed-package tests.",
+      "wrong": [
+        "",
+        "NoTestRun is the default for non-production orgs.",
+        "Managed-package tests aren't included by default.",
+        "There is no name-matching test level."
+      ],
+      "source": "Metadata API Developer Guide: Running Tests in a Deployment"
+    },
+    {
+      "id": "test-q39",
+      "lesson": "test-9",
+      "difficulty": 3,
+      "q": "A developer deploys ClassA and ClassB to production with RunSpecifiedTests and two test classes. ClassA reaches 90% coverage, ClassB 60%. Org-wide coverage would be 85%. What happens?",
+      "options": [
+        "It succeeds because org-wide coverage is above 75%",
+        "It succeeds because RunSpecifiedTests skips coverage checks",
+        "It fails because each deployed class needs 75% coverage from the specified tests",
+        "It succeeds, but ClassB is deployed as inactive"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "With RunSpecifiedTests, every class and trigger in the deployment must individually reach 75% coverage from the tests you list.",
+      "wrong": [
+        "Org-wide coverage isn't the measure for RunSpecifiedTests.",
+        "Coverage is still checked, per component.",
+        "",
+        "Apex classes have no inactive state."
+      ],
+      "source": "Metadata API Developer Guide: Running a Subset of Tests in a Deployment"
+    },
+    {
+      "id": "test-q40",
+      "lesson": "test-9",
+      "difficulty": 2,
+      "q": "A release manager validated a production deployment on Monday and wants to deploy it on Thursday without re-running tests. Which two conditions must be met for quick deploy? (Choose 2)",
+      "options": [
+        "The validation succeeded within the last 10 days",
+        "Apex tests passed and the coverage requirements were met during validation",
+        "The validation used NoTestRun",
+        "The validation targeted a sandbox instead of production",
+        "All deployed classes were created by the same user"
+      ],
+      "answer": [
+        0,
+        1
+      ],
+      "explain": "Quick deploy reuses a successful validation run against the same target org within 10 days in which tests passed and coverage was met.",
+      "wrong": [
+        "",
+        "",
+        "Without running tests, there's nothing to reuse for Apex.",
+        "The validation must be against the org you deploy to.",
+        "Authorship doesn't matter."
+      ],
+      "source": "Salesforce Help: Quick Deploy"
+    }
+  ]
+}
