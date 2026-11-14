@@ -123,22 +123,23 @@ function ExamRun({ run, onSubmit, onQuit }) {
 
   return (
     <main className="screen focus" id="main">
+      <h1 className="sr-only">Mock exam</h1>
       <div className="quiz-top">
         <button className="icon-btn" onClick={() => { if (confirm('Leave this mock exam? Progress in it will be lost.')) onQuit(); }} aria-label="Quit exam">✕</button>
         <div className="bar" role="progressbar" aria-label="Answered" aria-valuemin={0} aria-valuemax={questions.length} aria-valuenow={answered}>
           <span style={{ width: `${Math.max(2, (answered / questions.length) * 100)}%` }} />
         </div>
-        <span className="timer-pill" role="timer" aria-label={`${mm} minutes left`} style={low ? { background: 'var(--incorrect-bg)' } : undefined}>
-          ⏱ {mm}:{String(left % 60).padStart(2, '0')}
+        <span className="timer-pill" role="timer" style={low ? { background: 'var(--incorrect-bg)' } : undefined}>
+          <span aria-hidden="true">⏱</span><span className="sr-only">Time left </span> {mm}:{String(left % 60).padStart(2, '0')}
         </span>
         <ParkIt />
       </div>
       <div className="spread">
-        <button className="chip" style={{ border: 0, minHeight: 40 }} onClick={() => setGrid(true)} aria-label="Open question map">
-          Q {i + 1}/{questions.length} ▾
+        <button className="chip" style={{ border: 0, minHeight: 44 }} onClick={() => setGrid(true)} aria-haspopup="dialog">
+          Q {i + 1}/{questions.length}<span className="sr-only">, open question map</span> <span aria-hidden="true">▾</span>
         </button>
         <button
-          className="chip" style={{ border: 0, minHeight: 40, background: flags[q.id] ? 'var(--gold)' : undefined, color: flags[q.id] ? 'var(--on-gold)' : undefined }}
+          className="chip" style={{ border: 0, minHeight: 44, background: flags[q.id] ? 'var(--gold)' : undefined, color: flags[q.id] ? 'var(--on-gold)' : undefined }}
           aria-pressed={!!flags[q.id]} onClick={() => { sfx.tap(); setFlags((f) => ({ ...f, [q.id]: !f[q.id] })); }}
         >🚩 {flags[q.id] ? 'Flagged' : 'Flag'}</button>
       </div>

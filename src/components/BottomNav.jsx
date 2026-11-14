@@ -24,7 +24,7 @@ export function BottomNav({ path, dueCards }) {
             {on && <motion.span layoutId="nav-pill" className="nav-pill" transition={{ type: 'spring', stiffness: 500, damping: 35 }} />}
             <span className="nav-icon" aria-hidden="true">{icon}</span>
             <span>{label}</span>
-            {to === '/cards' && dueCards > 0 && <span className="nav-badge" aria-label={`${dueCards} due`}>{dueCards > 99 ? '99+' : dueCards}</span>}
+            {to === '/cards' && dueCards > 0 && <span className="nav-badge"><span aria-hidden="true">{dueCards > 99 ? '99+' : dueCards}</span><span className="sr-only">, {dueCards} due</span></span>}
           </a>
         );
       })}

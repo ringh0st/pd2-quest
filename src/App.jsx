@@ -88,7 +88,7 @@ export default function App() {
   return (
     <MotionConfig reducedMotion={reduced ? 'always' : 'never'}>
       <FeedbackProvider>
-        <a href="#main" className="sr-only">Skip to content</a>
+        <a href="#main" className="sr-only skip-link">Skip to content</a>
         <div className="app">
           <Screen route={route} />
         </div>

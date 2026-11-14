@@ -75,9 +75,11 @@ export function Sprint({ query }) {
   };
 
   const timer = minutes ? (
-    <button className="timer-pill" onClick={() => setPaused((p) => !p)} aria-label={`${paused ? 'Resume' : 'Pause'} focus timer, ${Math.floor(left / 60)} minutes ${left % 60} seconds left`}>
+    <button className="timer-pill" onClick={() => setPaused((p) => !p)} aria-pressed={paused}>
       <span aria-hidden="true">{paused ? '⏸' : left === 0 ? '✅' : '⏱'}</span>
+      <span className="sr-only">Pause focus timer, </span>
       {Math.floor(left / 60)}:{String(left % 60).padStart(2, '0')}
+      <span className="sr-only"> left</span>
     </button>
   ) : null;
 
@@ -113,6 +115,7 @@ export function Sprint({ query }) {
 
   return (
     <main className="screen focus" id="main">
+      <h1 className="sr-only">Practice sprint, round {round.n}</h1>
       {sec && <p className="small muted center" style={{ fontWeight: 700 }}>{sec.emoji} {sec.title} practice</p>}
       <PracticeRunner key={round.n} questions={round.questions} onExit={() => go('/')} onDone={done} topRight={timer} />
     </main>

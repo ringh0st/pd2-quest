@@ -35,7 +35,7 @@ export function Me() {
       </div>
 
       <section className="hero row" style={{ gap: 16 }} aria-label="Level">
-        <ProgressRing value={lv.progress} size={96} stroke={11} color="var(--gold)" label={`Level ${lv.level}, ${Math.round(lv.progress * 100)}% to next`}>
+        <ProgressRing value={lv.progress} size={96} stroke={11} color="var(--gold-meter)" label={`Level ${lv.level}, ${Math.round(lv.progress * 100)}% to next`}>
           <div><div style={{ fontSize: 12, fontWeight: 700 }} className="muted">LEVEL</div><div style={{ fontSize: 30, fontWeight: 700 }}>{lv.level}</div></div>
         </ProgressRing>
         <div className="stack-s grow">

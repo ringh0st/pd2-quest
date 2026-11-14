@@ -57,7 +57,7 @@ export function Lesson({ id }) {
   if (phase === 'check') {
     return (
       <main className="screen focus" id="main">
-        <p className="small muted center" style={{ fontWeight: 700 }}>Quick check · {checks.length} questions</p>
+        <h1 className="small muted center" style={{ fontSize: 'var(--fs-small)' }}>Quick check · {checks.length} questions</h1>
         <PracticeRunner questions={checks} requeue={false} onExit={() => back(`/section/${sec.id}`)} onDone={finish} />
       </main>
     );
@@ -91,7 +91,7 @@ export function Lesson({ id }) {
         <div className="bar" role="progressbar" aria-label="Lesson progress" aria-valuemin={0} aria-valuemax={cards.length} aria-valuenow={i + 1}>
           <span style={{ width: `${((i + 1) / (cards.length + 1)) * 100}%` }} />
         </div>
-        <span className="chip" aria-label={`Card ${i + 1} of ${cards.length}`}>{i + 1}/{cards.length}</span>
+        <span className="chip"><span className="sr-only">Card </span>{i + 1}/{cards.length}</span>
         <ParkIt />
       </div>
       <div>
@@ -126,7 +126,7 @@ export function Lesson({ id }) {
       <div className="dots" aria-hidden="true">{cards.map((_, k) => <span key={k} className={k === i ? 'on' : ''} />)}</div>
       <p className="small muted center">Swipe or tap the buttons</p>
       <div className="sticky-actions" style={{ gridTemplateColumns: '1fr 2fr' }}>
-        <button className="btn" onClick={() => move(-1)} disabled={i === 0} aria-label="Previous card">← Back</button>
+        <button className="btn" onClick={() => move(-1)} disabled={i === 0}><span aria-hidden="true">←</span> Back</button>
         <button className="btn primary" onClick={() => move(1)}>{i + 1 >= cards.length ? (checks.length ? 'Quick check ⚡' : 'Finish 🎉') : 'Next →'}</button>
       </div>
     </main>

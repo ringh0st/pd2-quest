@@ -1,4 +1,4 @@
-// One question: options as toggle buttons (radio-like for single answer, checkbox-like for "Choose N").
+// One question: options are radio buttons (single answer) or checkboxes ("Choose N"), built on <button> for the big tap targets.
 import { motion } from 'motion/react';
 import { CodeBlock } from './CodeBlock.jsx';
 import { Rich } from '../lib/rich.jsx';
@@ -10,6 +10,17 @@ const LETTERS = 'ABCDEF';
 
 export function cleanQuestion(text) {
   return String(text).replace(/\s*\((choose|select) (\d|two|three)\)\s*$/i, '').trim();
+}
+
+// Arrow keys move between options like a native radio/checkbox group (Tab still works too).
+function arrowNav(e) {
+  if (!['ArrowDown', 'ArrowUp', 'ArrowRight', 'ArrowLeft'].includes(e.key)) return;
+  const opts = [...e.currentTarget.querySelectorAll('.option:not(:disabled)')];
+  const k = opts.indexOf(document.activeElement);
+  if (k < 0) return;
+  e.preventDefault();
+  const d = e.key === 'ArrowDown' || e.key === 'ArrowRight' ? 1 : -1;
+  opts[(k + d + opts.length) % opts.length].focus();
 }
 
 export function QuestionView({ question, chosen, onToggle, revealed, nudge }) {
@@ -24,8 +35,9 @@ export function QuestionView({ question, chosen, onToggle, revealed, nudge }) {
       {question.code && <CodeBlock code={question.code} lang={question.lang} />}
       <motion.div
         className="options"
-        role="group"
+        role={multi ? 'group' : 'radiogroup'}
         aria-labelledby={`q-${question.id}`}
+        onKeyDown={arrowNav}
         animate={nudge && !reduced ? { x: [0, -6, 6, -6, 6, 0] } : { x: 0 }}
         transition={{ duration: 0.3 }}
       >
@@ -43,7 +55,8 @@ export function QuestionView({ question, chosen, onToggle, revealed, nudge }) {
               key={i}
               type="button"
               className={cls}
-              aria-pressed={isChosen}
+              role={multi ? 'checkbox' : 'radio'}
+              aria-checked={isChosen}
               disabled={revealed}
               onClick={() => { sfx.tap(); haptic('light'); onToggle(i, multi); }}
               initial={reduced ? false : { opacity: 0, y: 12 }}

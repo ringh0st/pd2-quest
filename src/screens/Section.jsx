@@ -22,7 +22,7 @@ export function Section({ id }) {
       </div>
       <div className="card stack-s">
         <p>{sec.summary}</p>
-        <div className="row small muted"><span className="chip">{sec.weight}% of exam</span><span className="chip">{m}% mastered</span><span className="chip">{sec.questions.length} questions</span></div>
+        <div className="row wrap small muted" style={{ gap: 8 }}><span className="chip">{sec.weight}% of exam</span><span className="chip">{m}% mastered</span><span className="chip">{sec.questions.length} questions</span></div>
       </div>
       <div className="row">
         <a className="btn primary grow" href={`#/sprint?section=${sec.id}`} onClick={() => sfx.tap()}>⚡ Practice</a>

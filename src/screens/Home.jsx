@@ -41,20 +41,22 @@ export function Home() {
 
   return (
     <main className="screen" id="main">
-      <motion.header className="spread" {...enter(0)}>
-        <div>
+      <motion.header className="spread wrap" {...enter(0)}>
+        <div style={{ flex: '1 1 160px' }}>
           <p className="muted small" style={{ fontWeight: 700 }}>{greeting()}{s.name ? `, ${s.name}` : ''}</p>
           <h1>Let’s get you PD2 ready</h1>
         </div>
         <div className="row" style={{ gap: 8 }}>
         <ParkIt />
-        <button className="chip" style={{ border: 0, minHeight: 44, fontSize: 18 }} onClick={tap('/me')} aria-label={`${streak} day streak, ${s.streak.freezes} freezes. Open profile`}>
+        <button className="chip" style={{ border: 0, minHeight: 44, fontSize: 18 }} onClick={tap('/me')}>
+          <span className="sr-only">Streak: </span>
           <motion.span
             aria-hidden="true"
             animate={reduced || !streak || s.settings.calm ? {} : { scale: [1, 1.12, 1], rotate: [0, -4, 4, 0] }}
             transition={{ duration: 1.6, repeat: 1 }}
           >🔥</motion.span>
           <CountUp value={streak} />
+          <span className="sr-only"> days, {s.streak.freezes} freezes. Open profile</span>
           {s.streak.freezes > 0 && <span aria-hidden="true" style={{ fontSize: 14 }}>🧊{s.streak.freezes}</span>}
         </button>
         </div>
@@ -62,14 +64,14 @@ export function Home() {
 
       <motion.section className="hero stack" aria-label="Today" {...enter(1)}>
         <div className="row" style={{ gap: 16 }}>
-          <ProgressRing value={goalP} size={92} stroke={11} color={goalP >= 1 ? 'var(--gold)' : 'var(--primary)'} label={`Daily goal ${today.xp} of ${s.dailyGoal} XP`}>
+          <ProgressRing value={goalP} size={92} stroke={11} color={goalP >= 1 ? 'var(--gold-meter)' : 'var(--primary)'} label={`Daily goal ${today.xp} of ${s.dailyGoal} XP`}>
             <div>
               <div style={{ fontSize: 22, fontWeight: 700 }}>{goalP >= 1 ? '🎯' : <CountUp value={today.xp} />}</div>
               <div className="small muted" style={{ fontSize: 12 }}>/ {s.dailyGoal} XP</div>
             </div>
           </ProgressRing>
           <div className="grow stack-s">
-            <div className="spread"><strong>Level {lv.level}</strong><span className="small muted">{lv.into}/{lv.span} XP</span></div>
+            <div className="spread wrap" style={{ columnGap: 8, rowGap: 0 }}><strong>Level {lv.level}</strong><span className="small muted">{lv.into}/{lv.span} XP</span></div>
             <div className="bar gold" role="progressbar" aria-label="Level progress" aria-valuenow={Math.round(lv.progress * 100)} aria-valuemin={0} aria-valuemax={100}>
               <span style={{ width: `${Math.max(3, lv.progress * 100)}%` }} />
             </div>
@@ -102,7 +104,7 @@ export function Home() {
         </a>
       </motion.div>
 
-      <motion.a className="card link stack-s" href="#/me" {...enter(3)} aria-label={`Exam readiness ${ready} percent`}>
+      <motion.a className="card link stack-s" href="#/me" {...enter(3)}>
         <div className="spread">
           <strong>🎓 Exam readiness</strong>
           <span style={{ fontWeight: 700, fontSize: 20 }}><CountUp value={ready} />%</span>

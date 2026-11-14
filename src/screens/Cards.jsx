@@ -98,6 +98,7 @@ export function Cards({ query }) {
 
   return (
     <main className="screen focus" id="main">
+      <h1 className="sr-only">Flashcards</h1>
       <div className="quiz-top">
         <button className="icon-btn" onClick={() => setDeck(null)} aria-label="Leave deck">✕</button>
         <div className="bar" role="progressbar" aria-label="Deck progress" aria-valuemin={0} aria-valuemax={deck.length} aria-valuenow={i}>
@@ -116,19 +117,18 @@ export function Cards({ query }) {
         >
           <motion.button
             className="flip-card" onClick={flip}
-            aria-label={flipped ? `Answer: ${card.back}. Tap to see the question again` : `Question: ${card.front}. Tap to reveal the answer`}
             animate={reduced ? {} : { rotateY: flipped ? 180 : 0 }}
             transition={{ type: 'spring', stiffness: 260, damping: 22 }}
           >
             {(!reduced || !flipped) && (
-              <div className="flip-face front" aria-hidden="true">
+              <div className="flip-face front" aria-hidden={flipped}>
                 <span className="small muted" style={{ fontWeight: 700 }}>QUESTION</span>
                 <strong><Rich text={card.front} /></strong>
                 <span className="small muted">Tap to flip ↻</span>
               </div>
             )}
             {(!reduced || flipped) && (
-              <div className="flip-face back" aria-hidden="true">
+              <div className="flip-face back" aria-hidden={!flipped}>
                 <span className="small muted" style={{ fontWeight: 700 }}>ANSWER</span>
                 <p><Rich text={card.back} /></p>
               </div>
