@@ -7,7 +7,7 @@ export function Resources() {
   return (
     <main className="screen" id="main">
       <div className="topbar">
-        <button className="icon-btn" onClick={() => back('/learn')} aria-label="Back">←</button>
+        <button className="icon-btn" onClick={() => back('/map')} aria-label="Back">←</button>
         <h1 className="grow">📚 Free resources</h1>
       </div>
       <p className="muted small">Official, free Salesforce material. Opens in your browser. Exam facts last checked {exam.lastVerified}.</p>

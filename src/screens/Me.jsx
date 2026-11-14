@@ -8,6 +8,10 @@ import { totalLessons } from '../state/selectors.js';
 import { ProgressRing } from '../components/ProgressRing.jsx';
 import { CountUp } from '../components/CountUp.jsx';
 import { sfx } from '../audio/sfx.js';
+import { BADGES } from '../game/badges.js';
+import { totalStars } from '../game/worlds.js';
+import { Zap } from '../components/game/Zap.jsx';
+import { CoinChip } from '../components/game/CoinChip.jsx';
 
 function lastDays(n) {
   const out = [];
@@ -41,7 +45,9 @@ export function Me() {
         <div className="stack-s grow">
           <strong style={{ fontSize: 19 }}>{rankFor(lv.level)}</strong>
           <span className="muted small"><CountUp value={s.xp} /> XP total · {lv.span - lv.into} XP to level {lv.level + 1}</span>
+          <div className="row" style={{ gap: 8 }}><span className="chip">⭐ {totalStars(s.stars)}</span><CoinChip /></div>
         </div>
+        <Zap size={64} mood="happy" />
       </section>
 
       <div className="stat-row">
@@ -72,13 +78,30 @@ export function Me() {
         {sections.map((sec) => {
           const m = Math.round(sectionMastery(sec, s.items) * 100);
           return (
-            <a key={sec.id} href={`#/section/${sec.id}`} className="stack-s" style={{ color: 'inherit', textDecoration: 'none' }}>
+            <a key={sec.id} href={`#/world/${sec.id}`} className="stack-s" style={{ color: 'inherit', textDecoration: 'none' }}>
               <div className="spread small"><span>{sec.emoji} {sec.title} <span className="muted">({sec.weight}%)</span></span><strong>{m}%</strong></div>
               <div className="bar"><span style={{ width: `${Math.max(2, m)}%`, background: sec.accent }} /></div>
             </a>
           );
         })}
         <p className="small muted">Mastery grows when you answer questions right across spaced reviews, not just once.</p>
+      </section>
+
+      <section className="card stack" aria-labelledby="badges-title">
+        <div className="spread"><h2 id="badges-title" style={{ fontSize: 'calc(18px * var(--text-scale))' }}>🏅 Badges</h2><span className="chip">{Object.keys(s.badges).length}/{BADGES.length}</span></div>
+        <ul className="list-plain badge-grid">
+          {BADGES.map((b) => {
+            const got = !!s.badges[b.id];
+            return (
+              <li key={b.id} className={`badge ${got ? 'got' : ''}`}>
+                <span className="badge-emoji" aria-hidden="true">{got ? b.emoji : '❔'}</span>
+                <strong className="small">{b.name}</strong>
+                <span className="small muted">{b.about}</span>
+                <span className="sr-only">{got ? 'Earned' : 'Not earned yet'}</span>
+              </li>
+            );
+          })}
+        </ul>
       </section>
 
       <section className="card stack" aria-label="Parked thoughts">
@@ -98,6 +121,7 @@ export function Me() {
       </section>
 
       <div className="row">
+        <a className="btn grow" href="#/shop" onClick={() => sfx.tap()}>🛍️ Shop</a>
         <a className="btn grow" href="#/resources" onClick={() => sfx.tap()}>📚 Resources</a>
         <a className="btn grow" href="#/settings" onClick={() => sfx.tap()}>⚙️ Settings</a>
       </div>

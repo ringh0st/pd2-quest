@@ -3,7 +3,9 @@ import { useEffect, useRef } from 'react';
 
 const COLORS = ['#FF7AB8', '#FFC94D', '#5CD0E8', '#FF9248', '#5EE0B4', '#FFFFFF'];
 
-export function Confetti({ fire, count = 40, origin = { x: 0.5, y: 0.35 } }) {
+const EMOJI = { stars: ['⭐', '🌟', '✨'], bolts: ['⚡', '⚡', '✨'], hearts: ['💖', '💜', '💛', '💗'] };
+
+export function Confetti({ fire, count = 40, origin = { x: 0.5, y: 0.35 }, kind = 'classic' }) {
   const ref = useRef(null);
   useEffect(() => {
     if (!fire) return;
@@ -22,7 +24,8 @@ export function Confetti({ fire, count = 40, origin = { x: 0.5, y: 0.35 } }) {
         r: (5 + Math.random() * 5) * dpr,
         rot: Math.random() * Math.PI, vr: (Math.random() - 0.5) * 0.3,
         c: COLORS[(Math.random() * COLORS.length) | 0],
-        shape: Math.random() < 0.3 ? 'circle' : 'rect',
+        shape: EMOJI[kind] ? 'emoji' : Math.random() < 0.3 ? 'circle' : 'rect',
+        e: EMOJI[kind]?.[(Math.random() * EMOJI[kind].length) | 0],
       };
     });
     const start = performance.now();
@@ -35,7 +38,8 @@ export function Confetti({ fire, count = 40, origin = { x: 0.5, y: 0.35 } }) {
         p.vy += 0.35 * dpr; p.vx *= 0.985; p.vy *= 0.985;
         p.x += p.vx; p.y += p.vy; p.rot += p.vr;
         ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.rot); ctx.fillStyle = p.c;
-        if (p.shape === 'circle') { ctx.beginPath(); ctx.arc(0, 0, p.r / 2, 0, Math.PI * 2); ctx.fill(); }
+        if (p.shape === 'emoji') { ctx.font = `${p.r * 2.4}px serif`; ctx.textAlign = 'center'; ctx.fillText(p.e, 0, p.r); }
+        else if (p.shape === 'circle') { ctx.beginPath(); ctx.arc(0, 0, p.r / 2, 0, Math.PI * 2); ctx.fill(); }
         else ctx.fillRect(-p.r / 2, -p.r / 4, p.r, p.r / 2);
         ctx.restore();
       }
@@ -44,6 +48,6 @@ export function Confetti({ fire, count = 40, origin = { x: 0.5, y: 0.35 } }) {
     };
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
-  }, [fire, count, origin.x, origin.y]);
+  }, [fire, count, origin.x, origin.y, kind]);
   return <canvas ref={ref} className="confetti" aria-hidden="true" style={{ width: '100%', height: '100%' }} />;
 }

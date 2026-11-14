@@ -11,8 +11,12 @@ import { FeedbackProvider } from './components/Feedback.jsx';
 import { CelebrationLayer } from './components/CelebrationLayer.jsx';
 import { BottomNav } from './components/BottomNav.jsx';
 import { Home } from './screens/Home.jsx';
-import { Learn } from './screens/Learn.jsx';
-import { Section } from './screens/Section.jsx';
+import { WorldMap } from './screens/WorldMap.jsx';
+import { World } from './screens/World.jsx';
+import { Play } from './screens/Play.jsx';
+import { Shop } from './screens/Shop.jsx';
+import { Bolt } from './screens/Bolt.jsx';
+import { THEMES } from './game/economy.js';
 import { Lesson } from './screens/Lesson.jsx';
 import { Sprint } from './screens/Sprint.jsx';
 import { Cards } from './screens/Cards.jsx';
@@ -22,7 +26,7 @@ import { Settings } from './screens/Settings.jsx';
 import { Resources } from './screens/Resources.jsx';
 import { Onboarding } from './screens/Onboarding.jsx';
 
-const FOCUS_ROUTES = /^\/(lesson|sprint|welcome)/;
+const FOCUS_ROUTES = /^\/(lesson|sprint|welcome|play|bolt)/;
 
 function useSystemDark() {
   const [dark, setDark] = useState(() => window.matchMedia?.('(prefers-color-scheme: dark)').matches ?? false);
@@ -38,6 +42,7 @@ function useSystemDark() {
 
 function useApplySettings() {
   const st = useStore((s) => s.settings);
+  const accent = useStore((s) => s.equipped?.theme ?? 'magenta');
   const sysDark = useSystemDark();
   const reduced = useReducedMotion();
   useEffect(() => {
@@ -48,10 +53,17 @@ function useApplySettings() {
     root.dataset.font = st.font;
     root.style.setProperty('--text-scale', String(st.textScale));
     root.classList.toggle('reduced', reduced);
+    // Accent theme from the shop (each pair checked for AA contrast in economy.js)
+    const th = THEMES.find((t) => t.id === accent) ?? THEMES[0];
+    const [p, ledge, on, soft] = theme === 'dark' ? th.dark : th.light;
+    root.style.setProperty('--primary', p);
+    root.style.setProperty('--primary-ledge', ledge);
+    root.style.setProperty('--on-primary', on);
+    root.style.setProperty('--primary-soft', soft);
     document.querySelector('meta[name="theme-color"]')?.setAttribute('content', theme === 'dark' ? '#14111C' : '#FFF9F2');
     setSoundEnabled(st.sound);
     setHapticsEnabled(st.haptics);
-  }, [st, sysDark, reduced]);
+  }, [st, sysDark, reduced, accent]);
   return reduced;
 }
 
@@ -59,8 +71,11 @@ function Screen({ route }) {
   const [a, b] = route.parts;
   switch (a) {
     case undefined: return <Home />;
-    case 'learn': return <Learn />;
-    case 'section': return <Section id={b} key={b} />;
+    case 'map': case 'learn': return <WorldMap />;
+    case 'world': case 'section': return <World id={b} key={b} />;
+    case 'play': return <Play id={b} key={b} />;
+    case 'shop': return <Shop />;
+    case 'bolt': return <Bolt />;
     case 'lesson': return <Lesson id={b} key={b} />;
     case 'sprint': return <Sprint query={route.query} key={JSON.stringify(route.query)} />;
     case 'cards': return <Cards query={route.query} key={JSON.stringify(route.query)} />;

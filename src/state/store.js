@@ -4,6 +4,9 @@ import { review, newItem } from '../engine/srs.js';
 import { recordStudy, emptyStreak } from '../engine/streak.js';
 import { dayKey } from '../engine/dates.js';
 import { levelFor } from '../engine/xp.js';
+import { COINS, HELPERS } from '../game/economy.js';
+import { emptyDayStats, questsFor } from '../game/quests.js';
+import { newBadges } from '../game/badges.js';
 
 const KEY = 'pd2quest.v1';
 
@@ -37,6 +40,18 @@ export function initialState() {
     examDate: '',
     parked: [],           // brain-dump notes: { id, text, at }
     settings: { ...DEFAULT_SETTINGS },
+    // ---- game layer ----
+    coins: 0,
+    stars: {},            // level id -> best stars (0..3)
+    owned: [],            // shop item ids
+    equipped: { hat: null, theme: 'magenta', confetti: 'classic' },
+    helpers: { fifty: 2, hint: 2, heart: 1 },
+    unlockedWorlds: [],
+    badges: {},           // badge id -> timestamp
+    day: { key: dayKey(), stats: emptyDayStats(), claimed: [], bonus: false },
+    bolt: { day: '', score: 0 },
+    boltCount: 0,
+    parkedEver: 0,
     events: [],           // transient celebrations queue (not persisted)
   };
 }
@@ -47,7 +62,13 @@ function load() {
     if (!raw) return initialState();
     const saved = JSON.parse(raw);
     const base = initialState();
-    return { ...base, ...saved, settings: { ...base.settings, ...saved.settings }, events: [] };
+    return {
+      ...base, ...saved,
+      settings: { ...base.settings, ...saved.settings },
+      equipped: { ...base.equipped, ...saved.equipped },
+      helpers: { ...base.helpers, ...saved.helpers },
+      events: [],
+    };
   } catch {
     return initialState();
   }
@@ -115,21 +136,135 @@ export function earn(amount, now = Date.now()) {
   });
 }
 
+// ---- daily quest stats ----
+function rollQuestDay(s, now = Date.now()) {
+  const key = dayKey(now);
+  return s.day?.key === key ? s : { ...s, day: { key, stats: emptyDayStats(), claimed: [], bonus: false } };
+}
+
+function bump(s, patch) {
+  const r = rollQuestDay(s);
+  const stats = { ...r.day.stats };
+  for (const [k, v] of Object.entries(patch)) stats[k] = k === 'bestCombo' ? Math.max(stats[k] || 0, v) : (stats[k] || 0) + v;
+  return { ...r, day: { ...r.day, stats } };
+}
+
+export function bumpDay(patch) {
+  setState((s) => bump(s, patch));
+}
+
 export function answerQuestion(id, correct, combo, now = Date.now()) {
-  setState((s) => ({
-    ...s,
-    items: { ...s.items, [id]: review(s.items[id] || newItem(), correct ? 'good' : 'again', now) },
-    today: { ...rollDay(s, now).today, answered: rollDay(s, now).today.answered + 1 },
-    bestCombo: Math.max(s.bestCombo, combo),
-  }));
+  setState((prev) => {
+    const s = bump(prev, { answered: 1, right: correct ? 1 : 0, bestCombo: combo });
+    const r = rollDay(s, now);
+    return {
+      ...s,
+      items: { ...s.items, [id]: review(s.items[id] || newItem(), correct ? 'good' : 'again', now) },
+      today: { ...r.today, answered: r.today.answered + 1 },
+      bestCombo: Math.max(s.bestCombo, combo),
+    };
+  });
 }
 
 export function gradeCard(id, grade, now = Date.now()) {
-  setState((s) => ({ ...s, cards: { ...s.cards, [id]: review(s.cards[id] || newItem(), grade, now) } }));
+  setState((prev) => {
+    const s = bump(prev, { cards: 1 });
+    return { ...s, cards: { ...s.cards, [id]: review(s.cards[id] || newItem(), grade, now) } };
+  });
 }
 
 export function completeLesson(id, now = Date.now()) {
-  setState((s) => ({ ...s, lessons: { ...s.lessons, [id]: s.lessons[id] || now } }));
+  setState((prev) => {
+    const s = prev.lessons[id] ? prev : bump(prev, { lessons: 1 });
+    return { ...s, lessons: { ...s.lessons, [id]: s.lessons[id] || now } };
+  });
+}
+
+// ---- game actions ----
+export function addCoins(n) {
+  if (n) setState((s) => ({ ...s, coins: Math.max(0, s.coins + n) }));
+}
+
+/** Save a level result. Returns { gained, coins } (only new stars pay coins). */
+export function saveStars(levelId, stars) {
+  const before = state.stars[levelId] ?? 0;
+  const gained = Math.max(0, stars - before);
+  const coins = gained * COINS.perNewStar;
+  if (gained) {
+    setState((prev) => {
+      const s = bump(prev, { stars: gained });
+      return { ...s, stars: { ...s.stars, [levelId]: stars }, coins: s.coins + coins };
+    });
+  }
+  return { gained, coins, before };
+}
+
+export function buy(item, kind) {
+  setState((s) => {
+    if (s.coins < item.price) return s;
+    if (kind === 'helper') {
+      const held = s.helpers[item.id] ?? 0;
+      if (held >= HELPERS[item.id].max) return s;
+      return { ...s, coins: s.coins - item.price, helpers: { ...s.helpers, [item.id]: held + 1 } };
+    }
+    if (s.owned.includes(item.id)) return s;
+    return { ...s, coins: s.coins - item.price, owned: [...s.owned, item.id] };
+  });
+}
+
+export function useHelper(id) {
+  if ((state.helpers[id] ?? 0) <= 0) return false;
+  setState((s) => ({ ...s, helpers: { ...s.helpers, [id]: s.helpers[id] - 1 } }));
+  return true;
+}
+
+export function equip(slot, id) {
+  setState((s) => ({ ...s, equipped: { ...s.equipped, [slot]: id } }));
+}
+
+export function unlockWorld(id, price) {
+  setState((s) => (s.coins < price || s.unlockedWorlds.includes(id) ? s : { ...s, coins: s.coins - price, unlockedWorlds: [...s.unlockedWorlds, id] }));
+}
+
+export function claimQuest(quest, reward) {
+  setState((prev) => {
+    const s = rollQuestDay(prev);
+    if (s.day.claimed.includes(quest.id)) return s;
+    const claimed = [...s.day.claimed, quest.id];
+    let coins = s.coins + reward.coins;
+    const events = [...s.events];
+    let bonus = s.day.bonus;
+    if (!bonus && claimed.length >= questsFor(s.day.key).length) {
+      bonus = true;
+      coins += reward.bonus;
+      events.push({ type: 'chest', coins: reward.bonus, title: 'All quests done!' });
+    }
+    return { ...s, coins, events, day: { ...s.day, claimed, bonus } };
+  });
+}
+
+export function finishBolt(score, coins) {
+  setState((prev) => {
+    const s = bump(prev, { bolt: 1 });
+    const first = s.bolt.day !== s.day.key;
+    return {
+      ...s,
+      bolt: { day: s.day.key, score: first ? score : Math.max(score, s.bolt.score) },
+      boltCount: s.boltCount + (first ? 1 : 0),
+      coins: s.coins + (first ? coins : 0),
+    };
+  });
+}
+
+/** Award any newly earned badges (queued as celebrations). */
+export function checkBadges(ctx) {
+  const fresh = newBadges(state, ctx);
+  if (!fresh.length) return;
+  setState((s) => ({
+    ...s,
+    badges: { ...s.badges, ...Object.fromEntries(fresh.map((b) => [b.id, Date.now()])) },
+    events: [...s.events, ...fresh.map((b) => ({ type: 'badge', badge: b }))],
+  }));
 }
 
 export function recordExam(result) {
@@ -151,7 +286,7 @@ export function pushEvent(ev) {
 export function parkThought(text) {
   const t = text.trim();
   if (!t) return;
-  setState((s) => ({ ...s, parked: [{ id: Date.now().toString(36), text: t, at: Date.now() }, ...s.parked].slice(0, 50) }));
+  setState((s) => ({ ...s, parkedEver: s.parkedEver + 1, parked: [{ id: Date.now().toString(36), text: t, at: Date.now() }, ...s.parked].slice(0, 50) }));
 }
 
 export function unparkThought(id) {

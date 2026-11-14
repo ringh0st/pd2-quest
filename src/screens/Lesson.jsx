@@ -2,17 +2,19 @@
 import { useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { lessonById, sectionById, questionById } from '../data/index.js';
-import { completeLesson, earn, getState } from '../state/store.js';
+import { completeLesson, earn, getState, saveStars, checkBadges } from '../state/store.js';
 import { XP } from '../engine/xp.js';
 import { CodeBlock } from '../components/CodeBlock.jsx';
 import { PracticeRunner } from '../components/PracticeRunner.jsx';
 import { Rich } from '../lib/rich.jsx';
-import { go, back } from '../hooks/useRoute.js';
+import { back } from '../hooks/useRoute.js';
 import { useReducedMotion } from '../hooks/useMotionPrefs.js';
-import { useFeedback } from '../components/Feedback.jsx';
 import { sfx } from '../audio/sfx.js';
 import { haptic } from '../audio/haptics.js';
-import { nextLesson } from '../state/selectors.js';
+import { totalLessons } from '../state/selectors.js';
+import { starsFor } from '../game/worlds.js';
+import { nextLevelAfter } from '../state/gameSelectors.js';
+import { WinScreen } from '../components/game/WinScreen.jsx';
 import { ParkIt } from '../components/ParkIt.jsx';
 
 const KIND_LABEL = { text: '', code: 'Code', tip: '💡 Memory hook', trap: '⚠️ Exam trap', list: '' };
@@ -24,7 +26,6 @@ export function Lesson({ id }) {
   const [dir, setDir] = useState(1);
   const [summary, setSummary] = useState(null);
   const reduced = useReducedMotion();
-  const { celebrate } = useFeedback();
 
   if (!lesson) return <main className="screen"><p>Lesson not found.</p></main>;
   const sec = sectionById[lesson.section];
@@ -49,45 +50,40 @@ export function Lesson({ id }) {
     const firstTime = !getState().lessons[lesson.id];
     completeLesson(lesson.id);
     if (firstTime) earn(XP.lessonDone);
-    setSummary({ ...result, firstTime });
+    const stars = starsFor('lesson', { right: result.firstRight ?? 0, total: result.total ?? 0 });
+    const saved = saveStars(lesson.id, stars);
+    checkBadges({ totalLessons: totalLessons() });
+    setSummary({ ...result, firstTime, stars, ...saved });
     setPhase('done');
-    sfx.done(); haptic('success'); celebrate(40);
   };
+  const restart = () => { setI(0); setDir(1); setSummary(null); setPhase('cards'); };
 
   if (phase === 'check') {
     return (
       <main className="screen focus" id="main">
         <h1 className="small muted center" style={{ fontSize: 'var(--fs-small)' }}>Quick check · {checks.length} questions</h1>
-        <PracticeRunner questions={checks} requeue={false} onExit={() => back(`/section/${sec.id}`)} onDone={finish} />
+        <PracticeRunner questions={checks} requeue={false} onExit={() => back(`/world/${sec.id}`)} onDone={finish} />
       </main>
     );
   }
 
   if (phase === 'done') {
-    const nl = nextLesson(getState().lessons);
     return (
-      <main className="screen focus" id="main" style={{ justifyContent: 'center' }}>
-        <motion.div
-          className="celebrate-card" style={{ margin: '0 auto' }}
-          initial={reduced ? { opacity: 0 } : { scale: 0.7, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
-          transition={{ type: 'spring', stiffness: 400, damping: 22 }}
-        >
-          <div className="big-emoji" aria-hidden="true">🏆</div>
-          <h1>Lesson done!</h1>
-          <p className="muted">{lesson.title}</p>
-          {summary?.total > 0 && <p><strong>{summary.firstRight}/{summary.total}</strong> right on first try {summary.firstRight === summary.total ? '🎯' : '· misses come back for review 🌱'}</p>}
-          {summary?.firstTime && <span className="chip gold">+{XP.lessonDone} XP lesson bonus</span>}
-          {nl && <button className="btn primary block" autoFocus onClick={() => go(`/lesson/${nl.id}`)}>Next: {nl.title} →</button>}
-          <button className="btn block" onClick={() => go('/')}>Done for now ✓</button>
-        </motion.div>
-      </main>
+      <WinScreen
+        kind="lesson" title={lesson.title} worldId={sec.id}
+        stars={summary.stars} prevStars={summary.before} coins={summary.coins}
+        xp={(summary.firstTime ? XP.lessonDone : 0) + (summary.xp ?? 0) + 5}
+        detail={summary.total ? `${summary.firstRight}/${summary.total} right on first try${summary.firstRight === summary.total ? ' 🎯' : ' · misses come back for review 🌱'}` : null}
+        next={nextLevelAfter(lesson.id)}
+        onRetry={restart}
+      />
     );
   }
 
   return (
     <main className="screen focus" id="main">
       <div className="quiz-top">
-        <button className="icon-btn" onClick={() => back(`/section/${sec.id}`)} aria-label="Close lesson">✕</button>
+        <button className="icon-btn" onClick={() => back(`/world/${sec.id}`)} aria-label="Close lesson">✕</button>
         <div className="bar" role="progressbar" aria-label="Lesson progress" aria-valuemin={0} aria-valuemax={cards.length} aria-valuenow={i + 1}>
           <span style={{ width: `${((i + 1) / (cards.length + 1)) * 100}%` }} />
         </div>

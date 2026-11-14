@@ -23,7 +23,7 @@ function arrowNav(e) {
   opts[(k + d + opts.length) % opts.length].focus();
 }
 
-export function QuestionView({ question, chosen, onToggle, revealed, nudge }) {
+export function QuestionView({ question, chosen, onToggle, revealed, nudge, hidden = [] }) {
   const reduced = useReducedMotion();
   const multi = question.answer.length > 1;
   const correct = new Set(question.answer);
@@ -43,7 +43,8 @@ export function QuestionView({ question, chosen, onToggle, revealed, nudge }) {
       >
         {question.options.map((opt, i) => {
           const isChosen = chosen.includes(i);
-          let cls = 'option';
+          const gone = hidden.includes(i) && !revealed;
+          let cls = gone ? 'option is-gone' : 'option';
           let mark = '';
           let srState = '';
           if (revealed) {
@@ -57,7 +58,8 @@ export function QuestionView({ question, chosen, onToggle, revealed, nudge }) {
               className={cls}
               role={multi ? 'checkbox' : 'radio'}
               aria-checked={isChosen}
-              disabled={revealed}
+              disabled={revealed || gone}
+              aria-hidden={gone || undefined}
               onClick={() => { sfx.tap(); haptic('light'); onToggle(i, multi); }}
               initial={reduced ? false : { opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}

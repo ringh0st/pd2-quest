@@ -2,6 +2,17 @@
 
 A phone-first study app for the **Salesforce Platform Developer II** exam, designed for people with ADHD, people who get distracted easily, and anyone who learns better with quick wins.
 
+## It's a game ⚡
+
+- **Zap**, your lightning-bolt study buddy: blinks, bounces, cheers your right answers, comforts the misses, tells Apex jokes and wears the hats you buy.
+- **Adventure map with 5 worlds**, one per exam section: 🏯 Sharing Shrine, ⚙️ Async Forge, 🏝️ Pixel Bay, 🐸 Bug Swamp, 🏔️ Turbo Peaks. Each is a winding path of levels over its own scenery.
+- **Levels with a rhythm**: bite-size lesson levels, a 💀 **Hard level** after every 3 lessons (5 tough questions, 3 hearts), and a **Boss** at the end of each world (The Sharing Sphinx, The Recursion Hydra, The Re-render Kraken, The Flaky Test Toad, The Governor), with a health bar, hits and hearts.
+- **1–3 stars** per level, a "NEW BEST!" stamp and replays for ★★★. Worlds open with stars, or early with coins.
+- **🪙 Coins** for new stars, Hard levels, Bosses, daily quests and the Daily Bolt. Spend them in the **shop**: outfits for Zap, accent themes (all AA-contrast checked), confetti styles, and capped helpers (✂️ 50/50, 💡 Hint, ❤️ Extra heart). No real money, ever.
+- **⚡ Daily Bolt**: the same 5 surprise questions for everyone each day. **🎯 Daily quests**: 3 small goals a day, with a bonus chest for all three.
+- **🏅 18 badges** for milestones.
+- Celebrations wait until a question flow ends, so rewards never pile up mid-question.
+
 ## What's inside
 
 - **50 bite-sized lessons** (2–4 min, one idea per card, swipe through) across all 5 exam sections, weighted like the real exam: Advanced Developer Fundamentals 15%, Process Automation, Logic & Integration 27%, User Interface 20%, Testing, Debugging & Deployment 20%, Performance 18%.
@@ -29,7 +40,7 @@ npm install
 npm run dev
 ```
 
-- `npm test`: engine unit tests (SRS, XP, streaks, session building)
+- `npm test`: unit tests for the learning engine (SRS, XP, streaks, sessions) and game rules (levels, stars, shop, quests, badges)
 - `npm run validate`: checks every content file (ids, answer keys, card length)
 - `npm run build`: static site in `dist/`. Every push to `main` deploys to GitHub Pages via `.github/workflows/deploy.yml`.
 
@@ -39,8 +50,9 @@ npm run dev
 src/data/        exam.json (facts, resources, study plan) + one JSON per exam section
 src/engine/      pure logic: srs, xp, streak, mastery, session building (unit tested)
 src/state/       persisted store (localStorage) and selectors
-src/components/  QuestionView, PracticeRunner, Confetti, CelebrationLayer, ParkIt…
-src/screens/     Home, Learn, Section, Lesson, Sprint, Cards, Exam, Me, Settings, Resources, Onboarding
+src/components/  QuestionView, PracticeRunner, Confetti, CelebrationLayer, ParkIt, game/ (Zap, Stars, WinScreen, DailyQuests, CoinChip)
+src/game/        game rules: worlds/levels/stars, coins & shop, quests, badges, mascot lines (unit tested)
+src/screens/     Home, WorldMap, World, Lesson, Play (Hard/Boss), Bolt, Shop, Sprint, Cards, Exam, Me, Settings, Resources, Onboarding
 src/audio/       generated sounds and haptics
 research/        ADHD UX spec, content schema, color audit
 ```

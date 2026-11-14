@@ -12,12 +12,25 @@ import { useFeedback } from './Feedback.jsx';
 import { useReducedMotion } from '../hooks/useMotionPrefs.js';
 import { sectionById } from '../data/index.js';
 import { ParkIt } from './ParkIt.jsx';
+import { useHoldCelebrations } from '../hooks/useFocusMode.js';
+import { Zap } from './game/Zap.jsx';
+import { useStore, useHelper } from '../state/store.js';
+import { fiftyFifty, HELPERS } from '../game/economy.js';
+import { lessonById } from '../data/index.js';
+import { zapSays } from '../game/mascot.js';
 
 const PRAISE = ['Nailed it!', 'Yes!', 'Boom!', 'Correct!', 'Sharp!', 'You got it!', 'Brain on fire!', 'Clean!'];
 const KIND = ['Not quite', 'Close one', 'Almost', 'Good try'];
 const pick = (a) => a[Math.floor(Math.random() * a.length)];
 
-export function PracticeRunner({ questions, onDone, onExit, topRight, requeue = true }) {
+/** Hint text for a question: the lesson's memory hook, else its first text card. */
+function hintFor(q) {
+  const l = lessonById[q.lesson];
+  const card = l?.cards.find((c) => c.type === 'tip') || l?.cards.find((c) => c.type === 'text' && c.body);
+  return card?.body ?? 'Re-read the question: what is the scenario really asking for?';
+}
+
+export function PracticeRunner({ questions, onDone, onExit, topRight, requeue = true, hearts = null, helpers = false, header, onAnswer, shouldStop }) {
   const [queue, setQueue] = useState(() => questions.map((q) => q.id));
   const byId = useMemo(() => Object.fromEntries(questions.map((q) => [q.id, q])), [questions]);
   const [idx, setIdx] = useState(0);
@@ -30,6 +43,12 @@ export function PracticeRunner({ questions, onDone, onExit, topRight, requeue = 
   const [verdict, setVerdict] = useState('');
   const stats = useRef({ right: 0, wrong: 0, xp: 0, bestCombo: 0, firstAnswers: {} });
   const requeued = useRef(new Set());
+  const [heartsLeft, setHeartsLeft] = useState(hearts);
+  const [hidden, setHidden] = useState([]);
+  const [hint, setHint] = useState(null);
+  const [zapLine, setZapLine] = useState('');
+  const held = useStore((st) => st.helpers);
+  useHoldCelebrations(true);
   const { announce, celebrate } = useFeedback();
   const reduced = useReducedMotion();
 
@@ -57,6 +76,9 @@ export function PracticeRunner({ questions, onDone, onExit, topRight, requeue = 
     s.bestCombo = Math.max(s.bestCombo, nextCombo);
 
     setCombo(nextCombo);
+    if (!right && heartsLeft != null) setHeartsLeft((h) => Math.max(0, h - 1));
+    setZapLine(zapSays(right ? (nextCombo >= 3 ? 'combo' : 'correct') : 'wrong'));
+    onAnswer?.(right, nextCombo);
     setRevealed(true);
     setLastRight(right);
     setShowWhy(false);
@@ -81,13 +103,16 @@ export function PracticeRunner({ questions, onDone, onExit, topRight, requeue = 
 
   const next = () => {
     sfx.flip();
-    if (idx + 1 >= queue.length) {
+    const outOfHearts = heartsLeft === 0;
+    if (idx + 1 >= queue.length || outOfHearts || shouldStop?.(stats.current)) {
       const s = stats.current;
       const unique = Object.keys(s.firstAnswers).length;
       const firstRight = Object.values(s.firstAnswers).filter(Boolean).length;
-      onDone({ ...s, total: unique, firstRight });
+      onDone({ ...s, total: unique, firstRight, heartsLeft, failed: outOfHearts });
       return;
     }
+    setHidden([]);
+    setHint(null);
     setIdx(idx + 1);
     setChosen([]);
     setRevealed(false);
@@ -105,14 +130,20 @@ export function PracticeRunner({ questions, onDone, onExit, topRight, requeue = 
         <div className="bar" role="progressbar" aria-label="Session progress" aria-valuemin={0} aria-valuemax={queue.length} aria-valuenow={idx + (revealed ? 1 : 0)}>
           <span style={{ width: `${Math.max(4, progress * 100)}%` }} />
         </div>
-        {topRight ?? <ComboChip combo={combo} reduced={reduced} />}
+        {topRight ?? (heartsLeft != null ? <HeartsChip hearts={heartsLeft} max={hearts} reduced={reduced} /> : <ComboChip combo={combo} reduced={reduced} />)}
         <ParkIt />
       </div>
+      {header?.({ combo, heartsLeft, lastRight, revealed, stats: stats.current })}
       {topRight && <div className="row" style={{ justifyContent: 'space-between' }}>
         <span className="chip">{sec?.emoji} {sec?.title}</span>
         <ComboChip combo={combo} reduced={reduced} />
       </div>}
-      {!topRight && <span className="chip" style={{ justifySelf: 'start' }}>{sec?.emoji} {sec?.title}</span>}
+      {!topRight && !header && (
+        <div className="row" style={{ justifyContent: 'space-between' }}>
+          <span className="chip">{sec?.emoji} {sec?.title}</span>
+          {heartsLeft != null && <ComboChip combo={combo} reduced={reduced} />}
+        </div>
+      )}
 
       <AnimatePresence mode="wait" initial={false}>
         <motion.div
@@ -134,8 +165,30 @@ export function PracticeRunner({ questions, onDone, onExit, topRight, requeue = 
               >+{pop.xp} XP{pop.mult > 1 ? ` ×${pop.mult}` : ''}</motion.div>
             )}
           </AnimatePresence>
-          <QuestionView question={q} chosen={chosen} onToggle={toggle} revealed={revealed} nudge={revealed && lastRight === false} />
+          <QuestionView question={q} chosen={chosen} onToggle={toggle} revealed={revealed} nudge={revealed && lastRight === false} hidden={hidden} />
         </motion.div>
+      </AnimatePresence>
+
+      {helpers && !revealed && (
+        <div className="helper-row" role="group" aria-label="Helpers">
+          {q.answer.length === 1 && (
+            <button
+              className="btn small" disabled={!held.fifty || hidden.length > 0}
+              onClick={() => { if (useHelper('fifty')) { sfx.flip(); haptic('medium'); const h = fiftyFifty(q); setHidden(h); setChosen((c) => c.filter((x) => !h.includes(x))); announce('Two wrong answers removed.'); } }}
+            >{HELPERS.fifty.emoji} 50/50 <span className="helper-count">×{held.fifty ?? 0}</span></button>
+          )}
+          <button
+            className="btn small" disabled={!held.hint || !!hint}
+            onClick={() => { if (useHelper('hint')) { sfx.flip(); haptic('light'); const t = hintFor(q); setHint(t); announce('Hint: ' + t); } }}
+          >{HELPERS.hint.emoji} Hint <span className="helper-count">×{held.hint ?? 0}</span></button>
+        </div>
+      )}
+      <AnimatePresence>
+        {hint && !revealed && (
+          <motion.div className="hint-card" initial={reduced ? { opacity: 0 } : { opacity: 0, y: 10, scale: 0.96 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0 }}>
+            <strong>💡 Hint</strong> <Rich text={hint} />
+          </motion.div>
+        )}
       </AnimatePresence>
 
       <AnimatePresence>
@@ -146,7 +199,10 @@ export function PracticeRunner({ questions, onDone, onExit, topRight, requeue = 
             animate={{ opacity: 1, y: 0 }}
             transition={{ type: 'spring', stiffness: 400, damping: 30 }}
           >
-            <div className="verdict"><span aria-hidden="true">{lastRight ? '✓' : '✗'}</span> {verdict}</div>
+            <div className="verdict">
+              <Zap mood={lastRight ? 'cheer' : 'sad'} size={38} bounce={false} label="" />
+              <span><span aria-hidden="true">{lastRight ? '✓' : '✗'}</span> {verdict}<br /><span className="small muted" style={{ fontWeight: 400 }}>{zapLine}</span></span>
+            </div>
             <p><Rich text={q.explain} /></p>
             {q.wrong?.some(Boolean) && (
               <>
@@ -173,7 +229,7 @@ export function PracticeRunner({ questions, onDone, onExit, topRight, requeue = 
           </button>
         ) : (
           <button className="btn primary block big" onClick={next} autoFocus>
-            {idx + 1 >= queue.length ? 'Finish 🎉' : 'Continue →'}
+            {heartsLeft === 0 ? 'See result' : idx + 1 >= queue.length ? 'Finish 🎉' : 'Continue →'}
           </button>
         )}
       </div>
@@ -195,5 +251,20 @@ function ComboChip({ combo, reduced }) {
       <span aria-hidden="true" style={{ fontSize: 14 + Math.min(combo, 10) }}>🔥</span>
       {combo}{mult > 1 && <small>×{mult}</small>}
     </motion.span>
+  );
+}
+
+function HeartsChip({ hearts, max, reduced }) {
+  return (
+    <span className="chip hearts" role="img" aria-label={`${hearts} of ${max} hearts left`}>
+      {Array.from({ length: max }, (_, i) => (
+        <motion.span
+          key={i + '-' + (i < hearts)} aria-hidden="true"
+          initial={reduced || i < hearts ? false : { scale: 1.6, rotate: -20 }}
+          animate={{ scale: 1, rotate: 0, opacity: i < hearts ? 1 : 0.35, filter: i < hearts ? 'none' : 'grayscale(1)' }}
+          transition={{ type: 'spring', stiffness: 400, damping: 12 }}
+        >{i < hearts ? '❤️' : '🖤'}</motion.span>
+      ))}
+    </span>
   );
 }

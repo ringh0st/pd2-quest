@@ -15,6 +15,7 @@ export function FeedbackProvider({ children }) {
   const reduced = useReducedMotion();
   const calm = useCalm();
   const confettiOn = useStore((s) => s.settings.confetti !== false);
+  const confettiKind = useStore((s) => s.equipped?.confetti ?? 'classic');
   const timer = useRef();
 
   const announce = useCallback((text) => {
@@ -45,7 +46,7 @@ export function FeedbackProvider({ children }) {
           >{toast.text}</motion.div>
         )}
       </AnimatePresence>
-      {burst > 0 && <Confetti fire={burst} count={burstCount} />}
+      {burst > 0 && <Confetti fire={burst} count={burstCount} kind={confettiKind} />}
     </Ctx.Provider>
   );
 }

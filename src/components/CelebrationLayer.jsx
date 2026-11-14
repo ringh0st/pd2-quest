@@ -7,12 +7,16 @@ import { sfx } from '../audio/sfx.js';
 import { haptic } from '../audio/haptics.js';
 import { useFeedback } from './Feedback.jsx';
 import { useReducedMotion } from '../hooks/useMotionPrefs.js';
+import { useIsHolding } from '../hooks/useFocusMode.js';
 
 function content(ev) {
   switch (ev.type) {
     case 'levelUp': return { emoji: '🚀', title: `Level ${ev.level}!`, body: `You're now a ${rankFor(ev.level)}. Your brain just leveled up too.`, big: true };
     case 'goal': return { emoji: '🎯', title: 'Daily goal smashed!', body: 'That was today’s goal. Anything more is bonus XP.', big: true };
-    case 'chest': return { emoji: '🎁', title: `Lucky drop: +${ev.xp} XP`, body: 'Surprise bonus for finishing a round.', big: true };
+    case 'chest': return ev.coins
+      ? { emoji: '🎁', title: ev.title || 'Bonus chest!', body: `+${ev.coins} coins. Treat yourself in the shop.`, big: true }
+      : { emoji: '🎁', title: `Lucky drop: +${ev.xp} XP`, body: 'Surprise bonus for finishing a round.', big: true };
+    case 'badge': return { emoji: ev.badge.emoji, title: `Badge: ${ev.badge.name}`, body: ev.badge.about + '. Find it under Me → Badges.', big: true };
     default: return null;
   }
 }
@@ -26,7 +30,10 @@ const STREAK_TEXT = {
 };
 
 export function CelebrationLayer() {
-  const ev = useStore((s) => s.events[0]);
+  const queued = useStore((s) => s.events[0]);
+  // Hold big moments until the learner is out of a question flow (no reward pile-ups mid-question).
+  const holding = useIsHolding();
+  const ev = holding ? null : queued;
   const { showToast, celebrate, announce } = useFeedback();
   const reduced = useReducedMotion();
   const card = ev && content(ev);
@@ -43,7 +50,14 @@ export function CelebrationLayer() {
     haptic('celebrate');
     celebrate(ev.type === 'levelUp' ? 60 : 40);
     announce(`${card.title} ${card.body}`);
-  }, [ev]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [ev]);
+
+  useEffect(() => {
+    if (!card) return;
+    const onKey = (e) => { if (e.key === 'Escape') shiftEvent(); };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [card]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <AnimatePresence>

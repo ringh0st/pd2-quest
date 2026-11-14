@@ -11,7 +11,7 @@ import { useFeedback } from '../components/Feedback.jsx';
 import { useReducedMotion } from '../hooks/useMotionPrefs.js';
 import { sfx } from '../audio/sfx.js';
 import { haptic } from '../audio/haptics.js';
-import { useFocusMode } from '../hooks/useFocusMode.js';
+import { useFocusMode, useHoldCelebrations } from '../hooks/useFocusMode.js';
 import { ParkIt } from '../components/ParkIt.jsx';
 
 const MODES = [
@@ -24,6 +24,7 @@ export function Exam() {
   const [result, setResult] = useState(null);
   const history = useStore((s) => s.exams);
   useFocusMode(!!run && !result);
+  useHoldCelebrations(!!run && !result);
 
   if (result) return <ExamResult result={result} onClose={() => { setResult(null); setRun(null); }} />;
   if (run) return <ExamRun run={run} onSubmit={setResult} onQuit={() => setRun(null)} />;

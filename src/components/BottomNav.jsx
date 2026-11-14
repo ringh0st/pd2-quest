@@ -4,14 +4,14 @@ import { haptic } from '../audio/haptics.js';
 
 const ITEMS = [
   ['/', '🏠', 'Home'],
-  ['/learn', '🗺️', 'Learn'],
+  ['/map', '🗺️', 'Map'],
   ['/cards', '🃏', 'Cards'],
   ['/exam', '🏁', 'Exam'],
   ['/me', '😎', 'Me'],
 ];
 
 export function BottomNav({ path, dueCards }) {
-  const active = (to) => (to === '/' ? path === '/' : path.startsWith(to) || (to === '/learn' && /^\/(section|lesson)/.test(path)));
+  const active = (to) => (to === '/' ? path === '/' : path.startsWith(to) || (to === '/map' && /^\/(world|lesson|play|learn|section)/.test(path)));
   return (
     <nav className="bottom-nav" aria-label="Main">
       {ITEMS.map(([to, icon, label]) => {
