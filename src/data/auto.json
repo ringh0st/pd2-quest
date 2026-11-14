@@ -1992,6 +1992,1433 @@
         "This deletes the invoice even on success."
       ],
       "source": "Apex Developer Guide: Transaction Control"
+    },
+    {
+      "id": "auto-x1",
+      "lesson": "auto-12",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A support manager wants every Account that had at least one Task created this week. A developer adds this query to a service class. What is the result?",
+      "code": "List<Account> accts = [\n    SELECT Id, Name FROM Account\n    WHERE Id IN (SELECT WhatId FROM Task\n                 WHERE CreatedDate = THIS_WEEK)\n];",
+      "lang": "apex",
+      "options": [
+        "It returns the Accounts, plus any Accounts reached through Tasks on their Opportunities",
+        "It is valid but returns no rows, because WhatId is polymorphic and the subquery must also filter What.Type = 'Account'",
+        "The query is rejected as invalid SOQL, because Task isn't supported as the object of a semi-join subquery",
+        "It is rejected because date literals such as THIS_WEEK can't be used inside a subquery"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "Task, Event, Note, Attachments and ActivityHistory aren't supported in semi-join or anti-join subqueries. Query the Tasks first (filtering What.Type = 'Account'), collect WhatId values into a Set, then query the Accounts.",
+      "wrong": [
+        "Semi-joins match the Id field directly; nothing is reached through Opportunities, and this query isn't valid anyway.",
+        "The problem is the subquery object, not the polymorphic field; a reference-field semi-join is otherwise fine.",
+        "",
+        "Date literals are allowed in subquery WHERE clauses."
+      ],
+      "source": "SOQL and SOSL Reference: Comparison Operators"
+    },
+    {
+      "id": "auto-x2",
+      "lesson": "auto-12",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A developer is reviewing queries written by a junior teammate for a renewal dashboard. Which two queries are valid SOQL? (Choose 2)",
+      "options": [
+        "SELECT Id FROM Contact WHERE AccountId IN (SELECT AccountId FROM Opportunity WHERE IsWon = true)",
+        "SELECT Id FROM Account WHERE Id IN (SELECT ParentId FROM Account WHERE Industry = 'Energy')",
+        "SELECT Id FROM Account WHERE Id IN (SELECT AccountId FROM Opportunity ORDER BY Amount DESC LIMIT 5)",
+        "SELECT Id, (SELECT Id FROM Contacts) FROM Account WHERE Id NOT IN (SELECT AccountId FROM Case WHERE IsClosed = false)",
+        "SELECT Id FROM Contact WHERE Account.Id IN (SELECT AccountId FROM Case)"
+      ],
+      "answer": [
+        0,
+        3
+      ],
+      "explain": "A child-to-child semi-join on a reference field (Contact.AccountId to Opportunity.AccountId) is valid, and an anti-join can sit in the WHERE clause of a query that also has a parent-child subquery in its SELECT.",
+      "wrong": [
+        "",
+        "A semi-join subquery can't query the same object as the main query; use WHERE Parent.Industry instead.",
+        "ORDER BY, LIMIT, COUNT and FOR UPDATE aren't supported in semi-join subqueries.",
+        "",
+        "The left operand of a semi-join can't use a relationship such as Account.Id; it must be a plain ID or reference field."
+      ],
+      "source": "SOQL and SOSL Reference: Comparison Operators"
+    },
+    {
+      "id": "auto-x3",
+      "lesson": "auto-12",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A nightly job emails partner managers. One partner Account has 450 Contacts. The code below sometimes fails on that Account. What is the cause and the fix?",
+      "code": "for (Account acct : [SELECT Id, Name,\n                         (SELECT Id, Email FROM Contacts)\n                     FROM Account WHERE Type = 'Partner']) {\n    List<Contact> cons = acct.Contacts;\n    if (cons.size() > 0) {\n        PartnerMailer.queue(acct, cons);\n    }\n}",
+      "lang": "apex",
+      "options": [
+        "Reading the whole child list (acct.Contacts or its size()) can throw 'Aggregate query has too many rows for direct assignment'; iterate the children with an inner for loop instead",
+        "Subqueries silently return only the first 200 children; add LIMIT 500 to the subquery",
+        "The query exceeds the 50,000 query-row limit; move the logic to Batch Apex",
+        "SOQL for loops can't contain parent-child subqueries; split it into two queries joined with a Map"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "Inside a SOQL for loop, assigning or sizing a large child record set (200 or more) can throw a QueryException. Looping over acct.Contacts with a for loop lets the platform fetch the children in chunks.",
+      "wrong": [
+        "",
+        "Children aren't silently truncated; the error comes from direct assignment of a large child set.",
+        "450 Contacts is far below 50,000 rows; this is a QueryException, not a row limit.",
+        "Parent-child subqueries are allowed in SOQL for loops; the problem is how the child list is read."
+      ],
+      "source": "Apex Developer Guide: SOQL For Loops"
+    },
+    {
+      "id": "auto-x4",
+      "lesson": "auto-12",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A service dashboard controller runs these three queries. The org has 30,000 open Cases owned by 40 different users. How many rows count toward the 50,000 query-row limit?",
+      "code": "Integer openCount = [SELECT COUNT() FROM Case WHERE IsClosed = false];\n\nAggregateResult[] perOwner = [\n    SELECT OwnerId, COUNT(Id) n FROM Case\n    WHERE IsClosed = false GROUP BY OwnerId];\n\nAggregateResult[] refunds = [\n    SELECT SUM(Refund_Amount__c) total FROM Case\n    WHERE IsClosed = false];",
+      "lang": "apex",
+      "options": [
+        "41",
+        "3",
+        "90,000, so the third query throws a LimitException",
+        "30,041"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "COUNT() without GROUP BY counts as 1 row and COUNT(field) with GROUP BY counts one row per group (40). Other aggregate functions such as SUM() count every row they aggregate (30,000), so the total is 30,041.",
+      "wrong": [
+        "SUM() counts every row it aggregates, not one row per result.",
+        "Rows are counted per record or group used, not per query.",
+        "COUNT() and grouped COUNT(Id) don't count every record, so the total stays under 50,000.",
+        ""
+      ],
+      "source": "Apex Developer Guide: Working with SOQL Aggregate Functions"
+    },
+    {
+      "id": "auto-x5",
+      "lesson": "auto-12",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A sales report loops over this query. The data has 3 regions, and each region sold exactly 2 product lines (6 combinations, no null values). How many rows does the loop process, and how does the code spot the grand total row?",
+      "code": "for (AggregateResult ar : [\n    SELECT Region__c, Product_Line__c, SUM(Amount__c) total,\n           GROUPING(Region__c) gR, GROUPING(Product_Line__c) gP\n    FROM Sales_Line__c\n    GROUP BY ROLLUP(Region__c, Product_Line__c)]) {\n    ReportBuilder.addRow(ar);\n}",
+      "lang": "apex",
+      "options": [
+        "6 rows; subtotals must be added up in Apex",
+        "10 rows; the grand total row has gR = 1 and gP = 1",
+        "9 rows; the grand total row has gR = 0 and gP = 0",
+        "12 rows (6 detail, 3 region, 2 product, 1 grand total); the grand total row has gR = 1 and gP = 1"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "ROLLUP(Region, Product) returns the 6 detail rows, one subtotal per region (3) and one grand total, so 10 rows. GROUPING(field) returns 1 when the row is a subtotal for that field, so the grand total has both flags set to 1.",
+      "wrong": [
+        "ROLLUP adds subtotal and grand total rows to the detail rows.",
+        "",
+        "GROUPING returns 1, not 0, on subtotal rows, and the count misses the grand total.",
+        "Subtotals for every combination of fields (including per product) come from GROUP BY CUBE, not ROLLUP."
+      ],
+      "source": "SOQL and SOSL Reference: GROUP BY ROLLUP; GROUPING(fieldName)"
+    },
+    {
+      "id": "auto-x6",
+      "lesson": "auto-12",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "Two warehouse users sometimes reserve the last unit of the same product at the same moment. A developer adds FOR UPDATE to the reservation query below, but the query now fails. Why?",
+      "code": "List<Inventory__c> stock = [\n    SELECT Id, On_Hand__c FROM Inventory__c\n    WHERE Product__c = :productId\n    ORDER BY CreatedDate\n    FOR UPDATE];",
+      "lang": "apex",
+      "options": [
+        "FOR UPDATE must come before the WHERE clause",
+        "FOR UPDATE can only be used in classes declared without sharing",
+        "ORDER BY can't be used in a query that uses FOR UPDATE; remove it and sort in Apex if needed",
+        "FOR UPDATE needs a LIMIT clause so the platform knows how many rows to lock"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "Locking queries can't use ORDER BY. Everything else about the query is fine: FOR UPDATE goes at the end of the inline SOQL statement.",
+      "wrong": [
+        "FOR UPDATE goes at the end of the query, after WHERE.",
+        "Sharing keywords have nothing to do with record locking.",
+        "",
+        "LIMIT is optional; FOR UPDATE locks every row the query returns."
+      ],
+      "source": "Apex Developer Guide: Locking Statements"
+    },
+    {
+      "id": "auto-x7",
+      "lesson": "auto-12",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A reservation method locks the Inventory rows, calls an external pricing API, then updates the stock. Under load, the stock is still sometimes oversold. What is the most likely reason?",
+      "code": "Inventory__c inv = [SELECT Id, On_Hand__c FROM Inventory__c\n                    WHERE Id = :invId FOR UPDATE];\nDecimal price = PricingClient.getPrice(inv.Id); // HTTP callout\ninv.On_Hand__c -= qty;\nupdate inv;",
+      "lang": "apex",
+      "options": [
+        "FOR UPDATE locks are released automatically when a callout is made, so another transaction can change the rows before the update",
+        "FOR UPDATE locks expire after 10 seconds, and the pricing API takes longer than that",
+        "FOR UPDATE only blocks edits from the user interface, not from other Apex transactions",
+        "The callout throws 'uncommitted work pending' because a lock counts as pending DML, so the update is skipped"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "The platform releases FOR UPDATE locks when a callout is made and logs FOR_UPDATE_LOCKS_RELEASE. Make the callout first, then lock, re-read and update the rows.",
+      "wrong": [
+        "",
+        "10 seconds is how long another transaction waits for a lock, not how long a lock lasts; locks last until the transaction ends.",
+        "Locked records can't be updated by any other client, code or UI.",
+        "A lock isn't pending DML; the callout is allowed, it just releases the locks."
+      ],
+      "source": "Apex Developer Guide: Locking Statements"
+    },
+    {
+      "id": "auto-x8",
+      "lesson": "auto-12",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "An order desk uses FOR UPDATE to stop two agents from editing the same Order__c record at once. Which two statements about these locks are true? (Choose 2)",
+      "options": [
+        "The locks are released as soon as the SOQL statement finishes running",
+        "Another transaction that tries to lock the same rows waits up to 10 seconds and then gets a QueryException",
+        "FOR UPDATE in a Batch Apex start() method keeps the records locked across every execute() chunk",
+        "The transaction that locked the records can't update them until it commits",
+        "Other users can still query the locked records while they are locked"
+      ],
+      "answer": [
+        1,
+        4
+      ],
+      "explain": "Locks last until the transaction ends. A second locker waits up to 10 seconds before a QueryException, and reads are still allowed.",
+      "wrong": [
+        "Locks are released when the transaction completes, not when the query ends.",
+        "",
+        "FOR UPDATE isn't applicable to Batch Apex; each chunk is its own transaction.",
+        "The locking client can modify the records in the same transaction; that's the point of the lock.",
+        ""
+      ],
+      "source": "Apex Developer Guide: Locking Statements; Use Batch Apex"
+    },
+    {
+      "id": "auto-x9",
+      "lesson": "auto-12",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A daily digest totals today's open pipeline from Tasks. Tasks can relate to Accounts or Opportunities. What happens when this code runs?",
+      "code": "Decimal total = 0;\nfor (Task t : [SELECT Subject,\n                 TYPEOF What\n                   WHEN Account THEN Name, Industry\n                   WHEN Opportunity THEN Name, Amount\n                 END\n               FROM Task WHERE ActivityDate = TODAY]) {\n    if (t.What instanceof Opportunity) {\n        Opportunity o = (Opportunity) t.What;\n        total += (o.Amount == null ? 0 : o.Amount);\n    }\n}",
+      "lang": "apex",
+      "options": [
+        "It doesn't compile, because TYPEOF can only be used in dynamic SOQL",
+        "It fails at the cast, because a polymorphic What field can only be read as the Name object",
+        "It doesn't compile, because a TYPEOF expression must include an ELSE clause",
+        "It works: TYPEOF returns type-specific fields, and instanceof plus a cast reads Amount from the related Opportunity"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "TYPEOF selects different fields depending on the related object's type. In Apex, instanceof checks the runtime type of t.What, and the value can then be cast to Opportunity.",
+      "wrong": [
+        "TYPEOF works in inline SOQL in Apex.",
+        "The related record comes back as its real type, so it can be checked with instanceof and cast.",
+        "ELSE is optional in TYPEOF.",
+        ""
+      ],
+      "source": "Apex Developer Guide: Working with Polymorphic Relationships in SOQL Queries; SOQL and SOSL Reference: TYPEOF"
+    },
+    {
+      "id": "auto-x10",
+      "lesson": "auto-12",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A report must show only Events whose related record (What) is an Account, not an Opportunity or Campaign. Which two WHERE clauses on an Event query return exactly those Events? (Choose 2)",
+      "options": [
+        "WHERE TYPEOF What WHEN Account THEN true END",
+        "WHERE What instanceof Account",
+        "WHERE What.Type = 'Account'",
+        "WHERE WhatId != null GROUP BY TYPEOF What",
+        "WHERE WhatId IN (SELECT Id FROM Account)"
+      ],
+      "answer": [
+        2,
+        4
+      ],
+      "explain": "Filter on a polymorphic field with the Type qualifier, or with a reference-field semi-join that limits WhatId to Account Ids.",
+      "wrong": [
+        "TYPEOF is only allowed in the SELECT clause.",
+        "instanceof is an Apex operator, not SOQL.",
+        "",
+        "TYPEOF can't be used with GROUP BY, and grouping doesn't filter by type anyway.",
+        ""
+      ],
+      "source": "SOQL and SOSL Reference: TYPEOF; Comparison Operators"
+    },
+    {
+      "id": "auto-x11",
+      "lesson": "auto-12",
+      "difficulty": 2,
+      "pack": "hard",
+      "q": "A service lead asks for every Case created 'in the last 7 days', and wants to know whether today's Cases are included. Which records does this query return?",
+      "code": "List<Case> recent = [\n    SELECT Id, CaseNumber FROM Case\n    WHERE CreatedDate = LAST_N_DAYS:7];",
+      "lang": "apex",
+      "options": [
+        "Cases from the 7 full days before today; today's Cases are excluded",
+        "Cases created from 12:00 AM seven days before today up to now, so today is included (8 calendar days)",
+        "Cases created in the last 168 hours, counted from the current time",
+        "None: date literals can't be compared to DateTime fields with ="
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "LAST_N_DAYS:n starts at 12:00 AM n days before the current day and runs up to the current second, so it includes today. LAST_N_DAYS:1 means yesterday and today.",
+      "wrong": [
+        "LAST_N_DAYS includes today; LAST_N_DAYS:1 means yesterday and today.",
+        "",
+        "Date literals start at midnight in the user's locale, not at the current time minus a number of hours.",
+        "Using = with a date literal on a DateTime field matches the whole range; that's the normal syntax."
+      ],
+      "source": "SOQL and SOSL Reference: Date Formats and Date Literals in WHERE"
+    },
+    {
+      "id": "auto-x12",
+      "lesson": "auto-12",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A reusable selector builds this query at run time. It fails with 'Variable does not exist: acct.Id'. Which two changes fix it? (Choose 2)",
+      "code": "public static List<Contact> forAccount(Account acct) {\n    String q = 'SELECT Id, Name FROM Contact ' +\n               'WHERE AccountId = :acct.Id';\n    return Database.query(q, AccessLevel.USER_MODE);\n}",
+      "lang": "apex",
+      "options": [
+        "Assign the value to a local variable first (Id acctId = acct.Id;) and bind :acctId in the string",
+        "Concatenate the sObject into the string: '... WHERE AccountId = \\'' + acct + '\\''",
+        "Use Database.queryWithBinds with ':acctId' in the string and a Map such as {'acctId' => acct.Id}",
+        "Declare the acct parameter as final so Database.query can see its fields",
+        "Change the bind to :acct.get('Id')"
+      ],
+      "answer": [
+        0,
+        2
+      ],
+      "explain": "Unlike inline SOQL, Database.query only supports simple bind variables, not fields such as acct.Id. Resolve the field into a local variable, or pass the value in the bind map of Database.queryWithBinds.",
+      "wrong": [
+        "",
+        "Concatenating the sObject inserts its whole string form, not its Id, and opens the door to SOQL injection.",
+        "",
+        "final doesn't change how bind variables are resolved.",
+        "Method calls in bind expressions aren't supported in dynamic SOQL strings."
+      ],
+      "source": "Apex Developer Guide: Dynamic SOQL"
+    },
+    {
+      "id": "auto-x13",
+      "lesson": "auto-12",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A pipeline filter builds its bind map from user choices. A bug adds a second key. What happens when this runs?",
+      "code": "Map<String, Object> binds = new Map<String, Object>{\n    'stage'  => 'Prospecting',\n    'minAmt' => 5000\n};\nbinds.put('Stage', 'Qualification');\nList<Opportunity> opps = Database.queryWithBinds(\n    'SELECT Id FROM Opportunity ' +\n    'WHERE StageName = :stage AND Amount > :minAmt',\n    binds, AccessLevel.USER_MODE);",
+      "lang": "apex",
+      "options": [
+        "It returns Qualification Opportunities, because the last value put wins",
+        "It returns Prospecting Opportunities, because the key 'stage' matches the bind name exactly",
+        "A QueryException is thrown, because the bind map has keys that differ only in case",
+        "It doesn't compile, because Map<String, Object> can't hold an Integer value"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "queryWithBinds compares map keys case-insensitively and throws a QueryException when keys differ only in case ('The bindMap consists of duplicate case-insensitive keys').",
+      "wrong": [
+        "Both keys stay in the map (String keys are case-sensitive), so there's no 'last one wins'.",
+        "Bind name matching in queryWithBinds is case-insensitive, so both keys match and conflict.",
+        "",
+        "Map<String, Object> holds any value type, including Integer."
+      ],
+      "source": "Apex Developer Guide: Dynamic SOQL"
+    },
+    {
+      "id": "auto-x14",
+      "lesson": "auto-12",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A generic export utility reads values from queried records by field path. What happens on the last line, and what is the fix?",
+      "code": "SObject rec = Database.query(\n    'SELECT Id, Account.Name FROM Contact WHERE Id = :cid',\n    AccessLevel.USER_MODE);\nString acctName = (String) rec.get('Account.Name');",
+      "lang": "apex",
+      "options": [
+        "It throws an SObjectException (invalid field); read the parent first: rec.getSObject('Account').get('Name')",
+        "It returns the Account name, because get() follows relationship paths",
+        "It returns null, because parent fields must be read with get('Account__r.Name')",
+        "It throws a TypeException on the cast; use String.valueOf(rec.get('Account.Name'))"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "get() takes a field on the sObject itself. A parent field is reached with getSObject('Account') to get the parent record, then get('Name') on it.",
+      "wrong": [
+        "",
+        "get() doesn't follow dot paths.",
+        "Account is a standard lookup, so its relationship name is Account, and get() still can't follow paths.",
+        "The error is the invalid field name, not the cast."
+      ],
+      "source": "Apex Developer Guide: Dynamic DML"
+    },
+    {
+      "id": "auto-x15",
+      "lesson": "auto-12",
+      "difficulty": 2,
+      "pack": "hard",
+      "q": "A generic CSV export receives an object name and a list of field names from a Lightning page. It must keep only the fields that exist and that the running user can read. What goes in the if condition?",
+      "code": "Map<String, Schema.SObjectField> fieldMap = Schema.getGlobalDescribe()\n    .get(objName).getDescribe().fields.getMap();\nList<String> readable = new List<String>();\nfor (String f : requested) {\n    Schema.SObjectField tok = fieldMap.get(f);\n    if ( /* ??? */ ) {\n        readable.add(f);\n    }\n}",
+      "lang": "apex",
+      "options": [
+        "tok.getDescribe().isUpdateable()",
+        "fieldMap.containsKey(f)",
+        "tok != null && tok.getDescribe().isPermissionable()",
+        "tok != null && tok.getDescribe().isAccessible()"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "DescribeFieldResult.isAccessible() is true when the running user can see the field. Checking for null first skips names that aren't fields on the object.",
+      "wrong": [
+        "isUpdateable() checks edit access, which is stricter than read and would drop read-only fields; it also fails on a null token.",
+        "containsKey only proves the field exists, not that the user can read it.",
+        "isPermissionable() says whether field permissions can be set on the field, not whether this user has them.",
+        ""
+      ],
+      "source": "Apex Developer Guide: Understanding Apex Describe Information"
+    },
+    {
+      "id": "auto-x16",
+      "lesson": "auto-12",
+      "difficulty": 2,
+      "pack": "hard",
+      "q": "Tax rules differ by region, so the org stores each region's handler class name in Custom Metadata (for example, 'EmeaTaxHandler'). Every handler implements the TaxHandler interface. Which line creates the right handler at run time?",
+      "code": "public interface TaxHandler {\n    Decimal calculate(Order o);\n}\n\nRegion_Setting__mdt cfg = Region_Setting__mdt.getInstance('EMEA');\n// create the handler named in cfg.Handler_Class__c here",
+      "lang": "apex",
+      "options": [
+        "TaxHandler h = new Type(cfg.Handler_Class__c);",
+        "TaxHandler h = (TaxHandler) Type.forName(cfg.Handler_Class__c).newInstance();",
+        "TaxHandler h = (TaxHandler) Schema.getGlobalDescribe().get(cfg.Handler_Class__c).newSObject();",
+        "TaxHandler h = Type.forName(cfg.Handler_Class__c);"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "Type.forName returns the System.Type for a class name, newInstance() creates an object of it, and the cast to the interface lets the code call it.",
+      "wrong": [
+        "Type has no public constructor that takes a class name.",
+        "",
+        "getGlobalDescribe() describes sObjects, not Apex classes.",
+        "Type.forName returns a Type, not an instance; you still need newInstance() and a cast."
+      ],
+      "source": "Apex Reference Guide: Type Class"
+    },
+    {
+      "id": "auto-x17",
+      "lesson": "auto-1",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A validation rule on Opportunity blocks saving when Discount__c > 30 and Approved__c is false. A before update trigger raises the discount for Strategic accounts. A rep edits the Next Step on a Strategic Opportunity (Approved__c is false) in the UI. What happens?",
+      "code": "trigger OppDiscount on Opportunity (before update) {\n    for (Opportunity o : Trigger.new) {\n        if (o.Account_Tier__c == 'Strategic') {\n            o.Discount__c = 35;\n        }\n    }\n}",
+      "lang": "apex",
+      "options": [
+        "The save succeeds, because validation rules run before before triggers and only see the rep's input",
+        "The save succeeds, because validation rules don't evaluate field values set by Apex",
+        "The save is blocked by the validation rule, because custom validation rules run after before triggers and see the trigger's value",
+        "The save succeeds, and the validation rule blocks the record later when a workflow rule re-runs validation"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "Before triggers run first, then system validation runs again with custom validation rules. The rule sees Discount__c = 35 and blocks the save.",
+      "wrong": [
+        "Custom validation rules run after before triggers, not before them.",
+        "Validation rules check the final values, including those set by before triggers.",
+        "",
+        "Custom validation rules aren't re-run after workflow field updates, and here the save is already blocked."
+      ],
+      "source": "Apex Developer Guide: Triggers and Order of Execution"
+    },
+    {
+      "id": "auto-x18",
+      "lesson": "auto-1",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "Touches__c on a Lead is 1. A user changes it to 10. A workflow rule field update then adds 1, making it 11. The after update trigger below runs again after the workflow field update. What does that second run log?",
+      "code": "trigger LeadTouches on Lead (after update) {\n    for (Lead l : Trigger.new) {\n        Lead old = Trigger.oldMap.get(l.Id);\n        System.debug('old=' + old.Touches__c +\n                     ' new=' + l.Touches__c);\n    }\n}",
+      "lang": "apex",
+      "options": [
+        "old=1 new=11",
+        "old=10 new=11",
+        "old=11 new=11",
+        "old=1 new=10"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "In the update trigger that fires after a workflow field update, Trigger.old holds the record as it was before the initial update (1), not the value the user saved (10).",
+      "wrong": [
+        "",
+        "This is the documented exception: Trigger.old isn't the value right before the workflow update.",
+        "Trigger.old never contains the workflow's new value.",
+        "Trigger.new in the re-run includes the workflow field update (11)."
+      ],
+      "source": "Apex Developer Guide: Triggers and Order of Execution"
+    },
+    {
+      "id": "auto-x19",
+      "lesson": "auto-1",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "An org still has a legacy workflow rule with a field update on Case. When it fires during an update, which two things run again for that record? (Choose 2)",
+      "options": [
+        "Custom validation rules",
+        "Before update and after update triggers (one more time)",
+        "Duplicate rules",
+        "System validations",
+        "Before-save record-triggered flows"
+      ],
+      "answer": [
+        1,
+        3
+      ],
+      "explain": "After a workflow field update, the record is updated again, system validations run again, and before and after update triggers fire one more time. Custom validation rules, flows, duplicate rules, processes and escalation rules aren't run again.",
+      "wrong": [
+        "Custom validation rules aren't run again after a workflow field update.",
+        "",
+        "Duplicate rules aren't run again.",
+        "",
+        "Flows aren't run again for a workflow field update."
+      ],
+      "source": "Apex Developer Guide: Triggers and Order of Execution"
+    },
+    {
+      "id": "auto-x20",
+      "lesson": "auto-1",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "An admin adds an after-save record-triggered flow on Opportunity that updates the triggering record's Next_Review__c field. Since then, reps get two follow-up Tasks when they move a deal to Negotiation. What is happening, and what is the best fix?",
+      "code": "trigger OppFollowUp on Opportunity (after update) {\n    List<Task> tasks = new List<Task>();\n    for (Opportunity o : Trigger.new) {\n        if (o.StageName == 'Negotiation') {\n            tasks.add(new Task(WhatId = o.Id,\n                               Subject = 'Prepare terms'));\n        }\n    }\n    insert tasks;\n}",
+      "lang": "apex",
+      "options": [
+        "Record-triggered flows always run in a separate transaction, so the trigger fires once in each; make the flow run asynchronously",
+        "The platform always fires after update triggers twice when any flow exists on the object; use a static Boolean to stop the second run",
+        "Duplicate rules re-run after the flow and copy the Task; turn off the duplicate rule on Task",
+        "The flow's update sends the record through the save procedure again, so the trigger runs twice; create the Task only when StageName changed compared to Trigger.oldMap"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "When an after-save flow updates the record, it goes through the save procedure again and the update triggers fire again. In that second save, the old stage is already Negotiation, so comparing to Trigger.oldMap stops the duplicate Task.",
+      "wrong": [
+        "The flow runs in the same transaction as the save that triggered it.",
+        "Triggers fire again because of the flow's DML, not just because a flow exists; and a static Boolean blocks records in later 200-record chunks.",
+        "Duplicate rules don't create records.",
+        ""
+      ],
+      "source": "Apex Developer Guide: Triggers and Order of Execution"
+    },
+    {
+      "id": "auto-x21",
+      "lesson": "auto-1",
+      "difficulty": 2,
+      "pack": "hard",
+      "q": "Invoice_Line__c is the detail in a master-detail with Invoice__c, which has a roll-up summary field Total__c. Invoice__c has an after update trigger that queues an ERP sync. A Data Loader job inserts 500 lines spread across 20 Invoices. What happens to the Invoice trigger?",
+      "options": [
+        "It doesn't fire, because roll-up summaries are calculated after commit",
+        "It fires for the 20 Invoices, because recalculating the roll-up summary sends each parent through the save procedure",
+        "It doesn't fire, because roll-up summary fields update like formula fields, without a save",
+        "It fires only if the Data Loader job uses all-or-none mode"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "When a child changes a roll-up summary, the platform recalculates it and the parent record goes through the save procedure, so the parent's update triggers run. Check whether Total__c really changed before queueing work.",
+      "wrong": [
+        "Roll-up recalculation happens before commit, inside the same transaction.",
+        "",
+        "Roll-up summaries are stored values; the parent is saved and its triggers fire.",
+        "All-or-none mode doesn't decide whether parent triggers fire."
+      ],
+      "source": "Apex Developer Guide: Triggers and Order of Execution"
+    },
+    {
+      "id": "auto-x22",
+      "lesson": "auto-1",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "On Lead, a before-save flow sets Rating, a before insert trigger lowercases Email, a duplicate rule blocks Leads with a matching Email, and an after insert trigger creates a Task. Which two statements are true for a new Lead? (Choose 2)",
+      "options": [
+        "If the duplicate rule blocks the Lead, the after insert trigger still runs but its Task is rolled back",
+        "The duplicate rule runs before custom validation rules",
+        "The before insert trigger can only see the Rating value after the Lead is committed",
+        "The before-save flow runs before the before insert trigger",
+        "The duplicate rule checks the lowercased Email set by the trigger"
+      ],
+      "answer": [
+        3,
+        4
+      ],
+      "explain": "The order is before-save flows, before triggers, validation (system and custom), then duplicate rules, then save. A blocking duplicate rule stops the save before after triggers run.",
+      "wrong": [
+        "When a duplicate rule blocks, no further steps run, including after triggers.",
+        "Duplicate rules run after custom validation rules.",
+        "The before-save flow already ran, so the trigger sees Rating in Trigger.new.",
+        "",
+        ""
+      ],
+      "source": "Apex Developer Guide: Triggers and Order of Execution"
+    },
+    {
+      "id": "auto-x23",
+      "lesson": "auto-2",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "An integration calls Database.update(accounts, false) on 100 Accounts. Two fail a validation rule. The after update trigger below writes audit rows and uses a static Set to stop recursion. What is the outcome?",
+      "code": "public class AuditGuard {\n    public static Set<Id> done = new Set<Id>();\n}\n\ntrigger AccountAudit on Account (after update) {\n    List<Audit__c> rows = new List<Audit__c>();\n    for (Account a : Trigger.new) {\n        if (AuditGuard.done.add(a.Id)) {\n            rows.add(new Audit__c(Account__c = a.Id));\n        }\n    }\n    insert rows;\n}",
+      "lang": "apex",
+      "options": [
+        "98 Accounts are saved with 98 audit rows",
+        "98 Accounts are saved with 196 audit rows, because the trigger ran twice",
+        "98 Accounts are saved, but no audit rows are saved",
+        "The whole update fails with 'Too many batch retries in the presence of Apex triggers and partial failures'"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "With partial success, the first attempt is rolled back and the trigger runs again on the 98 good records. Static variables aren't reset, so the Set already holds their Ids and the retry skips them; the audit rows from the first attempt were rolled back.",
+      "wrong": [
+        "The retry skips every record because the static Set wasn't reset.",
+        "The first attempt's audit rows are rolled back, and the retry inserts none.",
+        "",
+        "That error happens only if records still fail on the third attempt."
+      ],
+      "source": "Apex Developer Guide: Bulk DML Exception Handling; Triggers and Order of Execution"
+    },
+    {
+      "id": "auto-x24",
+      "lesson": "auto-2",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "This trigger stamps the date when the stage changes. Updates work, but every new Opportunity fails. Why?",
+      "code": "trigger OppStage on Opportunity (before insert, before update) {\n    for (Opportunity o : Trigger.new) {\n        Opportunity old = Trigger.oldMap.get(o.Id);\n        if (o.StageName != old.StageName) {\n            o.Stage_Changed_On__c = Date.today();\n        }\n    }\n}",
+      "lang": "apex",
+      "options": [
+        "Trigger.oldMap is null in insert context, so Trigger.oldMap.get() throws a NullPointerException; check Trigger.isUpdate first",
+        "A null old record makes the comparison true, so the stamp is set on every insert",
+        "The trigger doesn't compile, because oldMap can't be used in a trigger that includes before insert",
+        "o.Id is null in before insert, so the loop skips the record and a required field stays blank"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "Trigger.old and Trigger.oldMap exist only in update and delete triggers. Calling get() on the null map throws a NullPointerException on insert.",
+      "wrong": [
+        "",
+        "The code never gets that far: calling get() on a null map throws first.",
+        "It compiles; the error happens at run time on insert.",
+        "The loop still runs; the failure is the null oldMap."
+      ],
+      "source": "Apex Developer Guide: Trigger Context Variables"
+    },
+    {
+      "id": "auto-x25",
+      "lesson": "auto-2",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A sign-up form batch inserts 50 Contacts with Database.insert(contacts, false). Four have '@test.invalid' emails. Which two statements are true? (Choose 2)",
+      "code": "trigger ContactEmailCheck on Contact (before insert) {\n    for (Contact c : Trigger.new) {\n        if (c.Email != null &&\n            c.Email.endsWith('@test.invalid')) {\n            c.Email.addError('Use a real email address.');\n        }\n    }\n}",
+      "lang": "apex",
+      "options": [
+        "The SaveResult for each blocked Contact has isSuccess() = false and the message 'Use a real email address.'",
+        "The 46 valid Contacts are saved",
+        "Database.insert throws a DmlException after the first blocked Contact",
+        "All 50 Contacts roll back, because addError in a trigger fails the whole DML call",
+        "The 4 blocked Contacts are saved with Email cleared"
+      ],
+      "answer": [
+        0,
+        1
+      ],
+      "explain": "addError marks just those records as failed. With allOrNone = false, the other records are saved and each failure is reported in its SaveResult.",
+      "wrong": [
+        "",
+        "",
+        "With allOrNone = false, errors come back in SaveResults instead of an exception.",
+        "Only the records marked with addError fail when partial success is allowed.",
+        "Records with addError aren't saved."
+      ],
+      "source": "Apex Developer Guide: Bulk DML Exception Handling; Trigger Context Variables"
+    },
+    {
+      "id": "auto-x26",
+      "lesson": "auto-2",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "An Apex REST endpoint inserts 150 Cases in one insert statement. What happens with this trigger?",
+      "code": "trigger CaseFollowUp on Case (after insert) {\n    List<Task> tasks = new List<Task>();\n    for (Case c : Trigger.new) {\n        Contact con = [SELECT OwnerId FROM Contact\n                       WHERE Id = :c.ContactId];\n        tasks.add(new Task(WhatId = c.Id,\n                           OwnerId = con.OwnerId,\n                           Subject = 'Call customer'));\n    }\n    insert tasks;\n}",
+      "lang": "apex",
+      "options": [
+        "It uses 1 SOQL query, because the platform combines identical queries in a loop",
+        "It succeeds, because Apex REST requests get the asynchronous limit of 200 queries",
+        "It succeeds, but Tasks are created only for the first 100 Cases",
+        "The insert fails with a LimitException on the 101st query, and none of the 150 Cases are saved"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "The query runs once per Case, so the 101st query breaks the synchronous limit of 100. Limit exceptions can't be caught, so the whole transaction rolls back.",
+      "wrong": [
+        "Apex doesn't merge queries; each loop pass runs a query.",
+        "Apex REST runs with synchronous limits.",
+        "A limit exception rolls back everything; nothing is partly saved.",
+        ""
+      ],
+      "source": "Apex Developer Guide: Execution Governors and Limits"
+    },
+    {
+      "id": "auto-x27",
+      "lesson": "auto-12",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "This onboarding code retries after a failed Contact insert. What happens at the second insert of a?",
+      "code": "Account a = new Account(Name = 'Globex');\nSavepoint sp = Database.setSavepoint();\ninsert a;\ntry {\n    insert new Contact(AccountId = a.Id); // missing LastName\n} catch (DmlException e) {\n    Database.rollback(sp);\n    a.Name = 'Globex (retry)';\n    insert a;\n}",
+      "lang": "apex",
+      "options": [
+        "It inserts the Account named 'Globex (retry)'",
+        "It fails, because a still holds the Id from the rolled-back insert; create a new Account (or clone it without the Id)",
+        "Database.rollback(sp) throws, because the savepoint was set before the Account insert",
+        "It creates a second Account, so the org ends with two Globex records"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "A rollback doesn't clear the Id on an sObject inserted after the savepoint. Inserting it again fails because the variable has an Id.",
+      "wrong": [
+        "The variable still has an Id, so insert fails.",
+        "",
+        "Rolling back to a savepoint set earlier is the normal use.",
+        "The first insert was rolled back and the second fails, so no Account remains."
+      ],
+      "source": "Apex Developer Guide: Transaction Control"
+    },
+    {
+      "id": "auto-x28",
+      "lesson": "auto-12",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "Importer.run() is called once with 150 Leads in a new transaction. Afterwards, how many DML statements have been used, and what is Importer.attempts?",
+      "code": "public class Importer {\n    public static Integer attempts = 0;\n\n    public static void run(List<Lead> leads) {\n        Savepoint sp = Database.setSavepoint();\n        attempts++;\n        insert leads;\n        if (leads.size() > 100) {\n            Database.rollback(sp);\n        }\n    }\n}",
+      "lang": "apex",
+      "options": [
+        "1 DML statement; attempts = 0",
+        "1 DML statement; attempts = 1",
+        "3 DML statements; attempts = 1",
+        "3 DML statements; attempts = 0"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "setSavepoint(), insert and rollback() each count against the DML statement limit. Static variables aren't reverted by a rollback, so attempts stays 1.",
+      "wrong": [
+        "Savepoints and rollbacks count as DML statements, and static variables aren't rolled back.",
+        "setSavepoint() and rollback() also count as DML statements.",
+        "",
+        "Static variables keep their values after a rollback."
+      ],
+      "source": "Apex Developer Guide: Transaction Control"
+    },
+    {
+      "id": "auto-x29",
+      "lesson": "auto-12",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "In API version 62.0, this method rolls back a failed order and then sends a failure notice to the ERP with an HTTP callout. The callout throws a CalloutException. What should the developer change?",
+      "code": "Savepoint sp = Database.setSavepoint();\ntry {\n    insert order;\n    OrderValidator.check(order); // throws\n} catch (Exception e) {\n    Database.rollback(sp);\n    ErpClient.sendFailure(order.Order_Number__c); // callout\n}",
+      "lang": "apex",
+      "options": [
+        "Call Database.releaseSavepoint(sp) after the rollback and before the callout",
+        "Nothing; rolling back removes the pending DML, so the callout should work, and the error means the endpoint is down",
+        "Move the callout to an @future method, because savepoints and callouts can never share a transaction",
+        "Call Database.releaseSavepoint(sp) before Database.rollback(sp)"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "Since API 60.0, a callout is allowed after a rollback only once all active savepoints are released ('All active Savepoints must be released before making callouts').",
+      "wrong": [
+        "",
+        "An active savepoint still blocks the callout, even with no pending DML.",
+        "They can share a transaction once the savepoint is rolled back and released.",
+        "Rolling back after a release throws an error, and the insert would still be pending."
+      ],
+      "source": "Apex Developer Guide: Transaction Control"
+    },
+    {
+      "id": "auto-x30",
+      "lesson": "auto-12",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A data import logs failures to Import_Error__c. Support says the Record_Id__c column is always blank, so they can't tell which source rows failed. What is the bug and the fix?",
+      "code": "List<Database.SaveResult> results = Database.insert(rows, false);\nfor (Database.SaveResult sr : results) {\n    if (!sr.isSuccess()) {\n        failures.add(new Import_Error__c(\n            Record_Id__c = sr.getId(),\n            Message__c = sr.getErrors()[0].getMessage()));\n    }\n}\ninsert failures;",
+      "lang": "apex",
+      "options": [
+        "getErrors() is empty for failed records; call getMessage() on the SaveResult directly",
+        "SaveResults come back in random order; sort them by Id before logging",
+        "Database.insert(rows, false) throws on the first failure, so the loop only logs successes",
+        "getId() returns null when an insert fails; loop by index and use rows[i] (for example its external key) to identify the row"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "SaveResults are returned in the same order as the input list, and getId() is null for a failed insert. Use the index to find the source record.",
+      "wrong": [
+        "Failed SaveResults do hold their errors in getErrors().",
+        "Results are in the same order as the input list, which is why the index works.",
+        "With allOrNone = false, failures are returned, not thrown.",
+        ""
+      ],
+      "source": "Apex Reference Guide: SaveResult Class"
+    },
+    {
+      "id": "auto-x31",
+      "lesson": "auto-3",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A Queueable syncs Account names to a marketing tool. It is enqueued from a button. What happens when the job runs?",
+      "code": "public class NameSyncJob implements Queueable, Database.AllowsCallouts {\n    private List<Id> accountIds;\n    private transient Map<Id, Account> cache;\n\n    public NameSyncJob(List<Id> ids) {\n        accountIds = ids;\n        cache = new Map<Id, Account>(\n            [SELECT Id, Name FROM Account WHERE Id IN :ids]);\n    }\n    public void execute(QueueableContext ctx) {\n        for (Id i : accountIds) {\n            MarketingClient.send(cache.get(i).Name);\n        }\n    }\n}",
+      "lang": "apex",
+      "options": [
+        "It sends the names that were cached when the job was enqueued",
+        "It throws a NullPointerException, because transient member variables are null when a Queueable runs",
+        "It doesn't compile, because transient isn't allowed in classes that implement Queueable",
+        "It sends the names, but they may be stale because the cache isn't refreshed"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "Queueable jobs are serialized when enqueued. Transient variables are skipped and set to null, so cache.get(i) fails in execute().",
+      "wrong": [
+        "Transient variables aren't serialized, so the cache is gone.",
+        "",
+        "transient compiles fine; it just isn't serialized.",
+        "The cache is null, not stale."
+      ],
+      "source": "Apex Developer Guide: Queueable Apex"
+    },
+    {
+      "id": "auto-x32",
+      "lesson": "auto-3",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A batch job runs with the default scope of 200. For each record it enqueues a Queueable to call a partner API. What happens in the first execute()?",
+      "code": "public void execute(Database.BatchableContext bc, List<Order__c> scope) {\n    for (Order__c o : scope) {\n        System.enqueueJob(new PartnerSyncJob(o.Id));\n    }\n}",
+      "lang": "apex",
+      "options": [
+        "200 Queueable jobs are queued and run in parallel",
+        "Up to 50 jobs are queued, then a LimitException is thrown",
+        "The second System.enqueueJob call throws a LimitException, because an asynchronous context can add only one Queueable job",
+        "The jobs are queued but held until the batch's finish() method completes"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "Batch execute() runs with asynchronous limits, where System.enqueueJob can be called only once. Collect the Ids and enqueue one job for the whole chunk.",
+      "wrong": [
+        "Only one job can be enqueued from an asynchronous transaction.",
+        "50 is the synchronous limit; batch execute() is asynchronous.",
+        "",
+        "Enqueued jobs aren't held for finish(); the second enqueue fails anyway."
+      ],
+      "source": "Apex Developer Guide: Queueable Apex; Execution Governors and Limits"
+    },
+    {
+      "id": "auto-x33",
+      "lesson": "auto-3",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "An order page enqueues an ERP sync with these options. A user clicks Sync twice, in two separate transactions, while the first job is still waiting in the queue. Which two statements are true? (Choose 2)",
+      "code": "AsyncOptions opts = new AsyncOptions();\nopts.DuplicateSignature = new QueueableDuplicateSignature.Builder()\n    .addId(orderId)\n    .addString('ErpSync')\n    .build();\nopts.MinimumQueueableDelayInMinutes = 2;\nSystem.enqueueJob(new ErpSyncJob(orderId), opts);",
+      "lang": "apex",
+      "options": [
+        "Both jobs run, with the second starting 2 minutes after the first",
+        "In an Apex test, Test.stopTest() waits 2 real minutes before running the job",
+        "The second enqueue throws a DuplicateMessageException",
+        "The job waits at least 2 minutes before it can start",
+        "The signature uses only the class name, so orderId is ignored"
+      ],
+      "answer": [
+        2,
+        3
+      ],
+      "explain": "Enqueuing a job whose signature matches an already enqueued job throws a DuplicateMessageException. MinimumQueueableDelayInMinutes sets a minimum delay (0-10 minutes); it is ignored in Apex tests.",
+      "wrong": [
+        "A duplicate signature stops the second job from being enqueued at all.",
+        "The delay is ignored during Apex tests.",
+        "",
+        "",
+        "The signature is built from what you add: here the order Id and a string."
+      ],
+      "source": "Apex Developer Guide: Queueable Apex; Apex Reference Guide: QueueableDuplicateSignature.Builder Class"
+    },
+    {
+      "id": "auto-x34",
+      "lesson": "auto-4",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "This Queueable hits the CPU time limit after processing 120 rows. What does the Job_Log__c record show?",
+      "code": "public class ImportJob implements Queueable {\n    public void execute(QueueableContext ctx) {\n        ImportFinalizer f = new ImportFinalizer();\n        System.attachFinalizer(f);\n        for (Staging__c s : [SELECT Id FROM Staging__c]) {\n            Importer.process(s);   // heavy CPU work\n            f.processed++;\n        }\n    }\n}\n\npublic class ImportFinalizer implements Finalizer {\n    public Integer processed = 0;\n    public void execute(FinalizerContext ctx) {\n        insert new Job_Log__c(\n            Count__c = processed,\n            Result__c = String.valueOf(ctx.getResult()));\n    }\n}",
+      "lang": "apex",
+      "options": [
+        "Count__c = 120 and Result__c = 'UNHANDLED_EXCEPTION'",
+        "Count__c = 0, because the finalizer's state is captured when it is attached",
+        "No log is created, because a limit exception also stops the finalizer",
+        "Count__c = 120 and Result__c = 'SUCCESS', because the finalizer handles the exception"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "The finalizer uses its state as it is at the end of the Queueable's execution, so changes after attaching are kept. It runs in its own transaction, so its insert commits even though the job's own DML rolls back.",
+      "wrong": [
+        "",
+        "Changing the finalizer after it is attached is supported; its state at the end of the job is used.",
+        "The finalizer runs in a separate transaction, even after an uncatchable limit exception.",
+        "getResult() reports UNHANDLED_EXCEPTION; the finalizer doesn't change the job's result."
+      ],
+      "source": "Apex Developer Guide: Transaction Finalizers"
+    },
+    {
+      "id": "auto-x35",
+      "lesson": "auto-4",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A team is adding a Transaction Finalizer to a Queueable that posts invoices. Which two statements about finalizers are true? (Choose 2)",
+      "options": [
+        "A finalizer can enqueue one asynchronous job (Queueable, future or batch)",
+        "The finalizer runs in the same transaction as the Queueable, so it can roll back the Queueable's DML",
+        "Calling System.attachFinalizer twice attaches two finalizers that both run",
+        "Each finalizer run counts as an extra execution against the daily async Apex limit",
+        "A finalizer can make callouts"
+      ],
+      "answer": [
+        0,
+        4
+      ],
+      "explain": "Finalizers run in their own transaction after the Queueable, may make callouts, and may enqueue a single async job.",
+      "wrong": [
+        "",
+        "The Queueable and its finalizer run in separate transactions.",
+        "Only one finalizer can be attached to a Queueable job.",
+        "Using a finalizer doesn't count as an extra async execution.",
+        ""
+      ],
+      "source": "Apex Developer Guide: Transaction Finalizers"
+    },
+    {
+      "id": "auto-x36",
+      "lesson": "auto-5",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "This batch runs over 1,000 records with a scope of 200. Each chunk has 3 failed deletes. What does finish() log?",
+      "code": "public class CleanupBatch implements\n        Database.Batchable<SObject>, Database.Stateful {\n    private Integer processed = 0;\n    private static Integer errors = 0;\n\n    public Database.QueryLocator start(Database.BatchableContext bc) {\n        return Database.getQueryLocator('SELECT Id FROM Temp__c');\n    }\n    public void execute(Database.BatchableContext bc, List<SObject> scope) {\n        processed += scope.size();\n        for (Database.DeleteResult r : Database.delete(scope, false)) {\n            if (!r.isSuccess()) errors++;\n        }\n    }\n    public void finish(Database.BatchableContext bc) {\n        System.debug(processed + ' / ' + errors);\n    }\n}",
+      "lang": "apex",
+      "options": [
+        "1000 / 15",
+        "200 / 3",
+        "0 / 0",
+        "1000 / 0"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "Database.Stateful keeps instance variables between chunks, so processed reaches 1,000. Static variables aren't kept between batch transactions, so errors is back to 0 in finish().",
+      "wrong": [
+        "Static variables reset in each batch transaction, even with Database.Stateful.",
+        "Database.Stateful keeps the instance variable across all 5 chunks.",
+        "The instance variable is kept because the class implements Database.Stateful.",
+        ""
+      ],
+      "source": "Apex Developer Guide: Use Batch Apex"
+    },
+    {
+      "id": "auto-x37",
+      "lesson": "auto-5",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A batch's start() returns a QueryLocator that finds 9,000 records. It is started with the line below. How many times does execute() run?",
+      "code": "Id jobId = Database.executeBatch(new ArchiveOrdersBatch(), 5000);",
+      "lang": "apex",
+      "options": [
+        "2",
+        "5",
+        "45",
+        "None: a LimitException is thrown because the scope is above 2,000"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "With a QueryLocator, the scope can be at most 2,000. A higher value is reduced, so the records are processed in chunks of up to 2,000: four of 2,000 and one of 1,000.",
+      "wrong": [
+        "A scope above 2,000 isn't used as is with a QueryLocator.",
+        "",
+        "45 would be the default scope of 200, but a scope was passed.",
+        "No error is thrown; Salesforce chunks the records into batches of up to 2,000."
+      ],
+      "source": "Apex Developer Guide: Use Batch Apex"
+    },
+    {
+      "id": "auto-x38",
+      "lesson": "auto-5",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "This batch marks Shipments as sent and posts each one to a carrier API. Every execute() fails with 'You have uncommitted work pending'. What is the fix?",
+      "code": "public class ShipmentPostBatch implements\n        Database.Batchable<SObject>, Database.AllowsCallouts {\n    // start() returns Shipment__c records; run with scope 50\n    public void execute(Database.BatchableContext bc, List<Shipment__c> scope) {\n        for (Shipment__c s : scope) {\n            s.Status__c = 'Sent';\n        }\n        update scope;\n        for (Shipment__c s : scope) {\n            CarrierClient.post(s); // HTTP callout\n        }\n    }\n    public void finish(Database.BatchableContext bc) {}\n}",
+      "lang": "apex",
+      "options": [
+        "Add Database.AllowsCallouts to the class definition",
+        "Call an @future(callout=true) method for each record from execute()",
+        "Make all the callouts first, then run the update on the scope at the end of execute()",
+        "Raise the scope to 2,000 so fewer transactions make callouts"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "A callout can't follow uncommitted DML in the same transaction. Callouts first, then DML, works in each execute() transaction.",
+      "wrong": [
+        "The class already implements Database.AllowsCallouts; the problem is the order.",
+        "Future methods can't be called from Batch Apex.",
+        "",
+        "A bigger scope doesn't change the order, and 2,000 callouts would also pass the 100-callout limit."
+      ],
+      "source": "Apex Developer Guide: Callout Limits and Limitations; Use Batch Apex"
+    },
+    {
+      "id": "auto-x39",
+      "lesson": "auto-5",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "This scheduled class runs nightly, but the callout fails. Which two changes let the nightly price sync reach the ERP? (Choose 2)",
+      "code": "public class NightlyPriceSync implements Schedulable {\n    public void execute(SchedulableContext sc) {\n        HttpRequest req = new HttpRequest();\n        req.setEndpoint('callout:ERP/prices');\n        req.setMethod('POST');\n        req.setBody(PriceService.buildPayload());\n        new Http().send(req);\n    }\n}",
+      "lang": "apex",
+      "options": [
+        "Add Database.AllowsCallouts to the Schedulable class",
+        "From execute(), enqueue a Queueable that implements Database.AllowsCallouts and makes the callout",
+        "From execute(), call a static @future(callout=true) method that makes the callout",
+        "Wrap http.send() in try/catch to handle the CalloutException",
+        "Return a Continuation from execute()"
+      ],
+      "answer": [
+        1,
+        2
+      ],
+      "explain": "Synchronous callouts aren't supported from scheduled Apex. Hand the callout to async code that allows callouts, such as a Queueable with Database.AllowsCallouts or a future method with callout=true.",
+      "wrong": [
+        "Database.AllowsCallouts works for Queueable and Batch Apex, not on a Schedulable class.",
+        "",
+        "",
+        "Catching the exception doesn't make the callout work.",
+        "Continuations are for Lightning and Visualforce controllers, not scheduled jobs."
+      ],
+      "source": "Apex Developer Guide: Apex Scheduler"
+    },
+    {
+      "id": "auto-x40",
+      "lesson": "auto-5",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A nightly batch sometimes fails a chunk with an uncatchable limit exception. Operations needs the Ids of the records in each failed chunk saved, so they can be retried the next night. What should the developer do?",
+      "options": [
+        "Implement Database.RaisesPlatformEvents on the batch, and subscribe a trigger to BatchApexErrorEvent that saves the JobScope Ids",
+        "Wrap the execute() body in try/catch for LimitException and save the scope Ids in the catch block",
+        "Implement Database.Stateful, add failed Ids to a list in execute(), and save them in finish()",
+        "Attach a Transaction Finalizer in execute() to save the Ids of the chunk if it fails"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "With Database.RaisesPlatformEvents, an unhandled exception in a batch publishes a BatchApexErrorEvent that includes the failed chunk's record Ids in JobScope.",
+      "wrong": [
+        "",
+        "Limit exceptions can't be caught.",
+        "The failing chunk dies before it can record anything, so its state change is lost.",
+        "Transaction Finalizers are only for Queueable jobs."
+      ],
+      "source": "Apex Developer Guide: Use Batch Apex"
+    },
+    {
+      "id": "auto-x41",
+      "lesson": "auto-7",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "Order_Placed__e is set to Publish After Commit. Audit_Log__e is set to Publish Immediately. chargeCard() throws an exception that nothing catches. What reaches subscribers?",
+      "code": "insert order;\nEventBus.publish(new Order_Placed__e(Order_Id__c = order.Id));\nEventBus.publish(new Audit_Log__e(Message__c = 'Order attempt ' + order.Id));\nPaymentService.chargeCard(order); // throws",
+      "lang": "apex",
+      "options": [
+        "Both events, because EventBus.publish isn't affected by rollbacks",
+        "Neither event, because events are always discarded when the transaction fails",
+        "Only the Order_Placed__e event, because it was published first",
+        "Only the Audit_Log__e event; the Order and the Order_Placed__e event are both rolled back"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "Publish Immediately events go out when the publish call runs, even if the transaction later fails. Publish After Commit events go out only if the transaction commits.",
+      "wrong": [
+        "Publish After Commit events are dropped when the transaction fails.",
+        "Publish Immediately events are sent no matter what happens to the transaction.",
+        "Publish order doesn't matter; the transaction failed, so the after-commit event is never published.",
+        ""
+      ],
+      "source": "Platform Events Developer Guide: Platform Event Fields; Publish Event Messages with Apex"
+    },
+    {
+      "id": "auto-x42",
+      "lesson": "auto-7",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A developer marks a record as 'Sent' when the publish result is successful. A reviewer says isSuccess() doesn't mean what the developer thinks. What does it mean, and how can the code learn the final result?",
+      "code": "Shipment__e evt = (Shipment__e) Shipment__e.sObjectType.newSObject(null, true);\nevt.Ref__c = s.Name;\nDatabase.SaveResult sr = EventBus.publish(evt);\nif (sr.isSuccess()) {\n    s.Status__c = 'Sent';\n    update s;\n}",
+      "lang": "apex",
+      "options": [
+        "All subscribers received and processed the event; no further check is needed",
+        "The publish request was queued (OPERATION_ENQUEUED); pass a publish callback (EventBus.EventPublishFailureCallback or EventPublishSuccessCallback) to EventBus.publish",
+        "The subscriber trigger finished without errors; query EventBusSubscriber to confirm",
+        "The event was committed with the transaction; check Limits.getDMLStatements() for the final result"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "Publishing is asynchronous: a successful SaveResult only means the publish was queued. The final publish result arrives in an Apex publish callback.",
+      "wrong": [
+        "isSuccess() says nothing about delivery or processing by subscribers.",
+        "",
+        "The publisher can't know when a subscriber trigger finishes from this result.",
+        "A DML counter can't show whether an event was published."
+      ],
+      "source": "Platform Events Developer Guide: Publish Event Messages with Apex; Get the Result of Asynchronous Platform Event Publishing with Apex Publish Callbacks"
+    },
+    {
+      "id": "auto-x43",
+      "lesson": "auto-7",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "This platform event trigger receives a batch of 1,000 events. Event number 301 has a bad value, and the trigger throws an uncaught exception there. The trigger doesn't use setResumeCheckpoint or RetryableException. What happens?",
+      "code": "trigger ShipmentEvents on Shipment__e (after insert) {\n    List<Shipment_Log__c> logs = new List<Shipment_Log__c>();\n    for (Shipment__e e : Trigger.new) {\n        logs.add(ShipmentLogger.build(e)); // throws on bad data\n        if (logs.size() == 100) {\n            insert logs;\n            logs.clear();\n        }\n    }\n    insert logs;\n}",
+      "lang": "apex",
+      "options": [
+        "All logs are rolled back, and the whole batch is retried automatically up to 9 times",
+        "The logs for the first 300 events stay committed, and the trigger fires again starting at event 301",
+        "The logs for the first 300 events stay committed, and the remaining events in that batch aren't processed by this trigger",
+        "All logs are rolled back, and the trigger moves straight to the error state"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "After an uncaught exception, the trigger stops and doesn't process the rest of the batch, but DML done before the exception is committed. Use setResumeCheckpoint to pick up from the last good event.",
+      "wrong": [
+        "Automatic retries happen only when the trigger throws EventBus.RetryableException.",
+        "Resuming at the next event needs setResumeCheckpoint.",
+        "",
+        "DML isn't rolled back for an uncaught exception, and the error state follows too many retries, not one exception."
+      ],
+      "source": "Platform Events Developer Guide: Subscribe to Platform Event Notifications with Apex Triggers"
+    },
+    {
+      "id": "auto-x44",
+      "lesson": "auto-7",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "Payment events sometimes arrive before the ERP has created the matching Invoice__c records, so the trigger below retries. Which two statements about this trigger are true? (Choose 2)",
+      "code": "trigger PaymentEvents on Payment__e (after insert) {\n    insert new Integration_Log__c(Note__c = 'Batch received');\n    Set<String> nums = new Set<String>();\n    for (Payment__e p : Trigger.new) nums.add(p.Invoice_Number__c);\n    List<Invoice__c> invs = [SELECT Id FROM Invoice__c\n                             WHERE Number__c IN :nums];\n    if (invs.size() < nums.size()) {\n        if (EventBus.TriggerContext.currentContext().retries < 4) {\n            throw new EventBus.RetryableException('Invoices not synced yet');\n        }\n        PaymentService.flagMissing(nums);\n        return;\n    }\n    PaymentService.apply(Trigger.new, invs);\n}",
+      "lang": "apex",
+      "options": [
+        "When RetryableException is thrown, DML done earlier in that trigger run is rolled back",
+        "Only the events after the one that failed are sent again",
+        "Without the retries check, the platform would keep retrying forever",
+        "On retry, every event in the batch is sent again, in the original ReplayId order",
+        "Retried batches always have exactly the same events and size as the first one"
+      ],
+      "answer": [
+        0,
+        3
+      ],
+      "explain": "Throwing EventBus.RetryableException rolls back the trigger's DML and resends the whole batch in ReplayId order. The trigger can be retried 9 times; after that it moves to the error state.",
+      "wrong": [
+        "",
+        "That's how setResumeCheckpoint works; a retry resends the whole batch.",
+        "After 9 retries the trigger moves to the error state and stops.",
+        "",
+        "Resent batches can be bigger, because new events can be added."
+      ],
+      "source": "Platform Events Developer Guide: Retry Event Triggers with EventBus.RetryableException"
+    },
+    {
+      "id": "auto-x45",
+      "lesson": "auto-8",
+      "difficulty": 2,
+      "pack": "hard",
+      "q": "When an Opportunity is Closed Won, a legacy middleware must receive the Opportunity Id and Amount. It can only accept SOAP messages pushed to its HTTPS endpoint, it is sometimes down for a few hours, and the admin wants no Apex. What should the team use?",
+      "options": [
+        "An outbound message action that sends the fields to the middleware endpoint",
+        "Change Data Capture on Opportunity, with the middleware subscribing to the change channel",
+        "A custom platform event published by a flow, with an Apex trigger that makes the callout",
+        "An Apex REST service that the middleware calls every hour"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "Outbound messages push a SOAP message with selected fields to an endpoint, need no code, and are retried automatically while the endpoint is down.",
+      "wrong": [
+        "",
+        "CDC needs the middleware to subscribe as a client (CometD or Pub/Sub API); it doesn't push SOAP to an endpoint.",
+        "This needs Apex, and platform event triggers generally can't make callouts directly.",
+        "That needs Apex and polling, and the middleware can only receive pushed messages."
+      ],
+      "source": "Salesforce Help: Outbound Messaging; Change Data Capture Developer Guide"
+    },
+    {
+      "id": "auto-x46",
+      "lesson": "auto-9",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A shipping partner's API returns HTTP 503 with an HTML maintenance page during upgrades. What happens in this code?",
+      "code": "try {\n    HttpResponse res = new Http().send(req);\n    Map<String, Object> body =\n        (Map<String, Object>) JSON.deserializeUntyped(res.getBody());\n    shipment.Tracking__c = (String) body.get('tracking');\n} catch (CalloutException e) {\n    shipment.Sync_Status__c = 'Failed';\n}",
+      "lang": "apex",
+      "options": [
+        "Http.send() throws a CalloutException for the 503, so the catch block sets the status to Failed",
+        "Http.send() returns null for a 503, so res.getBody() throws a NullPointerException",
+        "The platform retries the callout up to 3 times before returning the 503",
+        "Http.send() returns normally, then parsing the HTML throws a JSONException that isn't caught; check res.getStatusCode() before parsing"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "HTTP error codes don't throw in Apex; send() returns the response. Check getStatusCode() first, and only parse the body for a success code.",
+      "wrong": [
+        "CalloutException covers things like timeouts and connection failures, not HTTP error codes.",
+        "send() returns an HttpResponse for any HTTP status.",
+        "Apex doesn't retry callouts automatically.",
+        ""
+      ],
+      "source": "Apex Developer Guide: HTTP Classes; Apex Reference Guide: HttpResponse Class"
+    },
+    {
+      "id": "auto-x47",
+      "lesson": "auto-9",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A Lightning controller logs an audit entry asynchronously and then calls a credit check service. No DML runs in the method. The callout throws an exception. Why?",
+      "code": "@AuraEnabled\npublic static String checkCredit(Id leadId) {\n    AuditService.logAsync(leadId);   // @future method\n    HttpRequest req = new HttpRequest();\n    req.setEndpoint('callout:Credit_API/score/' + leadId);\n    req.setMethod('GET');\n    return new Http().send(req).getBody();\n}",
+      "lang": "apex",
+      "options": [
+        "Future methods run before the rest of the method, so the audit DML is pending when the callout runs",
+        "Queuing a future method counts as pending work, so the callout fails with 'You have uncommitted work pending'; make the callout first",
+        "A controller can't make a callout and queue async work in the same request; split them into two Lightning calls",
+        "A future method and a callout in one transaction exceed the callout limit"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "Pending operations include DML, queued asynchronous Apex (such as future methods), scheduled Apex and sending email. Do the callout before any of these.",
+      "wrong": [
+        "Future methods run after the transaction commits, not before the callout.",
+        "",
+        "Both are allowed in one request if the callout comes first.",
+        "One callout is far below the limit of 100; this is about order."
+      ],
+      "source": "Apex Developer Guide: Callout Limits and Limitations"
+    },
+    {
+      "id": "auto-x48",
+      "lesson": "auto-9",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A method calls two endpoints: a token service, then a quotes service. The test below fails because both callouts get the same JSON. Which two changes give each callout its own fake response? (Choose 2)",
+      "code": "@IsTest\nstatic void getsQuote() {\n    StaticResourceCalloutMock mock = new StaticResourceCalloutMock();\n    mock.setStaticResource('QuoteResponse');\n    mock.setStatusCode(200);\n    Test.setMock(HttpCalloutMock.class, mock);\n    Test.startTest();\n    Decimal price = QuoteClient.getQuote('SKU-1');\n    Test.stopTest();\n    Assert.areEqual(99.5, price);\n}",
+      "lang": "apex",
+      "options": [
+        "Call Test.setMock twice, once for each endpoint",
+        "Use MultiStaticResourceCalloutMock and map each endpoint to its own static resource",
+        "Use Test.setMock(WebServiceMock.class, ...) for the second endpoint",
+        "Add @IsTest(SeeAllData=true) so the second callout reaches the real service",
+        "Write an HttpCalloutMock class whose respond() method returns a different response based on req.getEndpoint()"
+      ],
+      "answer": [
+        1,
+        4
+      ],
+      "explain": "MultiStaticResourceCalloutMock maps endpoints to static resources, and a custom HttpCalloutMock can branch on the request endpoint.",
+      "wrong": [
+        "The last setMock call replaces the earlier one; it doesn't map mocks to endpoints.",
+        "",
+        "WebServiceMock is for WSDL-based SOAP callouts, not HttpRequest.",
+        "Tests can't make real callouts, whatever SeeAllData is set to.",
+        ""
+      ],
+      "source": "Apex Developer Guide: Testing HTTP Callouts Using Static Resources; Testing HTTP Callouts by Implementing the HttpCalloutMock Interface"
+    },
+    {
+      "id": "auto-x49",
+      "lesson": "auto-10",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A partner POSTs JSON orders to /services/apexrest/orders. The contract says: 201 with a JSON body on success, and 422 with a JSON error message when validation fails. Which design meets it?",
+      "options": [
+        "A global static String @HttpPost method that returns '201' or '422' as its result",
+        "An @HttpPost method that throws a custom exception for validation failures, so the platform answers with 422",
+        "A global static void @HttpPost method that parses RestContext.request.requestBody, sets RestContext.response.statusCode to 201 or 422, and writes RestContext.response.responseBody",
+        "A global static Id @HttpPost method that inserts the order and returns its Id, so the platform answers with 201"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "To control the status code and body, set them on RestContext.response. With no parameters, the raw request body is in RestContext.request.requestBody.",
+      "wrong": [
+        "The returned string becomes the body; the status stays 200.",
+        "An unhandled exception returns 400 or 500, never 422.",
+        "",
+        "The platform doesn't switch to 201 for you; to send 201 you set RestContext.response.statusCode yourself."
+      ],
+      "source": "Apex Developer Guide: Apex REST Methods"
+    },
+    {
+      "id": "auto-x50",
+      "lesson": "auto-10",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A developer writes this Apex REST resource for a mobile app. It doesn't compile. Which two problems must be fixed? (Choose 2)",
+      "code": "@RestResource(urlMapping='/accounts/*')\nglobal with sharing class AccountApi {\n    @HttpGet\n    global static Account getById() {\n        String recId = RestContext.request.requestURI.substringAfterLast('/');\n        return [SELECT Id, Name FROM Account WHERE Id = :recId];\n    }\n    @HttpGet\n    global static List<Account> search(String name) {\n        return [SELECT Id, Name FROM Account WHERE Name = :name];\n    }\n}",
+      "lang": "apex",
+      "options": [
+        "urlMapping must start with /services/apexrest",
+        "Apex REST methods can't return List<Account>",
+        "A class can't have two methods annotated with the same HTTP method (@HttpGet)",
+        "A @RestResource class can't be declared with sharing",
+        "@HttpGet methods can't have parameters; read the name from RestContext.request.params instead"
+      ],
+      "answer": [
+        2,
+        4
+      ],
+      "explain": "Only one method per HTTP verb is allowed in a @RestResource class, and GET and DELETE methods take no parameters because those requests have no body.",
+      "wrong": [
+        "urlMapping is relative to /services/apexrest; you don't include that prefix.",
+        "Lists of sObjects are supported return types.",
+        "",
+        "with sharing is allowed and common on REST resources.",
+        ""
+      ],
+      "source": "Apex Developer Guide: Apex REST Methods"
+    },
+    {
+      "id": "auto-x51",
+      "lesson": "auto-10",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A web form posts this JSON to the Apex REST method below: {\"email\": \"ana@example.com\", \"source\": \"web\"}. The request fails. Which two statements are true? (Choose 2)",
+      "code": "@RestResource(urlMapping='/customers/*')\nglobal with sharing class CustomerApi {\n    @HttpPost\n    global static String upsertCustomer(CustomerDto customer) {\n        return CustomerService.save(customer.email, customer.source);\n    }\n    global class CustomerDto {\n        global String email;\n        global transient String source;\n    }\n}",
+      "lang": "apex",
+      "options": [
+        "The JSON must wrap the object in a key named after the parameter: {\"customer\": {...}}",
+        "CustomerDto must implement Serializable to be used as a parameter",
+        "Even with the wrapper, source is null, because transient members aren't deserialized",
+        "The keys in the JSON must appear in the same order as the class's members",
+        "Only global members are deserialized, so a private member would always stay null"
+      ],
+      "answer": [
+        0,
+        2
+      ],
+      "explain": "Apex REST maps top-level JSON keys to parameter names, so the body needs a 'customer' key. Members marked static or transient aren't deserialized.",
+      "wrong": [
+        "",
+        "There's no Serializable interface requirement for Apex REST.",
+        "",
+        "Parameter names matter, but their order doesn't.",
+        "Public, private and global members are all deserialized."
+      ],
+      "source": "Apex Developer Guide: Apex REST Methods"
+    },
+    {
+      "id": "auto-x52",
+      "lesson": "auto-10",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "An insurance partner needs a SOAP API to file claims. This class doesn't compile. Which two members cause the errors? (Choose 2)",
+      "code": "global class ClaimService {\n    global class ClaimInput {\n        webservice String policyNo;\n        webservice Decimal amount;\n    }\n    webservice static Id fileClaim(ClaimInput input) { /* ... */ }\n    webservice static Id fileClaim(String policyNo) { /* ... */ }\n    webservice static Map<String, String> lookup(String policyNo) { /* ... */ }\n}",
+      "lang": "apex",
+      "options": [
+        "The webservice member variables in the inner ClaimInput class",
+        "The second fileClaim method, because webservice methods can't be overloaded",
+        "fileClaim(ClaimInput), because webservice methods can't take user-defined types",
+        "lookup(), because webservice methods can't return a Map",
+        "The global keyword on the outer class, because webservice classes must be public"
+      ],
+      "answer": [
+        1,
+        3
+      ],
+      "explain": "Apex doesn't allow two webservice methods with the same name, and Maps (like Sets) can't be webservice parameters or return types.",
+      "wrong": [
+        "webservice member variables in an inner class are how you expose a custom type.",
+        "",
+        "Inner classes with webservice members can be used as parameters.",
+        "",
+        "Classes with webservice methods must be global."
+      ],
+      "source": "Apex Developer Guide: Considerations for Using the webservice Keyword; Overloading Web Service Methods"
+    },
+    {
+      "id": "auto-x53",
+      "lesson": "auto-11",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "Client__c must show a live count of its Completed Project__c records. Project__c has a lookup (not master-detail) to Client__c, and it can't be converted because some Projects have no Client. Integrations mass-update Projects, and the count must stay right when a Project is deleted or restored from the Recycle Bin. What is the best solution?",
+      "options": [
+        "An Apex trigger on Project__c (after insert, update, delete and undelete) that recalculates the counts with one aggregate query per transaction",
+        "A roll-up summary field on Client__c that counts Completed Projects",
+        "A record-triggered flow on Project__c that runs when a record is created, updated or deleted",
+        "A formula field on Client__c that counts the related Projects"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "Roll-up summary fields need a master-detail relationship, and record-triggered flows have no undelete trigger. A bulkified Apex trigger that handles undelete covers every case.",
+      "wrong": [
+        "",
+        "Roll-up summary fields aren't available on a lookup relationship.",
+        "Record-triggered flows can't run on undelete, so restored Projects wouldn't be counted.",
+        "Formula fields can't count child records."
+      ],
+      "source": "Apex Developer Guide: Triggers; Salesforce Help: Roll-Up Summary Field; Salesforce Help: Record-Triggered Flows"
+    },
+    {
+      "id": "auto-x54",
+      "lesson": "auto-11",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A record-triggered flow on Account calls this action to get a credit score. In bulk loads, some Accounts get another Account's score. What is wrong?",
+      "code": "@InvocableMethod(label='Get Credit Score')\npublic static List<Integer> getScores(List<Id> accountIds) {\n    List<Integer> out = new List<Integer>();\n    for (Account a : [SELECT Credit_Score__c FROM Account\n                      WHERE Id IN :accountIds\n                      AND Credit_Score__c != null]) {\n        out.add(a.Credit_Score__c.intValue());\n    }\n    return out;\n}",
+      "lang": "apex",
+      "options": [
+        "Invocable methods can't run SOQL; pass the scores in from the flow instead",
+        "The method must be global to run in bulk",
+        "The flow calls the action once per record, so the List always holds one Id and the bug is elsewhere",
+        "The outputs must match the inputs in size and order; build the result by looping over accountIds and looking each one up in a Map"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "Flow bulkifies interviews into one call, and the i-th output must belong to the i-th input. Skipping Accounts with no score shifts every later result.",
+      "wrong": [
+        "Invocable methods can run SOQL; that's how they get the scores.",
+        "public is enough for an invocable method; global isn't needed.",
+        "Flow batches interviews and passes many Ids in one call.",
+        ""
+      ],
+      "source": "Apex Developer Guide: InvocableMethod Annotation"
     }
   ]
 }
