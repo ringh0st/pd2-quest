@@ -16,9 +16,9 @@ A phone-first study app for the **Salesforce Platform Developer II** exam, desig
 ## What's inside
 
 - **50 bite-sized lessons** (2–4 min, one idea per card, swipe through) across all 5 exam sections, weighted like the real exam: Advanced Developer Fundamentals 15%, Process Automation, Logic & Integration 27%, User Interface 20%, Testing, Debugging & Deployment 20%, Performance 18%.
-- **201 scenario-style practice questions** with instant feedback, "why not the others?" explanations and the source doc for each.
+- **401 scenario-style practice questions**, 236 of them exam-hard and 184 with code to read (Apex, LWC, Aura, Visualforce, SOQL, test classes, debug logs, sf CLI), each with instant feedback, "why not the others?" explanations and the Salesforce doc it was checked against.
 - **160 flashcards** with 3D flips and spaced repetition.
-- **Exam simulator**: full mock (60 questions, 120 min) or mini mock (20 questions, 40 min), with flags, a question map and a per-section review.
+- **Exam simulator**: full mock (60 questions, 120 min), **Exam-hard mock** (60 of the toughest), mini mock (20 questions, 40 min) and an Exam-hard sprint. Mocks pick questions you've seen least first, so they don't repeat early.
 - **Spaced repetition** (modified Leitner: 0/1/3/7/14/30/60 days; a miss drops 2 boxes, not to zero). Misses come back later in the same round.
 - **Dopamine loop**: XP, levels and ranks, combos (×1.25 / ×1.5 / ×2), a daily goal ring, lucky-drop bonus chests, confetti, haptics and generated sounds.
 - **Forgiving streaks**: any study counts; freezes (earned every 7 days) cover missed days automatically. No guilt copy.
@@ -58,5 +58,7 @@ research/        ADHD UX spec, content schema, color audit
 ```
 
 ## Content note
+
+The Exam-hard pack (200 questions) was checked against the official Salesforce docs (Apex, LWC, Visualforce, SOQL, Platform Events, DX guides) in November 2026, including two recent changes: heap is now 10 MB sync / 25 MB async, and from API 67.0 classes with no sharing keyword run with sharing in user mode. Lessons teach both the classic and the new behaviour.
 
 All questions and lessons are original practice material written from the public exam guide and Salesforce documentation. They are not real exam questions, and the app is not affiliated with Salesforce. Always double-check limits and behaviour against the current docs and release notes.
