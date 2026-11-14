@@ -11,10 +11,10 @@ export function shuffle(arr, rand = Math.random) {
 }
 
 /** Pick `count` questions. `sectionId` narrows to one section; otherwise interleave by exam weight. */
-export function buildSprint(sections, items, { count = 5, sectionId = null, now = Date.now(), rand = Math.random } = {}) {
+export function buildSprint(sections, items, { count = 5, sectionId = null, minDifficulty = 1, now = Date.now(), rand = Math.random } = {}) {
   const pool = sections
     .filter((s) => !sectionId || s.id === sectionId)
-    .flatMap((s) => s.questions.map((q) => ({ q, weight: s.weight })));
+    .flatMap((s) => s.questions.filter((q) => (q.difficulty ?? 2) >= minDifficulty).map((q) => ({ q, weight: s.weight })));
 
   const due = pool.filter(({ q }) => isDue(items[q.id], now));
   const shaky = pool.filter(({ q }) => items[q.id]?.seen && !isDue(items[q.id], now) && items[q.id].box <= 2);
@@ -51,15 +51,25 @@ function weightedShuffle(list, rand) {
     .map(({ x }) => x);
 }
 
-/** Exam simulation: questions per section proportional to exam weight. */
-export function buildExam(sections, { count = 60, rand = Math.random } = {}) {
+/**
+ * Exam simulation: questions per section proportional to exam weight.
+ * `hardOnly` draws exam-hard questions (difficulty 3) first; `items` lets it prefer questions
+ * you have seen least, so repeated mocks show fresh questions before repeats.
+ */
+export function buildExam(sections, { count = 60, rand = Math.random, hardOnly = false, items = {} } = {}) {
   const total = sections.reduce((s, x) => s + x.weight, 0);
+  const seenCount = (q) => items[q.id]?.seen ?? 0;
+  const ordered = (pool) => shuffle(pool, rand).sort((a, b) => seenCount(a) - seenCount(b));
   const out = [];
   sections.forEach((s, i) => {
     const n = i === sections.length - 1
       ? count - out.length
       : Math.round((s.weight / total) * count);
-    out.push(...shuffle(s.questions, rand).slice(0, Math.max(0, n)));
+    const hard = s.questions.filter((q) => q.difficulty >= 3);
+    const pool = hardOnly
+      ? [...ordered(hard), ...ordered(s.questions.filter((q) => q.difficulty === 2))]
+      : ordered(s.questions);
+    out.push(...pool.slice(0, Math.max(0, n)));
   });
   return shuffle(out, rand).slice(0, count);
 }

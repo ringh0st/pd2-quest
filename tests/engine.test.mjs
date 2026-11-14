@@ -84,3 +84,12 @@ test('readiness weighted', () => {
   sections[1].questions.forEach((q) => (items[q.id] = { ...newItem(), seen: 1, box: 4 }));
   assert.equal(readiness(sections, items), 70);
 });
+
+test('exam: hardOnly prefers difficulty 3, fresh questions first', () => {
+  const secs = [{ id: 'z', weight: 100, questions: Array.from({ length: 30 }, (_, i) => ({ id: 'z' + i, difficulty: i < 12 ? 3 : 2, answer: [0] })) }];
+  const e = buildExam(secs, { count: 10, hardOnly: true });
+  assert.ok(e.every((q) => q.difficulty === 3));
+  const items = Object.fromEntries(Array.from({ length: 20 }, (_, i) => ['z' + i, { seen: 3 }]));
+  const f = buildExam(secs, { count: 10, items });
+  assert.ok(f.every((q) => !items[q.id]));
+});

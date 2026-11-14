@@ -20,7 +20,7 @@ function makeRound(query) {
     const due = sections.flatMap((x) => x.questions).filter((q) => isDue(s.items[q.id]));
     if (due.length) return buildSprint(sections, s.items, { count: size });
   }
-  return buildSprint(sections, s.items, { count: size, sectionId: query.section || null });
+  return buildSprint(sections, s.items, { count: size, sectionId: query.section || null, minDifficulty: query.hard ? 3 : 1 });
 }
 
 export function Sprint({ query }) {
@@ -116,7 +116,7 @@ export function Sprint({ query }) {
   return (
     <main className="screen focus" id="main">
       <h1 className="sr-only">Practice sprint, round {round.n}</h1>
-      {sec && <p className="small muted center" style={{ fontWeight: 700 }}>{sec.emoji} {sec.title} practice</p>}
+      {(sec || query.hard) && <p className="small muted center" style={{ fontWeight: 700 }}>{query.hard ? '🔥 Exam-hard ' : ''}{sec ? `${sec.emoji} ${sec.title} ` : ''}practice</p>}
       <PracticeRunner key={round.n} questions={round.questions} onExit={() => go('/')} onDone={done} topRight={timer} />
     </main>
   );

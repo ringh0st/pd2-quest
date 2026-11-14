@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { sections, sectionById, exam } from '../data/index.js';
 import { buildExam, isCorrect } from '../engine/session.js';
-import { useStore, answerQuestion, earn, recordExam } from '../state/store.js';
+import { useStore, answerQuestion, earn, recordExam, getState } from '../state/store.js';
 import { XP } from '../engine/xp.js';
 import { QuestionView, cleanQuestion } from '../components/QuestionView.jsx';
 import { Rich } from '../lib/rich.jsx';
@@ -17,6 +17,7 @@ import { ParkIt } from '../components/ParkIt.jsx';
 const MODES = [
   { id: 'mini', label: 'Mini mock', count: 20, minutes: 40, emoji: '🏃', blurb: '20 questions · 40 min' },
   { id: 'full', label: 'Full mock exam', count: exam.questions, minutes: exam.minutes, emoji: '🏁', blurb: `${exam.questions} questions · ${exam.minutes} min, like the real thing` },
+  { id: 'hard', label: 'Exam-hard mock', count: exam.questions, minutes: exam.minutes, emoji: '🔥', blurb: `${exam.questions} of the toughest questions · ${exam.minutes} min. Your real test.`, hardOnly: true },
 ];
 
 export function Exam() {
@@ -37,13 +38,18 @@ export function Exam() {
       {MODES.map((m) => (
         <button
           key={m.id} className="card link section-card" style={{ textAlign: 'left', width: '100%', font: 'inherit' }}
-          onClick={() => { sfx.tap(); haptic('medium'); setRun({ ...m, questions: buildExam(sections, { count: m.count }), startedAt: Date.now() }); }}
+          onClick={() => { sfx.tap(); haptic('medium'); setRun({ ...m, questions: buildExam(sections, { count: m.count, hardOnly: !!m.hardOnly, items: getState().items }), startedAt: Date.now() }); }}
         >
           <span className="section-emoji" aria-hidden="true">{m.emoji}</span>
           <span><strong>{m.label}</strong><br /><span className="small muted">{m.blurb}</span></span>
           <span aria-hidden="true">▶</span>
         </button>
       ))}
+      <a className="card link row" href="#/sprint?hard=1" onClick={() => sfx.tap()}>
+        <span className="section-emoji" aria-hidden="true">🔥</span>
+        <span className="grow"><strong>Exam-hard sprint</strong><br /><span className="small muted">Short rounds of only the toughest questions, with explanations</span></span>
+        <span aria-hidden="true">▶</span>
+      </a>
       {last && (
         <div className="card stack-s">
           <strong>Recent attempts</strong>
