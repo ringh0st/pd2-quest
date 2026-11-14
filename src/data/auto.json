@@ -2741,7 +2741,7 @@
       "options": [
         "Call Database.releaseSavepoint(sp) after the rollback and before the callout",
         "Nothing; rolling back removes the pending DML, so the callout should work, and the error means the endpoint is down",
-        "Move the callout to an @future method, because savepoints and callouts can never share a transaction",
+        "Call Database.setSavepoint() again after the rollback, so the callout runs after a fresh savepoint",
         "Call Database.releaseSavepoint(sp) before Database.rollback(sp)"
       ],
       "answer": [
@@ -2751,7 +2751,7 @@
       "wrong": [
         "",
         "An active savepoint still blocks the callout, even with no pending DML.",
-        "They can share a transaction once the savepoint is rolled back and released.",
+        "A new savepoint is one more active savepoint, which blocks the callout too.",
         "Rolling back after a release throws an error, and the insert would still be pending."
       ],
       "source": "Apex Developer Guide: Transaction Control"
