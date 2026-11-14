@@ -13,8 +13,8 @@
       "cards": [
         {
           "type": "text",
-          "title": "System mode by default",
-          "body": "Apex runs in **system mode**: it ignores the user's permissions. **Sharing keywords** only control **record-level** access (which rows SOQL/DML can touch)."
+          "title": "System mode by default (classic)",
+          "body": "Classic Apex (API 66.0 and earlier, what most exam questions assume) runs in **system mode**: it ignores the user's permissions. **Sharing keywords** only control **record-level** access (which rows SOQL/DML can touch)."
         },
         {
           "type": "list",
@@ -28,7 +28,7 @@
         {
           "type": "text",
           "title": "No keyword?",
-          "body": "A class with **no keyword** inherits the caller's mode. But if it is the **entry point** (e.g. an @AuraEnabled method called by LWC), it runs **without sharing**. That is why **inherited sharing** is the safer default."
+          "body": "A class with **no keyword** inherits the caller's mode. As an **entry point** it runs **without sharing**, except @AuraEnabled controllers, which run **with sharing**. From **API 67.0**, no keyword means **with sharing + user mode**. Always declare a keyword: **inherited sharing** is the safe default."
         },
         {
           "type": "text",
@@ -38,6 +38,10 @@
         {
           "type": "trap",
           "body": "**Inner classes do NOT inherit** the outer class's sharing keyword. And **with sharing does NOT enforce CRUD/FLS** - only rows. Triggers run without sharing."
+        },
+        {
+          "type": "trap",
+          "body": "Watch the **API version** in a scenario. Newer API 67.0+ classes default to **with sharing** and **user mode**; older classes default to system mode. When the question doesn't say, assume the classic behaviour."
         },
         {
           "type": "tip",
@@ -597,7 +601,7 @@
       "answer": [
         1
       ],
-      "explain": "A class with no sharing keyword runs in the sharing mode of the code that called it. Here the caller is with sharing, so the query respects sharing.",
+      "explain": "A class with no sharing keyword that is called by other Apex runs in the caller's mode (API 66.0 and earlier), so here the query respects sharing. From API 67.0 a class with no keyword always runs with sharing, so the answer is the same.",
       "wrong": [
         "No-keyword classes only default to without sharing when they are the entry point.",
         "",
@@ -623,7 +627,7 @@
       "explain": "inherited sharing adopts the caller's mode when called from other Apex. As an entry point (like an LWC @AuraEnabled call), it runs with sharing.",
       "wrong": [
         "This would ignore sharing for the LWC user.",
-        "With no keyword, an entry-point call runs without sharing, so LWC users would see too much.",
+        "Leaving out the keyword hides the intent and depends on the API version. From API 67.0 a class with no keyword always runs with sharing and never takes on a without sharing caller's mode.",
         "This always enforces sharing, even when the batch caller needs without sharing.",
         ""
       ],
@@ -1422,6 +1426,796 @@
         "Sharing keywords don't affect how long a static lives."
       ],
       "source": "Apex Developer Guide: Static and Instance Methods, Variables / Platform Cache"
+    },
+    {
+      "id": "fund-x1",
+      "lesson": "fund-3",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "Recruiting runs on the custom object Job__c, whose organization-wide default is Public Read Only. A trigger (saved at API version 62.0) shares each new job with the recruiter in the Recruiter__c lookup. The recruiting director says the code was copied from an older org where Job__c was Private. What happens when a job is inserted?",
+      "code": "trigger JobShare on Job__c (after insert) {\n  List<Job__Share> shares = new List<Job__Share>();\n  for (Job__c j : Trigger.new) {\n    shares.add(new Job__Share(\n      ParentId = j.Id,\n      UserOrGroupId = j.Recruiter__c,\n      AccessLevel = 'Read',\n      RowCause = Schema.Job__Share.RowCause.Recruiter__c));\n  }\n  Database.SaveResult[] results = Database.insert(shares, false);\n}",
+      "lang": "apex",
+      "options": [
+        "The share is created and the recruiter keeps Read access even after an owner change",
+        "The job saves, but each share fails with FIELD_FILTER_VALIDATION_EXCEPTION because Read is not higher than the OWD",
+        "The whole transaction rolls back with a DmlException, so the job is not saved",
+        "The share is inserted and silently upgraded to Edit so it grants more than the OWD"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "A share row must grant access higher than the object's org-wide default. Read on a Public Read Only object is a trivial share, so each insert fails with FIELD_FILTER_VALIDATION_EXCEPTION. With allOrNone = false the jobs still save.",
+      "wrong": [
+        "A share must grant more than the OWD. Read on a Public Read Only object is rejected.",
+        "",
+        "allOrNone is false, so failures are returned in the SaveResults instead of thrown.",
+        "Salesforce never upgrades the requested access level on its own."
+      ],
+      "source": "Apex Developer Guide: Sharing a Record Using Apex"
+    },
+    {
+      "id": "fund-x2",
+      "lesson": "fund-3",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "When the Recruiter__c lookup on a Job__c changes, a developer wants the new recruiter to get the old recruiter's Apex managed share. Job__c is Private, the Recruiter__c sharing reason exists, and the code is saved at API version 62.0. A tester reports an error when the lookup is changed. What is wrong?",
+      "code": "for (Job__c j : changedJobs) {\n  Job__Share s = [\n    SELECT Id, UserOrGroupId FROM Job__Share\n    WHERE ParentId = :j.Id\n    AND RowCause = :Schema.Job__Share.RowCause.Recruiter__c\n    LIMIT 1];\n  s.UserOrGroupId = j.Recruiter__c;\n  update s;\n}",
+      "lang": "apex",
+      "options": [
+        "RowCause must be set again on every update, or it resets to Manual",
+        "Share records can only be changed by a user with Modify All Data, even from Apex",
+        "UserOrGroupId can't be changed on an existing share, so the code must delete the old share and insert a new one",
+        "update isn't supported on share objects; only insert and delete are"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "ParentId, UserOrGroupId and RowCause can't be updated after a share is created. To move access to another user, delete the old share and insert a new one. (The code also has a query inside a loop, which a bulk fix should remove.)",
+      "wrong": [
+        "RowCause can't be changed after creation, and it is not reset by an update.",
+        "Apex runs the DML. The Modify All Data rule applies to editing Apex managed shares in the UI.",
+        "",
+        "AccessLevel on a share can be updated. Only ParentId, UserOrGroupId and RowCause are fixed."
+      ],
+      "source": "Apex Developer Guide: Sharing a Record Using Apex"
+    },
+    {
+      "id": "fund-x3",
+      "lesson": "fund-3",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A recruiting app grants access to Job__c records with Apex sharing reasons. Sometimes record locking stops shares from being written, so the architect wants an Apex managed sharing recalculation class. Which two statements about that class are true? (Choose 2)",
+      "options": [
+        "It must implement Schedulable, and Salesforce runs it nightly",
+        "It implements Database.Batchable and is added in the Apex Sharing Recalculation related list of Job__c",
+        "It runs automatically every time a Job__c record changes owner",
+        "It runs automatically when the organization-wide default of Job__c changes, and an admin can also start it",
+        "It can only be started from Setup, never with Database.executeBatch"
+      ],
+      "answer": [
+        1,
+        3
+      ],
+      "explain": "A sharing recalculation class is a Database.Batchable class registered on the object's Apex Sharing Recalculation related list. It runs when the object's OWD changes, can be started by an admin, and can also be run with Database.executeBatch.",
+      "wrong": [
+        "It implements Database.Batchable. Salesforce doesn't schedule it nightly.",
+        "",
+        "An owner change doesn't start a recalculation. Apex managed shares simply survive it.",
+        "",
+        "The docs say Database.executeBatch can start the recalculation programmatically."
+      ],
+      "source": "Apex Developer Guide: Recalculating Apex Managed Sharing"
+    },
+    {
+      "id": "fund-x4",
+      "lesson": "fund-3",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "This execute method belongs to the sharing recalculation class for Job__c (API version 62.0). Record owners also share jobs by hand with the Sharing button, and another app uses a Hiring_Manager__c sharing reason on the same object. What is the main problem with the code?",
+      "code": "public void execute(Database.BatchableContext bc, List<Job__c> scope) {\n  Set<Id> ids = new Map<Id, Job__c>(scope).keySet();\n  delete [SELECT Id FROM Job__Share WHERE ParentId IN :ids];\n\n  List<Job__Share> fresh = new List<Job__Share>();\n  for (Job__c j : scope) {\n    fresh.add(new Job__Share(ParentId = j.Id,\n      UserOrGroupId = j.Recruiter__c, AccessLevel = 'Edit',\n      RowCause = Schema.Job__Share.RowCause.Recruiter__c));\n  }\n  insert fresh;\n}",
+      "lang": "apex",
+      "options": [
+        "New shares must be inserted in finish(), not in execute()",
+        "A recalculation class can't run DML. It must return the share rows to the platform",
+        "AccessLevel 'Edit' isn't allowed during a recalculation, only 'Read'",
+        "The delete isn't filtered by RowCause, so it targets every share on the jobs instead of only the Recruiter__c rows this class owns"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "A recalculation should delete and rebuild only the shares it manages, filtered by its own Apex sharing reason. Without a RowCause filter the query also picks up manual shares, other reasons' shares and owner rows.",
+      "wrong": [
+        "execute() runs once per chunk and is where the shares for that chunk are rebuilt.",
+        "The class does its own delete and insert, like any batch class.",
+        "Read and Edit are both valid in a recalculation.",
+        ""
+      ],
+      "source": "Apex Developer Guide: Recalculating Apex Managed Sharing"
+    },
+    {
+      "id": "fund-x5",
+      "lesson": "fund-3",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "Account OWD is Private. Each account has a Customer_Success_Manager__c user lookup, and that user needs Edit access. A developer writes the code below in a helper class and tries to save it. What happens?",
+      "code": "insert new AccountShare(\n  ParentId      = acc.Id,\n  UserOrGroupId = acc.Customer_Success_Manager__c,\n  AccessLevel   = 'Edit'\n);",
+      "lang": "apex",
+      "options": [
+        "It doesn't compile: AccountShare uses AccountId and AccountAccessLevel (plus related access fields like OpportunityAccessLevel), not ParentId and AccessLevel",
+        "It inserts a Manual share that gives the manager Edit access",
+        "It compiles, but fails at runtime because standard objects can't be shared from Apex",
+        "It compiles, but the share is removed by the next sharing recalculation"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "Standard share objects name their fields after the object: AccountShare has AccountId and AccountAccessLevel, along with OpportunityAccessLevel and CaseAccessLevel. ParentId and AccessLevel are the field names on custom __Share objects.",
+      "wrong": [
+        "",
+        "The field names are wrong for AccountShare, so the class doesn't save.",
+        "Apex can insert AccountShare rows. The problem here is the field names.",
+        "The code never gets that far. It doesn't compile."
+      ],
+      "source": "Object Reference for the Salesforce Platform: AccountShare"
+    },
+    {
+      "id": "fund-x6",
+      "lesson": "fund-3",
+      "difficulty": 2,
+      "pack": "hard",
+      "q": "Invoice_Line__c is the detail in a master-detail relationship with Invoice__c, which is Private. A developer wants an auditor to see one line, and writes the code below. It doesn't compile. Why?",
+      "code": "insert new Invoice_Line__Share(\n  ParentId = line.Id,\n  UserOrGroupId = auditorId,\n  AccessLevel = 'Read'\n);",
+      "lang": "apex",
+      "options": [
+        "Invoice_Line__c's OWD must first be changed to Private",
+        "An Apex sharing reason must be created on Invoice_Line__c first",
+        "The class must be declared without sharing to reference share objects",
+        "Detail objects have no share object. Access comes from the master, so share the Invoice__c record"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "Detail records in a master-detail relationship have no share object. Their access follows the master record and the relationship's sharing setting, so Apex shares the parent Invoice__c.",
+      "wrong": [
+        "A detail object's access is Controlled by Parent. Its OWD can't be set on its own.",
+        "A sharing reason can't create a share object that doesn't exist.",
+        "Sharing keywords don't decide whether a type exists.",
+        ""
+      ],
+      "source": "Apex Developer Guide: Sharing a Record Using Apex"
+    },
+    {
+      "id": "fund-x7",
+      "lesson": "fund-3",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A grants app shares each Grant__c (OWD Private) with reviewers through Apex managed sharing. The team is writing the sharing service. Which two statements are true? (Choose 2)",
+      "options": [
+        "UserOrGroupId can hold a public group or a role group, not just a single user",
+        "UserOrGroupId can be the site guest user, so anonymous visitors can read approved grants",
+        "AccessLevel 'All' can be granted if the running user has Modify All Data",
+        "The grant's owner can remove an Apex managed share with the Sharing button",
+        "If a user has a Manual Read share and Apex inserts a Manual Edit share for the same user and record, the existing row is updated to Edit"
+      ],
+      "answer": [
+        0,
+        4
+      ],
+      "explain": "Shares can target users, public groups or role groups. Inserting a higher-access manual share for the same user updates the existing row to the higher level instead of adding a duplicate.",
+      "wrong": [
+        "",
+        "Apex can't grant record access to unauthenticated guest users.",
+        "All is an internal value that can't be granted through a share row.",
+        "Only users with Modify All Data can add or change Apex managed sharing on a record.",
+        ""
+      ],
+      "source": "Apex Developer Guide: Sharing a Record Using Apex"
+    },
+    {
+      "id": "fund-x8",
+      "lesson": "fund-3",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "Each Grant__c (OWD Private) must be editable by the reviewers listed in its child Grant_Reviewer__c junction records. Reviewers come from many roles and change weekly. Access must survive when a grant moves to a new owner and must go away when a reviewer row is deleted. Which two parts should the solution include? (Choose 2)",
+      "options": [
+        "A criteria-based sharing rule on Grant__c that matches the reviewer users",
+        "A flow that sends the owner a reminder to click Sharing for each new reviewer",
+        "An Apex sharing reason on Grant__c, used as the RowCause of every Grant__Share the code writes",
+        "A Grant_Reviewer__c trigger that inserts a Grant__Share on insert and deletes the matching share on delete",
+        "Make Grant__c the detail side of a master-detail relationship with Grant_Reviewer__c"
+      ],
+      "answer": [
+        2,
+        3
+      ],
+      "explain": "The rule depends on child records, so declarative sharing can't express it. Apex managed sharing with its own sharing reason survives owner changes, and a junction trigger adds and removes shares as reviewers change.",
+      "wrong": [
+        "Sharing rules match record field values to groups or roles. They can't read users from child junction records.",
+        "Manual shares aren't automatic, and the Manual row cause is deleted when the owner changes.",
+        "",
+        "",
+        "That would remove Grant__c's own share object, and access would come from a single master record."
+      ],
+      "source": "Apex Developer Guide: Sharing a Record Using Apex"
+    },
+    {
+      "id": "fund-x9",
+      "lesson": "fund-1",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A support LWC calls CaseController.countAll(). The running agent can see 40 of the org's 500 cases. What does the method return?",
+      "code": "public with sharing class CaseController {\n  @AuraEnabled(cacheable=true)\n  public static Integer countAll() { return CaseService.countCases(); }\n}\npublic inherited sharing class CaseService {\n  public static Integer countCases() { return CaseRepo.countAll(); }\n}\npublic without sharing class CaseRepo {\n  public static Integer countAll() {\n    return [SELECT COUNT() FROM Case WITH SYSTEM_MODE];\n  }\n}",
+      "lang": "apex",
+      "options": [
+        "40, because the entry-point class is with sharing",
+        "40, because inherited sharing passes with sharing down to every class it calls",
+        "500, because the query is defined in a without sharing class and SYSTEM_MODE leaves sharing to that class's keyword",
+        "A QueryException, because COUNT() can't be combined with WITH SYSTEM_MODE"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "The sharing mode comes from the class where the method is defined. In system mode, record access follows that class's keyword, so the without sharing CaseRepo counts all 500 cases.",
+      "wrong": [
+        "A method runs in the mode of the class that defines it. The query is in CaseRepo, not CaseController.",
+        "inherited sharing only sets CaseService's own mode. CaseRepo declares its own.",
+        "",
+        "COUNT() works with an access mode clause."
+      ],
+      "source": "Apex Developer Guide: Use the with sharing, without sharing, and inherited sharing Keywords"
+    },
+    {
+      "id": "fund-x10",
+      "lesson": "fund-1",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A nightly scheduled job (without sharing) enqueues ArchiveJob to close stale opportunities across the whole org. The scheduled job runs as a sales ops user who can see only part of the pipeline. The developer expects ArchiveJob to see every stale opportunity. What actually happens?",
+      "code": "public without sharing class NightlyCleanup implements Schedulable {\n  public void execute(SchedulableContext sc) {\n    System.enqueueJob(new ArchiveJob());\n  }\n}\npublic inherited sharing class ArchiveJob implements Queueable {\n  public void execute(QueueableContext ctx) {\n    List<Opportunity> stale = [SELECT Id FROM Opportunity\n      WHERE IsClosed = false AND CloseDate < LAST_N_DAYS:365\n      WITH SYSTEM_MODE];\n    // close them...\n  }\n}",
+      "lang": "apex",
+      "options": [
+        "ArchiveJob sees every stale opportunity, because it inherits without sharing from the class that enqueued it",
+        "ArchiveJob runs with sharing, because each async job is a new entry point. Declare it without sharing to process every record",
+        "Queueable classes always run in system mode and ignore sharing keywords",
+        "The class doesn't compile, because inherited sharing isn't allowed on a Queueable"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "An async job is a new entry point, and the caller's sharing mode isn't serialized with it. An inherited sharing class used as an entry point runs with sharing, so the job only sees records the running user can access.",
+      "wrong": [
+        "The sharing mode isn't passed on to async jobs.",
+        "",
+        "Sharing keywords apply to Queueable classes like any other class.",
+        "inherited sharing is valid on any class."
+      ],
+      "source": "Apex Developer Guide: Use the with sharing, without sharing, and inherited sharing Keywords"
+    },
+    {
+      "id": "fund-x11",
+      "lesson": "fund-1",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A partner portal helper class is declared without sharing so that some lookups can reach records partners don't own. A partner user calls both methods. Which statement is true?",
+      "code": "public without sharing class PortalCases {\n  public static List<Case> mine() {\n    return [SELECT Id, Subject, Internal_Notes__c FROM Case WITH USER_MODE];\n  }\n  public static List<Case> all() {\n    return [SELECT Id, Subject, Internal_Notes__c FROM Case WITH SYSTEM_MODE];\n  }\n}",
+      "lang": "apex",
+      "options": [
+        "mine() applies the user's sharing, object permissions and FLS. all() skips object permissions and FLS, and the without sharing keyword means it skips sharing too",
+        "Both methods return every case, because the class is without sharing",
+        "mine() enforces FLS only. Its record access still follows the without sharing keyword",
+        "all() still enforces sharing, because SYSTEM_MODE bypasses only FLS and object permissions"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "WITH USER_MODE always enforces sharing, CRUD and FLS. WITH SYSTEM_MODE ignores CRUD and FLS and leaves record access to the class's sharing keyword, which is without sharing here.",
+      "wrong": [
+        "",
+        "User mode always enforces the user's sharing, whatever the class keyword is.",
+        "User mode enforces sharing as well as CRUD and FLS.",
+        "In system mode record access follows the class keyword, and here that is without sharing."
+      ],
+      "source": "Apex Developer Guide: Set an Access Mode for Database Operations"
+    },
+    {
+      "id": "fund-x12",
+      "lesson": "fund-2",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A developer creates a new class saved at API version 67.0. It has no sharing keyword and its query has no access mode clause. The running user can read Account but has no field-level access to Rating__c. What happens when hot() runs?",
+      "code": "// Saved at API version 67.0\npublic class RatingService {\n  public static List<Account> hot() {\n    return [SELECT Id, Name, Rating__c FROM Account\n            WHERE Rating__c = 'Hot'];\n  }\n}",
+      "lang": "apex",
+      "options": [
+        "It returns every hot account and ignores FLS and sharing, because Apex runs in system mode",
+        "It returns the hot accounts the user can see, with Rating__c set to null",
+        "It throws a QueryException, because from API 67.0 the query runs in user mode and checks FLS on every clause",
+        "It doesn't compile, because API 67.0 classes must declare a sharing keyword"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "From API 67.0, Apex database operations run in user mode by default and classes without a keyword run with sharing. A user mode query checks FLS on all clauses, so the missing Rating__c access throws a QueryException. At API 66.0 and earlier, the same query would run in system mode.",
+      "wrong": [
+        "From API 67.0, database operations run in user mode unless system mode is set explicitly.",
+        "User mode doesn't blank out fields. It fails the query.",
+        "",
+        "The keyword is still optional. Without one, the class runs with sharing."
+      ],
+      "source": "Apex Developer Guide: Set an Access Mode for Database Operations"
+    },
+    {
+      "id": "fund-x13",
+      "lesson": "fund-2",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A help-desk tool lets agents find a contact by the last four digits of a national ID stored in SSN_Last4__c. The agent profile can read Contact but has no field-level access to SSN_Last4__c. The class is saved at API version 62.0, and both queries run with the same input. Which statement is true?",
+      "code": "List<Contact> a = [SELECT Id, Name FROM Contact\n  WHERE SSN_Last4__c = :input WITH SECURITY_ENFORCED];\n\nList<Contact> b = [SELECT Id, Name FROM Contact\n  WHERE SSN_Last4__c = :input WITH USER_MODE];",
+      "lang": "apex",
+      "options": [
+        "Query a returns the matching contacts, because SECURITY_ENFORCED doesn't check WHERE fields. Query b throws a QueryException",
+        "Both queries throw a QueryException, because the user can't read SSN_Last4__c",
+        "Both queries return the matching contacts, because SSN_Last4__c isn't in either SELECT list",
+        "Query a throws a QueryException and query b returns the contacts with the filter silently removed"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "WITH SECURITY_ENFORCED only checks fields in the SELECT and FROM clauses, so filtering on a hidden field still works and can leak data. WITH USER_MODE checks every clause, including WHERE, and throws.",
+      "wrong": [
+        "",
+        "SECURITY_ENFORCED checks only fields in SELECT and FROM, so query a runs.",
+        "USER_MODE also checks WHERE clause fields, so query b fails.",
+        "It's the reverse, and user mode never drops a filter."
+      ],
+      "source": "Apex Developer Guide: Set an Access Mode for Database Operations"
+    },
+    {
+      "id": "fund-x14",
+      "lesson": "fund-2",
+      "difficulty": 2,
+      "pack": "hard",
+      "q": "A public lead form controller (API version 62.0) must drop any field the guest profile isn't allowed to create, without failing the save. During review, the security team says hidden fields can still be written. What is the bug?",
+      "code": "SObjectAccessDecision d = Security.stripInaccessible(\n  AccessType.CREATABLE, leads);\ninsert leads;",
+      "lang": "apex",
+      "options": [
+        "AccessType.CREATABLE should be AccessType.UPDATABLE for an insert",
+        "stripInaccessible must be called after the insert",
+        "stripInaccessible only works on records returned by SOQL",
+        "The code inserts the original list. It must insert d.getRecords(), which holds the stripped copies"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "stripInaccessible doesn't change the list you pass in. It returns sanitized copies through getRecords(), and those are what must be inserted.",
+      "wrong": [
+        "CREATABLE is the right check for an insert.",
+        "Stripping after the save is too late. The values are already written.",
+        "It also works on new records and deserialized input.",
+        ""
+      ],
+      "source": "Apex Developer Guide: Enforce Security with the stripInaccessible Method"
+    },
+    {
+      "id": "fund-x15",
+      "lesson": "fund-2",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A sales dashboard controller builds a total per owner and must hide amounts from users without access. A developer adds stripInaccessible to the aggregate results. What happens at runtime?",
+      "code": "List<AggregateResult> totals = [\n  SELECT OwnerId, SUM(Amount) total\n  FROM Opportunity GROUP BY OwnerId];\nSObjectAccessDecision d = Security.stripInaccessible(\n  AccessType.READABLE, totals);",
+      "lang": "apex",
+      "options": [
+        "The total alias is removed for users who can't read Amount",
+        "An exception is thrown, because stripInaccessible doesn't support AggregateResult. Add WITH USER_MODE to the aggregate query instead",
+        "The results come back unchanged, because aggregates aren't subject to FLS",
+        "It doesn't compile, because stripInaccessible only accepts List<SObject>"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "The docs say stripInaccessible doesn't support AggregateResult and throws an exception for it. Running the aggregate query WITH USER_MODE enforces CRUD and FLS instead.",
+      "wrong": [
+        "stripInaccessible can't process AggregateResult rows at all.",
+        "",
+        "Aggregate queries still read fields. Use user mode to enforce FLS.",
+        "AggregateResult is an SObject, so it compiles. It fails at runtime."
+      ],
+      "source": "Apex Developer Guide: Enforce Security with the stripInaccessible Method"
+    },
+    {
+      "id": "fund-x16",
+      "lesson": "fund-2",
+      "difficulty": 2,
+      "pack": "hard",
+      "q": "An integration inserts Order__c records in user mode. When a field-level security problem blocks a save, the support team wants the log to name the blocked fields. Which two approaches give the field names? (Choose 2)",
+      "options": [
+        "Catch the DmlException from insert as user records; and call e.getDmlFieldNames(0)",
+        "Call Database.insert(records, false, AccessLevel.USER_MODE) and read getFields() on each failed SaveResult's errors",
+        "Catch a QueryException after the insert and call getInaccessibleFields()",
+        "Add WITH SECURITY_ENFORCED to the insert and read the exception message",
+        "Read getId() on each failed SaveResult"
+      ],
+      "answer": [
+        0,
+        1
+      ],
+      "explain": "User mode DML reports FLS errors through DmlException.getDmlFieldNames(). Database DML methods with AccessLevel.USER_MODE return the fields through SaveResult.getErrors()[i].getFields().",
+      "wrong": [
+        "",
+        "",
+        "getInaccessibleFields() is for user mode SOQL queries, not DML.",
+        "WITH SECURITY_ENFORCED is a SOQL clause and can't be used on DML.",
+        "getId() is null for a failed record and names no fields."
+      ],
+      "source": "Apex Developer Guide: Set an Access Mode for Database Operations"
+    },
+    {
+      "id": "fund-x17",
+      "lesson": "fund-4",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "Pricing__c is a hierarchy custom setting. Max_Discount__c is a Number field with 0 decimal places. Org default: Max_Discount__c = 10, Region_Email__c = ops@example.com. Sales Manager profile: Max_Discount__c = 20, Region_Email__c blank. There is no user-level record. Dana, a Sales Manager, runs this code. What does it print?",
+      "code": "Pricing__c a = Pricing__c.getInstance();\nPricing__c b = Pricing__c.getValues(UserInfo.getProfileId());\nSystem.debug(a.Max_Discount__c + ' ' + a.Region_Email__c\n  + ' ' + b.Region_Email__c + ' ' + a.Id);",
+      "lang": "apex",
+      "options": [
+        "20 ops@example.com null null",
+        "10 ops@example.com ops@example.com null",
+        "20 null null <the profile record Id>",
+        "20 ops@example.com ops@example.com <the profile record Id>"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "getInstance() merges values from the lowest level that sets each field. With no user record, it returns a new object with a null Id. getValues(profileId) returns only what the profile record sets, so its blank email is null.",
+      "wrong": [
+        "",
+        "getInstance() takes the more specific profile value, 20. getValues() doesn't merge in org values.",
+        "getInstance() fills blank fields from higher levels. With no user record, its Id is null.",
+        "getValues(profileId) returns only profile-level values, so its email is null. getInstance() returns a new object with a null Id."
+      ],
+      "source": "Apex Reference Guide: Custom Settings Methods"
+    },
+    {
+      "id": "fund-x18",
+      "lesson": "fund-4",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "Integration_Config__c is a hierarchy custom setting. The test class is saved at API version 62.0. One test needs a different endpoint, so it inserts its own org-level record. What happens when usesBackupEndpoint runs?",
+      "code": "@TestSetup static void setup() {\n  insert new Integration_Config__c(\n    SetupOwnerId = UserInfo.getOrganizationId(),\n    Endpoint__c = 'https://a.example.com');\n}\n@IsTest static void usesBackupEndpoint() {\n  insert new Integration_Config__c(\n    SetupOwnerId = UserInfo.getOrganizationId(),\n    Endpoint__c = 'https://b.example.com');\n  // ...call the service and assert...\n}",
+      "lang": "apex",
+      "options": [
+        "The second insert replaces the first, and getOrgDefaults() returns the b endpoint",
+        "The insert in the test method is ignored, because @TestSetup data is read-only",
+        "Both records exist, and getOrgDefaults() returns the newest one",
+        "It throws a DUPLICATE_VALUE DmlException. The test should get the record with getOrgDefaults() and update it"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "From API 42.0, inserting a hierarchy custom setting record in a test method with the same SetupOwnerId as one inserted in @TestSetup throws DUPLICATE_VALUE. Update the existing record instead.",
+      "wrong": [
+        "Hierarchy settings allow one record per SetupOwnerId. A second insert doesn't overwrite the first.",
+        "Test setup records can be updated or deleted in a test method.",
+        "There can't be two org-level records.",
+        ""
+      ],
+      "source": "Apex Reference Guide: Custom Settings Methods"
+    },
+    {
+      "id": "fund-x19",
+      "lesson": "fund-4",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "An ISV ships pricing tiers in a managed package. The tier records must be installed and upgraded by the package itself, a validation rule shipped in the package must read them, and subscriber code must not be able to read the tiers. Which two choices meet these requirements? (Choose 2)",
+      "options": [
+        "A protected list custom setting with the tier records included in the package",
+        "A custom metadata type, with the tier records included in the managed package",
+        "A hierarchy custom setting loaded by a post-install script, read with $Setup",
+        "One custom label per tier, translated with the Translation Workbench",
+        "Mark the custom metadata type as Protected, so only code in the package's namespace can read its records"
+      ],
+      "answer": [
+        1,
+        4
+      ],
+      "explain": "Custom metadata records are metadata, so a package installs and upgrades them. Protected custom metadata can only be read by code in the same namespace.",
+      "wrong": [
+        "Packages include custom setting definitions only, never their records.",
+        "",
+        "The data would be loaded once by a script, not installed and upgraded by the package.",
+        "Labels are for translatable text. They aren't structured, protected config records.",
+        ""
+      ],
+      "source": "Apex Developer Guide: Security Considerations (Metadata); Trailhead: Custom Metadata Types Basics"
+    },
+    {
+      "id": "fund-x20",
+      "lesson": "fund-4",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A welcome email template is stored in Email_Config__mdt.Body__c, a Long Text Area field holding about 3,000 characters. Customers say the emails stop mid-sentence. The admin checked that the full text is saved on the record. What is the cause?",
+      "code": "Email_Config__mdt cfg = Email_Config__mdt.getInstance('Welcome');\nString body = cfg.Body__c;\nmail.setHtmlBody(body);",
+      "lang": "apex",
+      "options": [
+        "Custom metadata records are cached, so the email uses an old version of the record",
+        "getInstance() matches on the label, so it returns a different, shorter record",
+        "getInstance() and getAll() return only the first 255 characters of each field. Use a SOQL query to read the full Body__c",
+        "Long Text Area fields aren't supported on custom metadata types"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "The custom metadata methods return only the first 255 characters of any field. To read a long field in full, query the record with SOQL.",
+      "wrong": [
+        "The record isn't stale. It's cut short.",
+        "getInstance(String) matches DeveloperName, and the record is the right one.",
+        "",
+        "They are supported. They just aren't returned in full by getInstance()/getAll()."
+      ],
+      "source": "Apex Reference Guide: Custom Metadata Type Methods"
+    },
+    {
+      "id": "fund-x21",
+      "lesson": "fund-4",
+      "difficulty": 2,
+      "pack": "hard",
+      "q": "An admin wants an Opportunity validation rule to block discounts above a configured maximum, with no Apex. Which two kinds of configuration can the validation rule reference directly? (Choose 2)",
+      "options": [
+        "A field on a hierarchy custom setting, through $Setup",
+        "A field on a list custom setting, through $Setup",
+        "A value cached in Platform Cache, through $Cache",
+        "A field on a custom metadata type record, through $CustomMetadata",
+        "The result of Pricing__c.getInstance(), called from the formula"
+      ],
+      "answer": [
+        0,
+        3
+      ],
+      "explain": "Validation rules and formulas can read hierarchy custom settings with $Setup and custom metadata records with $CustomMetadata. List custom settings aren't available in formulas.",
+      "wrong": [
+        "",
+        "Formulas and validation rules can reference only hierarchy custom settings with $Setup.",
+        "Formulas can't read Platform Cache.",
+        "",
+        "Formulas can't call Apex methods."
+      ],
+      "source": "Salesforce Help: Custom Settings / Custom Metadata Types; Trailhead: Custom Metadata Types Basics"
+    },
+    {
+      "id": "fund-x22",
+      "lesson": "fund-4",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A pricing test asserts on a live custom metadata value. After an admin changes the Gold tier to 12 in production, the next deployment fails on this test. What is the best fix?",
+      "code": "@IsTest static void appliesGoldDiscount() {\n  Discount_Tier__mdt gold = Discount_Tier__mdt.getInstance('Gold');\n  Assert.areEqual(15, gold.Percent__c);\n  Assert.areEqual(85, PriceService.applyTier(100, 'Gold'));\n}",
+      "lang": "apex",
+      "options": [
+        "Add @IsTest(SeeAllData=false) so the test no longer sees org records",
+        "Read tiers through a selector with a @TestVisible override, and fill it in the test with records built by JSON.deserialize",
+        "Insert a Discount_Tier__mdt record with Percent__c = 15 in @TestSetup",
+        "Wrap the assertions in Test.startTest() and Test.stopTest()"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "Tests can see custom metadata records, so this test depends on whatever the admin has configured. Putting a seam in front of the reads lets the test supply its own tier values.",
+      "wrong": [
+        "Custom metadata records are visible to tests whatever SeeAllData says.",
+        "",
+        "Custom metadata records can't be created with DML.",
+        "That resets limits. It doesn't change which records the test sees."
+      ],
+      "source": "Apex Reference Guide: Custom Metadata Type Methods"
+    },
+    {
+      "id": "fund-x23",
+      "lesson": "fund-5",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "The running user's time zone is Asia/Tokyo (UTC+9, no daylight saving time). New York is on daylight saving time (UTC-4) on 31 March 2026. What do the three lines print?",
+      "code": "Datetime dt = Datetime.newInstanceGmt(2026, 3, 31, 20, 0, 0);\nSystem.debug(dt.formatGmt('yyyy-MM-dd HH:mm'));                  // 1\nSystem.debug(dt.format('yyyy-MM-dd HH:mm'));                     // 2\nSystem.debug(dt.format('yyyy-MM-dd HH:mm', 'America/New_York')); // 3",
+      "lang": "apex",
+      "options": [
+        "2026-03-31 20:00 / 2026-03-31 20:00 / 2026-03-31 16:00",
+        "2026-03-31 20:00 / 2026-03-31 11:00 / 2026-03-31 15:00",
+        "2026-04-01 05:00 / 2026-04-01 05:00 / 2026-03-31 16:00",
+        "2026-03-31 20:00 / 2026-04-01 05:00 / 2026-03-31 16:00"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "formatGmt() prints the GMT value. format(pattern) converts to the user's time zone (+9 hours, the next day). format(pattern, tz) converts to the time zone you pass, with daylight saving applied (-4 hours).",
+      "wrong": [
+        "format() without a time zone converts to the user's time zone, Tokyo.",
+        "Line 2 converts in the wrong direction, and line 3 ignores daylight saving time.",
+        "formatGmt() doesn't convert to the user's time zone.",
+        ""
+      ],
+      "source": "Apex Reference Guide: Datetime Class"
+    },
+    {
+      "id": "fund-x24",
+      "lesson": "fund-5",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A Los Angeles support manager (America/Los_Angeles, UTC-7 in summer) says cases closed on the evening of June 30 show up in July's count. A case closed at 8:30 PM local time on June 30 is stored as 2026-07-01 03:30 GMT. Which change fixes the count for her?",
+      "code": "for (Case c : closedCases) {\n  Date day = c.ClosedDate.dateGmt();\n  Integer m = day.month();\n  totals.put(m, (totals.containsKey(m) ? totals.get(m) : 0) + 1);\n}",
+      "lang": "apex",
+      "options": [
+        "Use c.ClosedDate.date(), which returns the date in the running user's time zone",
+        "Select DAY_ONLY(ClosedDate) in the query that loads closedCases",
+        "Use c.ClosedDate.monthGmt() instead of day.month()",
+        "Use c.ClosedDate.format() and read the month from the string"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "dateGmt() takes the date part in GMT, which is already July 1. date() takes the date in the user's time zone, which is June 30.",
+      "wrong": [
+        "",
+        "DAY_ONLY() works in UTC unless wrapped in convertTimezone(), so it would still return July 1.",
+        "That is still the GMT month, which is July.",
+        "The string depends on her locale, which makes parsing it fragile. date() is the right tool."
+      ],
+      "source": "Apex Reference Guide: Datetime Class"
+    },
+    {
+      "id": "fund-x25",
+      "lesson": "fund-5",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A nightly import reads ship dates from a partner feed that always sends ISO dates such as 2026-12-31. It works when the job runs as an admin whose locale shows dates as year-month-day, but throws a TypeException after the job is reassigned to an English (United States) user. Which line should replace the parsing?",
+      "code": "Date shipDate = Date.parse(row.get('ship_date'));",
+      "lang": "apex",
+      "options": [
+        "Date shipDate = Date.parse(row.get('ship_date').replace('-', '/'));",
+        "Date shipDate = Date.valueOf(row.get('ship_date'));",
+        "Date shipDate = Datetime.parse(row.get('ship_date')).date();",
+        "Date shipDate = Date.parse(row.get('ship_date'), UserInfo.getLocale());"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "Date.parse() reads the string in the running user's locale format, so it breaks when the user changes. Date.valueOf() reads the standard yyyy-MM-dd format whatever the locale is.",
+      "wrong": [
+        "Date.parse() still expects the user's locale format, such as 12/31/2026 for en_US.",
+        "",
+        "Datetime.parse() also uses the user's locale format.",
+        "Date.parse() has no locale parameter."
+      ],
+      "source": "Apex Reference Guide: Date Class"
+    },
+    {
+      "id": "fund-x26",
+      "lesson": "fund-5",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A weekly utilization report groups time entries by week. US users and German users see different week boundaries for the same entries, because the code uses toStartOfWeek(). Finance wants every week to start on Monday for all users. Which expression returns the Monday of the week containing d for any user locale?",
+      "code": "// 1 January 1900 was a Monday\nDate monday1900 = Date.newInstance(1900, 1, 1);",
+      "lang": "apex",
+      "options": [
+        "d.toStartOfWeek()",
+        "d.toStartOfWeek().addDays(1)",
+        "d.addDays(-Math.mod(monday1900.daysBetween(d), 7))",
+        "Date.newInstance(d.year(), d.month(), 1).toStartOfWeek()"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "toStartOfWeek() follows the user's locale. Counting days from a known Monday and stepping back by the remainder mod 7 lands on Monday for everyone.",
+      "wrong": [
+        "toStartOfWeek() depends on the user's locale: Sunday in the US, Monday in Germany.",
+        "That gives Monday for US users but Tuesday for German users.",
+        "",
+        "That is the start of the week containing the 1st of the month, and it still depends on locale."
+      ],
+      "source": "Apex Reference Guide: Date Class"
+    },
+    {
+      "id": "fund-x27",
+      "lesson": "fund-5",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A multi-currency org's sales director (currency USD) wants a list of big deals ranked by amount in her currency. The query below returns an error. Which two changes make it valid and keep the meaning? (Choose 2)",
+      "code": "SELECT Id, Name, convertCurrency(Amount)\nFROM Opportunity\nWHERE convertCurrency(Amount) > 100000\nORDER BY convertCurrency(Amount) DESC",
+      "lang": "soql",
+      "options": [
+        "Move the filter to HAVING convertCurrency(Amount) > 100000",
+        "Wrap Amount in FORMAT() in the WHERE clause",
+        "Filter with WHERE Amount > USD100000, which compares each record against the USD equivalent",
+        "Add GROUP BY CurrencyIsoCode so convertCurrency is allowed in WHERE",
+        "Use ORDER BY Amount DESC, because sorting on currency fields already uses converted values"
+      ],
+      "answer": [
+        2,
+        4
+      ],
+      "explain": "convertCurrency() can't be used in WHERE or ORDER BY. An ISO code literal like USD100000 compares against the converted equivalent, and ordering on currency fields already uses converted values.",
+      "wrong": [
+        "HAVING needs GROUP BY, and convertCurrency still isn't allowed there.",
+        "FORMAT() is for SELECT output, not filters.",
+        "",
+        "Grouping never makes convertCurrency valid in WHERE.",
+        ""
+      ],
+      "source": "SOQL and SOSL Reference: convertCurrency()"
+    },
+    {
+      "id": "fund-x28",
+      "lesson": "fund-5",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "In a multi-currency org the corporate currency is USD. A German sales manager whose personal currency is EUR opens a page that runs the query below. Some opportunities are in JPY and some in GBP. What currency are the total values in?",
+      "code": "AggregateResult[] r = [\n  SELECT OwnerId, SUM(Amount) total\n  FROM Opportunity\n  WHERE IsWon = true\n  GROUP BY OwnerId];",
+      "lang": "apex",
+      "options": [
+        "EUR, because aggregates are converted to the running user's currency",
+        "USD, the org's corporate currency. Aggregate functions return currency in the org default",
+        "No single currency: raw JPY and GBP numbers are simply added together",
+        "The query fails, because multi-currency orgs require SUM(convertCurrency(Amount))"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "With GROUP BY or HAVING, currency values from aggregate functions come back in the org's default (corporate) currency. convertCurrency() can't convert an aggregate result.",
+      "wrong": [
+        "Aggregate results aren't converted to the user's currency.",
+        "",
+        "Salesforce converts before it sums, and returns the result in the corporate currency.",
+        "convertCurrency() can't wrap or feed an aggregate, and the query is valid as written."
+      ],
+      "source": "SOQL and SOSL Reference: convertCurrency()"
+    },
+    {
+      "id": "fund-x29",
+      "lesson": "fund-5",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A multi-currency org has enabled advanced currency management (dated exchange rates). Finance also tracks Commission__c, a custom object with a currency field. Which two statements are true? (Choose 2)",
+      "options": [
+        "convertCurrency() on a Commission__c currency field uses the dated rate for the record's CreatedDate",
+        "convertCurrency(Amount) on Opportunity uses the dated rate that matches the opportunity's CloseDate",
+        "Apex can find the rate for a given date by querying DatedConversionRate where StartDate <= d and NextStartDate > d",
+        "With dated rates, convertCurrency() becomes valid in a WHERE clause",
+        "DatedConversionRate is available in every multi-currency org, even without advanced currency management"
+      ],
+      "answer": [
+        1,
+        2
+      ],
+      "explain": "With advanced currency management, convertCurrency() uses the dated rate for an opportunity's CloseDate. Rates for a date range live in DatedConversionRate, which Apex can query by StartDate and NextStartDate.",
+      "wrong": [
+        "Dated rates apply to opportunities, opportunity products and opportunity history, not custom objects.",
+        "",
+        "",
+        "convertCurrency() is never allowed in WHERE.",
+        "DatedConversionRate exists only when advanced currency management is enabled."
+      ],
+      "source": "SOQL and SOSL Reference: convertCurrency(); Object Reference: DatedConversionRate"
+    },
+    {
+      "id": "fund-x30",
+      "lesson": "fund-5",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "In a multi-currency org, an after-update Opportunity trigger (API version 62.0) creates a commission record when a deal closes. Finance reports that a JPY deal created a commission that looks 160 times too large in EUR. The trigger ran as an operations user whose personal currency is EUR. What is the cause and fix?",
+      "code": "insert new Commission__c(\n  Opportunity__c = o.Id,\n  Amount__c      = o.Amount * 0.05\n);",
+      "lang": "apex",
+      "options": [
+        "Amount__c is auto-converted from JPY to EUR on insert, at the wrong rate",
+        "The commission is saved in the corporate currency. Use convertCurrency() in the trigger",
+        "The new record takes the running user's currency (EUR) but holds a JPY number. Set CurrencyIsoCode = o.CurrencyIsoCode",
+        "The insert fails because CurrencyIsoCode is required in multi-currency orgs"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "Currency values are stored in the record's own currency, and a new record takes the creating user's currency by default. Copying the opportunity's CurrencyIsoCode keeps the number and its currency together.",
+      "wrong": [
+        "Salesforce doesn't convert a number you assign. It stores it in the record's currency.",
+        "Without a CurrencyIsoCode value the record takes the running user's currency, and convertCurrency() is a SOQL function.",
+        "",
+        "CurrencyIsoCode defaults, so the insert succeeds, just with the wrong currency."
+      ],
+      "source": "Salesforce Help: Multiple Currencies; Apex Reference Guide: UserInfo Class"
     }
   ]
 }
