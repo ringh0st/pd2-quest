@@ -18,30 +18,30 @@
         {
           "type": "tip",
           "title": "Think of it like…",
-          "body": "A library card. **with sharing** checks your card, so you only get the books you may borrow. **without sharing** is the librarian's master key. Where it stops: the card only picks which books (rows). It never hides pages inside a book (fields)."
+          "body": "A library card. `with sharing` checks your card, so you only get the books you may borrow. `without sharing` is the librarian's master key. Where it stops: the card only picks which books (rows). It never hides pages inside a book (fields)."
         },
         {
           "type": "list",
           "title": "The three keywords",
           "items": [
-            "**with sharing**: respect the running user's sharing rules",
-            "**without sharing**: ignore sharing rules and see every row",
-            "**inherited sharing**: use the caller's mode; run **with sharing** when it is the entry point (the first class a request runs)"
+            "`with sharing`: respect the running user's sharing rules",
+            "`without sharing`: ignore sharing rules and see every row",
+            "`inherited sharing`: use the caller's mode; run `with sharing` when it is the entry point (the first class a request runs)"
           ]
         },
         {
           "type": "text",
           "title": "No keyword?",
-          "body": "A class with **no keyword** takes the caller's mode when other Apex calls it. As an **entry point** it runs **without sharing**. One exception: `@AuraEnabled` controllers used by Lightning run **with sharing**. So always write a keyword. **inherited sharing** shows your intent clearly."
+          "body": "A class with **no keyword** takes the caller's mode when other Apex calls it. As an **entry point** it runs `without sharing`. One exception: `@AuraEnabled` controllers used by Lightning run `with sharing`. So always write a keyword. `inherited sharing` shows your intent clearly."
         },
         {
           "type": "text",
           "title": "Where the method lives wins",
-          "body": "The mode comes from the class where a method is **defined**, not the class that calls it. Say a with sharing class calls a method in a without sharing class. That method runs **without sharing**. An async job (like a Queueable) is a new entry point, so it doesn't inherit its caller's mode."
+          "body": "The mode comes from the class where a method is **defined**, not the class that calls it. Say a `with sharing` class calls a method in a `without sharing` class. That method runs `without sharing`. An async job (like a Queueable) is a new entry point, so it doesn't inherit its caller's mode."
         },
         {
           "type": "trap",
-          "body": "**Inner classes do NOT inherit** the outer class's keyword, so give each one its own. And **with sharing does NOT check CRUD or FLS** (object and field permissions). It only filters rows. Triggers run without sharing."
+          "body": "**Inner classes do NOT inherit** the outer class's keyword, so give each one its own. And `with sharing` **does NOT check CRUD or FLS** (object and field permissions). It only filters rows. Triggers run `without sharing`."
         },
         {
           "type": "tip",
@@ -51,7 +51,7 @@
         {
           "type": "tip",
           "title": "Newer orgs (API 67.0+)",
-          "body": "The Apex Developer Guide says this changes at **API 67.0+**. Classes with no keyword run **with sharing**, and Apex runs in **user mode** by default. At 66.0 and earlier, the default is system mode. **Exam questions assume the classic behaviour unless they name the API version.**"
+          "body": "The Apex Developer Guide says this changes at **API 67.0+**. Classes with no keyword run `with sharing`, and Apex runs in **user mode** by default. At 66.0 and earlier, the default is system mode. **Exam questions assume the classic behaviour unless they name the API version.**"
         }
       ],
       "check": [
@@ -85,15 +85,15 @@
         },
         {
           "type": "text",
-          "title": "WITH SECURITY_ENFORCED (older)",
-          "body": "This older SOQL clause checks **read** access only on fields in **SELECT and FROM**. It skips WHERE and ORDER BY, so a hidden field can still filter. It throws a **QueryException** at the first problem. It doesn't check sharing. Salesforce now recommends **WITH USER_MODE** instead."
+          "title": "`WITH SECURITY_ENFORCED` (older)",
+          "body": "This older SOQL clause checks **read** access only on fields in `SELECT` and `FROM`. It skips `WHERE` and `ORDER BY`, so a hidden field can still filter. It throws a `QueryException` at the first problem. It doesn't check sharing. Salesforce now recommends `WITH USER_MODE` instead."
         },
         {
           "type": "code",
           "title": "Strip instead of fail",
           "lang": "apex",
           "code": "SObjectAccessDecision d =\n  Security.stripInaccessible(AccessType.CREATABLE, recs);\ninsert d.getRecords();\nSystem.debug(d.getRemovedFields());",
-          "body": "**stripInaccessible** quietly removes fields the user can't access and hands back clean copies. Save `getRecords()`, not the original list. Access types: READABLE, CREATABLE, UPDATABLE, UPSERTABLE. It doesn't support `AggregateResult`."
+          "body": "`stripInaccessible` quietly removes fields the user can't access and hands back clean copies. Save `getRecords()`, not the original list. Access types: `READABLE`, `CREATABLE`, `UPDATABLE`, `UPSERTABLE`. It doesn't support `AggregateResult`."
         },
         {
           "type": "code",
@@ -104,12 +104,12 @@
         },
         {
           "type": "trap",
-          "body": "Don't treat USER_MODE and SECURITY_ENFORCED as the same. **USER_MODE** also checks **WHERE** fields and enforces **sharing**. It can list **all** blocked fields with `QueryException.getInaccessibleFields()`."
+          "body": "Don't treat `USER_MODE` and `SECURITY_ENFORCED` as the same. `USER_MODE` also checks `WHERE` fields and enforces **sharing**. It can list **all** blocked fields with `QueryException.getInaccessibleFields()`."
         },
         {
           "type": "tip",
           "title": "Remember it",
-          "body": "**Fail loud: USER_MODE or SECURITY_ENFORCED. Fail quiet: stripInaccessible.** Pick by whether the user should see an error."
+          "body": "**Fail loud:** `USER_MODE` or `SECURITY_ENFORCED`. **Fail quiet:** `stripInaccessible`. Pick by whether the user should see an error."
         }
       ],
       "check": [
@@ -139,7 +139,7 @@
           "title": "A share row",
           "lang": "apex",
           "code": "Project__Share s = new Project__Share(\n  ParentId      = proj.Id,\n  UserOrGroupId = userId,\n  AccessLevel   = 'Edit',\n  RowCause      = Schema.Project__Share.RowCause.Team_Member__c);\ninsert s;",
-          "body": "Insert one share row to give one user or group access. A custom object's share object is **ObjectName__Share**. It grants **Read** or **Edit**."
+          "body": "Insert one share row to give one user or group access. A custom object's share object is `ObjectName__Share`. It grants **Read** or **Edit**."
         },
         {
           "type": "list",
@@ -148,23 +148,23 @@
             "A custom object has one only if its OWD is **Private** or **Public Read Only**",
             "A share must grant **more** than the OWD, so Read on Public Read Only fails",
             "Master-detail children have none (**Controlled by Parent**): share the master",
-            "AccessLevel **All** is for the owner only",
+            "`AccessLevel` **All** is for the owner only",
             "Standard objects use their own fields, like `AccountId` and `AccountAccessLevel`"
           ]
         },
         {
           "type": "text",
-          "title": "RowCause matters",
-          "body": "**RowCause** says why a share exists. The default is **Manual**, and Manual shares are **deleted when the owner changes**. A custom **Apex sharing reason** (custom objects only) keeps shares through owner changes. Only users with **Modify All Data** can edit or delete those shares in the UI."
+          "title": "`RowCause` matters",
+          "body": "`RowCause` says why a share exists. The default is **Manual**, and Manual shares are **deleted when the owner changes**. A custom **Apex sharing reason** (custom objects only) keeps shares through owner changes. Only users with **Modify All Data** can edit or delete those shares in the UI."
         },
         {
           "type": "text",
           "title": "Recalculation",
-          "body": "Shares can go missing, for example when record locking blocks a write. So you register a **Database.Batchable** class under the object's **Apex Sharing Recalculation**. It runs when the object's OWD changes or when an admin starts it. `Database.executeBatch` can start it too. It should only rebuild shares with its own RowCause."
+          "body": "Shares can go missing, for example when record locking blocks a write. So you register a `Database.Batchable` class under the object's **Apex Sharing Recalculation**. It runs when the object's OWD changes or when an admin starts it. `Database.executeBatch` can start it too. It should only rebuild shares with its own `RowCause`."
         },
         {
           "type": "trap",
-          "body": "You can't move a share by editing it. **ParentId, UserOrGroupId and RowCause are fixed** after insert. Only AccessLevel can change. To give access to someone else, delete the old share and insert a new one."
+          "body": "You can't move a share by editing it. `ParentId`, `UserOrGroupId` and `RowCause` **are fixed** after insert. Only `AccessLevel` can change. To give access to someone else, delete the old share and insert a new one."
         },
         {
           "type": "tip",
@@ -196,7 +196,7 @@
         },
         {
           "type": "text",
-          "title": "Custom metadata types (__mdt)",
+          "title": "Custom metadata types (`__mdt`)",
           "body": "Their records **are metadata**, so they deploy with change sets, packages or the CLI. Apex, formulas, validation rules and flows can read them. **Tests see them** without `SeeAllData`. Mark the type **Protected** in a managed package, and only code in that namespace can read the records."
         },
         {
@@ -209,11 +209,11 @@
         {
           "type": "text",
           "title": "Changing CMT from Apex",
-          "body": "You can't insert or update `__mdt` records with DML. Build a `Metadata.CustomMetadata` object and call **Metadata.Operations.enqueueDeployment()**. It is **asynchronous** (it finishes later) and reports back through a `Metadata.DeployCallback`."
+          "body": "You can't insert or update `__mdt` records with DML. Build a `Metadata.CustomMetadata` object and call `Metadata.Operations.enqueueDeployment()`. It is **asynchronous** (it finishes later) and reports back through a `Metadata.DeployCallback`."
         },
         {
           "type": "list",
-          "title": "Custom settings (__c)",
+          "title": "Custom settings (`__c`)",
           "items": [
             "**Hierarchy**: org, then profile, then user. `getInstance()` returns the most specific value for each field",
             "**List**: one org-wide lookup table. Use `getAll()` or `getInstance(name)`",
@@ -261,8 +261,8 @@
         },
         {
           "type": "text",
-          "title": "Datetime = GMT inside",
-          "body": "**Datetimes are stored in GMT.** `format()` shows them in the user's **time zone** and **locale**. `formatGmt()` keeps GMT. `date()` gives the user's local date, and `dateGmt()` the GMT date. A **Date** has no time zone. `Date.parse()` follows the user's locale. `Date.valueOf()` reads yyyy-MM-dd."
+          "title": "`Datetime` = GMT inside",
+          "body": "**Datetimes are stored in GMT.** `format()` shows them in the user's **time zone** and **locale**. `formatGmt()` keeps GMT. `date()` gives the user's local date, and `dateGmt()` the GMT date. A `Date` has no time zone. `Date.parse()` follows the user's locale. `Date.valueOf()` reads `yyyy-MM-dd`."
         },
         {
           "type": "code",
@@ -276,20 +276,20 @@
           "title": "Localize in SOQL",
           "lang": "soql",
           "code": "SELECT toLabel(StageName), FORMAT(Amount),\n       convertCurrency(Amount)\nFROM Opportunity",
-          "body": "**toLabel** gives the translated picklist value. **FORMAT** applies the user's locale format. **convertCurrency** shows the amount in the user's currency."
+          "body": "`toLabel` gives the translated picklist value. `FORMAT` applies the user's locale format. `convertCurrency` shows the amount in the user's currency."
         },
         {
           "type": "text",
           "title": "Multi-currency in code",
-          "body": "With **multi-currency** on, each record gets a **CurrencyIsoCode** field naming its currency. Rates live in **CurrencyType**. Dated rates live in **DatedConversionRate** (advanced currency management only). A new record takes its creator's currency. Aggregates with GROUP BY return the **corporate currency**. Multi-currency **can't be turned off**."
+          "body": "With **multi-currency** on, each record gets a `CurrencyIsoCode` field naming its currency. Rates live in `CurrencyType`. Dated rates live in `DatedConversionRate` (advanced currency management only). A new record takes its creator's currency. Aggregates with `GROUP BY` return the **corporate currency**. Multi-currency **can't be turned off**."
         },
         {
           "type": "trap",
-          "body": "Writing **CurrencyIsoCode** directly in code won't compile in orgs without multi-currency. In packages, check `UserInfo.isMultiCurrencyOrganization()` first. Then use dynamic SOQL or `sObject.get('CurrencyIsoCode')`."
+          "body": "Writing `CurrencyIsoCode` directly in code won't compile in orgs without multi-currency. In packages, check `UserInfo.isMultiCurrencyOrganization()` first. Then use dynamic SOQL or `sObject.get('CurrencyIsoCode')`."
         },
         {
           "type": "trap",
-          "body": "SOQL date functions like `CALENDAR_MONTH` and `DAY_ONLY` use **UTC**. Wrap the field in **convertTimezone()** to group by local time. And `convertCurrency()` is **not allowed in WHERE or ORDER BY**. Filter with a literal like `USD100000` instead."
+          "body": "SOQL date functions like `CALENDAR_MONTH` and `DAY_ONLY` use **UTC**. Wrap the field in `convertTimezone()` to group by local time. And `convertCurrency()` is **not allowed** in `WHERE` or `ORDER BY`. Filter with a literal like `USD100000` instead."
         },
         {
           "type": "tip",
@@ -338,28 +338,28 @@
           "title": "Pick a class at runtime",
           "lang": "apex",
           "code": "Type t = Type.forName(cfg.Handler_Class__c);\nDiscountStrategy s = (DiscountStrategy) t.newInstance();",
-          "body": "`Type.forName` finds a class by name and returns **null** if it doesn't exist. `newInstance()` needs a public no-argument constructor."
+          "body": "`Type.forName` finds a class by name and returns `null` if it doesn't exist. `newInstance()` needs a public no-argument constructor."
         },
         {
           "type": "text",
           "title": "Generic sObject access",
-          "body": "`rec.get('Field__c')` and `rec.put('Field__c', v)` read and write a field by name. `rec.getSObject('Account')` follows a relationship. `newSObject()` on a type token makes a new record. **Don't call `Schema.getGlobalDescribe()` in loops**, because it is expensive."
+          "body": "`rec.get('Field__c')` and `rec.put('Field__c', v)` read and write a field by name. `rec.getSObject('Account')` follows a relationship. `newSObject()` on a type token makes a new record. **Don't call** `Schema.getGlobalDescribe()` **in loops**, because it is expensive."
         },
         {
           "type": "list",
           "title": "Type gotchas",
           "items": [
-            "`'abc' == 'ABC'` is **true** (`==` ignores case)",
-            "`'abc'.equals('ABC')` is **false**",
-            "Set and Map String keys are **case-sensitive**",
+            "`'abc' == 'ABC'` is `true` (`==` ignores case)",
+            "`'abc'.equals('ABC')` is `false`",
+            "`Set` and `Map` `String` keys are **case-sensitive**",
             "`7 / 2` on Integers is **3**",
-            "`List<Account>` **instanceof** `List<SObject>` is true",
+            "`List<Account>` `instanceof` `List<SObject>` is true",
             "A list made as `new List<SObject>()` can't be cast to `List<Account>`"
           ]
         },
         {
           "type": "trap",
-          "body": "Stripping spaces or adding a LIMIT does nothing against injection. `String.escapeSingleQuotes()` is only a fallback. **Bind variables** are the robust fix."
+          "body": "Stripping spaces or adding a `LIMIT` does nothing against injection. `String.escapeSingleQuotes()` is only a fallback. **Bind variables** are the robust fix."
         },
         {
           "type": "tip",
@@ -387,16 +387,16 @@
         {
           "type": "tip",
           "title": "Think of it like…",
-          "body": "LEGO. An **interface** is the stud shape: anything that fits can plug in. An **abstract** class is a half-built kit: a child must add the last pieces. A **virtual** class is a finished model you may remodel. Where it stops: in Apex, a plain class comes glued shut (final)."
+          "body": "LEGO. An **interface** is the stud shape: anything that fits can plug in. An `abstract` class is a half-built kit: a child must add the last pieces. A `virtual` class is a finished model you may remodel. Where it stops: in Apex, a plain class comes glued shut (`final`)."
         },
         {
           "type": "list",
           "title": "Class flavours",
           "items": [
-            "Classes are **final by default**: no one can extend them",
-            "**virtual**: can be extended AND created with `new`",
-            "**abstract**: can be extended, never created; may mix abstract and finished methods",
-            "**interface**: method signatures only; a class can implement many. Its methods must be **public** or **global**"
+            "Classes are `final` **by default**: no one can extend them",
+            "`virtual`: can be extended AND created with `new`",
+            "`abstract`: can be extended, never created; may mix `abstract` and finished methods",
+            "**interface**: method signatures only; a class can implement many. Its methods must be `public` or `global`"
           ]
         },
         {
@@ -404,12 +404,12 @@
           "title": "Overriding",
           "lang": "apex",
           "code": "public virtual class Notifier {\n  public virtual String channel() { return 'email'; }\n}\npublic class SmsNotifier extends Notifier {\n  public override String channel() { return 'sms'; }\n}",
-          "body": "To replace a method, the parent method must be **virtual** or **abstract**, and the child must say **override**. Calls made inside the parent still run the child's version."
+          "body": "To replace a method, the parent method must be `virtual` or `abstract`, and the child must say `override`. Calls made inside the parent still run the child's version."
         },
         {
           "type": "text",
           "title": "Trigger handler",
-          "body": "Use **one trigger per object**, with no logic inside it. The trigger hands work to a handler class that routes by context, like before insert or after update. You get a predictable order, easy tests, and one place for recursion guards."
+          "body": "Use **one trigger per object**, with no logic inside it. The trigger hands work to a handler class that routes by context, like `before insert` or `after update`. You get a predictable order, easy tests, and one place for recursion guards."
         },
         {
           "type": "list",
@@ -424,7 +424,7 @@
         {
           "type": "text",
           "title": "Singleton & Strategy",
-          "body": "**Singleton**: one shared instance, made by a private constructor and a static `getInstance()`. It lasts only **one transaction**, because statics reset per request, even in a `Database.Stateful` batch. **Strategy**: an interface with swappable classes, often picked at run time with `Type.forName`."
+          "body": "**Singleton**: one shared instance, made by a `private` constructor and a `static` `getInstance()`. It lasts only **one transaction**, because statics reset per request, even in a `Database.Stateful` batch. **Strategy**: an interface with swappable classes, often picked at run time with `Type.forName`."
         },
         {
           "type": "trap",
@@ -433,7 +433,7 @@
         {
           "type": "tip",
           "title": "Remember it",
-          "body": "**Virtual = Very flexible, Abstract = Almost done.** An abstract class needs a child to finish it."
+          "body": "**Virtual = Very flexible, Abstract = Almost done.** An `abstract` class needs a child to finish it."
         }
       ],
       "check": [
@@ -463,7 +463,7 @@
           "title": "Custom exception",
           "lang": "apex",
           "code": "public class OrderException extends Exception {}\n\nthrow new OrderException('Out of stock');",
-          "body": "Extend **Exception**, and the class name **must end in \"Exception\"**. You get message and cause constructors for free."
+          "body": "Extend `Exception`, and the class name **must end in \"Exception\"**. You get message and cause constructors for free."
         },
         {
           "type": "code",
@@ -485,7 +485,7 @@
         {
           "type": "text",
           "title": "Partial success",
-          "body": "**Database.insert(recs, false)** saves the good records and returns **SaveResult[]** instead of throwing. Loop over them and check `isSuccess()` and `getErrors()`. In triggers, use **addError()** to block one record with a friendly message."
+          "body": "`Database.insert(recs, false)` saves the good records and returns `SaveResult[]` instead of throwing. Loop over them and check `isSuccess()` and `getErrors()`. In triggers, use `addError()` to block one record with a friendly message."
         },
         {
           "type": "text",
@@ -494,7 +494,7 @@
         },
         {
           "type": "trap",
-          "body": "**System.LimitException can't be caught.** A try/catch won't rescue a limit error. Check `Limits.getQueries()` and similar methods before you reach the limit, and bulkify your code."
+          "body": "`System.LimitException` **can't be caught.** A `try/catch` won't rescue a limit error. Check `Limits.getQueries()` and similar methods before you reach the limit, and bulkify your code."
         },
         {
           "type": "tip",
@@ -539,11 +539,11 @@
           "title": "Put & get",
           "lang": "apex",
           "code": "Cache.OrgPartition p = Cache.Org.getPartition('local.Rates');\np.put('usdEur', rate, 3600);\nDecimal r = (Decimal) p.get('usdEur');\nif (r == null) { /* reload */ }",
-          "body": "Get a partition, store a value for an hour, read it back, and reload on a miss. Keys must be alphanumeric. **local** means your org's own namespace."
+          "body": "Get a partition, store a value for an hour, read it back, and reload on a miss. Keys must be alphanumeric. `local` means your org's own namespace."
         },
         {
           "type": "code",
-          "title": "CacheBuilder = auto-load on miss",
+          "title": "`CacheBuilder` = auto-load on miss",
           "lang": "apex",
           "code": "public class RateLoader implements Cache.CacheBuilder {\n  public Object doLoad(String key) {\n    return [SELECT ConversionRate FROM CurrencyType\n            WHERE IsoCode = :key LIMIT 1].ConversionRate;\n  }\n}\nDecimal r = (Decimal) Cache.Org.get(RateLoader.class, 'EUR');",
           "body": "One call does get-or-load: on a miss, `doLoad()` runs and its result is cached for you."
@@ -579,12 +579,12 @@
     {
       "id": "fund-f2",
       "front": "How does a class with no sharing keyword run?",
-      "back": "Called by other Apex, it takes the caller's mode. As an entry point it runs without sharing, except @AuraEnabled (Lightning) controllers, which run with sharing. Classic rule; API 67.0+ defaults to with sharing."
+      "back": "Called by other Apex, it takes the caller's mode. As an entry point it runs `without sharing`, except `@AuraEnabled` (Lightning) controllers, which run `with sharing`. Classic rule; API 67.0+ defaults to `with sharing`."
     },
     {
       "id": "fund-f3",
       "front": "What does `inherited sharing` do?",
-      "back": "It uses the caller's sharing mode. When it is the entry point, it runs with sharing. It is the recommended default for shared utility classes."
+      "back": "It uses the caller's sharing mode. When it is the entry point, it runs `with sharing`. It is the recommended default for shared utility classes."
     },
     {
       "id": "fund-f4",
@@ -594,17 +594,17 @@
     {
       "id": "fund-f5",
       "front": "What does `WITH USER_MODE` check in a query?",
-      "back": "Everything the user is allowed: CRUD, FLS (WHERE fields too) and sharing. It can list all blocked fields with getInaccessibleFields()."
+      "back": "Everything the user is allowed: CRUD, FLS (`WHERE` fields too) and sharing. It can list all blocked fields with `getInaccessibleFields()`."
     },
     {
       "id": "fund-f6",
       "front": "What does `WITH SECURITY_ENFORCED` check, and what does it miss?",
-      "back": "It checks read access on SELECT and FROM fields only, then throws a QueryException. It misses WHERE fields and sharing. Salesforce prefers USER_MODE now."
+      "back": "It checks read access on `SELECT` and `FROM` fields only, then throws a `QueryException`. It misses `WHERE` fields and sharing. Salesforce prefers `USER_MODE` now."
     },
     {
       "id": "fund-f7",
       "front": "What does `Security.stripInaccessible()` do?",
-      "back": "It quietly removes fields the user can't access instead of throwing. It returns an SObjectAccessDecision: getRecords() gives the clean copies, getRemovedFields() lists what was dropped."
+      "back": "It quietly removes fields the user can't access instead of throwing. It returns an `SObjectAccessDecision`: `getRecords()` gives the clean copies, `getRemovedFields()` lists what was dropped."
     },
     {
       "id": "fund-f8",
@@ -614,7 +614,7 @@
     {
       "id": "fund-f9",
       "front": "What is a custom object's share object called, and what are its fields?",
-      "back": "ObjectName__Share. Fields: ParentId (the record), UserOrGroupId (who), AccessLevel (Read or Edit) and RowCause (why)."
+      "back": "`ObjectName__Share`. Fields: `ParentId` (the record), `UserOrGroupId` (who), `AccessLevel` (Read or Edit) and `RowCause` (why)."
     },
     {
       "id": "fund-f10",
@@ -629,22 +629,22 @@
     {
       "id": "fund-f12",
       "front": "What is an Apex sharing recalculation class?",
-      "back": "A Database.Batchable class registered on the custom object. It runs when the OWD changes or when an admin starts it, and rebuilds the shares."
+      "back": "A `Database.Batchable` class registered on the custom object. It runs when the OWD changes or when an admin starts it, and rebuilds the shares."
     },
     {
       "id": "fund-f13",
       "front": "What is a custom metadata type, in one line?",
-      "back": "Config records that deploy like metadata (__mdt). Apex reads them with getAll() or getInstance() and no SOQL, and tests can see them."
+      "back": "Config records that deploy like metadata (`__mdt`). Apex reads them with `getAll()` or `getInstance()` and no SOQL, and tests can see them."
     },
     {
       "id": "fund-f14",
       "front": "How does Apex create or update custom metadata records?",
-      "back": "Through the Metadata API: Metadata.Operations.enqueueDeployment(). It runs asynchronously. DML isn't allowed on __mdt."
+      "back": "Through the Metadata API: `Metadata.Operations.enqueueDeployment()`. It runs asynchronously. DML isn't allowed on `__mdt`."
     },
     {
       "id": "fund-f15",
       "front": "How does a hierarchy custom setting pick its value?",
-      "back": "It layers org, then profile, then user values. getInstance() returns the most specific value for the running user."
+      "back": "It layers org, then profile, then user values. `getInstance()` returns the most specific value for the running user."
     },
     {
       "id": "fund-f16",
@@ -654,12 +654,12 @@
     {
       "id": "fund-f17",
       "front": "How do you read a custom label in Apex and in LWC?",
-      "back": "Apex: System.Label.Name. LWC: import x from '@salesforce/label/c.Name'. Labels are translatable."
+      "back": "Apex: `System.Label.Name`. LWC: `import x from '@salesforce/label/c.Name'`. Labels are translatable."
     },
     {
       "id": "fund-f18",
       "front": "What is the difference between `Datetime.format()` and `formatGmt()`?",
-      "back": "format() shows the time in the user's time zone and locale. formatGmt() keeps it in GMT."
+      "back": "`format()` shows the time in the user's time zone and locale. `formatGmt()` keeps it in GMT."
     },
     {
       "id": "fund-f19",
@@ -669,47 +669,47 @@
     {
       "id": "fund-f20",
       "front": "What do `toLabel()` and `FORMAT()` do in SOQL?",
-      "back": "toLabel() returns the translated picklist label. FORMAT() returns a number, date or currency in the user's locale format."
+      "back": "`toLabel()` returns the translated picklist label. `FORMAT()` returns a number, date or currency in the user's locale format."
     },
     {
       "id": "fund-f21",
       "front": "Why wrap a field in `convertTimezone()`?",
-      "back": "SOQL date functions group by UTC. Wrapping the datetime in convertTimezone() makes them group by the user's local time."
+      "back": "SOQL date functions group by UTC. Wrapping the datetime in `convertTimezone()` makes them group by the user's local time."
     },
     {
       "id": "fund-f22",
-      "front": "How should a package use CurrencyIsoCode safely?",
-      "back": "A direct reference won't compile without multi-currency. Check isMultiCurrencyOrganization(), then use dynamic SOQL or get('CurrencyIsoCode')."
+      "front": "How should a package use `CurrencyIsoCode` safely?",
+      "back": "A direct reference won't compile without multi-currency. Check `isMultiCurrencyOrganization()`, then use dynamic SOQL or `get('CurrencyIsoCode')`."
     },
     {
       "id": "fund-f23",
       "front": "How do you stop SOQL injection?",
-      "back": "Pass user input as a bind variable, for example with Database.queryWithBinds(). The fallback is String.escapeSingleQuotes()."
+      "back": "Pass user input as a bind variable, for example with `Database.queryWithBinds()`. The fallback is `String.escapeSingleQuotes()`."
     },
     {
       "id": "fund-f24",
       "front": "What does `Type.forName()` do?",
-      "back": "It finds an Apex class by name at run time, and newInstance() creates one. It returns null if no class has that name."
+      "back": "It finds an Apex class by name at run time, and `newInstance()` creates one. It returns `null` if no class has that name."
     },
     {
       "id": "fund-f25",
-      "front": "What is the difference between virtual and abstract classes?",
-      "back": "virtual: you can extend it AND create it with new. abstract: you can only extend it. A plain class is final by default."
+      "front": "What is the difference between `virtual` and `abstract` classes?",
+      "back": "`virtual`: you can extend it AND create it with `new`. `abstract`: you can only extend it. A plain class is `final` by default."
     },
     {
       "id": "fund-f26",
       "front": "What are the rules for a custom exception?",
-      "back": "It must extend Exception, and its name must end in \"Exception\"."
+      "back": "It must extend `Exception`, and its name must end in \"Exception\"."
     },
     {
       "id": "fund-f27",
-      "front": "Can you catch a LimitException?",
-      "back": "No. Avoid it by checking the Limits class and bulkifying your code."
+      "front": "Can you catch a `LimitException`?",
+      "back": "No. Avoid it by checking the `Limits` class and bulkifying your code."
     },
     {
       "id": "fund-f28",
       "front": "What does a savepoint rollback NOT undo?",
-      "back": "It doesn't clear record IDs or reset static variables. Also, setSavepoint() and rollback() each count toward the DML limit."
+      "back": "It doesn't clear record IDs or reset static variables. Also, `setSavepoint()` and `rollback()` each count toward the DML limit."
     },
     {
       "id": "fund-f29",
@@ -719,12 +719,12 @@
     {
       "id": "fund-f30",
       "front": "How do you find a record's object type from its Id cheaply?",
-      "back": "Call recordId.getSObjectType(). It returns the token, like Account.SObjectType, with no SOQL and no global describe."
+      "back": "Call `recordId.getSObjectType()`. It returns the token, like `Account.SObjectType`, with no SOQL and no global describe."
     },
     {
       "id": "fund-f31",
       "front": "What happens with a cache key that has no partition, and no default partition exists?",
-      "back": "It throws Cache.Org.OrgCacheException. Use a full key like local.Partition.key, or call getPartition() first."
+      "back": "It throws `Cache.Org.OrgCacheException`. Use a full key like `local.Partition.key`, or call `getPartition()` first."
     }
   ],
   "questions": [
@@ -732,19 +732,19 @@
       "id": "fund-q1",
       "lesson": "fund-1",
       "difficulty": 2,
-      "q": "A with sharing class OrderController calls OrderUtil.getOpenOrders(). OrderUtil has no sharing keyword. Under which sharing mode does the query in getOpenOrders() run?",
+      "q": "A `with sharing` class `OrderController` calls `OrderUtil.getOpenOrders()`. `OrderUtil` has no sharing keyword. Under which sharing mode does the query in `getOpenOrders()` run?",
       "options": [
         "Without sharing, because a class with no keyword always runs in system mode",
-        "With sharing, because OrderUtil inherits the calling class's mode",
+        "With sharing, because `OrderUtil` inherits the calling class's mode",
         "It depends on the user's profile permissions",
         "Compile error: the called class must declare a sharing keyword"
       ],
       "answer": [
         1
       ],
-      "explain": "A class with no sharing keyword copies the mode of the Apex that calls it. OrderController is with sharing, so the query in getOpenOrders() respects sharing too.",
+      "explain": "A class with no sharing keyword copies the mode of the Apex that calls it. `OrderController` is `with sharing`, so the query in `getOpenOrders()` respects sharing too.",
       "wrong": [
-        "No keyword doesn't mean without sharing. When other Apex calls it, it copies the caller's mode.",
+        "No keyword doesn't mean `without sharing`. When other Apex calls it, it copies the caller's mode.",
         "",
         "Profiles don't pick the sharing mode. The class keywords do.",
         "The keyword is optional, so the class compiles fine without one."
@@ -755,21 +755,21 @@
       "id": "fund-q2",
       "lesson": "fund-1",
       "difficulty": 3,
-      "q": "A utility class is used two ways: called from without sharing batch classes, and as the entry point of a REST endpoint (@RestResource) used by a partner app. As the REST entry point it must respect the user's record access. When called by other Apex it must adopt the caller's mode. Which declaration meets both needs?",
+      "q": "A utility class is used two ways: called from `without sharing` batch classes, and as the entry point of a REST endpoint (`@RestResource`) used by a partner app. As the REST entry point it must respect the user's record access. When called by other Apex it must adopt the caller's mode. Which declaration meets both needs?",
       "options": [
-        "public without sharing class RecordUtil",
-        "public class RecordUtil (no keyword)",
-        "public with sharing class RecordUtil",
-        "public inherited sharing class RecordUtil"
+        "`public without sharing class RecordUtil`",
+        "`public class RecordUtil` (no keyword)",
+        "`public with sharing class RecordUtil`",
+        "`public inherited sharing class RecordUtil`"
       ],
       "answer": [
         3
       ],
-      "explain": "You need a class that copies its caller, but respects sharing when it starts the request itself. That is exactly **inherited sharing**: the caller's mode from other Apex, and with sharing as an entry point like a REST request.",
+      "explain": "You need a class that copies its caller, but respects sharing when it starts the request itself. That is exactly `inherited sharing`: the caller's mode from other Apex, and `with sharing` as an entry point like a REST request.",
       "wrong": [
         "This ignores sharing for the REST user too.",
-        "No keyword copies the caller, but as a REST entry point it runs without sharing.",
-        "This always enforces sharing, even when a without sharing batch calls it.",
+        "No keyword copies the caller, but as a REST entry point it runs `without sharing`.",
+        "This always enforces sharing, even when a `without sharing` batch calls it.",
         ""
       ],
       "source": "Apex Developer Guide: Using the inherited sharing Keyword"
@@ -781,10 +781,10 @@
       "q": "Which two statements about Apex sharing keywords are true? (Choose 2)",
       "options": [
         "An inner class does not inherit the sharing setting of its outer class",
-        "A with sharing class automatically enforces field-level security on its SOQL queries",
+        "A `with sharing` class automatically enforces field-level security on its SOQL queries",
         "The sharing mode of the class where a method is defined applies when that method runs",
-        "Triggers run with sharing by default",
-        "A without sharing class cannot be called from a with sharing class"
+        "Triggers run `with sharing` by default",
+        "A `without sharing` class cannot be called from a `with sharing` class"
       ],
       "answer": [
         0,
@@ -793,9 +793,9 @@
       "explain": "Each class sets its own sharing mode. Inner classes need their own keyword, and a method runs in the mode of the class that defines it, whoever calls it.",
       "wrong": [
         "",
-        "Sharing keywords only filter records. FLS needs USER_MODE, stripInaccessible or describe checks.",
+        "Sharing keywords only filter records. FLS needs `USER_MODE`, `stripInaccessible` or describe checks.",
         "",
-        "Triggers run without sharing, in system context.",
+        "Triggers run `without sharing`, in system context.",
         "Mixing modes is allowed. The defining class's mode applies to its method."
       ],
       "source": "Apex Developer Guide: Using the with sharing, without sharing, and inherited sharing Keywords"
@@ -804,21 +804,21 @@
       "id": "fund-q4",
       "lesson": "fund-2",
       "difficulty": 2,
-      "q": "A developer is writing a SOQL query for a public-facing component. It must enforce the running user's object permissions, field-level security (including fields in the WHERE clause), and record sharing, all in one statement. What should the developer use?",
+      "q": "A developer is writing a SOQL query for a public-facing component. It must enforce the running user's object permissions, field-level security (including fields in the `WHERE` clause), and record sharing, all in one statement. What should the developer use?",
       "options": [
-        "WITH SECURITY_ENFORCED",
-        "A with sharing class and no query clause",
-        "Security.stripInaccessible(AccessType.READABLE, ...)",
-        "WITH USER_MODE"
+        "`WITH SECURITY_ENFORCED`",
+        "A `with sharing` class and no query clause",
+        "`Security.stripInaccessible(AccessType.READABLE, ...)`",
+        "`WITH USER_MODE`"
       ],
       "answer": [
         3
       ],
-      "explain": "Only one clause checks object permissions, every field and sharing at once. **WITH USER_MODE** checks CRUD, FLS (WHERE fields included) and sharing for that query.",
+      "explain": "Only one clause checks object permissions, every field and sharing at once. `WITH USER_MODE` checks CRUD, FLS (`WHERE` fields included) and sharing for that query.",
       "wrong": [
-        "SECURITY_ENFORCED checks only SELECT and FROM fields, and it skips sharing.",
+        "`SECURITY_ENFORCED` checks only `SELECT` and `FROM` fields, and it skips sharing.",
         "Sharing keywords don't check CRUD or FLS.",
-        "stripInaccessible cleans results after the query. It doesn't check WHERE fields or sharing.",
+        "`stripInaccessible` cleans results after the query. It doesn't check `WHERE` fields or sharing.",
         ""
       ],
       "source": "Apex Developer Guide: Enforce User Mode for Database Operations"
@@ -827,23 +827,23 @@
       "id": "fund-q5",
       "lesson": "fund-2",
       "difficulty": 3,
-      "q": "The running user has Read access on Account but no field-level access to Credit_Score__c. What happens when this code runs?",
+      "q": "The running user has Read access on Account but no field-level access to `Credit_Score__c`. What happens when this code runs?",
       "code": "List<Account> accs = [\n  SELECT Id, Name, Credit_Score__c\n  FROM Account\n  WITH SECURITY_ENFORCED\n];",
       "lang": "apex",
       "options": [
-        "The query returns accounts with Credit_Score__c set to null",
-        "A System.QueryException is thrown",
-        "The query returns accounts and Credit_Score__c is silently removed from the SELECT",
-        "A System.NoAccessException is thrown only when the code reads Credit_Score__c"
+        "The query returns accounts with `Credit_Score__c` set to `null`",
+        "A `System.QueryException` is thrown",
+        "The query returns accounts and `Credit_Score__c` is silently removed from the `SELECT`",
+        "A `System.NoAccessException` is thrown only when the code reads `Credit_Score__c`"
       ],
       "answer": [
         1
       ],
-      "explain": "WITH SECURITY_ENFORCED fails loudly. Credit_Score__c is in the SELECT and the user can't read it, so the query throws a **QueryException**. It never strips fields.",
+      "explain": "`WITH SECURITY_ENFORCED` fails loudly. `Credit_Score__c` is in the `SELECT` and the user can't read it, so the query throws a `QueryException`. It never strips fields.",
       "wrong": [
         "It doesn't blank out the field. The whole query fails.",
         "",
-        "Quiet stripping is what Security.stripInaccessible does, not this clause.",
+        "Quiet stripping is what `Security.stripInaccessible` does, not this clause.",
         "The query itself fails before any field is read."
       ],
       "source": "Apex Developer Guide: Filter SOQL Queries Using WITH SECURITY_ENFORCED"
@@ -854,11 +854,11 @@
       "difficulty": 3,
       "q": "A developer must insert records built from an external JSON payload. The running user's object permissions and field-level security must be enforced on the insert. Which two approaches meet this? (Choose 2)",
       "options": [
-        "insert as user records;",
-        "Declare the class with sharing and use insert records;",
-        "Add WITH SECURITY_ENFORCED to the insert statement",
-        "Database.insert(records, false);",
-        "Database.insert(records, AccessLevel.USER_MODE);"
+        "`insert as user records;`",
+        "Declare the class `with sharing` and use `insert records;`",
+        "Add `WITH SECURITY_ENFORCED` to the insert statement",
+        "`Database.insert(records, false);`",
+        "`Database.insert(records, AccessLevel.USER_MODE);`"
       ],
       "answer": [
         0,
@@ -867,9 +867,9 @@
       "explain": "To check permissions on a save, run the DML in **user mode**. Both `insert as user` and `Database.insert` with `AccessLevel.USER_MODE` check CRUD and FLS.",
       "wrong": [
         "",
-        "with sharing only filters records. It doesn't check CRUD or FLS.",
-        "WITH SECURITY_ENFORCED belongs in SOQL, not in DML.",
-        "allOrNone = false allows partial success. It doesn't check permissions.",
+        "`with sharing` only filters records. It doesn't check CRUD or FLS.",
+        "`WITH SECURITY_ENFORCED` belongs in SOQL, not in DML.",
+        "`allOrNone = false` allows partial success. It doesn't check permissions.",
         ""
       ],
       "source": "Apex Developer Guide: Enforce User Mode for Database Operations"
@@ -878,22 +878,22 @@
       "id": "fund-q7",
       "lesson": "fund-2",
       "difficulty": 1,
-      "q": "Before setting Contact.Email in Apex, a developer wants to manually confirm that the running user is allowed to edit that field. Which check is correct?",
+      "q": "Before setting `Contact.Email` in Apex, a developer wants to manually confirm that the running user is allowed to edit that field. Which check is correct?",
       "options": [
-        "Schema.sObjectType.Contact.fields.Email.isAccessible()",
-        "Schema.sObjectType.Contact.fields.Email.isPermissionable()",
-        "Schema.sObjectType.Contact.fields.Email.isUpdateable()",
-        "UserInfo.canEdit(Contact.Email)"
+        "`Schema.sObjectType.Contact.fields.Email.isAccessible()`",
+        "`Schema.sObjectType.Contact.fields.Email.isPermissionable()`",
+        "`Schema.sObjectType.Contact.fields.Email.isUpdateable()`",
+        "`UserInfo.canEdit(Contact.Email)`"
       ],
       "answer": [
         2
       ],
       "explain": "To edit a field, ask whether the user may update it. `isUpdateable()` on the field describe checks edit access (FLS). Think: Updateable means you may write.",
       "wrong": [
-        "isAccessible() checks read access, not edit access.",
-        "isPermissionable() only says whether field permissions can be set on the field.",
+        "`isAccessible()` checks read access, not edit access.",
+        "`isPermissionable()` only says whether field permissions can be set on the field.",
         "",
-        "UserInfo has no canEdit() method."
+        "`UserInfo` has no `canEdit()` method."
       ],
       "source": "Apex Developer Guide: Schema.DescribeFieldResult / Enforcing Object and Field Permissions"
     },
@@ -901,22 +901,22 @@
       "id": "fund-q8",
       "lesson": "fund-3",
       "difficulty": 1,
-      "q": "A developer needs Apex to give a specific user Edit access to a record of the custom object Project__c. Which object and fields are used?",
+      "q": "A developer needs Apex to give a specific user Edit access to a record of the custom object `Project__c`. Which object and fields are used?",
       "options": [
-        "ProjectShare with RecordId, UserId, AccessLevel",
-        "Project__Share with ParentId, UserOrGroupId, AccessLevel, RowCause",
-        "Project__c with OwnerId and a sharing reason picklist",
-        "UserRecordAccess with RecordId and HasEditAccess"
+        "`ProjectShare` with `RecordId`, `UserId`, `AccessLevel`",
+        "`Project__Share` with `ParentId`, `UserOrGroupId`, `AccessLevel`, `RowCause`",
+        "`Project__c` with `OwnerId` and a sharing reason picklist",
+        "`UserRecordAccess` with `RecordId` and `HasEditAccess`"
       ],
       "answer": [
         1
       ],
-      "explain": "A custom object's share rows live in **ObjectName__Share**. You set ParentId (the record), UserOrGroupId (who), AccessLevel (Read or Edit) and RowCause (why).",
+      "explain": "A custom object's share rows live in `ObjectName__Share`. You set `ParentId` (the record), `UserOrGroupId` (who), `AccessLevel` (Read or Edit) and `RowCause` (why).",
       "wrong": [
-        "That is the wrong name and the wrong fields. Custom shares use __Share.",
+        "That is the wrong name and the wrong fields. Custom shares use `__Share`.",
         "",
         "Changing the owner isn't sharing, and records have no sharing reason picklist.",
-        "UserRecordAccess is read-only. It reports access but can't grant it."
+        "`UserRecordAccess` is read-only. It reports access but can't grant it."
       ],
       "source": "Apex Developer Guide: Understanding Sharing / Creating Apex Managed Sharing"
     },
@@ -924,17 +924,17 @@
       "id": "fund-q9",
       "lesson": "fund-3",
       "difficulty": 2,
-      "q": "Apex creates share records so that the users listed on child Team_Member__c records can edit their Project__c. When a project's owner changes, the team members lose access. How should the developer fix this?",
+      "q": "Apex creates share records so that the users listed on child `Team_Member__c` records can edit their `Project__c`. When a project's owner changes, the team members lose access. How should the developer fix this?",
       "options": [
-        "Insert the shares with AccessLevel = 'All'",
-        "Run the sharing code in a without sharing class so the shares can't be removed",
-        "Set the Project__c OWD to Public Read Only",
-        "Use a custom Apex sharing reason as the RowCause"
+        "Insert the shares with `AccessLevel = 'All'`",
+        "Run the sharing code in a `without sharing` class so the shares can't be removed",
+        "Set the `Project__c` OWD to Public Read Only",
+        "Use a custom Apex sharing reason as the `RowCause`"
       ],
       "answer": [
         3
       ],
-      "explain": "Manual shares vanish when the owner changes; reason shares stay. So give the shares a custom **Apex sharing reason** as their RowCause.",
+      "explain": "Manual shares vanish when the owner changes; reason shares stay. So give the shares a custom **Apex sharing reason** as their `RowCause`.",
       "wrong": [
         "All is for the owner only, and access level doesn't protect against owner changes.",
         "The class's sharing mode has nothing to do with surviving an owner change.",
@@ -947,17 +947,17 @@
       "id": "fund-q10",
       "lesson": "fund-3",
       "difficulty": 2,
-      "q": "A developer tries to reference Invoice__Share in Apex, but the type doesn't exist. Invoice__c is a standalone custom object. What is the most likely cause?",
+      "q": "A developer tries to reference `Invoice__Share` in Apex, but the type doesn't exist. `Invoice__c` is a standalone custom object. What is the most likely cause?",
       "options": [
-        "Invoice__c's organization-wide default is Public Read/Write",
+        "`Invoice__c`'s organization-wide default is Public Read/Write",
         "Apex managed sharing must first be enabled in a Permission Set",
-        "The class must be declared without sharing to reference share objects",
+        "The class must be declared `without sharing` to reference share objects",
         "Share objects are only available through the Metadata API"
       ],
       "answer": [
         0
       ],
-      "explain": "A custom object only gets a share object when its OWD is tighter than Public Read/Write. With **Public Read/Write**, everyone already has access, so Invoice__Share doesn't exist.",
+      "explain": "A custom object only gets a share object when its OWD is tighter than Public Read/Write. With **Public Read/Write**, everyone already has access, so `Invoice__Share` doesn't exist.",
       "wrong": [
         "",
         "There is no permission set switch for Apex managed sharing.",
@@ -970,14 +970,14 @@
       "id": "fund-q11",
       "lesson": "fund-3",
       "difficulty": 3,
-      "q": "This code runs in a trigger after a Project__c record is inserted. What is the result?",
+      "q": "This code runs in a trigger after a `Project__c` record is inserted. What is the result?",
       "code": "insert new Project__Share(\n  ParentId = proj.Id,\n  UserOrGroupId = reviewerId,\n  AccessLevel = 'All',\n  RowCause = Schema.Project__Share.RowCause.Reviewer__c\n);",
       "lang": "apex",
       "options": [
         "The share inserts and gives the user full access",
-        "The share inserts but RowCause defaults to Manual",
-        "The insert fails: Apex managed sharing can't grant 'All'",
-        "The insert fails because after insert triggers can't create share records"
+        "The share inserts but `RowCause` defaults to Manual",
+        "The insert fails: Apex managed sharing can't grant `'All'`",
+        "The insert fails because `after insert` triggers can't create share records"
       ],
       "answer": [
         2
@@ -985,7 +985,7 @@
       "explain": "Code can only grant Read or Edit. **All** (full access) belongs to the record owner, so this insert fails.",
       "wrong": [
         "A share row can't grant full access.",
-        "RowCause is set here on purpose, and the access level is invalid anyway.",
+        "`RowCause` is set here on purpose, and the access level is invalid anyway.",
         "",
         "Triggers can insert share rows. It's a common pattern."
       ],
@@ -1020,7 +1020,7 @@
       "difficulty": 3,
       "q": "A max-discount value must have an org-wide default. Sales Managers (a profile) get a higher value, and two specific users get personal overrides. Apex must read the right value for the running user without SOQL. What is the best solution?",
       "options": [
-        "A Hierarchy custom setting read with Max_Discount__c.getInstance()",
+        "A Hierarchy custom setting read with `Max_Discount__c.getInstance()`",
         "A List custom setting keyed by profile name",
         "A custom metadata type with a Profile text field queried in SOQL",
         "A custom label per profile"
@@ -1041,11 +1041,11 @@
       "id": "fund-q14",
       "lesson": "fund-4",
       "difficulty": 2,
-      "q": "A test method fails because Integration_Config__c.getOrgDefaults() returns no endpoint value. The same code works in the sandbox, where a value is set. Integration_Config__c is a hierarchy custom setting. What is the cause?",
+      "q": "A test method fails because `Integration_Config__c.getOrgDefaults()` returns no endpoint value. The same code works in the sandbox, where a value is set. `Integration_Config__c` is a hierarchy custom setting. What is the cause?",
       "options": [
         "Custom settings can't be read in test context at all",
-        "getOrgDefaults() only works for List custom settings",
-        "The test needs @IsTest(SeeAllData=false) to see the org's custom setting records",
+        "`getOrgDefaults()` only works for List custom settings",
+        "The test needs `@IsTest(SeeAllData=false)` to see the org's custom setting records",
         "Tests can't see org custom setting data, so the test must insert the setting"
       ],
       "answer": [
@@ -1054,8 +1054,8 @@
       "explain": "Tests can't see the org's data, and custom setting records count as data. So **the test must insert the setting** first, for example in test setup. Custom metadata, by contrast, is visible in tests.",
       "wrong": [
         "Tests can read custom settings. They just need to create the data first.",
-        "getOrgDefaults() is a hierarchy custom setting method.",
-        "SeeAllData=false is the default, and it is what hides the data.",
+        "`getOrgDefaults()` is a hierarchy custom setting method.",
+        "`SeeAllData=false` is the default, and it is what hides the data.",
         ""
       ],
       "source": "Apex Developer Guide: Isolation of Test Data from Organization Data in Unit Tests"
@@ -1067,8 +1067,8 @@
       "q": "Which two statements about custom metadata types are true? (Choose 2)",
       "options": [
         "Records can be created with standard insert DML in a trigger",
-        "Records can be read with getAll() and getInstance() without consuming SOQL queries",
-        "Apex can create or update records with Metadata.Operations.enqueueDeployment(), which runs asynchronously",
+        "Records can be read with `getAll()` and `getInstance()` without consuming SOQL queries",
+        "Apex can create or update records with `Metadata.Operations.enqueueDeployment()`, which runs asynchronously",
         "Values resolve automatically by profile and then by user, like a hierarchy custom setting",
         "Record data is excluded from change sets"
       ],
@@ -1076,9 +1076,9 @@
         1,
         2
       ],
-      "explain": "Custom metadata reads are free and writes go through the Metadata API. `getAll()`/`getInstance()` use no SOQL, and Apex writes with **Metadata.Operations.enqueueDeployment()**, which runs later (async).",
+      "explain": "Custom metadata reads are free and writes go through the Metadata API. `getAll()`/`getInstance()` use no SOQL, and Apex writes with `Metadata.Operations.enqueueDeployment()`, which runs later (async).",
       "wrong": [
-        "You can't use DML on __mdt records.",
+        "You can't use DML on `__mdt` records.",
         "",
         "",
         "That describes hierarchy custom settings, not custom metadata.",
@@ -1092,10 +1092,10 @@
       "difficulty": 1,
       "q": "An Apex error message shown to users must appear in each user's language. What should the developer use?",
       "options": [
-        "A custom label translated in Translation Workbench, read as System.Label.Name",
-        "A hard-coded string in each language selected with if/else on UserInfo.getLanguage()",
+        "A custom label translated in Translation Workbench, read as `System.Label.Name`",
+        "A hard-coded string in each language selected with `if/else` on `UserInfo.getLanguage()`",
         "A List custom setting with one record per language",
-        "A static final String constant"
+        "A `static final String` constant"
       ],
       "answer": [
         0
@@ -1127,10 +1127,10 @@
       ],
       "explain": "`format()` shows a GMT time in the user's own time zone and style. Midnight GMT on 1 January is **7:00 PM on 31 December** in New York (5 hours earlier).",
       "wrong": [
-        "That is the GMT time, which formatGmt() would show.",
+        "That is the GMT time, which `formatGmt()` would show.",
         "",
         "That shifts the time the wrong way.",
-        "format() gives a locale-style string, not an ISO 8601 string."
+        "`format()` gives a locale-style string, not an ISO 8601 string."
       ],
       "source": "Apex Developer Guide: Datetime Class (format, newInstanceGmt)"
     },
@@ -1138,21 +1138,21 @@
       "id": "fund-q18",
       "lesson": "fund-5",
       "difficulty": 3,
-      "q": "An ISV builds a managed package that must install in orgs with and without multi-currency. When multi-currency is enabled, the code must copy CurrencyIsoCode from the Opportunity to a custom object. What should the developer do?",
+      "q": "An ISV builds a managed package that must install in orgs with and without multi-currency. When multi-currency is enabled, the code must copy `CurrencyIsoCode` from the Opportunity to a custom object. What should the developer do?",
       "options": [
-        "Reference opp.CurrencyIsoCode directly and mark the package as requiring multi-currency",
-        "Use convertCurrency() in a static SOQL query in all orgs",
-        "Wrap the static reference in a try/catch for TypeException",
-        "Check UserInfo.isMultiCurrencyOrganization() and use dynamic SOQL with get/put"
+        "Reference `opp.CurrencyIsoCode` directly and mark the package as requiring multi-currency",
+        "Use `convertCurrency()` in a static SOQL query in all orgs",
+        "Wrap the static reference in a `try/catch` for `TypeException`",
+        "Check `UserInfo.isMultiCurrencyOrganization()` and use dynamic SOQL with `get/put`"
       ],
       "answer": [
         3
       ],
-      "explain": "A direct `CurrencyIsoCode` reference won't even compile without multi-currency. So check **UserInfo.isMultiCurrencyOrganization()** at run time and reach the field dynamically with get/put.",
+      "explain": "A direct `CurrencyIsoCode` reference won't even compile without multi-currency. So check `UserInfo.isMultiCurrencyOrganization()` at run time and reach the field dynamically with `get/put`.",
       "wrong": [
         "Requiring multi-currency blocks single-currency orgs, which breaks the goal.",
-        "convertCurrency() needs multi-currency, and it doesn't copy the ISO code.",
-        "This is a compile-time problem, so try/catch can't help.",
+        "`convertCurrency()` needs multi-currency, and it doesn't copy the ISO code.",
+        "This is a compile-time problem, so `try/catch` can't help.",
         ""
       ],
       "source": "Apex Developer Guide: UserInfo Class / Dynamic SOQL; Salesforce Help: Multiple Currencies"
@@ -1163,23 +1163,23 @@
       "difficulty": 2,
       "q": "A multilingual, multi-currency org needs a SOQL query that returns each opportunity's stage translated into the user's language and its amount formatted for the user's locale. Which two SOQL functions should be used? (Choose 2)",
       "options": [
-        "toLabel(StageName)",
-        "convertTimezone(StageName)",
-        "FORMAT(Amount)",
-        "String.valueOf(Amount)",
-        "CALENDAR_MONTH(Amount)"
+        "`toLabel(StageName)`",
+        "`convertTimezone(StageName)`",
+        "`FORMAT(Amount)`",
+        "`String.valueOf(Amount)`",
+        "`CALENDAR_MONTH(Amount)`"
       ],
       "answer": [
         0,
         2
       ],
-      "explain": "SOQL has one function for translated picklists and one for local formatting. **toLabel()** translates the stage, and **FORMAT()** formats the amount for the user's locale.",
+      "explain": "SOQL has one function for translated picklists and one for local formatting. `toLabel()` translates the stage, and `FORMAT()` formats the amount for the user's locale.",
       "wrong": [
         "",
-        "convertTimezone() only works on datetime fields inside date functions.",
+        "`convertTimezone()` only works on datetime fields inside date functions.",
         "",
-        "String.valueOf is Apex, not SOQL, and it ignores locale.",
-        "CALENDAR_MONTH is a date function, not a formatter."
+        "`String.valueOf` is Apex, not SOQL, and it ignores locale.",
+        "`CALENDAR_MONTH` is a date function, not a formatter."
       ],
       "source": "SOQL and SOSL Reference: toLabel(), FORMAT()"
     },
@@ -1191,19 +1191,19 @@
       "code": "SELECT CALENDAR_MONTH(CreatedDate) m, COUNT(Id) c\nFROM Case\nGROUP BY CALENDAR_MONTH(CreatedDate)",
       "lang": "soql",
       "options": [
-        "Call Datetime.format() on each AggregateResult to shift it to the user's time zone",
-        "Run the query in a with sharing class",
-        "Replace CreatedDate with DAY_ONLY(CreatedDate) in both SELECT and GROUP BY",
-        "Use CALENDAR_MONTH(convertTimezone(CreatedDate)) in SELECT and GROUP BY"
+        "Call `Datetime.format()` on each `AggregateResult` to shift it to the user's time zone",
+        "Run the query in a `with sharing` class",
+        "Replace `CreatedDate` with `DAY_ONLY(CreatedDate)` in both `SELECT` and `GROUP BY`",
+        "Use `CALENDAR_MONTH(convertTimezone(CreatedDate))` in `SELECT` and `GROUP BY`"
       ],
       "answer": [
         3
       ],
-      "explain": "SOQL date functions read the clock in UTC unless you say otherwise. Wrapping the field as **CALENDAR_MONTH(convertTimezone(CreatedDate))** groups by the user's local time.",
+      "explain": "SOQL date functions read the clock in UTC unless you say otherwise. Wrapping the field as `CALENDAR_MONTH(convertTimezone(CreatedDate))` groups by the user's local time.",
       "wrong": [
         "The grouping is already wrong before the results reach Apex.",
         "Sharing has nothing to do with time zones.",
-        "DAY_ONLY also uses UTC unless it's wrapped in convertTimezone().",
+        "`DAY_ONLY` also uses UTC unless it's wrapped in `convertTimezone()`.",
         ""
       ],
       "source": "SOQL and SOSL Reference: Converting Time Zones in Date Functions"
@@ -1214,10 +1214,10 @@
       "difficulty": 2,
       "q": "A search page builds a SOQL string from text typed by the user. A security review flags SOQL injection. What is the most robust fix?",
       "options": [
-        "Run the query in a with sharing class",
+        "Run the query in a `with sharing` class",
         "Strip all spaces from the input",
-        "Add LIMIT 200 to the query",
-        "Use a bind variable, for example with Database.queryWithBinds()"
+        "Add `LIMIT 200` to the query",
+        "Use a bind variable, for example with `Database.queryWithBinds()`"
       ],
       "answer": [
         3
@@ -1226,7 +1226,7 @@
       "wrong": [
         "Sharing doesn't stop someone changing the query's shape.",
         "Injection doesn't need spaces, so this doesn't stop it.",
-        "A row limit doesn't stop an attacker rewriting the WHERE clause.",
+        "A row limit doesn't stop an attacker rewriting the `WHERE` clause.",
         ""
       ],
       "source": "Apex Developer Guide: Dynamic SOQL / SOQL Injection"
@@ -1237,10 +1237,10 @@
       "difficulty": 1,
       "q": "A developer needs the ID of the Account record type with developer name \"Partner\" without using SOQL or hard-coding it. Which code works?",
       "options": [
-        "Schema.SObjectType.Account.getRecordTypeInfosByDeveloperName().get('Partner').getRecordTypeId()",
-        "RecordType.getInstance('Partner').Id",
-        "Account.RecordTypeId.getDescribe().getDefaultValue()",
-        "UserInfo.getRecordTypeId('Account', 'Partner')"
+        "`Schema.SObjectType.Account.getRecordTypeInfosByDeveloperName().get('Partner').getRecordTypeId()`",
+        "`RecordType.getInstance('Partner').Id`",
+        "`Account.RecordTypeId.getDescribe().getDefaultValue()`",
+        "`UserInfo.getRecordTypeId('Account', 'Partner')`"
       ],
       "answer": [
         0
@@ -1248,9 +1248,9 @@
       "explain": "Describe calls answer questions about your schema for free. `getRecordTypeInfosByDeveloperName().get('Partner').getRecordTypeId()` finds the ID with no SOQL.",
       "wrong": [
         "",
-        "RecordType has no getInstance() method.",
+        "`RecordType` has no `getInstance()` method.",
         "This doesn't look up a record type by developer name.",
-        "UserInfo has no such method."
+        "`UserInfo` has no such method."
       ],
       "source": "Apex Developer Guide: Schema.DescribeSObjectResult / RecordTypeInfo"
     },
@@ -1258,19 +1258,19 @@
       "id": "fund-q23",
       "lesson": "fund-6",
       "difficulty": 3,
-      "q": "Discount rules change often. Admins want to pick which Apex class calculates discounts for each region by editing a custom metadata record that holds the class name. Each class implements DiscountStrategy. Which code correctly loads the right class?",
+      "q": "Discount rules change often. Admins want to pick which Apex class calculates discounts for each region by editing a custom metadata record that holds the class name. Each class implements `DiscountStrategy`. Which code correctly loads the right class?",
       "options": [
-        "DiscountStrategy s = new cfg.Class_Name__c();",
-        "DiscountStrategy s = (DiscountStrategy) Type.forName(cfg.Class_Name__c).newInstance();",
-        "DiscountStrategy s = (DiscountStrategy) JSON.deserialize(cfg.Class_Name__c, DiscountStrategy.class);",
-        "DiscountStrategy s = Schema.getGlobalDescribe().get(cfg.Class_Name__c).newSObject();"
+        "`DiscountStrategy s = new cfg.Class_Name__c();`",
+        "`DiscountStrategy s = (DiscountStrategy) Type.forName(cfg.Class_Name__c).newInstance();`",
+        "`DiscountStrategy s = (DiscountStrategy) JSON.deserialize(cfg.Class_Name__c, DiscountStrategy.class);`",
+        "`DiscountStrategy s = Schema.getGlobalDescribe().get(cfg.Class_Name__c).newSObject();`"
       ],
       "answer": [
         1
       ],
-      "explain": "To create a class from a name stored as text, look it up at run time. **Type.forName()** finds the class, `newInstance()` creates it, and the cast gives you the interface. Check for null in case the name is wrong.",
+      "explain": "To create a class from a name stored as text, look it up at run time. `Type.forName()` finds the class, `newInstance()` creates it, and the cast gives you the interface. Check for `null` in case the name is wrong.",
       "wrong": [
-        "You can't use new with a text value.",
+        "You can't use `new` with a text value.",
         "",
         "Deserializing a class name doesn't create that class.",
         "The global describe covers sObjects, not Apex classes."
@@ -1285,18 +1285,18 @@
       "code": "String a = 'Gold';\nSet<String> tiers = new Set<String>{ 'gold' };\nSystem.debug((a == 'GOLD') + ', ' + tiers.contains(a));",
       "lang": "apex",
       "options": [
-        "true, true",
-        "false, false",
-        "true, false",
-        "false, true"
+        "`true`, `true`",
+        "`false`, `false`",
+        "`true`, `false`",
+        "`false`, `true`"
       ],
       "answer": [
         2
       ],
-      "explain": "Apex Strings compare in two different ways. `==` ignores case, so it prints **true**. A `Set<String>` is case-sensitive, so `contains()` prints **false**.",
+      "explain": "Apex Strings compare in two different ways. `==` ignores case, so it prints `true`. A `Set<String>` is case-sensitive, so `contains()` prints `false`.",
       "wrong": [
-        "Set.contains() is case-sensitive, so the second value is false.",
-        "== on Strings ignores case, so the first value is true.",
+        "`Set.contains()` is case-sensitive, so the second value is `false`.",
+        "`==` on Strings ignores case, so the first value is `true`.",
         "",
         "The two results are the other way round."
       ],
@@ -1308,19 +1308,19 @@
       "difficulty": 2,
       "q": "A base class must provide a default shipping calculation that works on its own. Subclasses may optionally replace it. Code must be able to create the base class directly. How should it be declared?",
       "options": [
-        "public abstract class Shipper { public abstract Decimal calc(); }",
-        "public interface Shipper { Decimal calc(); }",
-        "public class Shipper { public Decimal calc() {...} }",
-        "public virtual class Shipper { public virtual Decimal calc() {...} }"
+        "`public abstract class Shipper { public abstract Decimal calc(); }`",
+        "`public interface Shipper { Decimal calc(); }`",
+        "`public class Shipper { public Decimal calc() {...} }`",
+        "`public virtual class Shipper { public virtual Decimal calc() {...} }`"
       ],
       "answer": [
         3
       ],
-      "explain": "You need a class you can create directly and children can change. A **virtual** class can be created and extended, and a virtual method gives a default body that children may **override**.",
+      "explain": "You need a class you can create directly and children can change. A `virtual` class can be created and extended, and a `virtual` method gives a default body that children may `override`.",
       "wrong": [
-        "Abstract classes can't be created, and abstract methods have no default body.",
+        "Abstract classes can't be created, and `abstract` methods have no default body.",
         "Interfaces have no code and can't be created.",
-        "A plain class is final, so no child can extend it.",
+        "A plain class is `final`, so no child can extend it.",
         ""
       ],
       "source": "Apex Developer Guide: Extending a Class / Virtual and Abstract"
@@ -1331,9 +1331,9 @@
       "difficulty": 1,
       "q": "An org has three triggers on Opportunity written by different teams, and their order of execution is unpredictable. What best practice addresses this?",
       "options": [
-        "Add a static Boolean to each trigger",
+        "Add a `static Boolean` to each trigger",
         "One trigger per object that delegates to a handler class",
-        "Move all the logic into a single @future method called from each trigger",
+        "Move all the logic into a single `@future` method called from each trigger",
         "Use the Trigger Order field to number the triggers"
       ],
       "answer": [
@@ -1352,24 +1352,24 @@
       "id": "fund-q27",
       "lesson": "fund-7",
       "difficulty": 3,
-      "q": "What happens when the developer saves Child?",
+      "q": "What happens when the developer saves `Child`?",
       "code": "public class Parent {\n  public void run() { System.debug('parent'); }\n}\npublic class Child extends Parent {\n  public void run() { System.debug('child'); }\n}",
       "lang": "apex",
       "options": [
-        "It compiles; Child replaces run()",
-        "Compile error: Parent is not virtual or abstract, so it can't be extended",
-        "It compiles, but Parent.run() always executes at runtime",
-        "Compile error only because Child is missing the override keyword"
+        "It compiles; `Child` replaces `run()`",
+        "Compile error: `Parent` is not `virtual` or `abstract`, so it can't be extended",
+        "It compiles, but `Parent.run()` always executes at runtime",
+        "Compile error only because `Child` is missing the `override` keyword"
       ],
       "answer": [
         1
       ],
-      "explain": "Apex classes are **final by default**. Parent isn't virtual or abstract, so Child can't extend it, and the class doesn't compile.",
+      "explain": "Apex classes are `final` **by default**. `Parent` isn't `virtual` or `abstract`, so `Child` can't extend it, and the class doesn't compile.",
       "wrong": [
-        "Apex doesn't let you extend a final class.",
+        "Apex doesn't let you extend a `final` class.",
         "",
         "The class never compiles, so nothing runs.",
-        "override is missing too, but the first error is that Parent can't be extended."
+        "`override` is missing too, but the first error is that `Parent` can't be extended."
       ],
       "source": "Apex Developer Guide: Extending a Class"
     },
@@ -1405,20 +1405,20 @@
       "difficulty": 1,
       "q": "Which declaration creates a valid custom exception?",
       "options": [
-        "public class InventoryError extends Exception {}",
-        "public class InventoryException implements Exception {}",
-        "public class InventoryException extends Exception {}",
-        "public exception InventoryException {}"
+        "`public class InventoryError extends Exception {}`",
+        "`public class InventoryException implements Exception {}`",
+        "`public class InventoryException extends Exception {}`",
+        "`public exception InventoryException {}`"
       ],
       "answer": [
         2
       ],
-      "explain": "A custom exception must **extend Exception** and have a name ending in **Exception**. Only `InventoryException extends Exception` follows both rules.",
+      "explain": "A custom exception must **extend** `Exception` and have a name ending in **Exception**. Only `InventoryException extends Exception` follows both rules.",
       "wrong": [
         "The name must end in \"Exception\".",
-        "Exception is a class to extend, not an interface.",
+        "`Exception` is a class to extend, not an interface.",
         "",
-        "Apex has no exception keyword for declaring classes."
+        "Apex has no `exception` keyword for declaring classes."
       ],
       "source": "Apex Developer Guide: Create Custom Exceptions"
     },
@@ -1430,9 +1430,9 @@
       "code": "insert a;                       // Account\nSavepoint sp = Database.setSavepoint();\nContact c = new Contact(LastName='X', AccountId=a.Id);\ninsert c;\nOrderHelper.counter = 5;        // static Integer\nDatabase.rollback(sp);",
       "lang": "apex",
       "options": [
-        "The setSavepoint and rollback calls don't count toward DML limits",
+        "The `setSavepoint` and `rollback` calls don't count toward DML limits",
         "The Contact remains in the database",
-        "c.Id still contains a value after the rollback",
+        "`c.Id` still contains a value after the rollback",
         "The Account remains in the database",
         "The static counter is reset to 0"
       ],
@@ -1440,9 +1440,9 @@
         2,
         3
       ],
-      "explain": "Rollback rewinds only the DML made after the savepoint. So the **Account stays**, and **c.Id keeps its value**, because IDs aren't cleared from rolled-back records.",
+      "explain": "Rollback rewinds only the DML made after the savepoint. So the **Account stays**, and `c.Id` **keeps its value**, because IDs aren't cleared from rolled-back records.",
       "wrong": [
-        "Both setSavepoint() and rollback() count toward the DML statement limit.",
+        "Both `setSavepoint()` and `rollback()` count toward the DML statement limit.",
         "The Contact was inserted after the savepoint, so it is undone.",
         "",
         "",
@@ -1454,17 +1454,17 @@
       "id": "fund-q31",
       "lesson": "fund-8",
       "difficulty": 1,
-      "q": "A batch method sometimes hits \"Too many SOQL queries: 101\". A developer wraps the logic in try/catch(Exception e) to log the error and continue. What happens?",
+      "q": "A batch method sometimes hits \"Too many SOQL queries: 101\". A developer wraps the logic in `try/catch(Exception e)` to log the error and continue. What happens?",
       "options": [
         "The catch block logs the error and processing continues",
-        "The LimitException can't be caught, and the transaction stops",
+        "The `LimitException` can't be caught, and the transaction stops",
         "Only the last query is rolled back",
         "The platform retries the transaction automatically"
       ],
       "answer": [
         1
       ],
-      "explain": "Limit errors can't be caught. The **System.LimitException** skips every catch block and stops the transaction. Prevent it with bulkified code and checks like `Limits.getQueries()`.",
+      "explain": "Limit errors can't be caught. The `System.LimitException` skips every catch block and stops the transaction. Prevent it with bulkified code and checks like `Limits.getQueries()`.",
       "wrong": [
         "Limit exceptions skip all catch blocks.",
         "",
@@ -1479,15 +1479,15 @@
       "difficulty": 2,
       "q": "When importing 200 leads, one bad record must not stop the valid ones from saving. The developer also needs to know which records failed and why. What should be used?",
       "options": [
-        "insert leads; inside try/catch",
-        "insert as user leads;",
-        "Database.setSavepoint() before insert leads; then roll back only the failed rows",
-        "Database.insert(leads, false) and check each SaveResult"
+        "`insert leads;` inside `try/catch`",
+        "`insert as user leads;`",
+        "`Database.setSavepoint()` before `insert leads;` then roll back only the failed rows",
+        "`Database.insert(leads, false)` and check each `SaveResult`"
       ],
       "answer": [
         3
       ],
-      "explain": "To keep the good rows and learn about the bad ones, allow partial success. **Database.insert(leads, false)** saves the valid records, and each **SaveResult** reports `isSuccess()` and `getErrors()`.",
+      "explain": "To keep the good rows and learn about the bad ones, allow partial success. `Database.insert(leads, false)` saves the valid records, and each `SaveResult` reports `isSuccess()` and `getErrors()`.",
       "wrong": [
         "A plain insert is all-or-nothing, so one failure undoes the whole batch.",
         "User mode checks permissions but is still all-or-nothing.",
@@ -1528,20 +1528,20 @@
       "difficulty": 3,
       "q": "Currency conversion rates are read thousands of times a day by all users and change once a day. A developer wants a single call that returns the cached rate, or loads it with SOQL and caches it on a miss. What should they build?",
       "options": [
-        "A Cache.CacheBuilder class with doLoad(), read via Cache.Org.get(RateLoader.class, key)",
+        "A `Cache.CacheBuilder` class with `doLoad()`, read via `Cache.Org.get(RateLoader.class, key)`",
         "A Session cache entry populated by each user's first query",
-        "A static Map in a singleton class populated on first use",
-        "A hierarchy custom setting kept current by a trigger on CurrencyType, read with getOrgDefaults()"
+        "A `static Map` in a singleton class populated on first use",
+        "A hierarchy custom setting kept current by a trigger on `CurrencyType`, read with `getOrgDefaults()`"
       ],
       "answer": [
         0
       ],
-      "explain": "Data read by everyone and changed rarely belongs in org cache, loaded automatically on a miss. A **Cache.CacheBuilder** runs `doLoad()` on a miss and caches the result, all in one `Cache.Org.get()` call.",
+      "explain": "Data read by everyone and changed rarely belongs in org cache, loaded automatically on a miss. A `Cache.CacheBuilder` runs `doLoad()` on a miss and caches the result, all in one `Cache.Org.get()` call.",
       "wrong": [
         "",
         "Session cache isn't shared, so every user would reload the rates.",
         "Statics last only one transaction.",
-        "CurrencyType doesn't support Apex triggers, and a synced setting is more fragile than a self-loading cache."
+        "`CurrencyType` doesn't support Apex triggers, and a synced setting is more fragile than a self-loading cache."
       ],
       "source": "Apex Developer Guide: CacheBuilder Interface"
     },
@@ -1549,12 +1549,12 @@
       "id": "fund-q35",
       "lesson": "fund-9",
       "difficulty": 1,
-      "q": "A singleton class caches a configuration map in a private static variable. Does the cached map carry over to the next, separate request from the same user?",
+      "q": "A singleton class caches a configuration map in a `private static` variable. Does the cached map carry over to the next, separate request from the same user?",
       "options": [
-        "Yes, a private static in a singleton persists for the rest of the user's session",
+        "Yes, a `private static` in a singleton persists for the rest of the user's session",
         "Yes, for up to 24 hours",
         "No, statics last one transaction. Use Platform Cache to share across requests",
-        "No, unless the class is declared with sharing"
+        "No, unless the class is declared `with sharing`"
       ],
       "answer": [
         2
@@ -1572,22 +1572,22 @@
       "id": "fund-q36",
       "lesson": "fund-1",
       "difficulty": 1,
-      "q": "A developer is writing a utility class that is called from many places. It should run in the caller's sharing mode, and with sharing when it is the entry point of a transaction. Which declaration fits?",
+      "q": "A developer is writing a utility class that is called from many places. It should run in the caller's sharing mode, and `with sharing` when it is the entry point of a transaction. Which declaration fits?",
       "options": [
-        "public without sharing class RecordUtil",
-        "public inherited sharing class RecordUtil",
-        "public class RecordUtil (no sharing keyword at all)",
-        "public with sharing class RecordUtil"
+        "`public without sharing class RecordUtil`",
+        "`public inherited sharing class RecordUtil`",
+        "`public class RecordUtil` (no sharing keyword at all)",
+        "`public with sharing class RecordUtil`"
       ],
       "answer": [
         1
       ],
-      "explain": "You want the caller's mode, and with sharing when the class starts the request. That is **inherited sharing**, and it states the intent clearly.",
+      "explain": "You want the caller's mode, and `with sharing` when the class starts the request. That is `inherited sharing`, and it states the intent clearly.",
       "wrong": [
         "This always ignores sharing, whoever calls it.",
         "",
-        "Classic rule: with no keyword, an entry point runs without sharing, so it isn't safe there.",
-        "This always enforces sharing, even when a without sharing class calls it."
+        "Classic rule: with no keyword, an entry point runs `without sharing`, so it isn't safe there.",
+        "This always enforces sharing, even when a `without sharing` class calls it."
       ],
       "source": "Apex Developer Guide: Using the with sharing, without sharing, and inherited sharing Keywords"
     },
@@ -1595,20 +1595,20 @@
       "id": "fund-q37",
       "lesson": "fund-5",
       "difficulty": 1,
-      "q": "A multi-currency org stores opportunities in several currencies. Which field tells Apex which currency an Opportunity's Amount is in?",
+      "q": "A multi-currency org stores opportunities in several currencies. Which field tells Apex which currency an Opportunity's `Amount` is in?",
       "options": [
-        "DefaultCurrencyIsoCode on the Opportunity record",
-        "CurrencyType, a lookup on each record to the currency",
-        "CurrencyIsoCode on the Opportunity record",
-        "UserInfo.getDefaultCurrency() for the record owner"
+        "`DefaultCurrencyIsoCode` on the Opportunity record",
+        "`CurrencyType`, a lookup on each record to the currency",
+        "`CurrencyIsoCode` on the Opportunity record",
+        "`UserInfo.getDefaultCurrency()` for the record owner"
       ],
       "answer": [
         2
       ],
-      "explain": "In a multi-currency org every record names its own currency. The **CurrencyIsoCode** field on the Opportunity says which currency Amount is in.",
+      "explain": "In a multi-currency org every record names its own currency. The `CurrencyIsoCode` field on the Opportunity says which currency `Amount` is in.",
       "wrong": [
-        "DefaultCurrencyIsoCode is the user's personal currency, on the User record.",
-        "CurrencyType lists the org's currencies and rates. Records don't look it up.",
+        "`DefaultCurrencyIsoCode` is the user's personal currency, on the User record.",
+        "`CurrencyType` lists the org's currencies and rates. Records don't look it up.",
         "",
         "That is the running user's currency, which may differ from the record's."
       ],
@@ -1620,15 +1620,15 @@
       "difficulty": 2,
       "q": "A logging utility receives record Ids from many objects (Accounts, Cases, custom objects) and must branch on the object type. It is called in loops, so it must be cheap. What should the developer use?",
       "options": [
-        "recordId.getSObjectType(), then compare it with tokens like Account.SObjectType",
-        "Query each candidate object with WHERE Id = :recordId until one of the queries returns a row",
-        "Loop over Schema.getGlobalDescribe() and compare each object's getKeyPrefix() with the Id's prefix",
-        "Compare String.valueOf(recordId).left(3) with key prefixes hard-coded for each object"
+        "`recordId.getSObjectType()`, then compare it with tokens like `Account.SObjectType`",
+        "Query each candidate object with `WHERE Id = :recordId` until one of the queries returns a row",
+        "Loop over `Schema.getGlobalDescribe()` and compare each object's `getKeyPrefix()` with the Id's prefix",
+        "Compare `String.valueOf(recordId).left(3)` with key prefixes hard-coded for each object"
       ],
       "answer": [
         0
       ],
-      "explain": "Every Id already knows its object. **recordId.getSObjectType()** returns the token, like Account.SObjectType, with no query and no global describe, so it's cheap in loops.",
+      "explain": "Every Id already knows its object. `recordId.getSObjectType()` returns the token, like `Account.SObjectType`, with no query and no global describe, so it's cheap in loops.",
       "wrong": [
         "",
         "This wastes SOQL queries and fails for objects you didn't list.",
@@ -1641,23 +1641,23 @@
       "id": "fund-q39",
       "lesson": "fund-7",
       "difficulty": 2,
-      "q": "A developer adds a payment provider that implements an existing interface. What happens when CardPay is saved?",
+      "q": "A developer adds a payment provider that implements an existing interface. What happens when `CardPay` is saved?",
       "code": "public interface Payable {\n    Decimal charge(Decimal amount);\n}\n\npublic class CardPay implements Payable {\n    Decimal charge(Decimal amount) {\n        return amount * 1.02;\n    }\n}",
       "lang": "apex",
       "options": [
         "It compiles, because interface methods take the class's default access",
-        "It compiles, and charge() stays private to CardPay as declared",
-        "Compile error: CardPay must also be declared virtual to implement an interface",
-        "Compile error: the implementation of charge() must be public or global"
+        "It compiles, and `charge()` stays `private` to `CardPay` as declared",
+        "Compile error: `CardPay` must also be declared `virtual` to implement an interface",
+        "Compile error: the implementation of `charge()` must be `public` or `global`"
       ],
       "answer": [
         3
       ],
-      "explain": "A method that fulfils an interface must be **public** or **global**. With no modifier an Apex method is private, so CardPay doesn't compile.",
+      "explain": "A method that fulfils an interface must be `public` or `global`. With no modifier an Apex method is `private`, so `CardPay` doesn't compile.",
       "wrong": [
-        "Default access is private, which doesn't match the interface, so it's rejected.",
-        "An interface method can't be private, so the class doesn't compile.",
-        "Implementing an interface doesn't need virtual. Virtual is about being extended.",
+        "Default access is `private`, which doesn't match the interface, so it's rejected.",
+        "An interface method can't be `private`, so the class doesn't compile.",
+        "Implementing an interface doesn't need `virtual`. Virtual is about being extended.",
         ""
       ],
       "source": "Apex Developer Guide: Interfaces; Access Modifiers"
@@ -1666,22 +1666,22 @@
       "id": "fund-q40",
       "lesson": "fund-8",
       "difficulty": 2,
-      "q": "A service catches a DmlException and must throw its own OrderException, keeping the original error as the cause for logging. Which line does this?",
+      "q": "A service catches a `DmlException` and must throw its own `OrderException`, keeping the original error as the cause for logging. Which line does this?",
       "options": [
-        "throw (OrderException) e;",
-        "throw new OrderException(e.getMessage() + e.getCause());",
-        "throw new OrderException('Order save failed', e);",
-        "throw new OrderException('Order save failed').setCause(e);"
+        "`throw (OrderException) e;`",
+        "`throw new OrderException(e.getMessage() + e.getCause());`",
+        "`throw new OrderException('Order save failed', e);`",
+        "`throw new OrderException('Order save failed').setCause(e);`"
       ],
       "answer": [
         2
       ],
-      "explain": "Every custom exception gets a free (message, cause) constructor. **new OrderException('Order save failed', e)** keeps the original error, which callers read with `getCause()`.",
+      "explain": "Every custom exception gets a free (message, cause) constructor. `new OrderException('Order save failed', e)` keeps the original error, which callers read with `getCause()`.",
       "wrong": [
-        "A DmlException is never an OrderException, so this cast fails.",
+        "A `DmlException` is never an `OrderException`, so this cast fails.",
         "This only copies text into the message. No cause is kept.",
         "",
-        "Exceptions have no setCause() method. Use the (message, cause) constructor or initCause()."
+        "Exceptions have no `setCause()` method. Use the (message, cause) constructor or `initCause()`."
       ],
       "source": "Apex Developer Guide: Create Custom Exceptions; Exception Class and Built-In Exceptions"
     },
@@ -1689,7 +1689,7 @@
       "id": "fund-q41",
       "lesson": "fund-9",
       "difficulty": 1,
-      "q": "In Cache.Org.getPartition('local.Rates'), what does the prefix 'local' mean?",
+      "q": "In `Cache.Org.getPartition('local.Rates')`, what does the prefix `'local'` mean?",
       "options": [
         "The partition is stored only on the local app server",
         "The org's own namespace, used for partitions you created",
@@ -1699,11 +1699,11 @@
       "answer": [
         1
       ],
-      "explain": "**local** is a stand-in for the org's own default namespace. You can name your partition without hard-coding a namespace. In an installed managed package it means the subscriber org's namespace.",
+      "explain": "`local` is a stand-in for the org's own default namespace. You can name your partition without hard-coding a namespace. In an installed managed package it means the subscriber org's namespace.",
       "wrong": [
-        "Platform Cache is a shared service. local is about namespaces, not servers.",
+        "Platform Cache is a shared service. `local` is about namespaces, not servers.",
         "",
-        "Per-user values come from session cache, not from the local prefix.",
+        "Per-user values come from session cache, not from the `local` prefix.",
         "Cached values outlive the transaction until their TTL ends or they're evicted."
       ],
       "source": "Apex Reference Guide: Org Class (Cache Key Format)"
@@ -1736,23 +1736,23 @@
       "lesson": "fund-3",
       "difficulty": 3,
       "pack": "hard",
-      "q": "Recruiting runs on the custom object Job__c, whose organization-wide default is Public Read Only. A trigger (saved at API version 62.0) shares each new job with the recruiter in the Recruiter__c lookup. The recruiting director says the code was copied from an older org where Job__c was Private. What happens when a job is inserted?",
+      "q": "Recruiting runs on the custom object `Job__c`, whose organization-wide default is Public Read Only. A trigger (saved at API version 62.0) shares each new job with the recruiter in the `Recruiter__c` lookup. The recruiting director says the code was copied from an older org where `Job__c` was Private. What happens when a job is inserted?",
       "code": "trigger JobShare on Job__c (after insert) {\n  List<Job__Share> shares = new List<Job__Share>();\n  for (Job__c j : Trigger.new) {\n    shares.add(new Job__Share(\n      ParentId = j.Id,\n      UserOrGroupId = j.Recruiter__c,\n      AccessLevel = 'Read',\n      RowCause = Schema.Job__Share.RowCause.Recruiter__c));\n  }\n  Database.SaveResult[] results = Database.insert(shares, false);\n}",
       "lang": "apex",
       "options": [
         "The share is created and the recruiter keeps Read access even after an owner change",
-        "Each share fails with FIELD_FILTER_VALIDATION_EXCEPTION, but the jobs still save",
-        "The whole transaction rolls back with a DmlException, so the job is not saved",
+        "Each share fails with `FIELD_FILTER_VALIDATION_EXCEPTION`, but the jobs still save",
+        "The whole transaction rolls back with a `DmlException`, so the job is not saved",
         "The share is inserted and silently upgraded to Edit so it grants more than the OWD"
       ],
       "answer": [
         1
       ],
-      "explain": "A share must give **more** access than the OWD already does. Read on a Public Read Only object adds nothing, so each share fails with **FIELD_FILTER_VALIDATION_EXCEPTION**. With allOrNone = false, the jobs still save.",
+      "explain": "A share must give **more** access than the OWD already does. Read on a Public Read Only object adds nothing, so each share fails with `FIELD_FILTER_VALIDATION_EXCEPTION`. With `allOrNone = false`, the jobs still save.",
       "wrong": [
         "Read on a Public Read Only object adds nothing, so the share is rejected.",
         "",
-        "allOrNone is false, so failures come back in the SaveResults instead of throwing.",
+        "`allOrNone` is `false`, so failures come back in the `SaveResults` instead of throwing.",
         "Salesforce never raises the access level you asked for."
       ],
       "source": "Apex Developer Guide: Sharing a Record Using Apex"
@@ -1762,24 +1762,24 @@
       "lesson": "fund-3",
       "difficulty": 3,
       "pack": "hard",
-      "q": "When the Recruiter__c lookup on a Job__c changes, a developer wants the new recruiter to get the old recruiter's Apex managed share. Job__c is Private, the Recruiter__c sharing reason exists, and the code is saved at API version 62.0. A tester reports an error when the lookup is changed. What is wrong?",
+      "q": "When the `Recruiter__c` lookup on a `Job__c` changes, a developer wants the new recruiter to get the old recruiter's Apex managed share. `Job__c` is Private, the `Recruiter__c` sharing reason exists, and the code is saved at API version 62.0. A tester reports an error when the lookup is changed. What is wrong?",
       "code": "for (Job__c j : changedJobs) {\n  Job__Share s = [\n    SELECT Id, UserOrGroupId FROM Job__Share\n    WHERE ParentId = :j.Id\n    AND RowCause = :Schema.Job__Share.RowCause.Recruiter__c\n    LIMIT 1];\n  s.UserOrGroupId = j.Recruiter__c;\n  update s;\n}",
       "lang": "apex",
       "options": [
-        "RowCause must be set again on every update, or it resets to Manual",
+        "`RowCause` must be set again on every update, or it resets to Manual",
         "Share records can only be changed by a user with Modify All Data, even from Apex",
-        "UserOrGroupId can't be updated on a share. Delete the old share and insert a new one",
-        "update isn't supported on share objects; only insert and delete are, even for AccessLevel"
+        "`UserOrGroupId` can't be updated on a share. Delete the old share and insert a new one",
+        "update isn't supported on share objects; only insert and delete are, even for `AccessLevel`"
       ],
       "answer": [
         2
       ],
-      "explain": "Some share fields are locked once the row exists. **ParentId, UserOrGroupId and RowCause** can't be updated, so delete the old share and insert a new one. (The query inside the loop also needs a bulk fix.)",
+      "explain": "Some share fields are locked once the row exists. `ParentId`, `UserOrGroupId` and `RowCause` can't be updated, so delete the old share and insert a new one. (The query inside the loop also needs a bulk fix.)",
       "wrong": [
-        "RowCause can't be changed after insert, and an update doesn't reset it.",
+        "`RowCause` can't be changed after insert, and an update doesn't reset it.",
         "Apex runs this DML. The Modify All Data rule is about editing these shares in the UI.",
         "",
-        "AccessLevel can be updated. Only ParentId, UserOrGroupId and RowCause are fixed."
+        "`AccessLevel` can be updated. Only `ParentId`, `UserOrGroupId` and `RowCause` are fixed."
       ],
       "source": "Apex Developer Guide: Sharing a Record Using Apex"
     },
@@ -1788,13 +1788,13 @@
       "lesson": "fund-3",
       "difficulty": 3,
       "pack": "hard",
-      "q": "A recruiting app grants access to Job__c records with Apex sharing reasons. Sometimes record locking stops shares from being written, so the architect wants an Apex managed sharing recalculation class. Which two statements about that class are true? (Choose 2)",
+      "q": "A recruiting app grants access to `Job__c` records with Apex sharing reasons. Sometimes record locking stops shares from being written, so the architect wants an Apex managed sharing recalculation class. Which two statements about that class are true? (Choose 2)",
       "options": [
-        "It must implement Schedulable, and Salesforce runs it nightly",
-        "It implements Database.Batchable and is added on Job__c's Apex Sharing Recalculation list",
-        "It runs automatically every time a Job__c record changes owner",
-        "It runs automatically when the organization-wide default of Job__c changes, and an admin can also start it",
-        "It can only be started from Setup or by an OWD change, never from Apex with Database.executeBatch"
+        "It must implement `Schedulable`, and Salesforce runs it nightly",
+        "It implements `Database.Batchable` and is added on `Job__c`'s Apex Sharing Recalculation list",
+        "It runs automatically every time a `Job__c` record changes owner",
+        "It runs automatically when the organization-wide default of `Job__c` changes, and an admin can also start it",
+        "It can only be started from Setup or by an OWD change, never from Apex with `Database.executeBatch`"
       ],
       "answer": [
         1,
@@ -1802,11 +1802,11 @@
       ],
       "explain": "A recalculation class is a batch job you register on the object. It implements **Database.Batchable**, sits on the **Apex Sharing Recalculation** list, and runs when the OWD changes or an admin starts it. `Database.executeBatch` can start it too.",
       "wrong": [
-        "It implements Database.Batchable, and Salesforce doesn't schedule it nightly.",
+        "It implements `Database.Batchable`, and Salesforce doesn't schedule it nightly.",
         "",
         "An owner change doesn't start it. Apex managed shares simply survive owner changes.",
         "",
-        "The docs say Database.executeBatch can start it from code."
+        "The docs say `Database.executeBatch` can start it from code."
       ],
       "source": "Apex Developer Guide: Recalculating Apex Managed Sharing"
     },
@@ -1815,21 +1815,21 @@
       "lesson": "fund-3",
       "difficulty": 3,
       "pack": "hard",
-      "q": "This execute method belongs to the sharing recalculation class for Job__c (API version 62.0). Record owners also share jobs by hand with the Sharing button, and another app uses a Hiring_Manager__c sharing reason on the same object. What is the main problem with the code?",
+      "q": "This `execute` method belongs to the sharing recalculation class for `Job__c` (API version 62.0). Record owners also share jobs by hand with the Sharing button, and another app uses a `Hiring_Manager__c` sharing reason on the same object. What is the main problem with the code?",
       "code": "public void execute(Database.BatchableContext bc, List<Job__c> scope) {\n  Set<Id> ids = new Map<Id, Job__c>(scope).keySet();\n  delete [SELECT Id FROM Job__Share WHERE ParentId IN :ids];\n\n  List<Job__Share> fresh = new List<Job__Share>();\n  for (Job__c j : scope) {\n    fresh.add(new Job__Share(ParentId = j.Id,\n      UserOrGroupId = j.Recruiter__c, AccessLevel = 'Edit',\n      RowCause = Schema.Job__Share.RowCause.Recruiter__c));\n  }\n  insert fresh;\n}",
       "lang": "apex",
       "options": [
-        "New shares must be inserted in finish(), not in execute()",
-        "A recalculation class can't run DML itself. It must return the new share rows to the platform in finish()",
-        "AccessLevel 'Edit' isn't allowed during a recalculation, only 'Read'",
-        "The delete has no RowCause filter, so it removes every share on the jobs, not just Recruiter__c ones"
+        "New shares must be inserted in `finish()`, not in `execute()`",
+        "A recalculation class can't run DML itself. It must return the new share rows to the platform in `finish()`",
+        "`AccessLevel` `'Edit'` isn't allowed during a recalculation, only `'Read'`",
+        "The delete has no `RowCause` filter, so it removes every share on the jobs, not just `Recruiter__c` ones"
       ],
       "answer": [
         3
       ],
-      "explain": "A recalculation should only clean up the shares it owns. The delete has **no RowCause filter**, so it also wipes manual shares, the other app's reason shares and owner rows.",
+      "explain": "A recalculation should only clean up the shares it owns. The delete has **no** `RowCause` **filter**, so it also wipes manual shares, the other app's reason shares and owner rows.",
       "wrong": [
-        "execute() runs once per chunk, and that's where each chunk's shares are rebuilt.",
+        "`execute()` runs once per chunk, and that's where each chunk's shares are rebuilt.",
         "The class runs its own delete and insert, like any batch class.",
         "Read and Edit are both allowed in a recalculation.",
         ""
@@ -1841,11 +1841,11 @@
       "lesson": "fund-3",
       "difficulty": 3,
       "pack": "hard",
-      "q": "Account OWD is Private. Each account has a Customer_Success_Manager__c user lookup, and that user needs Edit access. A developer writes the code below in a helper class and tries to save it. What happens?",
+      "q": "Account OWD is Private. Each account has a `Customer_Success_Manager__c` user lookup, and that user needs Edit access. A developer writes the code below in a helper class and tries to save it. What happens?",
       "code": "insert new AccountShare(\n  ParentId      = acc.Id,\n  UserOrGroupId = acc.Customer_Success_Manager__c,\n  AccessLevel   = 'Edit'\n);",
       "lang": "apex",
       "options": [
-        "It doesn't compile: AccountShare uses AccountId and AccountAccessLevel, not ParentId and AccessLevel",
+        "It doesn't compile: `AccountShare` uses `AccountId` and `AccountAccessLevel`, not `ParentId` and `AccessLevel`",
         "It inserts a Manual share that gives the manager Edit access",
         "It compiles, but fails at runtime because standard objects like Account can't be shared from Apex code",
         "It compiles, but the share is removed by the next sharing recalculation"
@@ -1853,11 +1853,11 @@
       "answer": [
         0
       ],
-      "explain": "Standard share objects name their fields after the object. **AccountShare uses AccountId and AccountAccessLevel** (plus OpportunityAccessLevel and CaseAccessLevel). ParentId and AccessLevel belong to custom __Share objects, so this doesn't compile.",
+      "explain": "Standard share objects name their fields after the object. `AccountShare` uses `AccountId` and `AccountAccessLevel` (plus `OpportunityAccessLevel` and `CaseAccessLevel`). `ParentId` and `AccessLevel` belong to custom `__Share` objects, so this doesn't compile.",
       "wrong": [
         "",
-        "The field names are wrong for AccountShare, so the class doesn't save.",
-        "Apex can insert AccountShare rows. The field names are the problem.",
+        "The field names are wrong for `AccountShare`, so the class doesn't save.",
+        "Apex can insert `AccountShare` rows. The field names are the problem.",
         "The code never gets that far, because it doesn't compile."
       ],
       "source": "Object Reference for the Salesforce Platform: AccountShare"
@@ -1867,19 +1867,19 @@
       "lesson": "fund-3",
       "difficulty": 2,
       "pack": "hard",
-      "q": "Invoice_Line__c is the detail in a master-detail relationship with Invoice__c, which is Private. A developer wants an auditor to see one line, and writes the code below. It doesn't compile. Why?",
+      "q": "`Invoice_Line__c` is the detail in a master-detail relationship with `Invoice__c`, which is Private. A developer wants an auditor to see one line, and writes the code below. It doesn't compile. Why?",
       "code": "insert new Invoice_Line__Share(\n  ParentId = line.Id,\n  UserOrGroupId = auditorId,\n  AccessLevel = 'Read'\n);",
       "lang": "apex",
       "options": [
-        "Invoice_Line__c's OWD must first be changed to Private",
-        "An Apex sharing reason must be created on Invoice_Line__c first",
-        "The class must be declared without sharing to reference share objects like Invoice_Line__Share",
-        "Detail objects have no share object. Share the master Invoice__c record instead"
+        "`Invoice_Line__c`'s OWD must first be changed to Private",
+        "An Apex sharing reason must be created on `Invoice_Line__c` first",
+        "The class must be declared `without sharing` to reference share objects like `Invoice_Line__Share`",
+        "Detail objects have no share object. Share the master `Invoice__c` record instead"
       ],
       "answer": [
         3
       ],
-      "explain": "A detail record's access comes from its master. Detail objects in master-detail have **no share object**, so share the master Invoice__c record instead.",
+      "explain": "A detail record's access comes from its master. Detail objects in master-detail have **no share object**, so share the master `Invoice__c` record instead.",
       "wrong": [
         "A detail object is Controlled by Parent. You can't set its OWD on its own.",
         "A sharing reason can't create a share object that doesn't exist.",
@@ -1893,11 +1893,11 @@
       "lesson": "fund-3",
       "difficulty": 3,
       "pack": "hard",
-      "q": "A grants app shares each Grant__c (OWD Private) with reviewers through Apex managed sharing. The team is writing the sharing service. Which two statements are true? (Choose 2)",
+      "q": "A grants app shares each `Grant__c` (OWD Private) with reviewers through Apex managed sharing. The team is writing the sharing service. Which two statements are true? (Choose 2)",
       "options": [
-        "UserOrGroupId can hold a public group or a role group, not just a single user",
-        "UserOrGroupId can be the site guest user, so anonymous visitors can read approved grants",
-        "AccessLevel 'All' can be granted if the running user has Modify All Data",
+        "`UserOrGroupId` can hold a public group or a role group, not just a single user",
+        "`UserOrGroupId` can be the site guest user, so anonymous visitors can read approved grants",
+        "`AccessLevel 'All'` can be granted if the running user has Modify All Data",
         "The grant's owner can remove an Apex managed share with the Sharing button",
         "If a user has a Manual Read share and Apex inserts a Manual Edit share for the same user and record, the existing row is updated to Edit"
       ],
@@ -1905,7 +1905,7 @@
         0,
         4
       ],
-      "explain": "Shares can target groups, and a duplicate share just upgrades the existing row. **UserOrGroupId** takes users, public groups or role groups. A higher **Manual** share for the same user updates the old row to Edit.",
+      "explain": "Shares can target groups, and a duplicate share just upgrades the existing row. `UserOrGroupId` takes users, public groups or role groups. A higher **Manual** share for the same user updates the old row to Edit.",
       "wrong": [
         "",
         "Apex can't grant record access to unauthenticated guest users.",
@@ -1920,13 +1920,13 @@
       "lesson": "fund-3",
       "difficulty": 3,
       "pack": "hard",
-      "q": "Each Grant__c (OWD Private) must be editable by the reviewers listed in its child Grant_Reviewer__c junction records. Reviewers come from many roles and change weekly. Access must survive when a grant moves to a new owner and must go away when a reviewer row is deleted. Which two parts should the solution include? (Choose 2)",
+      "q": "Each `Grant__c` (OWD Private) must be editable by the reviewers listed in its child `Grant_Reviewer__c` junction records. Reviewers come from many roles and change weekly. Access must survive when a grant moves to a new owner and must go away when a reviewer row is deleted. Which two parts should the solution include? (Choose 2)",
       "options": [
-        "A criteria-based sharing rule on Grant__c that matches the reviewer users listed in the junction rows",
+        "A criteria-based sharing rule on `Grant__c` that matches the reviewer users listed in the junction rows",
         "A flow that sends the owner a reminder to click Sharing for each new reviewer",
-        "An Apex sharing reason on Grant__c, used as the RowCause of every Grant__Share the code writes",
-        "A Grant_Reviewer__c trigger that inserts a Grant__Share on insert and deletes the matching share on delete",
-        "Make Grant__c the detail side of a master-detail relationship with Grant_Reviewer__c"
+        "An Apex sharing reason on `Grant__c`, used as the `RowCause` of every `Grant__Share` the code writes",
+        "A `Grant_Reviewer__c` trigger that inserts a `Grant__Share` on insert and deletes the matching share on delete",
+        "Make `Grant__c` the detail side of a master-detail relationship with `Grant_Reviewer__c`"
       ],
       "answer": [
         2,
@@ -1938,7 +1938,7 @@
         "Manual shares aren't automatic, and an owner change deletes them.",
         "",
         "",
-        "Grant__c would lose its own share object and take access from one master record."
+        "`Grant__c` would lose its own share object and take access from one master record."
       ],
       "source": "Apex Developer Guide: Sharing a Record Using Apex"
     },
@@ -1947,24 +1947,24 @@
       "lesson": "fund-1",
       "difficulty": 3,
       "pack": "hard",
-      "q": "A support LWC calls CaseController.countAll(). The running agent can see 40 of the org's 500 cases. What does the method return?",
+      "q": "A support LWC calls `CaseController.countAll()`. The running agent can see 40 of the org's 500 cases. What does the method return?",
       "code": "public with sharing class CaseController {\n  @AuraEnabled(cacheable=true)\n  public static Integer countAll() { return CaseService.countCases(); }\n}\npublic inherited sharing class CaseService {\n  public static Integer countCases() { return CaseRepo.countAll(); }\n}\npublic without sharing class CaseRepo {\n  public static Integer countAll() {\n    return [SELECT COUNT() FROM Case WITH SYSTEM_MODE];\n  }\n}",
       "lang": "apex",
       "options": [
-        "40, because the entry-point class is with sharing",
-        "40, because inherited sharing passes the with sharing mode down to every class it calls, CaseRepo included",
-        "500, because the query is in a without sharing class, and SYSTEM_MODE leaves sharing to it",
-        "A QueryException, because COUNT() can't be combined with WITH SYSTEM_MODE"
+        "40, because the entry-point class is `with sharing`",
+        "40, because `inherited sharing` passes the `with sharing` mode down to every class it calls, `CaseRepo` included",
+        "500, because the query is in a `without sharing` class, and `SYSTEM_MODE` leaves sharing to it",
+        "A `QueryException`, because `COUNT()` can't be combined with `WITH SYSTEM_MODE`"
       ],
       "answer": [
         2
       ],
-      "explain": "A method runs in the mode of the class that defines it. The query lives in **without sharing CaseRepo**, and SYSTEM_MODE leaves record access to that keyword, so it counts all **500** cases.",
+      "explain": "A method runs in the mode of the class that defines it. The query lives in `without sharing` `CaseRepo`, and `SYSTEM_MODE` leaves record access to that keyword, so it counts all **500** cases.",
       "wrong": [
-        "The query lives in CaseRepo, not CaseController, so the entry point's mode doesn't apply.",
-        "inherited sharing only sets CaseService's own mode. CaseRepo declares its own.",
+        "The query lives in `CaseRepo`, not `CaseController`, so the entry point's mode doesn't apply.",
+        "`inherited sharing` only sets `CaseService`'s own mode. `CaseRepo` declares its own.",
         "",
-        "COUNT() works fine with an access mode clause."
+        "`COUNT()` works fine with an access mode clause."
       ],
       "source": "Apex Developer Guide: Use the with sharing, without sharing, and inherited sharing Keywords"
     },
@@ -1973,24 +1973,24 @@
       "lesson": "fund-1",
       "difficulty": 3,
       "pack": "hard",
-      "q": "A nightly scheduled job (without sharing) enqueues ArchiveJob to close stale opportunities across the whole org. The scheduled job runs as a sales ops user who can see only part of the pipeline. The developer expects ArchiveJob to see every stale opportunity. What actually happens?",
+      "q": "A nightly scheduled job (`without sharing`) enqueues `ArchiveJob` to close stale opportunities across the whole org. The scheduled job runs as a sales ops user who can see only part of the pipeline. The developer expects `ArchiveJob` to see every stale opportunity. What actually happens?",
       "code": "public without sharing class NightlyCleanup implements Schedulable {\n  public void execute(SchedulableContext sc) {\n    System.enqueueJob(new ArchiveJob());\n  }\n}\npublic inherited sharing class ArchiveJob implements Queueable {\n  public void execute(QueueableContext ctx) {\n    List<Opportunity> stale = [SELECT Id FROM Opportunity\n      WHERE IsClosed = false AND CloseDate < LAST_N_DAYS:365\n      WITH SYSTEM_MODE];\n    // close them...\n  }\n}",
       "lang": "apex",
       "options": [
-        "ArchiveJob sees every stale opportunity, because it inherits without sharing from the class that enqueued it",
-        "It runs with sharing: each async job is a new entry point. Declare it without sharing",
+        "`ArchiveJob` sees every stale opportunity, because it inherits `without sharing` from the class that enqueued it",
+        "It runs `with sharing`: each async job is a new entry point. Declare it `without sharing`",
         "Queueable classes always run in system mode and ignore sharing keywords",
-        "The class doesn't compile, because inherited sharing isn't allowed on a Queueable"
+        "The class doesn't compile, because `inherited sharing` isn't allowed on a Queueable"
       ],
       "answer": [
         1
       ],
-      "explain": "An async job starts fresh: it doesn't carry its caller's sharing mode. As an entry point, **inherited sharing runs with sharing**, so ArchiveJob sees only the user's records. Declare it without sharing.",
+      "explain": "An async job starts fresh: it doesn't carry its caller's sharing mode. As an entry point, `inherited sharing` **runs** `with sharing`, so `ArchiveJob` sees only the user's records. Declare it `without sharing`.",
       "wrong": [
         "The sharing mode isn't passed on to async jobs.",
         "",
         "Sharing keywords apply to Queueable classes like any other class.",
-        "inherited sharing is valid on any class."
+        "`inherited sharing` is valid on any class."
       ],
       "source": "Apex Developer Guide: Use the with sharing, without sharing, and inherited sharing Keywords"
     },
@@ -1999,24 +1999,24 @@
       "lesson": "fund-1",
       "difficulty": 3,
       "pack": "hard",
-      "q": "A partner portal helper class is declared without sharing so that some lookups can reach records partners don't own. A partner user calls both methods. Which statement is true?",
+      "q": "A partner portal helper class is declared `without sharing` so that some lookups can reach records partners don't own. A partner user calls both methods. Which statement is true?",
       "code": "public without sharing class PortalCases {\n  public static List<Case> mine() {\n    return [SELECT Id, Subject, Internal_Notes__c FROM Case WITH USER_MODE];\n  }\n  public static List<Case> all() {\n    return [SELECT Id, Subject, Internal_Notes__c FROM Case WITH SYSTEM_MODE];\n  }\n}",
       "lang": "apex",
       "options": [
-        "mine() enforces the user's sharing, CRUD and FLS. all() skips CRUD and FLS, and sharing too",
-        "Both methods return every case, because the class is without sharing",
-        "mine() enforces FLS only. Its record access still follows the without sharing keyword",
-        "all() still enforces sharing, because SYSTEM_MODE bypasses only FLS and object permissions, not sharing"
+        "`mine()` enforces the user's sharing, CRUD and FLS. `all()` skips CRUD and FLS, and sharing too",
+        "Both methods return every case, because the class is `without sharing`",
+        "`mine()` enforces FLS only. Its record access still follows the `without sharing` keyword",
+        "`all()` still enforces sharing, because `SYSTEM_MODE` bypasses only FLS and object permissions, not sharing"
       ],
       "answer": [
         0
       ],
-      "explain": "The access mode clause can override the class keyword. **WITH USER_MODE** always checks sharing, CRUD and FLS. **WITH SYSTEM_MODE** skips CRUD and FLS and leaves rows to the class keyword, here without sharing.",
+      "explain": "The access mode clause can override the class keyword. `WITH USER_MODE` always checks sharing, CRUD and FLS. `WITH SYSTEM_MODE` skips CRUD and FLS and leaves rows to the class keyword, here `without sharing`.",
       "wrong": [
         "",
         "User mode always enforces the user's sharing, whatever the class says.",
         "User mode enforces sharing as well as CRUD and FLS.",
-        "In system mode, rows follow the class keyword, and here that is without sharing."
+        "In system mode, rows follow the class keyword, and here that is `without sharing`."
       ],
       "source": "Apex Developer Guide: Set an Access Mode for Database Operations"
     },
@@ -2025,24 +2025,24 @@
       "lesson": "fund-2",
       "difficulty": 3,
       "pack": "hard",
-      "q": "A developer creates a new class saved at API version 67.0. It has no sharing keyword and its query has no access mode clause. The running user can read Account but has no field-level access to Rating__c. What happens when hot() runs?",
+      "q": "A developer creates a new class saved at API version 67.0. It has no sharing keyword and its query has no access mode clause. The running user can read Account but has no field-level access to `Rating__c`. What happens when `hot()` runs?",
       "code": "// Saved at API version 67.0\npublic class RatingService {\n  public static List<Account> hot() {\n    return [SELECT Id, Name, Rating__c FROM Account\n            WHERE Rating__c = 'Hot'];\n  }\n}",
       "lang": "apex",
       "options": [
         "It returns every hot account and ignores FLS and sharing, because Apex runs in system mode",
-        "It returns the hot accounts the user can see, with Rating__c set to null",
-        "It throws a QueryException: from API 67.0 the query runs in user mode and checks FLS",
+        "It returns the hot accounts the user can see, with `Rating__c` set to `null`",
+        "It throws a `QueryException`: from API 67.0 the query runs in user mode and checks FLS",
         "It doesn't compile, because API 67.0 classes must declare a sharing keyword"
       ],
       "answer": [
         2
       ],
-      "explain": "At API 67.0 the defaults change: Apex runs in **user mode**, and classes with no keyword run with sharing. A user-mode query checks FLS in every clause, so the hidden Rating__c throws a **QueryException**. At 66.0 and earlier it would run in system mode.",
+      "explain": "At API 67.0 the defaults change: Apex runs in **user mode**, and classes with no keyword run `with sharing`. A user-mode query checks FLS in every clause, so the hidden `Rating__c` throws a `QueryException`. At 66.0 and earlier it would run in system mode.",
       "wrong": [
         "From API 67.0, database work runs in user mode unless you ask for system mode.",
         "User mode doesn't blank out fields. It fails the query.",
         "",
-        "The keyword is still optional. Without one, the class runs with sharing."
+        "The keyword is still optional. Without one, the class runs `with sharing`."
       ],
       "source": "Apex Developer Guide: Set an Access Mode for Database Operations"
     },
@@ -2051,23 +2051,23 @@
       "lesson": "fund-2",
       "difficulty": 3,
       "pack": "hard",
-      "q": "A help-desk tool lets agents find a contact by the last four digits of a national ID stored in SSN_Last4__c. The agent profile can read Contact but has no field-level access to SSN_Last4__c. The class is saved at API version 62.0, and both queries run with the same input. Which statement is true?",
+      "q": "A help-desk tool lets agents find a contact by the last four digits of a national ID stored in `SSN_Last4__c`. The agent profile can read Contact but has no field-level access to `SSN_Last4__c`. The class is saved at API version 62.0, and both queries run with the same input. Which statement is true?",
       "code": "List<Contact> a = [SELECT Id, Name FROM Contact\n  WHERE SSN_Last4__c = :input WITH SECURITY_ENFORCED];\n\nList<Contact> b = [SELECT Id, Name FROM Contact\n  WHERE SSN_Last4__c = :input WITH USER_MODE];",
       "lang": "apex",
       "options": [
-        "Query a returns the contacts (SECURITY_ENFORCED skips WHERE fields). Query b throws a QueryException",
-        "Both queries throw a QueryException, because the user can't read SSN_Last4__c",
-        "Both queries return the matching contacts, because SSN_Last4__c isn't in either SELECT list",
-        "Query a throws a QueryException, and query b returns the contacts with the hidden filter silently removed"
+        "Query `a` returns the contacts (`SECURITY_ENFORCED` skips `WHERE` fields). Query `b` throws a `QueryException`",
+        "Both queries throw a `QueryException`, because the user can't read `SSN_Last4__c`",
+        "Both queries return the matching contacts, because `SSN_Last4__c` isn't in either `SELECT` list",
+        "Query `a` throws a `QueryException`, and query `b` returns the contacts with the hidden filter silently removed"
       ],
       "answer": [
         0
       ],
-      "explain": "The two clauses check different parts of the query. **SECURITY_ENFORCED** checks only SELECT and FROM, so query a runs and can leak data through the filter. **USER_MODE** also checks WHERE, so query b throws.",
+      "explain": "The two clauses check different parts of the query. `SECURITY_ENFORCED` checks only `SELECT` and `FROM`, so query `a` runs and can leak data through the filter. `USER_MODE` also checks `WHERE`, so query `b` throws.",
       "wrong": [
         "",
-        "SECURITY_ENFORCED checks only SELECT and FROM fields, so query a runs.",
-        "USER_MODE also checks WHERE fields, so query b fails.",
+        "`SECURITY_ENFORCED` checks only `SELECT` and `FROM` fields, so query `a` runs.",
+        "`USER_MODE` also checks `WHERE` fields, so query `b` fails.",
         "It's the other way round, and user mode never drops a filter."
       ],
       "source": "Apex Developer Guide: Set an Access Mode for Database Operations"
@@ -2081,17 +2081,17 @@
       "code": "SObjectAccessDecision d = Security.stripInaccessible(\n  AccessType.CREATABLE, leads);\ninsert leads;",
       "lang": "apex",
       "options": [
-        "AccessType.CREATABLE should be AccessType.UPDATABLE for an insert",
-        "stripInaccessible must be called after the insert",
-        "stripInaccessible only works on records returned by SOQL, not on new records built in Apex",
-        "It inserts the original list. It must insert d.getRecords(), the stripped copies"
+        "`AccessType.CREATABLE` should be `AccessType.UPDATABLE` for an insert",
+        "`stripInaccessible` must be called after the insert",
+        "`stripInaccessible` only works on records returned by SOQL, not on new records built in Apex",
+        "It inserts the original list. It must insert `d.getRecords()`, the stripped copies"
       ],
       "answer": [
         3
       ],
-      "explain": "stripInaccessible never changes the list you hand it. It returns clean copies through **d.getRecords()**, and those are what you must insert.",
+      "explain": "`stripInaccessible` never changes the list you hand it. It returns clean copies through `d.getRecords()`, and those are what you must insert.",
       "wrong": [
-        "CREATABLE is the right check for an insert.",
+        "`CREATABLE` is the right check for an insert.",
         "Stripping after the save is too late, because the values are already written.",
         "It works on new records and parsed input too.",
         ""
@@ -2103,24 +2103,24 @@
       "lesson": "fund-2",
       "difficulty": 3,
       "pack": "hard",
-      "q": "A sales dashboard controller builds a total per owner and must hide amounts from users without access. A developer adds stripInaccessible to the aggregate results. What happens at runtime?",
+      "q": "A sales dashboard controller builds a total per owner and must hide amounts from users without access. A developer adds `stripInaccessible` to the aggregate results. What happens at runtime?",
       "code": "List<AggregateResult> totals = [\n  SELECT OwnerId, SUM(Amount) total\n  FROM Opportunity GROUP BY OwnerId];\nSObjectAccessDecision d = Security.stripInaccessible(\n  AccessType.READABLE, totals);",
       "lang": "apex",
       "options": [
-        "The total alias is removed for users who can't read Amount",
-        "It throws an exception: stripInaccessible doesn't support AggregateResult. Use WITH USER_MODE",
+        "The total alias is removed for users who can't read `Amount`",
+        "It throws an exception: `stripInaccessible` doesn't support `AggregateResult`. Use `WITH USER_MODE`",
         "The results come back unchanged, because aggregates aren't subject to FLS",
-        "It doesn't compile, because stripInaccessible only accepts a List<SObject> and AggregateResult isn't one"
+        "It doesn't compile, because `stripInaccessible` only accepts a `List<SObject>` and `AggregateResult` isn't one"
       ],
       "answer": [
         1
       ],
-      "explain": "stripInaccessible can't handle aggregate rows. It **throws an exception for AggregateResult**, so run the aggregate query **WITH USER_MODE** to check CRUD and FLS instead.",
+      "explain": "`stripInaccessible` can't handle aggregate rows. It **throws an exception for** `AggregateResult`, so run the aggregate query `WITH USER_MODE` to check CRUD and FLS instead.",
       "wrong": [
-        "stripInaccessible can't process AggregateResult rows at all.",
+        "`stripInaccessible` can't process `AggregateResult` rows at all.",
         "",
         "Aggregate queries still read fields. Use user mode to enforce FLS.",
-        "AggregateResult is an SObject, so it compiles. It fails at run time."
+        "`AggregateResult` is an `SObject`, so it compiles. It fails at run time."
       ],
       "source": "Apex Developer Guide: Enforce Security with the stripInaccessible Method"
     },
@@ -2129,25 +2129,25 @@
       "lesson": "fund-2",
       "difficulty": 2,
       "pack": "hard",
-      "q": "An integration inserts Order__c records in user mode. When a field-level security problem blocks a save, the support team wants the log to name the blocked fields. Which two approaches give the field names? (Choose 2)",
+      "q": "An integration inserts `Order__c` records in user mode. When a field-level security problem blocks a save, the support team wants the log to name the blocked fields. Which two approaches give the field names? (Choose 2)",
       "options": [
-        "Catch the DmlException from insert as user records; and call e.getDmlFieldNames(0)",
-        "Call Database.insert(records, false, AccessLevel.USER_MODE) and read getFields() on each failed SaveResult's errors",
-        "Catch the QueryException after the insert and read e.getInaccessibleFields() for the blocked names",
-        "Add WITH SECURITY_ENFORCED to the insert and read the exception message",
-        "Read getId() on each failed SaveResult"
+        "Catch the `DmlException` from `insert as user records;` and call `e.getDmlFieldNames(0)`",
+        "Call `Database.insert(records, false, AccessLevel.USER_MODE)` and read `getFields()` on each failed `SaveResult`'s errors",
+        "Catch the `QueryException` after the insert and read `e.getInaccessibleFields()` for the blocked names",
+        "Add `WITH SECURITY_ENFORCED` to the insert and read the exception message",
+        "Read `getId()` on each failed `SaveResult`"
       ],
       "answer": [
         0,
         1
       ],
-      "explain": "User-mode DML can name the blocked fields in two ways. A thrown DmlException gives **getDmlFieldNames()**. Partial-success DML gives **getFields()** on each SaveResult error.",
+      "explain": "User-mode DML can name the blocked fields in two ways. A thrown `DmlException` gives `getDmlFieldNames()`. Partial-success DML gives `getFields()` on each `SaveResult` error.",
       "wrong": [
         "",
         "",
-        "getInaccessibleFields() is for user-mode SOQL queries, not DML.",
-        "WITH SECURITY_ENFORCED is a SOQL clause and can't go on DML.",
-        "getId() is null for a failed record and names no fields."
+        "`getInaccessibleFields()` is for user-mode SOQL queries, not DML.",
+        "`WITH SECURITY_ENFORCED` is a SOQL clause and can't go on DML.",
+        "`getId()` is `null` for a failed record and names no fields."
       ],
       "source": "Apex Developer Guide: Set an Access Mode for Database Operations"
     },
@@ -2156,7 +2156,7 @@
       "lesson": "fund-4",
       "difficulty": 3,
       "pack": "hard",
-      "q": "Pricing__c is a hierarchy custom setting. Max_Discount__c is a Number field with 0 decimal places. Org default: Max_Discount__c = 10, Region_Email__c = ops@example.com. Sales Manager profile: Max_Discount__c = 20, Region_Email__c blank. There is no user-level record. Dana, a Sales Manager, runs this code. What does it print?",
+      "q": "`Pricing__c` is a hierarchy custom setting. `Max_Discount__c` is a Number field with 0 decimal places. Org default: `Max_Discount__c = 10`, `Region_Email__c = ops@example.com`. Sales Manager profile: `Max_Discount__c = 20`, `Region_Email__c` blank. There is no user-level record. Dana, a Sales Manager, runs this code. What does it print?",
       "code": "Pricing__c a = Pricing__c.getInstance();\nPricing__c b = Pricing__c.getValues(UserInfo.getProfileId());\nSystem.debug(a.Max_Discount__c + ' ' + a.Region_Email__c\n  + ' ' + b.Region_Email__c + ' ' + a.Id);",
       "lang": "apex",
       "options": [
@@ -2168,12 +2168,12 @@
       "answer": [
         0
       ],
-      "explain": "`getInstance()` fills each field from the most specific level that sets it, while `getValues()` reads one level only. So a gets **20** and the org email. b's blank email is **null**. With no user record, a's **Id is null**.",
+      "explain": "`getInstance()` fills each field from the most specific level that sets it, while `getValues()` reads one level only. So `a` gets **20** and the org email. `b`'s blank email is `null`. With no user record, `a`'s `Id` **is** `null`.",
       "wrong": [
         "",
-        "getInstance() takes the more specific profile value, 20. getValues() doesn't merge in org values.",
-        "getInstance() fills blank fields from higher levels, and with no user record its Id is null.",
-        "getValues(profileId) returns only profile values, so its email is null. a's Id is null too."
+        "`getInstance()` takes the more specific profile value, 20. `getValues()` doesn't merge in org values.",
+        "`getInstance()` fills blank fields from higher levels, and with no user record its `Id` is `null`.",
+        "`getValues(profileId)` returns only profile values, so its email is `null`. `a`'s `Id` is `null` too."
       ],
       "source": "Apex Reference Guide: Custom Settings Methods"
     },
@@ -2182,21 +2182,21 @@
       "lesson": "fund-4",
       "difficulty": 3,
       "pack": "hard",
-      "q": "Integration_Config__c is a hierarchy custom setting. The test class is saved at API version 62.0. One test needs a different endpoint, so it inserts its own org-level record. What happens when usesBackupEndpoint runs?",
+      "q": "`Integration_Config__c` is a hierarchy custom setting. The test class is saved at API version 62.0. One test needs a different endpoint, so it inserts its own org-level record. What happens when `usesBackupEndpoint` runs?",
       "code": "@TestSetup static void setup() {\n  insert new Integration_Config__c(\n    SetupOwnerId = UserInfo.getOrganizationId(),\n    Endpoint__c = 'https://a.example.com');\n}\n@IsTest static void usesBackupEndpoint() {\n  insert new Integration_Config__c(\n    SetupOwnerId = UserInfo.getOrganizationId(),\n    Endpoint__c = 'https://b.example.com');\n  // ...call the service and assert...\n}",
       "lang": "apex",
       "options": [
-        "The second insert replaces the first, and getOrgDefaults() returns the b endpoint",
-        "The insert in the test method is ignored, because records created in @TestSetup are read-only",
-        "Both records exist, and getOrgDefaults() returns the newest one",
-        "It throws a DUPLICATE_VALUE DmlException. Update the record from getOrgDefaults() instead"
+        "The second insert replaces the first, and `getOrgDefaults()` returns the b endpoint",
+        "The insert in the test method is ignored, because records created in `@TestSetup` are read-only",
+        "Both records exist, and `getOrgDefaults()` returns the newest one",
+        "It throws a `DUPLICATE_VALUE` `DmlException`. Update the record from `getOrgDefaults()` instead"
       ],
       "answer": [
         3
       ],
-      "explain": "A hierarchy setting allows one record per owner. From API 42.0, inserting a second org-level record in a test throws **DUPLICATE_VALUE**. Update the record from `getOrgDefaults()` instead.",
+      "explain": "A hierarchy setting allows one record per owner. From API 42.0, inserting a second org-level record in a test throws `DUPLICATE_VALUE`. Update the record from `getOrgDefaults()` instead.",
       "wrong": [
-        "There's one record per SetupOwnerId, and a second insert doesn't overwrite the first.",
+        "There's one record per `SetupOwnerId`, and a second insert doesn't overwrite the first.",
         "Test setup records can be updated or deleted in a test method.",
         "There can't be two org-level records.",
         ""
@@ -2212,7 +2212,7 @@
       "options": [
         "A protected list custom setting with the tier records included in the package",
         "A custom metadata type, with the tier records included in the managed package",
-        "A hierarchy custom setting loaded by a post-install script, read with $Setup",
+        "A hierarchy custom setting loaded by a post-install script, read with `$Setup`",
         "One custom label per tier, translated with the Translation Workbench",
         "Mark the custom metadata type as Protected, so only code in the package's namespace can read its records"
       ],
@@ -2235,13 +2235,13 @@
       "lesson": "fund-4",
       "difficulty": 3,
       "pack": "hard",
-      "q": "A welcome email template is stored in Email_Config__mdt.Body__c, a Long Text Area field holding about 3,000 characters. Customers say the emails stop mid-sentence. The admin checked that the full text is saved on the record. What is the cause?",
+      "q": "A welcome email template is stored in `Email_Config__mdt.Body__c`, a Long Text Area field holding about 3,000 characters. Customers say the emails stop mid-sentence. The admin checked that the full text is saved on the record. What is the cause?",
       "code": "Email_Config__mdt cfg = Email_Config__mdt.getInstance('Welcome');\nString body = cfg.Body__c;\nmail.setHtmlBody(body);",
       "lang": "apex",
       "options": [
         "Custom metadata records are cached, so the email uses an old version of the record",
-        "getInstance() matches on the label, not DeveloperName, so it returns a different, shorter record",
-        "getInstance() returns only the first 255 characters of each field. Query Body__c with SOQL",
+        "`getInstance()` matches on the label, not `DeveloperName`, so it returns a different, shorter record",
+        "`getInstance()` returns only the first 255 characters of each field. Query `Body__c` with SOQL",
         "Long Text Area fields aren't supported on custom metadata types"
       ],
       "answer": [
@@ -2250,9 +2250,9 @@
       "explain": "The no-SOQL custom metadata methods cut every field to **255 characters**. To read a long field in full, query the record with SOQL.",
       "wrong": [
         "The record isn't out of date. It's cut short.",
-        "getInstance(String) matches DeveloperName, and the record is the right one.",
+        "`getInstance(String)` matches `DeveloperName`, and the record is the right one.",
         "",
-        "They are supported, but getInstance() and getAll() don't return them in full."
+        "They are supported, but `getInstance()` and `getAll()` don't return them in full."
       ],
       "source": "Apex Reference Guide: Custom Metadata Type Methods"
     },
@@ -2263,11 +2263,11 @@
       "pack": "hard",
       "q": "An admin wants an Opportunity validation rule to block discounts above a configured maximum, with no Apex. Which two kinds of configuration can the validation rule reference directly? (Choose 2)",
       "options": [
-        "A field on a hierarchy custom setting, through $Setup",
-        "A field on a list custom setting, through $Setup",
-        "A value cached in Platform Cache, through $Cache",
-        "A field on a custom metadata type record, through $CustomMetadata",
-        "The result of Pricing__c.getInstance(), called from the formula"
+        "A field on a hierarchy custom setting, through `$Setup`",
+        "A field on a list custom setting, through `$Setup`",
+        "A value cached in Platform Cache, through `$Cache`",
+        "A field on a custom metadata type record, through `$CustomMetadata`",
+        "The result of `Pricing__c.getInstance()`, called from the formula"
       ],
       "answer": [
         0,
@@ -2276,7 +2276,7 @@
       "explain": "Formulas can read two kinds of config. **Hierarchy custom settings** through `$Setup`, and **custom metadata records** through `$CustomMetadata`. List settings aren't available in formulas.",
       "wrong": [
         "",
-        "Formulas can reach only hierarchy custom settings with $Setup.",
+        "Formulas can reach only hierarchy custom settings with `$Setup`.",
         "Formulas can't read Platform Cache.",
         "",
         "Formulas can't call Apex methods."
@@ -2292,17 +2292,17 @@
       "code": "@IsTest static void appliesGoldDiscount() {\n  Discount_Tier__mdt gold = Discount_Tier__mdt.getInstance('Gold');\n  Assert.areEqual(15, gold.Percent__c);\n  Assert.areEqual(85, PriceService.applyTier(100, 'Gold'));\n}",
       "lang": "apex",
       "options": [
-        "Add @IsTest(SeeAllData=false) so the test no longer sees org records",
-        "Read tiers through a @TestVisible selector and give it test records built with JSON.deserialize",
-        "Insert a Discount_Tier__mdt record with Percent__c = 15 in @TestSetup so the test owns its own data",
-        "Wrap the assertions in Test.startTest() and Test.stopTest()"
+        "Add `@IsTest(SeeAllData=false)` so the test no longer sees org records",
+        "Read tiers through a `@TestVisible` selector and give it test records built with `JSON.deserialize`",
+        "Insert a `Discount_Tier__mdt` record with `Percent__c = 15` in `@TestSetup` so the test owns its own data",
+        "Wrap the assertions in `Test.startTest()` and `Test.stopTest()`"
       ],
       "answer": [
         1
       ],
-      "explain": "Tests see real custom metadata, so this test breaks whenever an admin edits it. Put a **seam** in front: a @TestVisible selector that the test feeds its own records built with JSON.deserialize.",
+      "explain": "Tests see real custom metadata, so this test breaks whenever an admin edits it. Put a **seam** in front: a `@TestVisible` selector that the test feeds its own records built with `JSON.deserialize`.",
       "wrong": [
-        "Tests see custom metadata records whatever SeeAllData says.",
+        "Tests see custom metadata records whatever `SeeAllData` says.",
         "",
         "You can't create custom metadata records with DML.",
         "That resets limits. It doesn't change which records the test sees."
@@ -2328,9 +2328,9 @@
       ],
       "explain": "Each method uses a different clock. `formatGmt()` prints GMT, **20:00**. `format(pattern)` uses the user's zone: Tokyo is +9, so **05:00 the next day**. `format(pattern, tz)` uses the zone you pass: New York is -4 with daylight saving, so **16:00**.",
       "wrong": [
-        "format() without a time zone converts to the user's zone, Tokyo.",
+        "`format()` without a time zone converts to the user's zone, Tokyo.",
         "Line 2 shifts the wrong way, and line 3 ignores daylight saving.",
-        "formatGmt() doesn't convert to the user's time zone.",
+        "`formatGmt()` doesn't convert to the user's time zone.",
         ""
       ],
       "source": "Apex Reference Guide: Datetime Class"
@@ -2344,18 +2344,18 @@
       "code": "for (Case c : closedCases) {\n  Date day = c.ClosedDate.dateGmt();\n  Integer m = day.month();\n  totals.put(m, (totals.containsKey(m) ? totals.get(m) : 0) + 1);\n}",
       "lang": "apex",
       "options": [
-        "Use c.ClosedDate.date(), the date in the user's time zone",
-        "Select DAY_ONLY(ClosedDate) in the query that loads closedCases",
-        "Use c.ClosedDate.monthGmt() instead of day.month()",
-        "Use c.ClosedDate.format() and read the month from the string"
+        "Use `c.ClosedDate.date()`, the date in the user's time zone",
+        "Select `DAY_ONLY(ClosedDate)` in the query that loads `closedCases`",
+        "Use `c.ClosedDate.monthGmt()` instead of `day.month()`",
+        "Use `c.ClosedDate.format()` and read the month from the string"
       ],
       "answer": [
         0
       ],
-      "explain": "Pick the date in the user's time zone, not GMT. `dateGmt()` gives July 1. **`date()`** gives her local date, June 30.",
+      "explain": "Pick the date in the user's time zone, not GMT. `dateGmt()` gives July 1. `date()` gives her local date, June 30.",
       "wrong": [
         "",
-        "DAY_ONLY() uses UTC unless wrapped in convertTimezone(), so it still says July 1.",
+        "`DAY_ONLY()` uses UTC unless wrapped in `convertTimezone()`, so it still says July 1.",
         "That is still the GMT month, which is July.",
         "The string depends on her locale, so parsing it is fragile."
       ],
@@ -2366,24 +2366,24 @@
       "lesson": "fund-5",
       "difficulty": 3,
       "pack": "hard",
-      "q": "A nightly import reads ship dates from a partner feed that always sends ISO dates such as 2026-12-31. It works when the job runs as an admin whose locale shows dates as year-month-day, but throws a TypeException after the job is reassigned to an English (United States) user. Which line should replace the parsing?",
+      "q": "A nightly import reads ship dates from a partner feed that always sends ISO dates such as 2026-12-31. It works when the job runs as an admin whose locale shows dates as year-month-day, but throws a `TypeException` after the job is reassigned to an English (United States) user. Which line should replace the parsing?",
       "code": "Date shipDate = Date.parse(row.get('ship_date'));",
       "lang": "apex",
       "options": [
-        "Date shipDate = Date.parse(row.get('ship_date').replace('-', '/'));",
-        "Date shipDate = Date.valueOf(row.get('ship_date'));",
-        "Date shipDate = Datetime.parse(row.get('ship_date')).date();",
-        "Date shipDate = Date.parse(row.get('ship_date'), UserInfo.getLocale());"
+        "`Date shipDate = Date.parse(row.get('ship_date').replace('-', '/'));`",
+        "`Date shipDate = Date.valueOf(row.get('ship_date'));`",
+        "`Date shipDate = Datetime.parse(row.get('ship_date')).date();`",
+        "`Date shipDate = Date.parse(row.get('ship_date'), UserInfo.getLocale());`"
       ],
       "answer": [
         1
       ],
-      "explain": "`Date.parse()` reads text in the user's locale format, so it breaks when the user changes. **`Date.valueOf()`** always reads yyyy-MM-dd, whatever the locale.",
+      "explain": "`Date.parse()` reads text in the user's locale format, so it breaks when the user changes. `Date.valueOf()` always reads `yyyy-MM-dd`, whatever the locale.",
       "wrong": [
-        "Date.parse() still expects the locale format, like 12/31/2026 for en_US.",
+        "`Date.parse()` still expects the locale format, like 12/31/2026 for `en_US`.",
         "",
-        "Datetime.parse() also uses the user's locale format.",
-        "Date.parse() has no locale parameter."
+        "`Datetime.parse()` also uses the user's locale format.",
+        "`Date.parse()` has no locale parameter."
       ],
       "source": "Apex Reference Guide: Date Class"
     },
@@ -2392,21 +2392,21 @@
       "lesson": "fund-5",
       "difficulty": 3,
       "pack": "hard",
-      "q": "A weekly utilization report groups time entries by week. US users and German users see different week boundaries for the same entries, because the code uses toStartOfWeek(). Finance wants every week to start on Monday for all users. Which expression returns the Monday of the week containing d for any user locale?",
+      "q": "A weekly utilization report groups time entries by week. US users and German users see different week boundaries for the same entries, because the code uses `toStartOfWeek()`. Finance wants every week to start on Monday for all users. Which expression returns the Monday of the week containing `d` for any user locale?",
       "code": "// 1 January 1900 was a Monday\nDate monday1900 = Date.newInstance(1900, 1, 1);",
       "lang": "apex",
       "options": [
-        "d.toStartOfWeek()",
-        "d.toStartOfWeek().addDays(1)",
-        "d.addDays(-Math.mod(monday1900.daysBetween(d), 7))",
-        "Date.newInstance(d.year(), d.month(), 1).toStartOfWeek()"
+        "`d.toStartOfWeek()`",
+        "`d.toStartOfWeek().addDays(1)`",
+        "`d.addDays(-Math.mod(monday1900.daysBetween(d), 7))`",
+        "`Date.newInstance(d.year(), d.month(), 1).toStartOfWeek()`"
       ],
       "answer": [
         2
       ],
       "explain": "`toStartOfWeek()` follows the user's locale. Count days from a known Monday and step back by the **remainder mod 7**, and you land on Monday for everyone.",
       "wrong": [
-        "toStartOfWeek() depends on locale: Sunday in the US, Monday in Germany.",
+        "`toStartOfWeek()` depends on locale: Sunday in the US, Monday in Germany.",
         "That gives Monday for US users but Tuesday for German users.",
         "",
         "That's the week of the 1st of the month, and it still depends on locale."
@@ -2422,22 +2422,22 @@
       "code": "SELECT Id, Name, convertCurrency(Amount)\nFROM Opportunity\nWHERE convertCurrency(Amount) > 100000\nORDER BY convertCurrency(Amount) DESC",
       "lang": "soql",
       "options": [
-        "Move the filter to HAVING convertCurrency(Amount) > 100000",
-        "Wrap Amount in FORMAT() in the WHERE clause",
-        "Filter with WHERE Amount > USD100000, which compares each record against the USD equivalent",
-        "Add GROUP BY CurrencyIsoCode so that convertCurrency(Amount) becomes allowed in the WHERE clause",
-        "Use ORDER BY Amount DESC, because sorting on currency fields already uses converted values"
+        "Move the filter to `HAVING convertCurrency(Amount) > 100000`",
+        "Wrap `Amount` in `FORMAT()` in the `WHERE` clause",
+        "Filter with `WHERE Amount > USD100000`, which compares each record against the USD equivalent",
+        "Add `GROUP BY CurrencyIsoCode` so that `convertCurrency(Amount)` becomes allowed in the `WHERE` clause",
+        "Use `ORDER BY Amount DESC`, because sorting on currency fields already uses converted values"
       ],
       "answer": [
         2,
         4
       ],
-      "explain": "`convertCurrency()` can't go in WHERE or ORDER BY. Filter with an **ISO literal like USD100000**, which compares against each record's converted value. **ORDER BY Amount** already sorts by converted values.",
+      "explain": "`convertCurrency()` can't go in `WHERE` or `ORDER BY`. Filter with an **ISO literal like** `USD100000`, which compares against each record's converted value. `ORDER BY Amount` already sorts by converted values.",
       "wrong": [
-        "HAVING needs GROUP BY, and convertCurrency still isn't allowed there.",
-        "FORMAT() is for SELECT output, not filters.",
+        "`HAVING` needs `GROUP BY`, and `convertCurrency` still isn't allowed there.",
+        "`FORMAT()` is for `SELECT` output, not filters.",
         "",
-        "Grouping never makes convertCurrency valid in WHERE.",
+        "Grouping never makes `convertCurrency` valid in `WHERE`.",
         ""
       ],
       "source": "SOQL and SOSL Reference: convertCurrency()"
@@ -2454,17 +2454,17 @@
         "EUR, because aggregates are converted to the running user's currency",
         "USD, the corporate currency: aggregate functions return the org default currency",
         "No single currency: raw JPY and GBP numbers are simply added together",
-        "The query fails, because multi-currency orgs require SUM(convertCurrency(Amount))"
+        "The query fails, because multi-currency orgs require `SUM(convertCurrency(Amount))`"
       ],
       "answer": [
         1
       ],
-      "explain": "Aggregates with GROUP BY or HAVING return currency in the org's **corporate currency**. So the totals are in **USD**, and convertCurrency() can't convert an aggregate result.",
+      "explain": "Aggregates with `GROUP BY` or `HAVING` return currency in the org's **corporate currency**. So the totals are in **USD**, and `convertCurrency()` can't convert an aggregate result.",
       "wrong": [
         "Aggregate results aren't converted to the user's currency.",
         "",
         "Salesforce converts before it sums, and returns the corporate currency.",
-        "convertCurrency() can't wrap an aggregate, and the query is valid as written."
+        "`convertCurrency()` can't wrap an aggregate, and the query is valid as written."
       ],
       "source": "SOQL and SOSL Reference: convertCurrency()"
     },
@@ -2473,25 +2473,25 @@
       "lesson": "fund-5",
       "difficulty": 3,
       "pack": "hard",
-      "q": "A multi-currency org has enabled advanced currency management (dated exchange rates). Finance also tracks Commission__c, a custom object with a currency field. Which two statements are true? (Choose 2)",
+      "q": "A multi-currency org has enabled advanced currency management (dated exchange rates). Finance also tracks `Commission__c`, a custom object with a currency field. Which two statements are true? (Choose 2)",
       "options": [
-        "convertCurrency() on a Commission__c currency field uses the dated rate for the record's CreatedDate",
-        "convertCurrency(Amount) on Opportunity uses the dated rate that matches the opportunity's CloseDate",
-        "Apex can find the rate for a given date by querying DatedConversionRate where StartDate <= d and NextStartDate > d",
-        "With dated rates, convertCurrency() becomes valid in a WHERE clause",
-        "DatedConversionRate is available in every multi-currency org, even without advanced currency management"
+        "`convertCurrency()` on a `Commission__c` currency field uses the dated rate for the record's `CreatedDate`",
+        "`convertCurrency(Amount)` on Opportunity uses the dated rate that matches the opportunity's `CloseDate`",
+        "Apex can find the rate for a given date by querying `DatedConversionRate` where `StartDate <= d` and `NextStartDate > d`",
+        "With dated rates, `convertCurrency()` becomes valid in a `WHERE` clause",
+        "`DatedConversionRate` is available in every multi-currency org, even without advanced currency management"
       ],
       "answer": [
         1,
         2
       ],
-      "explain": "Dated rates apply to opportunities, not to custom objects. `convertCurrency(Amount)` uses the rate for the opportunity's **CloseDate**. Apex finds a date's rate in **DatedConversionRate** using StartDate and NextStartDate.",
+      "explain": "Dated rates apply to opportunities, not to custom objects. `convertCurrency(Amount)` uses the rate for the opportunity's `CloseDate`. Apex finds a date's rate in `DatedConversionRate` using `StartDate` and `NextStartDate`.",
       "wrong": [
         "Dated rates cover opportunities, opportunity products and opportunity history, not custom objects.",
         "",
         "",
-        "convertCurrency() is never allowed in WHERE.",
-        "DatedConversionRate exists only with advanced currency management on."
+        "`convertCurrency()` is never allowed in `WHERE`.",
+        "`DatedConversionRate` exists only with advanced currency management on."
       ],
       "source": "SOQL and SOSL Reference: convertCurrency(); Object Reference: DatedConversionRate"
     },
@@ -2504,20 +2504,20 @@
       "code": "insert new Commission__c(\n  Opportunity__c = o.Id,\n  Amount__c      = o.Amount * 0.05\n);",
       "lang": "apex",
       "options": [
-        "Amount__c is auto-converted from JPY to EUR on insert, at the wrong rate",
-        "The commission is saved in the corporate currency. Use convertCurrency() in the trigger",
-        "It takes the user's currency (EUR) but holds a JPY amount. Set CurrencyIsoCode = o.CurrencyIsoCode",
-        "The insert fails, because CurrencyIsoCode is a required field on every new record in multi-currency orgs"
+        "`Amount__c` is auto-converted from JPY to EUR on insert, at the wrong rate",
+        "The commission is saved in the corporate currency. Use `convertCurrency()` in the trigger",
+        "It takes the user's currency (EUR) but holds a JPY amount. Set `CurrencyIsoCode = o.CurrencyIsoCode`",
+        "The insert fails, because `CurrencyIsoCode` is a required field on every new record in multi-currency orgs"
       ],
       "answer": [
         2
       ],
-      "explain": "A new record takes its creator's currency unless you set one. The commission was saved as **EUR** holding a JPY number. Copy **CurrencyIsoCode = o.CurrencyIsoCode** to keep the number and its currency together.",
+      "explain": "A new record takes its creator's currency unless you set one. The commission was saved as **EUR** holding a JPY number. Copy `CurrencyIsoCode = o.CurrencyIsoCode` to keep the number and its currency together.",
       "wrong": [
         "Salesforce doesn't convert a number you assign. It stores it in the record's currency.",
-        "With no CurrencyIsoCode the record takes the user's currency, and convertCurrency() is SOQL only.",
+        "With no `CurrencyIsoCode` the record takes the user's currency, and `convertCurrency()` is SOQL only.",
         "",
-        "CurrencyIsoCode has a default, so the insert works, just with the wrong currency."
+        "`CurrencyIsoCode` has a default, so the insert works, just with the wrong currency."
       ],
       "source": "Salesforce Help: Multiple Currencies; Apex Reference Guide: UserInfo Class"
     },
@@ -2530,20 +2530,20 @@
       "code": "public static List<SObject> rowsFor(String objName, Set<Id> ids) {\n    List<SObject> out = new List<SObject>();\n    for (SObject s : Database.query(\n            'SELECT Id, Name FROM ' + objName + ' WHERE Id IN :ids')) {\n        out.add(s);\n    }\n    return out;\n}\n\n// caller\nList<Account> accts = (List<Account>) Selector.rowsFor('Account', ids);",
       "lang": "apex",
       "options": [
-        "Rows from Database.query are typed as Account, so out.add(s) throws when it adds them to a List<SObject>",
-        "The bind :ids isn't visible to Database.query inside a static method, so the query throws a QueryException",
-        "The cast throws a TypeException because out's runtime type is List<SObject>, not List<Account>",
-        "Name isn't on every object, so the class fails to compile when the dynamic query string is saved"
+        "Rows from `Database.query` are typed as `Account`, so `out.add(s)` throws when it adds them to a `List<SObject>`",
+        "The bind `:ids` isn't visible to `Database.query` inside a `static` method, so the query throws a `QueryException`",
+        "The cast throws a `TypeException` because `out`'s runtime type is `List<SObject>`, not `List<Account>`",
+        "`Name` isn't on every object, so the class fails to compile when the dynamic query string is saved"
       ],
       "answer": [
         2
       ],
-      "explain": "A list's real type is fixed when it's created. A list made with `new List<SObject>()` can't be cast to `List<Account>`, so the cast throws **System.TypeException**. Cast each element instead.",
+      "explain": "A list's real type is fixed when it's created. A list made with `new List<SObject>()` can't be cast to `List<Account>`, so the cast throws `System.TypeException`. Cast each element instead.",
       "wrong": [
-        "Any sObject can be added to a List<SObject>.",
+        "Any sObject can be added to a `List<SObject>`.",
         "Dynamic SOQL can bind local variables in scope, including method parameters.",
         "",
-        "Dynamic queries are checked only at run time, and Account has Name."
+        "Dynamic queries are checked only at run time, and Account has `Name`."
       ],
       "source": "Apex Developer Guide: Dynamic SOQL; Lists of sObjects"
     },
@@ -2552,24 +2552,24 @@
       "lesson": "fund-6",
       "difficulty": 3,
       "pack": "hard",
-      "q": "A 'quick create' service gets an object API name and a Map<String, Object> of field values from a Lightning page, and must insert one record of that type. Which two lines belong in a working solution? (Choose 2)",
+      "q": "A 'quick create' service gets an object API name and a `Map<String, Object>` of field values from a Lightning page, and must insert one record of that type. Which two lines belong in a working solution? (Choose 2)",
       "options": [
-        "SObject rec = new SObject(); rec.put('SObjectType', objName);",
-        "rec.put(fieldName, values.get(fieldName));",
-        "SObject rec = Schema.getGlobalDescribe().get(objName).newSObject();",
-        "SObject.setField(rec, fieldName, values.get(fieldName));",
-        "Database.insert(objName, new List<SObject>{ rec }, true);"
+        "`SObject rec = new SObject(); rec.put('SObjectType', objName);`",
+        "`rec.put(fieldName, values.get(fieldName));`",
+        "`SObject rec = Schema.getGlobalDescribe().get(objName).newSObject();`",
+        "`SObject.setField(rec, fieldName, values.get(fieldName));`",
+        "`Database.insert(objName, new List<SObject>{ rec }, true);`"
       ],
       "answer": [
         1,
         2
       ],
-      "explain": "When the type is only known at run time, make the record from its type token. **`newSObject()`** creates a record of that type, and **`put()`** sets fields by name. Call `getGlobalDescribe()` once, not in a loop.",
+      "explain": "When the type is only known at run time, make the record from its type token. `newSObject()` creates a record of that type, and `put()` sets fields by name. Call `getGlobalDescribe()` once, not in a loop.",
       "wrong": [
-        "You can't create a generic SObject with new, and the type isn't a field.",
+        "You can't create a generic `SObject` with `new`, and the type isn't a field.",
         "",
         "",
-        "That method doesn't exist. Use rec.put() to set a field by name.",
+        "That method doesn't exist. Use `rec.put()` to set a field by name.",
         "No insert takes an object name. The record already knows its type."
       ],
       "source": "Apex Developer Guide: Dynamic DML; Apex Reference Guide: SObjectType and SObject Classes"
@@ -2583,20 +2583,20 @@
       "code": "public abstract class Notifier {\n    public void send(String msg) { deliver(format(msg)); }\n    public virtual String format(String msg) { return msg; }\n    public abstract void deliver(String msg);\n}\n\npublic class SmsNotifier extends Notifier {\n    public override String format(String msg) {\n        return super.format(msg).left(10);\n    }\n    public override void deliver(String msg) { System.debug(msg); }\n}\n\n// run\nNotifier n = new SmsNotifier();\nn.send('Your order has shipped');",
       "lang": "apex",
       "options": [
-        "Your order has shipped, because send() is defined in Notifier and calls its own format()",
-        "Your order, because the override of format() runs and trims the text to 10 characters",
-        "Nothing: Notifier n = new SmsNotifier() fails, because a variable can't have an abstract type",
-        "Nothing: the class doesn't compile, because an abstract class can't contain a concrete send()"
+        "Your order has shipped, because `send()` is defined in `Notifier` and calls its own `format()`",
+        "Your order, because the override of `format()` runs and trims the text to 10 characters",
+        "Nothing: `Notifier n = new SmsNotifier()` fails, because a variable can't have an `abstract` type",
+        "Nothing: the class doesn't compile, because an `abstract` class can't contain a concrete `send()`"
       ],
       "answer": [
         1
       ],
-      "explain": "A call inside the parent still runs the child's version. send() calls format(), so **SmsNotifier's override** runs and trims the text to 10 characters: **Your order**.",
+      "explain": "A call inside the parent still runs the child's version. `send()` calls `format()`, so `SmsNotifier`'s **override** runs and trims the text to 10 characters: **Your order**.",
       "wrong": [
         "Calls made in the parent still run the child's override at run time.",
         "",
-        "A variable can have an abstract type. Only new Notifier() is forbidden.",
-        "Abstract classes can mix abstract and finished methods."
+        "A variable can have an `abstract` type. Only `new Notifier()` is forbidden.",
+        "Abstract classes can mix `abstract` and finished methods."
       ],
       "source": "Apex Developer Guide: Extending a Class; Using the super Keyword"
     },
@@ -2605,22 +2605,22 @@
       "lesson": "fund-7",
       "difficulty": 3,
       "pack": "hard",
-      "q": "ConfigService is a singleton. A Database.Stateful batch runs 5 execute() chunks, and each chunk calls ConfigService.getInstance() 200 times. How many times does the constructor's query run for the whole job?",
+      "q": "`ConfigService` is a singleton. A `Database.Stateful` batch runs 5 `execute()` chunks, and each chunk calls `ConfigService.getInstance()` 200 times. How many times does the constructor's query run for the whole job?",
       "code": "public class ConfigService {\n    private static ConfigService instance;\n    public Map<String, String> values = new Map<String, String>();\n    private ConfigService() {\n        for (Config__c c : [SELECT Name, Value__c FROM Config__c]) {\n            values.put(c.Name, c.Value__c);\n        }\n    }\n    public static ConfigService getInstance() {\n        if (instance == null) instance = new ConfigService();\n        return instance;\n    }\n}",
       "lang": "apex",
       "options": [
-        "1,000, because the private constructor runs again on every single getInstance() call",
-        "1, because Database.Stateful keeps the static instance alive from one chunk to the next",
+        "1,000, because the `private` constructor runs again on every single `getInstance()` call",
+        "1, because `Database.Stateful` keeps the `static` instance alive from one chunk to the next",
         "5, once per chunk: statics reset in every transaction, even in a Stateful batch",
         "0 after the first run, because static variables stay cached in the org between jobs"
       ],
       "answer": [
         2
       ],
-      "explain": "Each execute() chunk is its own transaction, and statics reset in every one. So the singleton is rebuilt **once per chunk: 5 times**. Database.Stateful keeps only instance variables, not statics.",
+      "explain": "Each `execute()` chunk is its own transaction, and statics reset in every one. So the singleton is rebuilt **once per chunk: 5 times**. `Database.Stateful` keeps only instance variables, not statics.",
       "wrong": [
-        "getInstance() builds only when instance is null, so it's reused within a transaction.",
-        "Database.Stateful keeps instance variables only. Statics reset each transaction.",
+        "`getInstance()` builds only when `instance` is `null`, so it's reused within a transaction.",
+        "`Database.Stateful` keeps instance variables only. Statics reset each transaction.",
         "",
         "Statics never outlive a transaction. Use Platform Cache to share across them."
       ],
@@ -2637,17 +2637,17 @@
       "options": [
         "It doesn't compile, because a single transaction can hold only one savepoint at a time",
         "Both rollbacks succeed quietly, and neither Account A nor Account B is left in the database",
-        "rollback(sp1) undoes only Account A, and rollback(sp2) then undoes Account B as expected",
-        "Both inserts are undone, then rollback(sp2) throws: sp2 became invalid when sp1 was used"
+        "`rollback(sp1)` undoes only Account A, and `rollback(sp2)` then undoes Account B as expected",
+        "Both inserts are undone, then `rollback(sp2)` throws: `sp2` became invalid when `sp1` was used"
       ],
       "answer": [
         3
       ],
-      "explain": "Rolling back goes to the savepoint and erases everything after it, including later savepoints. **rollback(sp1)** undoes both inserts and makes sp2 invalid, so **rollback(sp2) throws**.",
+      "explain": "Rolling back goes to the savepoint and erases everything after it, including later savepoints. `rollback(sp1)` undoes both inserts and makes `sp2` invalid, so `rollback(sp2)` **throws**.",
       "wrong": [
         "Apex allows several savepoints. Only using an invalid one fails.",
-        "Rolling back to sp1 makes sp2 invalid, so using it throws.",
-        "A rollback undoes all DML after its savepoint, so sp1 also undoes B.",
+        "Rolling back to `sp1` makes `sp2` invalid, so using it throws.",
+        "A rollback undoes all DML after its savepoint, so `sp1` also undoes B.",
         ""
       ],
       "source": "Apex Developer Guide: Transaction Control"
@@ -2657,12 +2657,12 @@
       "lesson": "fund-8",
       "difficulty": 3,
       "pack": "hard",
-      "q": "Support says failed orders never leave an Error_Log__c record, even though users see the friendly message. Why, and what is the fix?",
+      "q": "Support says failed orders never leave an `Error_Log__c` record, even though users see the friendly message. Why, and what is the fix?",
       "code": "@AuraEnabled\npublic static void placeOrder(Order__c ord, List<Order_Line__c> lines) {\n    Savepoint sp = Database.setSavepoint();\n    try {\n        insert ord;\n        for (Order_Line__c l : lines) l.Order__c = ord.Id;\n        insert lines;\n    } catch (DmlException e) {\n        Database.rollback(sp);\n        insert new Error_Log__c(Message__c = e.getMessage());\n        throw new AuraHandledException('Could not save the order.');\n    }\n}",
       "lang": "apex",
       "options": [
-        "AuraHandledException hides the DmlException, so getMessage() is blank; log e.getDmlMessage(0) instead",
-        "rollback(sp) also undoes inserts made after it in the catch block; move the log insert above the rollback",
+        "`AuraHandledException` hides the `DmlException`, so `getMessage()` is blank; log `e.getDmlMessage(0)` instead",
+        "`rollback(sp)` also undoes inserts made after it in the catch block; move the log insert above the rollback",
         "Throwing rolls back the whole transaction, log too; log with a Publish Immediately platform event",
         "DML isn't allowed in a catch block after a rollback; move the log insert into a finally block"
       ],
@@ -2671,7 +2671,7 @@
       ],
       "explain": "An uncaught exception rolls back the whole transaction, the log row too. A **platform event set to Publish Immediately** goes out even when the transaction rolls back, so log with that.",
       "wrong": [
-        "e is still the DmlException in the catch, so its message is there. The log row is rolled back.",
+        "`e` is still the `DmlException` in the catch, so its message is there. The log row is rolled back.",
         "A rollback only undoes DML made before it. The uncaught exception loses the log.",
         "",
         "DML is allowed after a rollback. The real problem is the uncaught exception."
@@ -2687,20 +2687,20 @@
       "code": "Decimal rate = (Decimal) Cache.Org.get('usdEur');\nif (rate == null) {\n    rate = RateService.load('EUR');\n    Cache.Org.put('usdEur', rate);\n}",
       "lang": "apex",
       "options": [
-        "The first call returns null, the value loads, and put() stores it in the Rates partition",
-        "Cache.Org.OrgCacheException is thrown, because the key isn't qualified with a partition",
-        "put() silently stores nothing, so every request falls through to RateService.load()",
+        "The first call returns `null`, the value loads, and `put()` stores it in the Rates partition",
+        "`Cache.Org.OrgCacheException` is thrown, because the key isn't qualified with a partition",
+        "`put()` silently stores nothing, so every request falls through to `RateService.load()`",
         "It compiles only if the class is saved in a managed package that defines a namespace"
       ],
       "answer": [
         1
       ],
-      "explain": "With no default partition, a key needs its partition name. A bare key throws **Cache.Org.OrgCacheException**. Use `local.Rates.usdEur`, or get the partition first.",
+      "explain": "With no default partition, a key needs its partition name. A bare key throws `Cache.Org.OrgCacheException`. Use `local.Rates.usdEur`, or get the partition first.",
       "wrong": [
         "With no default partition, a bare key can't find the Rates partition.",
         "",
         "It throws. It doesn't fail silently.",
-        "Cache keys are strings checked at run time, and local covers orgs without a namespace."
+        "Cache keys are strings checked at run time, and `local` covers orgs without a namespace."
       ],
       "source": "Apex Reference Guide: Org Class (Cache Key Format)"
     },
@@ -2712,7 +2712,7 @@
       "q": "A team wants to cache customers' loyalty balances and payment tokens in org cache to speed up checkout. A reviewer checks the plan. Which two statements are true? (Choose 2)",
       "options": [
         "Data in Platform Cache isn't encrypted, so sensitive values such as payment tokens shouldn't be cached",
-        "If two transactions put the same key at the same moment, the second put() throws an exception",
+        "If two transactions put the same key at the same moment, the second `put()` throws an exception",
         "Modifying an Apex class in the org can invalidate some or all of the cache",
         "Org cache entries are private to the user who stored them, so balances can't leak",
         "Values stay cached for their full TTL, so the balances never need to be reloaded"

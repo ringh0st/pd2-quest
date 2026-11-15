@@ -13,7 +13,7 @@
         {
           "type": "text",
           "title": "In plain words",
-          "body": "Many companies share the same Salesforce servers. So every **transaction** (one full run of work, like one Save click) gets a fixed **budget**. Spend too much of anything and Salesforce stops you with a **LimitException**. Nothing is saved. Limits stop one greedy job from slowing everyone else."
+          "body": "Many companies share the same Salesforce servers. So every **transaction** (one full run of work, like one Save click) gets a fixed **budget**. Spend too much of anything and Salesforce stops you with a `LimitException`. Nothing is saved. Limits stop one greedy job from slowing everyone else."
         },
         {
           "type": "tip",
@@ -35,7 +35,7 @@
         {
           "type": "text",
           "title": "What async changes",
-          "body": "**Async** Apex runs later, in the background: Batch, Queueable, @future. It raises just three limits. SOQL goes from 100 to 200. Heap goes from 10 MB to 25 MB. CPU goes from 10,000 ms to 60,000 ms. DML (150), query rows (50,000) and callouts (100) **stay the same**."
+          "body": "**Async** Apex runs later, in the background: Batch, Queueable, `@future`. It raises just three limits. SOQL goes from 100 to 200. Heap goes from 10 MB to 25 MB. CPU goes from 10,000 ms to 60,000 ms. DML (150), query rows (50,000) and callouts (100) **stay the same**."
         },
         {
           "type": "text",
@@ -51,7 +51,7 @@
         },
         {
           "type": "trap",
-          "body": "Wrapping code in **try/catch** does **not** save you. A **LimitException** can't be caught, and the whole transaction rolls back. Plan to stay under the limit, never to recover from it."
+          "body": "Wrapping code in `try/catch` does **not** save you. A `LimitException` can't be caught, and the whole transaction rolls back. Plan to stay under the limit, never to recover from it."
         },
         {
           "type": "tip",
@@ -115,7 +115,7 @@
           "type": "list",
           "title": "Reusable code rules",
           "items": [
-            "Redefining a parent's virtual method needs the **override** keyword",
+            "Redefining a parent's `virtual` method needs the `override` keyword",
             "Inner classes go only **one level** deep",
             "Many versions of one job? An **interface** plus one class each, picked with `Type.forName()`",
             "One **selector** class owns each object's queries and field list"
@@ -123,7 +123,7 @@
         },
         {
           "type": "trap",
-          "body": "A SOQL for loop saves **heap** (memory), not **rows**. Every row still counts toward the **50,000** limit. And @future per record is no fix: only **50** future calls are allowed per transaction."
+          "body": "A SOQL for loop saves **heap** (memory), not **rows**. Every row still counts toward the **50,000** limit. And `@future` per record is no fix: only **50** future calls are allowed per transaction."
         },
         {
           "type": "tip",
@@ -157,9 +157,9 @@
           "type": "list",
           "title": "Indexed out of the box",
           "items": [
-            "Id, Name, OwnerId",
-            "CreatedDate, SystemModstamp",
-            "RecordTypeId",
+            "`Id`, `Name`, `OwnerId`",
+            "`CreatedDate`, `SystemModstamp`",
+            "`RecordTypeId`",
             "Lookup and master-detail fields",
             "External ID and unique fields"
           ]
@@ -180,16 +180,16 @@
         {
           "type": "text",
           "title": "Need a custom index?",
-          "body": "Mark a field **External ID** or **Unique** and Salesforce indexes it for you. For other fields, ask **Salesforce Support**. Formula fields can be indexed only if they are **deterministic** (same inputs, same answer, every time). TODAY(), other objects' fields and TEXT() on a picklist all rule that out."
+          "body": "Mark a field **External ID** or **Unique** and Salesforce indexes it for you. For other fields, ask **Salesforce Support**. Formula fields can be indexed only if they are **deterministic** (same inputs, same answer, every time). `TODAY()`, other objects' fields and `TEXT()` on a picklist all rule that out."
         },
         {
           "type": "text",
-          "title": "AND vs OR",
-          "body": "With **AND**, one selective indexed filter can be enough. With **OR**, **every** field in the OR must be indexed, or no index is used. Fix it two ways: index the other field, or split it into two selective queries and merge the results in Apex."
+          "title": "`AND` vs `OR`",
+          "body": "With `AND`, one selective indexed filter can be enough. With `OR`, **every** field in the `OR` must be indexed, or no index is used. Fix it two ways: index the other field, or split it into two selective queries and merge the results in Apex."
         },
         {
           "type": "trap",
-          "body": "In a **trigger**, a non-selective query on an object with **more than 200,000 records** throws **\"Non-selective query against large object type\"**. Adding ORDER BY or LIMIT doesn't fix it. Only a selective indexed filter does."
+          "body": "In a **trigger**, a non-selective query on an object with **more than 200,000 records** throws **\"Non-selective query against large object type\"**. Adding `ORDER BY` or `LIMIT` doesn't fix it. Only a selective indexed filter does."
         },
         {
           "type": "tip",
@@ -228,17 +228,17 @@
           "type": "list",
           "title": "Index killers",
           "items": [
-            "Negative operators: **!=, NOT IN, EXCLUDES**",
-            "Leading wildcard: **LIKE '%corp'** (trailing **LIKE 'Acme%'** is fine)",
-            "Comparing to **null** on a custom-indexed field",
-            "Non-deterministic formula fields, like ones using TODAY()",
-            "An OR where any branch is unindexed"
+            "Negative operators: `!=`, `NOT IN`, `EXCLUDES`",
+            "Leading wildcard: `LIKE '%corp'` (trailing `LIKE 'Acme%'` is fine)",
+            "Comparing to `null` on a custom-indexed field",
+            "Non-deterministic formula fields, like ones using `TODAY()`",
+            "An `OR` where any branch is unindexed"
           ]
         },
         {
           "type": "text",
           "title": "Fixing a killer",
-          "body": "Turn negatives into positives: `Status__c != 'Closed'` becomes `Status__c IN ('New', 'Working')`. Swap a TODAY() formula filter for a range on the **real date field**. Store a default value instead of null."
+          "body": "Turn negatives into positives: `Status__c != 'Closed'` becomes `Status__c IN ('New', 'Working')`. Swap a `TODAY()` formula filter for a range on the **real date field**. Store a default value instead of null."
         },
         {
           "type": "trap",
@@ -293,7 +293,7 @@
         {
           "type": "text",
           "title": "Why it hurts",
-          "body": "Saving a child record briefly **locks its parent**. Many parallel saves on one parent fight over that lock. You get **UNABLE_TO_LOCK_ROW**. Moving a skewed owner in the **role hierarchy** (the org chart that controls who sees what) forces a huge **sharing recalculation**."
+          "body": "Saving a child record briefly **locks its parent**. Many parallel saves on one parent fight over that lock. You get `UNABLE_TO_LOCK_ROW`. Moving a skewed owner in the **role hierarchy** (the org chart that controls who sees what) forces a huge **sharing recalculation**."
         },
         {
           "type": "list",
@@ -365,7 +365,7 @@
             "**Org cache**: shared by all users, across transactions, kept up to 48 hours",
             "**Session cache**: one user's session, up to 8 hours",
             "Both live in **partitions** you set up in Setup",
-            "Key format: **local.Partition.key** (local = your org's namespace)",
+            "Key format: `local.Partition.key` (`local` = your org's namespace)",
             "Each item: max **100 KB**; key: max 50 characters"
           ]
         },
@@ -379,16 +379,16 @@
         {
           "type": "text",
           "title": "Let Salesforce load it",
-          "body": "Implement **Cache.CacheBuilder** and Salesforce handles misses for you. Write a **non-static** `doLoad(String var)` method. `Cache.Org.get(MyClass.class, key)` calls it only when the value is missing. You never call put() yourself."
+          "body": "Implement `Cache.CacheBuilder` and Salesforce handles misses for you. Write a **non-static** `doLoad(String var)` method. `Cache.Org.get(MyClass.class, key)` calls it only when the value is missing. You never call `put()` yourself."
         },
         {
           "type": "list",
           "title": "CPU savers",
           "items": [
             "Map lookups instead of **nested loops**",
-            "Describe once: skip repeated **Schema.getGlobalDescribe()**, use **Account.SObjectType.getDescribe()** and cache it",
-            "Stop **trigger recursion** with a static Set<Id> of processed records",
-            "Remove heavy System.debug calls in loops"
+            "Describe once: skip repeated `Schema.getGlobalDescribe()`, use `Account.SObjectType.getDescribe()` and cache it",
+            "Stop **trigger recursion** with a `static Set<Id>` of processed records",
+            "Remove heavy `System.debug` calls in loops"
           ]
         },
         {
@@ -439,7 +439,7 @@
           "type": "list",
           "title": "Load less, later",
           "items": [
-            "**lwc:if** builds heavy parts only when needed; CSS hiding still builds them",
+            "`lwc:if` builds heavy parts only when needed; CSS hiding still builds them",
             "**Pagination** or **infinite loading** instead of thousands of rows",
             "Request only the **fields you show**",
             "**Debounce** typing (about 300 ms) before calling Apex",
@@ -458,19 +458,19 @@
           "title": "Sharing code",
           "items": [
             "LWC: put shared JS in a **service component**; import with braces for a named export",
-            "Aura: one **extends**, many **implements**",
-            "An Aura base component shows child markup only where it has **{!v.body}**",
+            "Aura: one `extends`, many `implements`",
+            "An Aura base component shows child markup only where it has `{!v.body}`",
             "Aura interfaces hold attributes, events and methods only"
           ]
         },
         {
           "type": "trap",
-          "body": "A **cacheable=true** method **can't do DML**. After data changes, call **refreshApex()** with the whole value the wire gave you, not the data you copied from it."
+          "body": "A `cacheable=true` method **can't do DML**. After data changes, call `refreshApex()` with the whole value the wire gave you, not the data you copied from it."
         },
         {
           "type": "tip",
           "title": "Remember it",
-          "body": "**OFFSET stops at 2,000.** For deep paging use **keyset**: `WHERE Id > :lastId ORDER BY Id LIMIT 50`. Think: a bookmark, not a page number."
+          "body": "`OFFSET` **stops at 2,000.** For deep paging use **keyset**: `WHERE Id > :lastId ORDER BY Id LIMIT 50`. Think: a bookmark, not a page number."
         }
       ],
       "check": [
@@ -493,11 +493,11 @@
         {
           "type": "tip",
           "title": "Think of it like…",
-          "body": "Think of a backpack you carry to class every day. Pack only what you need. Leave the encyclopedia at home and look things up when you must. That's **transient**. Where it breaks: there is no bigger backpack. 170 KB is fixed."
+          "body": "Think of a backpack you carry to class every day. Pack only what you need. Leave the encyclopedia at home and look things up when you must. That's `transient`. Where it breaks: there is no bigger backpack. 170 KB is fixed."
         },
         {
           "type": "code",
-          "title": "transient",
+          "title": "`transient`",
           "lang": "apex",
           "code": "public class ReportCtrl {\n    public transient List<Opportunity> bigList { get; set; }\n    public Id selectedId { get; set; }\n}",
           "body": "This keeps `bigList` out of view state, so you rebuild it on each request; `selectedId` is still saved."
@@ -506,17 +506,17 @@
           "type": "list",
           "title": "Shrink the page",
           "items": [
-            "Mark derived or big data **transient**",
-            "Paginate with **StandardSetController**",
+            "Mark derived or big data `transient`",
+            "Paginate with `StandardSetController`",
             "Query only the **fields** and rows you show",
-            "Use **one apex:form** where possible",
-            "Prefer **apex:outputPanel** + rerender over full reloads"
+            "Use **one** `apex:form` where possible",
+            "Prefer `apex:outputPanel` + `rerender` over full reloads"
           ]
         },
         {
           "type": "text",
-          "title": "readOnly=\"true\"",
-          "body": "Set it on **apex:page** and the page can read **1,000,000** query rows instead of 50,000. Iteration components can show **10,000** items. The catch: the page **can't do DML**."
+          "title": "`readOnly=\"true\"`",
+          "body": "Set it on `apex:page` and the page can read **1,000,000** query rows instead of 50,000. Iteration components can show **10,000** items. The catch: the page **can't do DML**."
         },
         {
           "type": "text",
@@ -530,7 +530,7 @@
         },
         {
           "type": "trap",
-          "body": "You **can't** raise the 170 KB view state limit. Not even Support can. Also, transient data is **null** after a postback, so re-query it when you need it."
+          "body": "You **can't** raise the 170 KB view state limit. Not even Support can. Also, transient data is `null` after a postback, so re-query it when you need it."
         },
         {
           "type": "tip",
@@ -578,7 +578,7 @@
         },
         {
           "type": "code",
-          "title": "Polymorphic TYPEOF",
+          "title": "Polymorphic `TYPEOF`",
           "lang": "soql",
           "code": "SELECT Id, Subject,\n  TYPEOF What\n    WHEN Account THEN Name, Phone\n    WHEN Opportunity THEN Name, Amount\n  END\nFROM Task",
           "body": "This picks different fields depending on which object type `What` points to, all in one query."
@@ -590,7 +590,7 @@
             "**Queueable**: chainable, takes objects, can do callouts",
             "**Batch Apex**: millions of rows, fresh limits per chunk",
             "**Platform Events**: decouple; the subscriber runs in its own transaction",
-            "**@future**: simple, primitives only, returns nothing"
+            "`@future`: simple, primitives only, returns nothing"
           ]
         },
         {
@@ -606,7 +606,7 @@
         },
         {
           "type": "trap",
-          "body": "TYPEOF **can't** be used with **GROUP BY** or **HAVING**, can't be nested, and isn't supported in **Bulk API** queries."
+          "body": "`TYPEOF` **can't** be used with `GROUP BY` or `HAVING`, can't be nested, and isn't supported in **Bulk API** queries."
         },
         {
           "type": "tip",
@@ -655,12 +655,12 @@
     {
       "id": "perf-f7",
       "front": "How do you check how many queries you have left?",
-      "back": "Compare Limits.getQueries() (used so far) with Limits.getLimitQueries() (the cap for this context)."
+      "back": "Compare `Limits.getQueries()` (used so far) with `Limits.getLimitQueries()` (the cap for this context)."
     },
     {
       "id": "perf-f8",
-      "front": "Can try/catch save you from a LimitException?",
-      "back": "No. A LimitException can't be caught. The whole transaction rolls back."
+      "front": "Can `try/catch` save you from a `LimitException`?",
+      "back": "No. A `LimitException` can't be caught. The whole transaction rolls back."
     },
     {
       "id": "perf-f9",
@@ -675,7 +675,7 @@
     {
       "id": "perf-f11",
       "front": "Which fields are indexed without asking anyone?",
-      "back": "Id, Name, OwnerId, CreatedDate, SystemModstamp and RecordTypeId. Also lookup, master-detail, External ID and unique fields."
+      "back": "`Id`, `Name`, `OwnerId`, `CreatedDate`, `SystemModstamp` and `RecordTypeId`. Also lookup, master-detail, External ID and unique fields."
     },
     {
       "id": "perf-f12",
@@ -690,12 +690,12 @@
     {
       "id": "perf-f14",
       "front": "Which filters stop an index from being used?",
-      "back": "Negative operators (!=, NOT IN, EXCLUDES) and leading wildcards like LIKE '%x'."
+      "back": "Negative operators (`!=`, `NOT IN`, `EXCLUDES`) and leading wildcards like `LIKE '%x'`."
     },
     {
       "id": "perf-f15",
       "front": "Can a custom index find null values?",
-      "back": "Not by default. Custom indexes skip nulls, so = null can't use them unless Support adds nulls."
+      "back": "Not by default. Custom indexes skip nulls, so `= null` can't use them unless Support adds nulls."
     },
     {
       "id": "perf-f16",
@@ -719,7 +719,7 @@
     },
     {
       "id": "perf-f20",
-      "front": "Why do big loads hit UNABLE_TO_LOCK_ROW?",
+      "front": "Why do big loads hit `UNABLE_TO_LOCK_ROW`?",
       "back": "Parallel batches update children of the same parent, so they fight over its lock. Sort the file by parent Id or use serial mode."
     },
     {
@@ -734,27 +734,27 @@
     },
     {
       "id": "perf-f23",
-      "front": "What must an Apex method have so @wire can call it?",
-      "back": "@AuraEnabled(cacheable=true). Because results are cached, the method can't do DML."
+      "front": "What must an Apex method have so `@wire` can call it?",
+      "back": "`@AuraEnabled(cacheable=true)`. Because results are cached, the method can't do DML."
     },
     {
       "id": "perf-f24",
       "front": "How do you refresh wired Apex data after a change?",
-      "back": "Call refreshApex() with the value the wire provisioned."
+      "back": "Call `refreshApex()` with the value the wire provisioned."
     },
     {
       "id": "perf-f25",
-      "front": "How far can SOQL OFFSET skip?",
-      "back": "2,000 rows at most. For deeper paging use keyset paging: WHERE Id > :lastId."
+      "front": "How far can SOQL `OFFSET` skip?",
+      "back": "2,000 rows at most. For deeper paging use keyset paging: `WHERE Id > :lastId`."
     },
     {
       "id": "perf-f26",
       "front": "How big can Visualforce view state get?",
-      "back": "170 KB, and it can't be raised. Shrink it with transient, pagination and fewer fields."
+      "back": "170 KB, and it can't be raised. Shrink it with `transient`, pagination and fewer fields."
     },
     {
       "id": "perf-f27",
-      "front": "What does readOnly=\"true\" on apex:page do?",
+      "front": "What does `readOnly=\"true\"` on `apex:page` do?",
       "back": "It raises query rows to 1,000,000 and iteration items to 10,000. The page can't do any DML."
     },
     {
@@ -764,13 +764,13 @@
     },
     {
       "id": "perf-f29",
-      "front": "What does TYPEOF do in SOQL?",
-      "back": "It picks different fields depending on which object a polymorphic lookup like Task.What points to."
+      "front": "What does `TYPEOF` do in SOQL?",
+      "back": "It picks different fields depending on which object a polymorphic lookup like `Task.What` points to."
     },
     {
       "id": "perf-f30",
       "front": "Which formula fields can be indexed?",
-      "back": "Only deterministic ones. No TODAY() or NOW(), no fields from other objects, no TEXT() on a picklist."
+      "back": "Only deterministic ones. No `TODAY()` or `NOW()`, no fields from other objects, no `TEXT()` on a picklist."
     },
     {
       "id": "perf-f31",
@@ -788,7 +788,7 @@
       "id": "perf-q1",
       "lesson": "perf-1",
       "difficulty": 1,
-      "q": "A before-update trigger fires in a synchronous transaction started by a user clicking Save. How many SOQL queries can the whole transaction issue before a LimitException?",
+      "q": "A before-update trigger fires in a synchronous transaction started by a user clicking Save. How many SOQL queries can the whole transaction issue before a `LimitException`?",
       "options": [
         "50",
         "100",
@@ -800,7 +800,7 @@
       ],
       "explain": "A user clicking Save starts a synchronous transaction, and sync Apex gets 100 SOQL queries. Every trigger, flow-called Apex and class in that transaction shares those 100. Think: one wallet for the whole trip.",
       "wrong": [
-        "50 is the cap on @future calls per transaction, not on queries.",
+        "50 is the cap on `@future` calls per transaction, not on queries.",
         "",
         "150 is the DML statement limit, not the query limit.",
         "200 is the async query limit, and this transaction is synchronous."
@@ -811,7 +811,7 @@
       "id": "perf-q2",
       "lesson": "perf-1",
       "difficulty": 2,
-      "q": "A Batch Apex execute() method builds a large in-memory map and fails with a heap error. Per the current Execution Governors and Limits page, what heap limit is it working against?",
+      "q": "A Batch Apex `execute()` method builds a large in-memory map and fails with a heap error. Per the current Execution Governors and Limits page, what heap limit is it working against?",
       "options": [
         "25 MB",
         "10 MB",
@@ -821,7 +821,7 @@
       "answer": [
         0
       ],
-      "explain": "Batch Apex is async, so each execute() gets the async heap of 25 MB. Sync code gets only 10 MB. Older guides say 6 MB / 12 MB; current docs say 10 MB / 25 MB.",
+      "explain": "Batch Apex is async, so each `execute()` gets the async heap of 25 MB. Sync code gets only 10 MB. Older guides say 6 MB / 12 MB; current docs say 10 MB / 25 MB.",
       "wrong": [
         "",
         "10 MB is the sync heap, but Batch Apex runs async.",
@@ -836,18 +836,18 @@
       "difficulty": 2,
       "q": "A shared utility method runs an optional enrichment query. It is called from triggers, batch jobs and LWC controllers. The developer wants it to skip the query when the transaction has no SOQL budget left. What should they do?",
       "options": [
-        "Wrap the query in try/catch and ignore System.LimitException.",
-        "Call OrgLimits.getMap() and skip the query when DailyApiRequests shows no remaining calls.",
+        "Wrap the query in `try/catch` and ignore `System.LimitException`.",
+        "Call `OrgLimits.getMap()` and skip the query when `DailyApiRequests` shows no remaining calls.",
         "Hard-code a counter that stops after 100 queries.",
-        "Check Limits.getQueries() against Limits.getLimitQueries() first."
+        "Check `Limits.getQueries()` against `Limits.getLimitQueries()` first."
       ],
       "answer": [
         3
       ],
       "explain": "Ask the platform what is left instead of guessing. `Limits.getQueries()` is what you used, and `Limits.getLimitQueries()` is the cap for this context (100 sync, 200 async). So the same check works everywhere.",
       "wrong": [
-        "A LimitException can't be caught, so try/catch never runs.",
-        "OrgLimits covers org-wide limits like daily API calls, not this transaction's queries.",
+        "A `LimitException` can't be caught, so `try/catch` never runs.",
+        "`OrgLimits` covers org-wide limits like daily API calls, not this transaction's queries.",
         "A fixed 100 is wrong in async code (200) and ignores queries other code already ran.",
         ""
       ],
@@ -887,9 +887,9 @@
       "code": "trigger ContactTrg on Contact (before insert) {\n    for (Contact c : Trigger.new) {\n        Account a = [SELECT Industry FROM Account WHERE Id = :c.AccountId];\n        c.Description = a.Industry;\n    }\n}",
       "lang": "apex",
       "options": [
-        "Move the lookup into a @future method called once per Contact so each query runs in its own transaction.",
-        "Add LIMIT 1 to the query inside the loop.",
-        "Collect AccountIds in a Set, run one query into a Map<Id, Account>, then loop and read from the map.",
+        "Move the lookup into a `@future` method called once per Contact so each query runs in its own transaction.",
+        "Add `LIMIT 1` to the query inside the loop.",
+        "Collect AccountIds in a Set, run one query into a `Map<Id, Account>`, then loop and read from the map.",
         "Ask the admin to load Contacts in batches of 100."
       ],
       "answer": [
@@ -897,8 +897,8 @@
       ],
       "explain": "Never query inside a loop. Gather the AccountIds, run one query into a `Map<Id, Account>`, then read from the map. That is one query whether 1 or 200 Contacts arrive.",
       "wrong": [
-        "You get only 50 @future calls, and a before trigger's field change would be lost in a future method.",
-        "LIMIT 1 still runs one query per record.",
+        "You get only 50 `@future` calls, and a before trigger's field change would be lost in a future method.",
+        "`LIMIT 1` still runs one query per record.",
         "",
         "Smaller batches hide the bug; the API or UI can still send 200 records."
       ],
@@ -908,7 +908,7 @@
       "id": "perf-q6",
       "lesson": "perf-2",
       "difficulty": 2,
-      "q": "A nightly process reads about 40,000 Case records and its heap usage is near the limit. What does switching to a SOQL for loop that iterates over List<Case> batches achieve?",
+      "q": "A nightly process reads about 40,000 Case records and its heap usage is near the limit. What does switching to a SOQL for loop that iterates over `List<Case>` batches achieve?",
       "options": [
         "It removes the 50,000 query row limit.",
         "It runs the query asynchronously on another thread.",
@@ -918,7 +918,7 @@
       "answer": [
         3
       ],
-      "explain": "A SOQL for loop reads records in chunks of 200, so only one chunk sits in memory. That cuts heap use. It uses queryMore behind the scenes.",
+      "explain": "A SOQL for loop reads records in chunks of 200, so only one chunk sits in memory. That cuts heap use. It uses `queryMore` behind the scenes.",
       "wrong": [
         "Every row still counts toward the 50,000-row limit.",
         "The loop runs in the same transaction, not on another thread.",
@@ -931,12 +931,12 @@
       "id": "perf-q7",
       "lesson": "perf-2",
       "difficulty": 2,
-      "q": "A developer needs fast lookups of Accounts by Id for records in Trigger.new. Which snippet is the most efficient?",
+      "q": "A developer needs fast lookups of Accounts by Id for records in `Trigger.new`. Which snippet is the most efficient?",
       "options": [
-        "Loop through a List<Account> each time a Contact needs its Account.",
-        "Map<Id, Account> m = new Map<Id, Account>([SELECT Id, Name FROM Account WHERE Id IN :ids]);",
-        "Query each Account inside the Contact loop with WHERE Id = :c.AccountId.",
-        "Use Database.query() with a string built inside the loop."
+        "Loop through a `List<Account>` each time a Contact needs its Account.",
+        "`Map<Id, Account> m = new Map<Id, Account>([SELECT Id, Name FROM Account WHERE Id IN :ids]);`",
+        "Query each Account inside the Contact loop with `WHERE Id = :c.AccountId`.",
+        "Use `Database.query()` with a string built inside the loop."
       ],
       "answer": [
         1
@@ -954,15 +954,15 @@
       "id": "perf-q8",
       "lesson": "perf-2",
       "difficulty": 3,
-      "q": "An after-insert trigger on Opportunity recalculates a Total_Won__c field on the parent Account. A 200-record load hits limits. Which two changes improve the code? Choose 2.",
+      "q": "An after-insert trigger on Opportunity recalculates a `Total_Won__c` field on the parent Account. A 200-record load hits limits. Which two changes improve the code? Choose 2.",
       "code": "for (Opportunity o : Trigger.new) {\n    List<Opportunity> opps = [SELECT Amount FROM Opportunity\n        WHERE AccountId = :o.AccountId AND IsWon = true];\n    Decimal total = 0;\n    for (Opportunity x : opps) total += x.Amount;\n    update new Account(Id = o.AccountId, Total_Won__c = total);\n}",
       "lang": "apex",
       "options": [
-        "Call a @future method once per Opportunity so each Account update runs in its own transaction with fresh limits.",
-        "Replace the per-record query with one aggregate query: SUM(Amount) GROUP BY AccountId for all affected AccountIds.",
-        "Use Database.update(acc, false) instead of update.",
-        "Collect Account records in a Map<Id, Account> and issue a single update after the loop.",
-        "Add LIMIT 200 to the inner query."
+        "Call a `@future` method once per Opportunity so each Account update runs in its own transaction with fresh limits.",
+        "Replace the per-record query with one aggregate query: `SUM(Amount) GROUP BY AccountId` for all affected AccountIds.",
+        "Use `Database.update(acc, false)` instead of `update`.",
+        "Collect Account records in a `Map<Id, Account>` and issue a single update after the loop.",
+        "Add `LIMIT 200` to the inner query."
       ],
       "answer": [
         1,
@@ -970,11 +970,11 @@
       ],
       "explain": "Do the math in the database and save once. One aggregate query, `SUM(Amount) GROUP BY AccountId`, replaces up to 200 queries. A Map of Accounts removes duplicates and allows one update.",
       "wrong": [
-        "Up to 200 @future calls blows past the limit of 50 per transaction.",
+        "Up to 200 `@future` calls blows past the limit of 50 per transaction.",
         "",
-        "allOrNone=false changes how errors are handled, not how many DML statements run.",
+        "`allOrNone=false` changes how errors are handled, not how many DML statements run.",
         "",
-        "LIMIT doesn't cut the number of queries and could make totals wrong."
+        "`LIMIT` doesn't cut the number of queries and could make totals wrong."
       ],
       "source": "Apex Developer Guide: Bulk Apex Triggers; Aggregate Functions"
     },
@@ -985,14 +985,14 @@
       "q": "Which field on a custom object is indexed by default, with no help from Support?",
       "options": [
         "A custom Text field",
-        "CreatedDate",
+        "`CreatedDate`",
         "A custom Picklist field",
         "A Long Text Area field"
       ],
       "answer": [
         1
       ],
-      "explain": "Some fields come indexed for free. CreatedDate is one, along with Id, Name, OwnerId, SystemModstamp, RecordTypeId and relationship fields.",
+      "explain": "Some fields come indexed for free. `CreatedDate` is one, along with `Id`, `Name`, `OwnerId`, `SystemModstamp`, `RecordTypeId` and relationship fields.",
       "wrong": [
         "A custom text field is indexed only if marked External ID or Unique, or by Support.",
         "",
@@ -1028,22 +1028,22 @@
       "id": "perf-q11",
       "lesson": "perf-3",
       "difficulty": 2,
-      "q": "An object has 500,000 records. A report query filters on CreatedDate = LAST_N_DAYS:90, which matches 120,000 rows. Is the filter selective?",
+      "q": "An object has 500,000 records. A report query filters on `CreatedDate = LAST_N_DAYS:90`, which matches 120,000 rows. Is the filter selective?",
       "options": [
-        "Yes. CreatedDate has a standard index, and 120,000 is under 30% of 500,000.",
+        "Yes. `CreatedDate` has a standard index, and 120,000 is under 30% of 500,000.",
         "No. Date filters are never selective.",
         "No. 120,000 is above 10% of 500,000 (50,000), the selectivity threshold for this filter.",
-        "Yes, but only if the query has an ORDER BY clause."
+        "Yes, but only if the query has an `ORDER BY` clause."
       ],
       "answer": [
         0
       ],
-      "explain": "CreatedDate has a standard index, and a standard index allows up to 30% of the first 1M rows. For 500,000 rows that is 150,000. The filter matches 120,000, so it is selective.",
+      "explain": "`CreatedDate` has a standard index, and a standard index allows up to 30% of the first 1M rows. For 500,000 rows that is 150,000. The filter matches 120,000, so it is selective.",
       "wrong": [
         "",
         "Indexed date fields can be selective.",
-        "10% is the custom-index threshold, but CreatedDate is a standard index.",
-        "ORDER BY has nothing to do with selectivity."
+        "10% is the custom-index threshold, but `CreatedDate` is a standard index.",
+        "`ORDER BY` has nothing to do with selectivity."
       ],
       "source": "Apex Developer Guide: Working with Very Large SOQL Queries"
     },
@@ -1051,13 +1051,13 @@
       "id": "perf-q12",
       "lesson": "perf-3",
       "difficulty": 3,
-      "q": "A trigger queries Shipment__c (5 million rows) with WHERE Tracking_Code__c = :code. Tracking_Code__c is a plain, non-indexed Text field, and the trigger fails with a non-selective query error. Which two actions can fix it? Choose 2.",
+      "q": "A trigger queries `Shipment__c` (5 million rows) with `WHERE Tracking_Code__c = :code`. `Tracking_Code__c` is a plain, non-indexed Text field, and the trigger fails with a non-selective query error. Which two actions can fix it? Choose 2.",
       "options": [
-        "Add ORDER BY Tracking_Code__c to the query.",
-        "Mark Tracking_Code__c as an External ID so it is indexed.",
-        "Change the filter to LIKE '%' + code.",
-        "Add another selective, indexed filter such as a lookup Id or a narrow CreatedDate range that matches the business rule.",
-        "Rewrite the query as dynamic SOQL with Database.query() so the optimizer builds a fresh plan for each call."
+        "Add `ORDER BY Tracking_Code__c` to the query.",
+        "Mark `Tracking_Code__c` as an External ID so it is indexed.",
+        "Change the filter to `LIKE '%' + code`.",
+        "Add another selective, indexed filter such as a lookup Id or a narrow `CreatedDate` range that matches the business rule.",
+        "Rewrite the query as dynamic SOQL with `Database.query()` so the optimizer builds a fresh plan for each call."
       ],
       "answer": [
         1,
@@ -1100,12 +1100,12 @@
       "id": "perf-q14",
       "lesson": "perf-4",
       "difficulty": 2,
-      "q": "Name is indexed on Account. Which WHERE clause is least able to use that index?",
+      "q": "`Name` is indexed on Account. Which `WHERE` clause is least able to use that index?",
       "options": [
-        "Name = 'Acme Corp'",
-        "Name IN ('Acme', 'Globex')",
-        "Name LIKE '%corp'",
-        "Name LIKE 'Acme%'"
+        "`Name = 'Acme Corp'`",
+        "`Name IN ('Acme', 'Globex')`",
+        "`Name LIKE '%corp'`",
+        "`Name LIKE 'Acme%'`"
       ],
       "answer": [
         2
@@ -1113,7 +1113,7 @@
       "explain": "An index is sorted from the start of the value, like a dictionary. A leading wildcard (`%corp`) gives it no start to look up, so it scans. A trailing wildcard (`Acme%`) can still use the index.",
       "wrong": [
         "Exact equality on an indexed field can use the index.",
-        "IN with a short list can use the index.",
+        "`IN` with a short list can use the index.",
         "",
         "A trailing wildcard still lets the index scan by prefix."
       ],
@@ -1123,11 +1123,11 @@
       "id": "perf-q15",
       "lesson": "perf-4",
       "difficulty": 2,
-      "q": "A query on a 3M-row object filters WHERE Region__c = null. Region__c has a custom index, but the query is slow. What explains it and what helps?",
+      "q": "A query on a 3M-row object filters `WHERE Region__c = null`. `Region__c` has a custom index, but the query is slow. What explains it and what helps?",
       "options": [
         "Custom indexes exclude nulls by default. Ask Support for an index that includes nulls, or store a default value instead.",
         "Null filters are always selective on custom-indexed fields, so the slowness must come from network latency or page rendering.",
-        "Region__c must be converted to a formula field to be indexed.",
+        "`Region__c` must be converted to a formula field to be indexed.",
         "The index only works when the query uses SOSL."
       ],
       "answer": [
@@ -1215,7 +1215,7 @@
       "id": "perf-q19",
       "lesson": "perf-5",
       "difficulty": 3,
-      "q": "A nightly Bulk API job loads 3 million Order__c records that look up to a small set of Account records. Many batches fail with UNABLE_TO_LOCK_ROW. Which two actions reduce the errors? Choose 2.",
+      "q": "A nightly Bulk API job loads 3 million `Order__c` records that look up to a small set of Account records. Many batches fail with `UNABLE_TO_LOCK_ROW`. Which two actions reduce the errors? Choose 2.",
       "options": [
         "Increase the number of parallel batches so the job finishes faster.",
         "Sort the load file by the parent Account Id so each batch touches fewer parents.",
@@ -1264,7 +1264,7 @@
       "id": "perf-q21",
       "lesson": "perf-6",
       "difficulty": 1,
-      "q": "In one transaction, several trigger handlers call SettingsCache.getRates(). What does the pattern below achieve?",
+      "q": "In one transaction, several trigger handlers call `SettingsCache.getRates()`. What does the pattern below achieve?",
       "code": "private static Map<String, Rate__c> rates;\npublic static Map<String, Rate__c> getRates() {\n    if (rates == null) {\n        rates = new Map<String, Rate__c>();\n        for (Rate__c r : [SELECT Name, Value__c FROM Rate__c]) rates.put(r.Name, r);\n    }\n    return rates;\n}",
       "lang": "apex",
       "options": [
@@ -1312,12 +1312,12 @@
       "id": "perf-q23",
       "lesson": "perf-6",
       "difficulty": 2,
-      "q": "A developer reads a value from Platform Cache and immediately uses it. Testing passes, but production sometimes throws a NullPointerException. What is the most likely reason?",
+      "q": "A developer reads a value from Platform Cache and immediately uses it. Testing passes, but production sometimes throws a `NullPointerException`. What is the most likely reason?",
       "code": "Decimal eur = (Decimal) Cache.Org.get('local.Rates.EUR');\nDecimal converted = amount * eur;",
       "lang": "apex",
       "options": [
         "Org cache is only available in asynchronous Apex.",
-        "The key format is invalid; Platform Cache keys must always start with \"c.\" instead of \"local.\" in every org.",
+        "The key format is invalid; Platform Cache keys must always start with `\"c.\"` instead of `\"local.\"` in every org.",
         "Cache values are always returned as strings.",
         "Cached items can expire or be evicted at any time, so the code must handle a null and reload."
       ],
@@ -1327,8 +1327,8 @@
       "explain": "Platform Cache is best effort: items can expire or be pushed out at any time. So always check for null and reload the value. `Cache.CacheBuilder` can do that reload for you.",
       "wrong": [
         "Org cache works in both sync and async Apex.",
-        "Keys use namespace.partition.key, and local is correct for an org with no namespace.",
-        "get() returns the stored Object, which you can cast.",
+        "Keys use `namespace.partition.key`, and `local` is correct for an org with no namespace.",
+        "`get()` returns the stored `Object`, which you can cast.",
         ""
       ],
       "source": "Apex Developer Guide: Platform Cache Best Practices"
@@ -1337,11 +1337,11 @@
       "id": "perf-q24",
       "lesson": "perf-6",
       "difficulty": 3,
-      "q": "A before-update trigger hits \"Apex CPU time limit exceeded\" on bulk updates. The code calls Schema.getGlobalDescribe() inside a loop and uses nested for loops to match Contacts to Accounts. Which two changes most reduce CPU time? Choose 2.",
+      "q": "A before-update trigger hits \"Apex CPU time limit exceeded\" on bulk updates. The code calls `Schema.getGlobalDescribe()` inside a loop and uses nested for loops to match Contacts to Accounts. Which two changes most reduce CPU time? Choose 2.",
       "options": [
-        "Replace the nested loops with a Map<Id, List<Contact>> built in one pass.",
-        "Add System.debug statements to find the slow line in production.",
-        "Get describe information once (for example Contact.SObjectType.getDescribe()) and store it in a static variable.",
+        "Replace the nested loops with a `Map<Id, List<Contact>>` built in one pass.",
+        "Add `System.debug` statements to find the slow line in production.",
+        "Get describe information once (for example `Contact.SObjectType.getDescribe()`) and store it in a static variable.",
         "Move the matching logic into a SOQL query inside the loop, because database time is not counted.",
         "Convert the trigger to an after-update trigger."
       ],
@@ -1363,22 +1363,22 @@
       "id": "perf-q25",
       "lesson": "perf-7",
       "difficulty": 1,
-      "q": "A Lightning web component uses @wire to call an Apex method that returns a list of Accounts. What must the Apex method have?",
+      "q": "A Lightning web component uses `@wire` to call an Apex method that returns a list of Accounts. What must the Apex method have?",
       "options": [
-        "@RemoteAction",
-        "@AuraEnabled only",
-        "@AuraEnabled(cacheable=true)",
-        "@InvocableMethod"
+        "`@RemoteAction`",
+        "`@AuraEnabled` only",
+        "`@AuraEnabled(cacheable=true)`",
+        "`@InvocableMethod`"
       ],
       "answer": [
         2
       ],
-      "explain": "@wire only calls Apex marked safe to cache. That means `@AuraEnabled(cacheable=true)`, which also turns on client-side caching.",
+      "explain": "`@wire` only calls Apex marked safe to cache. That means `@AuraEnabled(cacheable=true)`, which also turns on client-side caching.",
       "wrong": [
-        "@RemoteAction is for Visualforce JavaScript remoting.",
-        "Without cacheable=true, a method can only be called imperatively.",
+        "`@RemoteAction` is for Visualforce JavaScript remoting.",
+        "Without `cacheable=true`, a method can only be called imperatively.",
         "",
-        "@InvocableMethod is for Flow, not for LWC."
+        "`@InvocableMethod` is for Flow, not for LWC."
       ],
       "source": "LWC Developer Guide: Call Apex Methods"
     },
@@ -1386,21 +1386,21 @@
       "id": "perf-q26",
       "lesson": "perf-7",
       "difficulty": 3,
-      "q": "A lightning-datatable must let users scroll through up to 50,000 Case records. Loading all of them at once freezes the page. What is the best approach?",
+      "q": "A `lightning-datatable` must let users scroll through up to 50,000 Case records. Loading all of them at once freezes the page. What is the best approach?",
       "options": [
         "Return all 50,000 rows from a cacheable method so the client caches them.",
-        "Use infinite loading: onloadmore fetches the next 50 rows with keyset paging (WHERE Id > :lastId ORDER BY Id).",
-        "Use SOQL OFFSET in the onloadmore handler to fetch the next 50 rows each time, all the way down to the 50,000th row.",
-        "Render 50,000 rows with a for:each template instead of the datatable."
+        "Use infinite loading: `onloadmore` fetches the next 50 rows with keyset paging (`WHERE Id > :lastId ORDER BY Id`).",
+        "Use SOQL `OFFSET` in the `onloadmore` handler to fetch the next 50 rows each time, all the way down to the 50,000th row.",
+        "Render 50,000 rows with a `for:each` template instead of the datatable."
       ],
       "answer": [
         1
       ],
-      "explain": "Load a small page at a time as the user scrolls. Infinite loading fetches 50 rows on each loadmore. Keyset paging (`WHERE Id > :lastId`) works at any depth, unlike OFFSET.",
+      "explain": "Load a small page at a time as the user scrolls. Infinite loading fetches 50 rows on each `loadmore`. Keyset paging (`WHERE Id > :lastId`) works at any depth, unlike `OFFSET`.",
       "wrong": [
         "50,000 rows still overload the browser and the payload, cached or not.",
         "",
-        "SOQL OFFSET is capped at 2,000 rows.",
+        "SOQL `OFFSET` is capped at 2,000 rows.",
         "Drawing 50,000 rows by hand is even slower."
       ],
       "source": "Lightning Component Library: lightning-datatable; SOQL and SOSL Reference: OFFSET"
@@ -1411,10 +1411,10 @@
       "difficulty": 2,
       "q": "A search box in an LWC calls an Apex search method on every keystroke, causing many server round trips. What should the developer do?",
       "options": [
-        "Mark the Apex method cacheable=false.",
-        "Move the search into renderedCallback().",
-        "Switch the Apex method to @future so the searches run in the background and stop blocking the user's typing.",
-        "Debounce: restart a setTimeout on each keystroke and call Apex only after the user pauses (about 300 ms)."
+        "Mark the Apex method `cacheable=false`.",
+        "Move the search into `renderedCallback()`.",
+        "Switch the Apex method to `@future` so the searches run in the background and stop blocking the user's typing.",
+        "Debounce: restart a `setTimeout` on each keystroke and call Apex only after the user pauses (about 300 ms)."
       ],
       "answer": [
         3
@@ -1422,8 +1422,8 @@
       "explain": "Wait until the user stops typing. Debouncing restarts a short timer on each keystroke and calls Apex only after a pause of about 300 ms. One call replaces many.",
       "wrong": [
         "Turning off caching makes the server load worse.",
-        "renderedCallback runs after every render and can cause loops.",
-        "A @future method can't return data to a component.",
+        "`renderedCallback` runs after every render and can cause loops.",
+        "A `@future` method can't return data to a component.",
         ""
       ],
       "source": "LWC Recipes: Debounce; Trailhead: Performance Troubleshooting in LWC"
@@ -1434,19 +1434,19 @@
       "difficulty": 3,
       "q": "A record page loads slowly. It contains a custom LWC with four tabs, each with a heavy child component, and each child uses its own imperative Apex call to read fields from the current record. Which two changes improve performance? Choose 2.",
       "options": [
-        "Call refreshApex() every few seconds to keep the data fresh.",
-        "Render each tab's heavy child only when that tab is active, using lwc:if.",
-        "Mark the Apex methods cacheable=true and also have them update a \"Last Viewed\" field.",
-        "Load all four children in connectedCallback() so they are ready early.",
-        "Read the current record's fields with Lightning Data Service (getRecord) so components share one cache instead of separate Apex calls."
+        "Call `refreshApex()` every few seconds to keep the data fresh.",
+        "Render each tab's heavy child only when that tab is active, using `lwc:if`.",
+        "Mark the Apex methods `cacheable=true` and also have them update a \"Last Viewed\" field.",
+        "Load all four children in `connectedCallback()` so they are ready early.",
+        "Read the current record's fields with Lightning Data Service (`getRecord`) so components share one cache instead of separate Apex calls."
       ],
       "answer": [
         1,
         4
       ],
-      "explain": "Build only what users see, and share data. `lwc:if` builds a tab's heavy child only when that tab is open. LDS (getRecord) caches the record once for every component.",
+      "explain": "Build only what users see, and share data. `lwc:if` builds a tab's heavy child only when that tab is open. LDS (`getRecord`) caches the record once for every component.",
       "wrong": [
-        "Polling with refreshApex adds server load.",
+        "Polling with `refreshApex` adds server load.",
         "",
         "Cacheable methods can't do DML, so the \"Last Viewed\" update fails.",
         "Loading everything up front is exactly what makes the page slow.",
@@ -1481,11 +1481,11 @@
       "id": "perf-q30",
       "lesson": "perf-8",
       "difficulty": 2,
-      "q": "A Visualforce controller builds a large List<ChartPoint> for a chart. The list is rebuilt on every request anyway, but it makes the view state huge. What should the developer do?",
+      "q": "A Visualforce controller builds a large `List<ChartPoint>` for a chart. The list is rebuilt on every request anyway, but it makes the view state huge. What should the developer do?",
       "options": [
         "Move the list into a controller extension instead of the main controller.",
-        "Move the list into a hidden apex:inputText.",
-        "Declare the list with the transient keyword.",
+        "Move the list into a hidden `apex:inputText`.",
+        "Declare the list with the `transient` keyword.",
         "Ask Salesforce Support to raise the view state limit."
       ],
       "answer": [
@@ -1506,19 +1506,19 @@
       "difficulty": 2,
       "q": "A read-only Visualforce page runs Apex that must loop through about 200,000 rows to compute and show statistics. It never performs DML. Which setting allows the queries to succeed?",
       "options": [
-        "Set readOnly=\"true\" on apex:page to raise the query row limit to 1,000,000.",
-        "Set cache=\"true\" on apex:page.",
-        "Add the transient keyword to the query results.",
-        "Use action=\"{!init}\" on apex:page."
+        "Set `readOnly=\"true\"` on `apex:page` to raise the query row limit to 1,000,000.",
+        "Set `cache=\"true\"` on `apex:page`.",
+        "Add the `transient` keyword to the query results.",
+        "Use `action=\"{!init}\"` on `apex:page`."
       ],
       "answer": [
         0
       ],
-      "explain": "A page that never saves can read much more. `readOnly=\"true\"` on apex:page raises query rows to 1,000,000 and iteration to 10,000 items. The page can't do DML.",
+      "explain": "A page that never saves can read much more. `readOnly=\"true\"` on `apex:page` raises query rows to 1,000,000 and iteration to 10,000 items. The page can't do DML.",
       "wrong": [
         "",
-        "cache=\"true\" controls browser caching, not Apex limits.",
-        "transient shrinks view state but doesn't change row limits.",
+        "`cache=\"true\"` controls browser caching, not Apex limits.",
+        "`transient` shrinks view state but doesn't change row limits.",
         "An action method runs under the same limits."
       ],
       "source": "Visualforce Developer Guide: Working with Large Sets of Data"
@@ -1527,19 +1527,19 @@
       "id": "perf-q32",
       "lesson": "perf-8",
       "difficulty": 3,
-      "q": "A Visualforce page shows 8,000 Leads in one table inside an apex:form and keeps hitting view state errors. Which two changes are the best fixes? Choose 2.",
+      "q": "A Visualforce page shows 8,000 Leads in one table inside an `apex:form` and keeps hitting view state errors. Which two changes are the best fixes? Choose 2.",
       "options": [
         "Ask Support to increase the view state limit for the org.",
-        "Wrap every section of the page in its own apex:form.",
-        "Use a StandardSetController with setPageSize() to show one page of Leads at a time.",
-        "Store the full Lead list in an apex:inputHidden field on the page so the controller doesn't have to re-query it.",
-        "Mark data that doesn't need to survive postbacks as transient and query only the displayed fields."
+        "Wrap every section of the page in its own `apex:form`.",
+        "Use a `StandardSetController` with `setPageSize()` to show one page of Leads at a time.",
+        "Store the full Lead list in an `apex:inputHidden` field on the page so the controller doesn't have to re-query it.",
+        "Mark data that doesn't need to survive postbacks as `transient` and query only the displayed fields."
       ],
       "answer": [
         2,
         4
       ],
-      "explain": "Keep less in view state. A StandardSetController with setPageSize() holds one page of Leads at a time. Transient fields and fewer queried fields shrink what gets saved.",
+      "explain": "Keep less in view state. A `StandardSetController` with `setPageSize()` holds one page of Leads at a time. Transient fields and fewer queried fields shrink what gets saved.",
       "wrong": [
         "The 170 KB limit can't be raised.",
         "Extra forms add view state; best practice is one form.",
@@ -1556,14 +1556,14 @@
       "q": "A global search bar must find a phone fragment typed by the user in Accounts, Contacts and Leads at once. Which tool fits best?",
       "options": [
         "One SOQL query with a relationship subquery",
-        "Three SOQL queries with LIKE '%...%'",
+        "Three SOQL queries with `LIKE '%...%'`",
         "An aggregate SOQL query",
-        "One SOSL FIND query RETURNING Account, Contact, Lead"
+        "One SOSL `FIND` query `RETURNING Account, Contact, Lead`"
       ],
       "answer": [
         3
       ],
-      "explain": "To search text across many objects at once, use SOSL. One FIND query RETURNING Account, Contact, Lead uses the search index.",
+      "explain": "To search text across many objects at once, use SOSL. One `FIND` query `RETURNING Account, Contact, Lead` uses the search index.",
       "wrong": [
         "A SOQL subquery follows relationships and can't search unrelated objects together.",
         "Leading wildcards can't use indexes, and this costs three queries.",
@@ -1578,10 +1578,10 @@
       "difficulty": 2,
       "q": "A page shows total won Amount per Account. The current Apex queries 40,000 Opportunities and sums them in a loop, which is slow and uses lots of heap. What is the best improvement?",
       "options": [
-        "Use SELECT AccountId, SUM(Amount) FROM Opportunity WHERE IsWon = true GROUP BY AccountId.",
+        "Use `SELECT AccountId, SUM(Amount) FROM Opportunity WHERE IsWon = true GROUP BY AccountId`.",
         "Query the Opportunities in a SOQL for loop and keep summing in Apex.",
         "Use SOSL to find won Opportunities.",
-        "Run the same loop in a @future method and return the totals to the page."
+        "Run the same loop in a `@future` method and return the totals to the page."
       ],
       "answer": [
         0
@@ -1591,7 +1591,7 @@
         "",
         "A SOQL for loop saves heap, but Apex still does all the adding.",
         "SOSL is for text search, not totals.",
-        "A @future method can't return values to the page."
+        "A `@future` method can't return values to the page."
       ],
       "source": "SOQL and SOSL Reference: Aggregate Functions"
     },
@@ -1599,22 +1599,22 @@
       "id": "perf-q35",
       "lesson": "perf-9",
       "difficulty": 2,
-      "q": "A developer needs Task records with the Phone of the related Account when What is an Account, and the Amount when What is an Opportunity, in one query. What should they use?",
+      "q": "A developer needs Task records with the `Phone` of the related Account when `What` is an Account, and the `Amount` when `What` is an Opportunity, in one query. What should they use?",
       "options": [
-        "Two queries: one filtered on What.Type = 'Account' and one on What.Type = 'Opportunity'.",
-        "A TYPEOF What WHEN Account THEN Phone WHEN Opportunity THEN Amount END clause.",
-        "What.Phone and What.Amount directly in the SELECT list.",
-        "A GROUP BY What.Type clause."
+        "Two queries: one filtered on `What.Type = 'Account'` and one on `What.Type = 'Opportunity'`.",
+        "A `TYPEOF What WHEN Account THEN Phone WHEN Opportunity THEN Amount END` clause.",
+        "`What.Phone` and `What.Amount` directly in the `SELECT` list.",
+        "A `GROUP BY What.Type` clause."
       ],
       "answer": [
         1
       ],
-      "explain": "A polymorphic lookup like What can point to different objects. TYPEOF picks fields per object type in one query: Phone for Account, Amount for Opportunity.",
+      "explain": "A polymorphic lookup like `What` can point to different objects. `TYPEOF` picks fields per object type in one query: `Phone` for Account, `Amount` for Opportunity.",
       "wrong": [
-        "This works, but it spends two queries when one TYPEOF query does the job.",
+        "This works, but it spends two queries when one `TYPEOF` query does the job.",
         "",
-        "What only exposes fields common to all its targets, like Name, not Phone or Amount.",
-        "GROUP BY doesn't fetch type-specific fields, and TYPEOF can't be used with it."
+        "`What` only exposes fields common to all its targets, like `Name`, not `Phone` or `Amount`.",
+        "`GROUP BY` doesn't fetch type-specific fields, and `TYPEOF` can't be used with it."
       ],
       "source": "SOQL and SOSL Reference: TYPEOF"
     },
@@ -1626,15 +1626,15 @@
       "options": [
         "Ask Salesforce Support to raise the synchronous CPU limit.",
         "Move the trigger logic into a before-update trigger.",
-        "Enqueue a Queueable class that implements Database.AllowsCallouts to do the callout.",
-        "Make the callout directly in the trigger and catch CalloutException.",
+        "Enqueue a Queueable class that implements `Database.AllowsCallouts` to do the callout.",
+        "Make the callout directly in the trigger and catch `CalloutException`.",
         "Publish a platform event and do the recalculation in a platform event trigger, which runs in its own transaction."
       ],
       "answer": [
         2,
         4
       ],
-      "explain": "Move slow work out of the user's save. A Queueable with Database.AllowsCallouts runs later and can call out. A platform event trigger runs the recalculation in its own transaction.",
+      "explain": "Move slow work out of the user's save. A Queueable with `Database.AllowsCallouts` runs later and can call out. A platform event trigger runs the recalculation in its own transaction.",
       "wrong": [
         "Support can't raise governor limits.",
         "A before trigger runs in the same transaction and can't call out either.",
@@ -1654,10 +1654,10 @@
       "lang": "apex",
       "options": [
         "Change the timeout to 180 seconds so slow carrier responses are not cut off.",
-        "Make handleTracking an instance method in a separate CarrierCallbacks class.",
-        "Add continuation=true to the @AuraEnabled annotation on startTracking.",
+        "Make `handleTracking` an instance method in a separate `CarrierCallbacks` class.",
+        "Add `continuation=true` to the `@AuraEnabled` annotation on `startTracking`.",
         "Add a Remote Site Setting for the carrier, because named credentials are not supported in continuations.",
-        "Import the method from @salesforce/apexContinuation/ShipmentController.startTracking."
+        "Import the method from `@salesforce/apexContinuation/ShipmentController.startTracking`."
       ],
       "answer": [
         2,
@@ -1682,8 +1682,8 @@
       "code": "@AuraEnabled(continuation=true)\npublic static Object checkWarranty(String serial) {\n    insert new Callout_Log__c(Serial__c = serial);\n    Continuation con = new Continuation(40);\n    con.continuationMethod = 'processWarranty';\n    HttpRequest req = new HttpRequest();\n    req.setEndpoint('callout:Warranty/check/' + serial);\n    con.addHttpRequest(req);\n    return con;\n}",
       "lang": "apex",
       "options": [
-        "The insert leaves uncommitted work before the callout; wrap it in a Savepoint and roll back before returning con.",
-        "DML in a method that returns a Continuation stops it and rolls back; move the insert into processWarranty.",
+        "The insert leaves uncommitted work before the callout; wrap it in a `Savepoint` and roll back before returning `con`.",
+        "DML in a method that returns a Continuation stops it and rolls back; move the insert into `processWarranty`.",
         "Continuation methods run in a read-only context; publish a platform event instead of inserting.",
         "The insert counts against the three-callout limit of the continuation; reduce the requests to two."
       ],
@@ -1695,7 +1695,7 @@
         "A rollback throws the log away and still runs DML in the continuation method.",
         "",
         "The documented rule is only \"no DML in the method that returns the Continuation\", and the callback can save.",
-        "DML doesn't count toward callouts; the limit of three is about HttpRequest objects."
+        "DML doesn't count toward callouts; the limit of three is about `HttpRequest` objects."
       ],
       "source": "LWC Developer Guide: Continuation Limits"
     },
@@ -1709,17 +1709,17 @@
       "lang": "apex",
       "options": [
         "Raise the continuation timeout to 120 seconds so the controller can be serialized in time.",
-        "Move the callout into a @future(callout=true) method so the controller is never serialized and the page isn't blocked.",
+        "Move the callout into a `@future(callout=true)` method so the controller is never serialized and the page isn't blocked.",
         "Split the callout into three parallel requests so each serialized state is smaller.",
-        "Mark history transient and rebuild it when needed; the controller is serialized for the continuation (80 KB limit)."
+        "Mark `history` `transient` and rebuild it when needed; the controller is serialized for the continuation (80 KB limit)."
       ],
       "answer": [
         3
       ],
-      "explain": "When a continuation runs, the controller is saved, and that controller state can be at most 80 KB. That is separate from the 170 KB view state. Marking the big list transient keeps it out.",
+      "explain": "When a continuation runs, the controller is saved, and that controller state can be at most 80 KB. That is separate from the 170 KB view state. Marking the big list `transient` keeps it out.",
       "wrong": [
         "The timeout limits how long the callout runs, not how big the saved controller is.",
-        "A @future method can't send a result back to the waiting page.",
+        "A `@future` method can't send a result back to the waiting page.",
         "All requests share one saved controller, so more requests don't shrink it.",
         ""
       ],
@@ -1757,24 +1757,24 @@
       "lesson": "perf-8",
       "difficulty": 3,
       "pack": "hard",
-      "q": "A developer writes a test for a Visualforce controller that uses a Continuation (the controller stores the label returned by addHttpRequest in requestLabel). The test sets an HttpCalloutMock, calls startRequest(), and asserts that controller.result is set, but result is always null. Which change makes the test exercise the callback with a mock response?",
+      "q": "A developer writes a test for a Visualforce controller that uses a Continuation (the controller stores the label returned by `addHttpRequest` in `requestLabel`). The test sets an `HttpCalloutMock`, calls `startRequest()`, and asserts that `controller.result` is set, but `result` is always null. Which change makes the test exercise the callback with a mock response?",
       "code": "@IsTest\nstatic void returnsWarranty() {\n    Test.setMock(HttpCalloutMock.class, new WarrantyMock());\n    WarrantyController ctrl = new WarrantyController();\n    Continuation con = (Continuation) ctrl.startRequest();\n    Assert.areEqual('Valid', ctrl.result);\n}",
       "lang": "apex",
       "options": [
-        "Wrap startRequest() in Test.startTest() and Test.stopTest() so the queued asynchronous callout and callback finish before the assert.",
-        "Call ctrl.processResponse() directly after startRequest(), because the mock already stored the response.",
-        "Set a mock with Test.setContinuationResponse(ctrl.requestLabel, res), then call Test.invokeContinuationMethod(ctrl, con).",
-        "Replace HttpCalloutMock with WebServiceMock, because continuations are processed as SOAP calls."
+        "Wrap `startRequest()` in `Test.startTest()` and `Test.stopTest()` so the queued asynchronous callout and callback finish before the assert.",
+        "Call `ctrl.processResponse()` directly after `startRequest()`, because the mock already stored the response.",
+        "Set a mock with `Test.setContinuationResponse(ctrl.requestLabel, res)`, then call `Test.invokeContinuationMethod(ctrl, con)`.",
+        "Replace `HttpCalloutMock` with `WebServiceMock`, because continuations are processed as SOAP calls."
       ],
       "answer": [
         2
       ],
       "explain": "Normal callout mocks never run a continuation callback. `Test.setContinuationResponse()` sets the fake response for a request label. `Test.invokeContinuationMethod()` then runs the callback.",
       "wrong": [
-        "stopTest() runs queued async Apex, but not a continuation callback.",
-        "Without Test.setContinuationResponse, Continuation.getResponse() has nothing to return.",
+        "`stopTest()` runs queued async Apex, but not a continuation callback.",
+        "Without `Test.setContinuationResponse`, `Continuation.getResponse()` has nothing to return.",
         "",
-        "These are HTTP calls, not SOAP, and setMock doesn't drive the callback either way."
+        "These are HTTP calls, not SOAP, and `setMock` doesn't drive the callback either way."
       ],
       "source": "Apex Developer Guide: Testing Asynchronous Callouts"
     },
@@ -1783,23 +1783,23 @@
       "lesson": "perf-9",
       "difficulty": 3,
       "pack": "hard",
-      "q": "A product page LWC uses @wire to call a continuation that fetches live pricing. The org has 600,000 products and the pricing service is slow. The Apex below compiles, but at runtime the wire returns an error. What is the cause?",
+      "q": "A product page LWC uses `@wire` to call a continuation that fetches live pricing. The org has 600,000 products and the pricing service is slow. The Apex below compiles, but at runtime the wire returns an error. What is the cause?",
       "code": "@AuraEnabled(continuation=true cacheable=true)\npublic static Object startPricing(String sku) {\n    Continuation con = new Continuation(30);\n    con.continuationMethod = 'processPricing';\n    con.state = sku;\n    HttpRequest req = new HttpRequest();\n    req.setEndpoint('callout:Pricing/sku/' + sku);\n    con.addHttpRequest(req);\n    return con;\n}\n\n@AuraEnabled\npublic static Object processPricing(List<String> labels, Object state) {\n    HttpResponse res = Continuation.getResponse(labels[0]);\n    return res.getBody();\n}",
       "lang": "apex",
       "options": [
-        "The space between continuation=true and cacheable=true must be a comma.",
-        "The callback must not be static when it is used from an LWC; make processPricing an instance method instead.",
-        "con.state can hold only a Map<String, Object>, not a String.",
-        "The callback lacks cacheable=true; if the continuation method is cacheable, the callback must be too."
+        "The space between `continuation=true` and `cacheable=true` must be a comma.",
+        "The callback must not be `static` when it is used from an LWC; make `processPricing` an instance method instead.",
+        "`con.state` can hold only a `Map<String, Object>`, not a `String`.",
+        "The callback lacks `cacheable=true`; if the continuation method is cacheable, the callback must be too."
       ],
       "answer": [
         3
       ],
-      "explain": "A cacheable chain must be cacheable all the way. If the method returning the Continuation is cacheable=true, the callback must be too. Otherwise it throws an exception, and @wire fails.",
+      "explain": "A cacheable chain must be cacheable all the way. If the method returning the Continuation is `cacheable=true`, the callback must be too. Otherwise it throws an exception, and `@wire` fails.",
       "wrong": [
         "The documented syntax uses a space, not a comma, between the two settings.",
-        "LWC continuation examples use a static callback with (List<String> labels, Object state).",
-        "state is an Object, so a String works fine.",
+        "LWC continuation examples use a `static` callback with `(List<String> labels, Object state)`.",
+        "`state` is an `Object`, so a `String` works fine.",
         ""
       ],
       "source": "LWC Developer Guide: @AuraEnabled Annotations for Continuations"
@@ -1809,24 +1809,24 @@
       "lesson": "perf-2",
       "difficulty": 3,
       "pack": "hard",
-      "q": "A team builds a shared trigger framework so every object handler reuses the same dispatch logic. A developer writes LeadHandler, but the class fails to save. Which change fixes it while keeping the framework reusable?",
+      "q": "A team builds a shared trigger framework so every object handler reuses the same dispatch logic. A developer writes `LeadHandler`, but the class fails to save. Which change fixes it while keeping the framework reusable?",
       "code": "public virtual class TriggerHandler {\n    public void run() {\n        if (Trigger.isBefore && Trigger.isInsert) beforeInsert(Trigger.new);\n    }\n    protected virtual void beforeInsert(List<SObject> recs) {}\n}\n\npublic class LeadHandler extends TriggerHandler {\n    protected void beforeInsert(List<SObject> recs) {\n        for (Lead l : (List<Lead>) recs) l.Rating = 'Warm';\n    }\n}",
       "lang": "apex",
       "options": [
-        "Add the override keyword: protected override void beforeInsert(List<SObject> recs).",
-        "Declare LeadHandler as virtual so it may redefine methods from its parent.",
-        "Change TriggerHandler to an interface so LeadHandler can implement beforeInsert.",
-        "Mark beforeInsert as static in both classes so the trigger can call it without an instance."
+        "Add the `override` keyword: `protected override void beforeInsert(List<SObject> recs)`.",
+        "Declare `LeadHandler` as `virtual` so it may redefine methods from its parent.",
+        "Change `TriggerHandler` to an interface so `LeadHandler` can implement `beforeInsert`.",
+        "Mark `beforeInsert` as `static` in both classes so the trigger can call it without an instance."
       ],
       "answer": [
         0
       ],
-      "explain": "Redefining a parent's virtual method needs the `override` keyword. Then the base class run() calls LeadHandler's version, so the dispatch code stays shared.",
+      "explain": "Redefining a parent's `virtual` method needs the `override` keyword. Then the base class `run()` calls `LeadHandler`'s version, so the dispatch code stays shared.",
       "wrong": [
         "",
-        "Making the child virtual only lets others extend it; the method still needs override.",
-        "An interface can't hold the shared run() code, so every handler would copy it.",
-        "Static methods aren't overridden, so run() would never call the Lead logic."
+        "Making the child `virtual` only lets others extend it; the method still needs `override`.",
+        "An interface can't hold the shared `run()` code, so every handler would copy it.",
+        "Static methods aren't overridden, so `run()` would never call the Lead logic."
       ],
       "source": "Apex Developer Guide: Extending a Class; Apex Class Definition"
     },
@@ -1838,10 +1838,10 @@
       "q": "A retailer calculates discounts differently for Web, Store and Partner orders, and marketing adds a new channel every quarter. Today the logic is a 400-line if/else block copied into three classes. The team wants to add a channel without editing or redeploying the calling code. Which two design choices support this? Choose 2.",
       "options": [
         "Move the if/else block into one static utility method and call it from all three classes, so the logic lives in one place.",
-        "Define a DiscountCalculator interface with a calculate(Order__c o) method and one implementing class per channel.",
+        "Define a `DiscountCalculator` interface with a `calculate(Order__c o)` method and one implementing class per channel.",
         "Copy the logic into a trigger on each channel's record type so each team owns its copy.",
-        "Store the implementing class name per channel in custom metadata and create it with Type.forName(name).newInstance().",
-        "Declare every channel class global so any code in the org can call it directly."
+        "Store the implementing class name per channel in custom metadata and create it with `Type.forName(name).newInstance()`.",
+        "Declare every channel class `global` so any code in the org can call it directly."
       ],
       "answer": [
         1,
@@ -1853,7 +1853,7 @@
         "",
         "Copying logic per trigger adds duplication and makes every change harder.",
         "",
-        "global only widens visibility; callers still need code changes for each new class."
+        "`global` only widens visibility; callers still need code changes for each new class."
       ],
       "source": "Apex Developer Guide: Interfaces; Apex Reference Guide: Type Class"
     },
@@ -1862,24 +1862,24 @@
       "lesson": "perf-2",
       "difficulty": 2,
       "pack": "hard",
-      "q": "To keep a pricing feature in one file, a developer nests helper classes inside a PricingService class. The class won't compile. Which line causes the error?",
+      "q": "To keep a pricing feature in one file, a developer nests helper classes inside a `PricingService` class. The class won't compile. Which line causes the error?",
       "code": "public with sharing class PricingService {          // line 1\n    public class Quote {                             // line 2\n        public Decimal total;                        // line 3\n        public class LineItem {                      // line 4\n            public Decimal price;                    // line 5\n        }\n    }\n    private class Discount { Decimal pct; }          // line 8\n}",
       "lang": "apex",
       "options": [
-        "Line 2, because an inner class must declare with sharing or without sharing.",
-        "Line 8, because an inner class can't be private.",
+        "Line 2, because an inner class must declare `with sharing` or `without sharing`.",
+        "Line 8, because an inner class can't be `private`.",
         "Line 4, because Apex allows inner classes only one level deep.",
         "Line 3, because inner classes can't declare instance fields."
       ],
       "answer": [
         2
       ],
-      "explain": "Apex allows inner classes only one level deep. LineItem sits inside Quote, which is already inner, so line 4 fails. Make LineItem a sibling inner class or a top-level class.",
+      "explain": "Apex allows inner classes only one level deep. `LineItem` sits inside `Quote`, which is already inner, so line 4 fails. Make `LineItem` a sibling inner class or a top-level class.",
       "wrong": [
         "Sharing keywords are optional on inner classes.",
         "Private is the default for inner classes and is allowed.",
         "",
-        "Inner classes can have instance fields, so Quote.total is fine."
+        "Inner classes can have instance fields, so `Quote.total` is fine."
       ],
       "source": "Apex Developer Guide: Apex Class Definition"
     },
@@ -1890,18 +1890,18 @@
       "pack": "hard",
       "q": "The same Account query, with slightly different field lists, appears in 14 classes. When a new field was added to a page, three classes threw \"SObject row was retrieved via SOQL without querying the requested field\". The team wants one place to own Account queries and keep business rules out of controllers. What is the best design?",
       "options": [
-        "Create an AccountsSelector class (e.g. selectByIds(Set<Id>)) that owns the field list, called from a service layer.",
-        "Query Account with FIELDS(ALL) everywhere so no field is ever missing.",
-        "Store the query string in a custom label and run it with Database.query() in each class, so editing the label fixes all 14.",
+        "Create an `AccountsSelector` class (e.g. `selectByIds(Set<Id>)`) that owns the field list, called from a service layer.",
+        "Query Account with `FIELDS(ALL)` everywhere so no field is ever missing.",
+        "Store the query string in a custom label and run it with `Database.query()` in each class, so editing the label fixes all 14.",
         "Add every Account field to each query and cache the results in a static variable in every class."
       ],
       "answer": [
         0
       ],
-      "explain": "Give queries one owner. An AccountsSelector class holds the field list, so every caller gets the same fields and changes happen once. A service layer on top keeps business rules out of controllers.",
+      "explain": "Give queries one owner. An `AccountsSelector` class holds the field list, so every caller gets the same fields and changes happen once. A service layer on top keeps business rules out of controllers.",
       "wrong": [
         "",
-        "FIELDS(ALL) is limited to 200 rows and pulls far more data than needed.",
+        "`FIELDS(ALL)` is limited to 200 rows and pulls far more data than needed.",
         "Each class still runs its own query, and dynamic SOQL from a label is harder to test and secure.",
         "Querying every field wastes heap and rows, and per-class caches still duplicate the logic."
       ],
@@ -1912,24 +1912,24 @@
       "lesson": "perf-7",
       "difficulty": 3,
       "pack": "hard",
-      "q": "A team creates a service component c/dateUtils (JavaScript only, no template) to share date formatting across 20 LWCs. The first component that uses it fails: formatDue is not available where taskList calls it. Which change fixes it?",
+      "q": "A team creates a service component `c/dateUtils` (JavaScript only, no template) to share date formatting across 20 LWCs. The first component that uses it fails: `formatDue` is not available where `taskList` calls it. Which change fixes it?",
       "code": "// dateUtils/dateUtils.js\nexport function formatDue(dateValue) {\n    return new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric' })\n        .format(new Date(dateValue));\n}\n\n// taskList/taskList.js\nimport { LightningElement, api } from 'lwc';\nimport formatDue from 'c/dateUtils';\n\nexport default class TaskList extends LightningElement {\n    @api tasks;\n    get rows() {\n        return this.tasks.map(t => ({ ...t, due: formatDue(t.ActivityDate) }));\n    }\n}",
       "lang": "js",
       "options": [
-        "Add a dateUtils.html file, because every LWC module needs a template.",
-        "Change the import to a named import: import { formatDue } from 'c/dateUtils';",
-        "Decorate formatDue with @api so other components can call it.",
-        "Set isExposed to true in dateUtils.js-meta.xml so other components can import it."
+        "Add a `dateUtils.html` file, because every LWC module needs a template.",
+        "Change the import to a named import: `import { formatDue } from 'c/dateUtils';`",
+        "Decorate `formatDue` with `@api` so other components can call it.",
+        "Set `isExposed` to `true` in `dateUtils.js-meta.xml` so other components can import it."
       ],
       "answer": [
         1
       ],
-      "explain": "How you export decides how you import. dateUtils uses a named export, so you need braces: `import { formatDue } from 'c/dateUtils'`. Without braces, it looks for a default export that doesn't exist.",
+      "explain": "How you export decides how you import. `dateUtils` uses a named export, so you need braces: `import { formatDue } from 'c/dateUtils'`. Without braces, it looks for a default export that doesn't exist.",
       "wrong": [
         "A JavaScript-only service component doesn't need a template.",
         "",
-        "@api is for a component's public properties and methods, not exported functions.",
-        "isExposed is about App Builder targets, not about which LWCs can import it."
+        "`@api` is for a component's public properties and methods, not exported functions.",
+        "`isExposed` is about App Builder targets, not about which LWCs can import it."
       ],
       "source": "LWC Developer Guide: Share JavaScript Code"
     },
@@ -1942,20 +1942,20 @@
       "code": "<!-- c:basePage -->\n<aura:component extensible=\"true\">\n    <aura:attribute name=\"title\" type=\"String\"/>\n    <h1>{!v.title}</h1>\n    <lightning:spinner aura:id=\"spin\" class=\"slds-hide\"/>\n</aura:component>\n\n<!-- c:orderPage -->\n<aura:component extends=\"c:basePage\">\n    <aura:set attribute=\"title\" value=\"Orders\"/>\n    <c:orderTable/>\n</aura:component>",
       "lang": "html",
       "options": [
-        "Add abstract=\"true\" to c:basePage so sub components can add markup.",
-        "Move <c:orderTable/> inside <aura:set attribute=\"title\">.",
-        "Add {!v.body} to the markup of c:basePage where the sub component's content should render.",
-        "Add implements=\"c:basePage\" to c:orderPage instead of extends."
+        "Add `abstract=\"true\"` to `c:basePage` so sub components can add markup.",
+        "Move `<c:orderTable/>` inside `<aura:set attribute=\"title\">`.",
+        "Add `{!v.body}` to the markup of `c:basePage` where the sub component's content should render.",
+        "Add `implements=\"c:basePage\"` to `c:orderPage` instead of `extends`."
       ],
       "answer": [
         2
       ],
       "explain": "In Aura, a sub component's loose markup becomes its body and is handed to the super component. The super shows it only where it includes `{!v.body}`.",
       "wrong": [
-        "abstract only stops direct use of the base; the body still needs {!v.body}.",
-        "title is a String, so a component inside it won't render as body.",
+        "`abstract` only stops direct use of the base; the body still needs `{!v.body}`.",
+        "`title` is a `String`, so a component inside it won't render as body.",
         "",
-        "implements is for interfaces; you reuse a component with extends."
+        "`implements` is for interfaces; you reuse a component with `extends`."
       ],
       "source": "Lightning Aura Components Developer Guide: Inherited Component Attributes"
     },
@@ -1980,7 +1980,7 @@
       "wrong": [
         "Aura interfaces hold only attributes, events and methods; no controllers or markup.",
         "An Aura interface can extend several interfaces in a comma-separated list.",
-        "A sub component uses <aura:set> to set values it inherits.",
+        "A sub component uses `<aura:set>` to set values it inherits.",
         "",
         ""
       ],
@@ -1991,14 +1991,14 @@
       "lesson": "perf-1",
       "difficulty": 3,
       "pack": "hard",
-      "q": "An integration inserts 150 Contacts in one API call. 80 of them belong to Accounts in the Banking industry, and every mailing state has a Territory__c record. No other automation runs on Contact. How many SOQL queries does this trigger use, and does the load succeed?",
+      "q": "An integration inserts 150 Contacts in one API call. 80 of them belong to Accounts in the Banking industry, and every mailing state has a `Territory__c` record. No other automation runs on Contact. How many SOQL queries does this trigger use, and does the load succeed?",
       "code": "trigger ContactRegion on Contact (before insert) {\n    Set<Id> accIds = new Set<Id>();\n    for (Contact c : Trigger.new) accIds.add(c.AccountId);\n    Map<Id, Account> accs = new Map<Id, Account>(\n        [SELECT Id, Industry FROM Account WHERE Id IN :accIds]);\n\n    for (Contact c : Trigger.new) {\n        Account a = accs.get(c.AccountId);\n        if (a != null && a.Industry == 'Banking') {\n            c.Region__c = [SELECT Region__c FROM Territory__c\n                           WHERE Name = :c.MailingState LIMIT 1].Region__c;\n        }\n    }\n}",
       "lang": "apex",
       "options": [
         "2 queries; it succeeds because the Territory query runs once per transaction.",
         "151 queries; it fails with \"Too many SOQL queries: 101\".",
         "81 queries; it succeeds, but a load with more than 99 Banking Contacts would fail.",
-        "1 query; inline queries in a loop over Trigger.new are batched by the platform."
+        "1 query; inline queries in a loop over `Trigger.new` are batched by the platform."
       ],
       "answer": [
         2
@@ -2059,7 +2059,7 @@
       "wrong": [
         "",
         "Each parent-child subquery counts as one extra query toward a separate, higher limit, not one per parent row.",
-        "There is no 2,000-child cap on subqueries in Apex; 2,000 is the SOSL row limit and OFFSET max.",
+        "There is no 2,000-child cap on subqueries in Apex; 2,000 is the SOSL row limit and `OFFSET` max.",
         "No rule limits subqueries to 200 parent records."
       ],
       "source": "Apex Developer Guide: Execution Governors and Limits"
@@ -2083,7 +2083,7 @@
       ],
       "explain": "A savepoint counts as a DML statement too. So `setSavepoint()`, two inserts and one update make 4. Inserting a list of 120 Contacts is one statement that adds 120 DML rows.",
       "wrong": [
-        "This misses that Database.setSavepoint() counts as a DML statement.",
+        "This misses that `Database.setSavepoint()` counts as a DML statement.",
         "",
         "A list insert is one DML statement, however many records it holds.",
         "A list insert counts once; rows are tracked by the separate 10,000-row limit."
@@ -2099,18 +2099,18 @@
       "code": "List<Contact> existing = [SELECT Id, Email FROM Contact\n                          WHERE Email IN :emails];\nfor (Lead l : Trigger.new) {\n    for (Contact c : existing) {\n        if (c.Email == l.Email) {\n            l.Possible_Duplicate__c = c.Id;\n        }\n    }\n}",
       "lang": "apex",
       "options": [
-        "Move the nested loops into a @future method so they run with the 60,000 ms asynchronous CPU limit instead of 10,000.",
+        "Move the nested loops into a `@future` method so they run with the 60,000 ms asynchronous CPU limit instead of 10,000.",
         "Add a break after a match so the inner loop stops early.",
-        "Run a separate query per Lead with WHERE Email = :l.Email LIMIT 1 instead of looping.",
-        "Build a Map<String, Id> of email to Contact Id once, then set each Lead's field with byEmail.get(l.Email)."
+        "Run a separate query per Lead with `WHERE Email = :l.Email LIMIT 1` instead of looping.",
+        "Build a `Map<String, Id>` of email to Contact Id once, then set each Lead's field with `byEmail.get(l.Email)`."
       ],
       "answer": [
         3
       ],
       "explain": "Nested loops do up to 200 x 9,000 comparisons. A map of email to Contact Id makes each lookup a single step. So CPU grows with the record count, not with records times records.",
       "wrong": [
-        "A before trigger must set fields now; a future method can't change Trigger.new.",
-        "break helps only after a match, and the worst case still scans the whole list.",
+        "A before trigger must set fields now; a future method can't change `Trigger.new`.",
+        "`break` helps only after a match, and the worst case still scans the whole list.",
         "One query per Lead hits the 100-query limit in a 200-record load.",
         ""
       ],
@@ -2121,15 +2121,15 @@
       "lesson": "perf-2",
       "difficulty": 3,
       "pack": "hard",
-      "q": "An after-update trigger on Opportunity sets Last_Win__c on the parent Account when an Opportunity is Closed Won. A nightly job closes 200 Opportunities that belong to about 40 Accounts, and it fails. Which two changes produce a correct, bulkified trigger? Choose 2.",
+      "q": "An after-update trigger on Opportunity sets `Last_Win__c` on the parent Account when an Opportunity is Closed Won. A nightly job closes 200 Opportunities that belong to about 40 Accounts, and it fails. Which two changes produce a correct, bulkified trigger? Choose 2.",
       "code": "for (Opportunity o : Trigger.new) {\n    if (o.StageName == 'Closed Won') {\n        Account a = [SELECT Id FROM Account WHERE Id = :o.AccountId];\n        a.Last_Win__c = o.CloseDate;\n        update a;\n    }\n}",
       "lang": "apex",
       "options": [
-        "Add each Account to a List<Account> inside the loop and run a single update on that list after the loop finishes.",
-        "Drop the query and build new Account(Id = o.AccountId, Last_Win__c = o.CloseDate), since the Id is on each Opportunity.",
-        "Wrap the update in Database.update(a, false) so failed records are skipped.",
-        "Move the loop body into a @future method called once per Opportunity.",
-        "Put the Accounts in a Map<Id, Account> keyed by Account Id and run one update on map.values() after the loop."
+        "Add each Account to a `List<Account>` inside the loop and run a single update on that list after the loop finishes.",
+        "Drop the query and build `new Account(Id = o.AccountId, Last_Win__c = o.CloseDate)`, since the Id is on each Opportunity.",
+        "Wrap the update in `Database.update(a, false)` so failed records are skipped.",
+        "Move the loop body into a `@future` method called once per Opportunity.",
+        "Put the Accounts in a `Map<Id, Account>` keyed by Account Id and run one update on `map.values()` after the loop."
       ],
       "answer": [
         1,
@@ -2140,7 +2140,7 @@
         "Several Opportunities share an Account, so a List would hold the same Id twice and the update fails.",
         "",
         "Partial success doesn't remove the query and DML inside the loop.",
-        "Up to 200 @future calls blows past the limit of 50 per transaction.",
+        "Up to 200 `@future` calls blows past the limit of 50 per transaction.",
         ""
       ],
       "source": "Apex Developer Guide: Bulk Apex Triggers; Maps of sObjects"
@@ -2150,7 +2150,7 @@
       "lesson": "perf-3",
       "difficulty": 3,
       "pack": "hard",
-      "q": "A Policy__c object has 3,000,000 records. Support created a custom index on Agency_Code__c. A trigger runs a query filtered only on Agency_Code__c, and for the busiest agency the filter matches 180,000 records. How does the optimizer treat this filter?",
+      "q": "A `Policy__c` object has 3,000,000 records. Support created a custom index on `Agency_Code__c`. A trigger runs a query filtered only on `Agency_Code__c`, and for the busiest agency the filter matches 180,000 records. How does the optimizer treat this filter?",
       "code": "SELECT Id, Premium__c\nFROM Policy__c\nWHERE Agency_Code__c = :agencyCode",
       "lang": "soql",
       "options": [
@@ -2176,27 +2176,27 @@
       "lesson": "perf-3",
       "difficulty": 3,
       "pack": "hard",
-      "q": "A query on Claim__c (4 million rows) is slow and fails in a trigger. Status__c has a custom index; Adjuster_Region__c is a plain Text field. Each filter alone matches about 2% of rows. Which two changes let the optimizer use indexes? Choose 2.",
+      "q": "A query on `Claim__c` (4 million rows) is slow and fails in a trigger. `Status__c` has a custom index; `Adjuster_Region__c` is a plain Text field. Each filter alone matches about 2% of rows. Which two changes let the optimizer use indexes? Choose 2.",
       "code": "SELECT Id, Amount__c\nFROM Claim__c\nWHERE Status__c = 'Escalated'\n   OR Adjuster_Region__c = 'North'",
       "lang": "soql",
       "options": [
-        "Swap the order of the two OR conditions so the indexed field is evaluated first.",
-        "Ask Salesforce Support for a custom index on Adjuster_Region__c, because every field in an OR must be indexed.",
-        "Add AND Adjuster_Region__c != null to narrow the results.",
+        "Swap the order of the two `OR` conditions so the indexed field is evaluated first.",
+        "Ask Salesforce Support for a custom index on `Adjuster_Region__c`, because every field in an `OR` must be indexed.",
+        "Add `AND Adjuster_Region__c != null` to narrow the results.",
         "Split it into two queries, one per condition, and combine the results in Apex.",
-        "Add LIMIT 50000 so the query never returns too many rows."
+        "Add `LIMIT 50000` so the query never returns too many rows."
       ],
       "answer": [
         1,
         3
       ],
-      "explain": "With OR, every field in the OR must be indexed, or no index is used. So index the second field, or split it into two selective queries and merge the results.",
+      "explain": "With `OR`, every field in the `OR` must be indexed, or no index is used. So index the second field, or split it into two selective queries and merge the results.",
       "wrong": [
-        "The optimizer doesn't care about the order of OR conditions.",
+        "The optimizer doesn't care about the order of `OR` conditions.",
         "",
-        "A negative filter like != null can't use an index and doesn't help the OR.",
+        "A negative filter like `!= null` can't use an index and doesn't help the `OR`.",
         "",
-        "LIMIT caps the result size but doesn't make the filter use an index."
+        "`LIMIT` caps the result size but doesn't make the filter use an index."
       ],
       "source": "Best Practices for Deployments with Large Data Volumes: Indexes; SOQL and SOSL best practices"
     },
@@ -2205,11 +2205,11 @@
       "lesson": "perf-4",
       "difficulty": 3,
       "pack": "hard",
-      "q": "A developer checks a query on Invoice__c in the Developer Console Query Plan tool before using it in a trigger. Invoice__c has 2,400,000 rows. The tool returns the plans below. What should the developer conclude?",
+      "q": "A developer checks a query on `Invoice__c` in the Developer Console Query Plan tool before using it in a trigger. `Invoice__c` has 2,400,000 rows. The tool returns the plans below. What should the developer conclude?",
       "code": "Cardinality  Fields      Leading Operation  Cost   sObject Cardinality\n310000       -           TableScan          1.38   2400000\n310000       Status__c   Index              2.10   2400000",
       "lang": "soql",
       "options": [
-        "The query uses the Status__c index, because an Index plan is always chosen over a TableScan.",
+        "The query uses the `Status__c` index, because an Index plan is always chosen over a TableScan.",
         "The query is selective, because both plans return the same cardinality.",
         "The query is selective, because the plan cost of 1.38 is under the 2,400,000-row sObject cardinality.",
         "No plan costs less than 1, so the query is not selective and can fail in a trigger on this object."
@@ -2231,7 +2231,7 @@
       "lesson": "perf-4",
       "difficulty": 3,
       "pack": "hard",
-      "q": "Code__c on Product_Batch__c (1.5M rows) is a Text field marked as External ID. Index tables don't include null values by default. Which two WHERE clauses can the optimizer drive from the Code__c index, assuming each matches only a few hundred rows? Choose 2.",
+      "q": "`Code__c` on `Product_Batch__c` (1.5M rows) is a Text field marked as External ID. Index tables don't include null values by default. Which two `WHERE` clauses can the optimizer drive from the `Code__c` index, assuming each matches only a few hundred rows? Choose 2.",
       "code": "// A\nWHERE Code__c = 'PB-2291'\n// B\nWHERE Code__c != 'PB-2291'\n// C\nWHERE Code__c IN :codes\n// D\nWHERE Code__c LIKE '%2291'\n// E\nWHERE Code__c = null",
       "lang": "soql",
       "options": [
@@ -2245,13 +2245,13 @@
         0,
         2
       ],
-      "explain": "Positive filters can use an External ID index when they match few rows. Equality (A) and IN (C) qualify. Negatives, leading wildcards and null checks can't use a default custom index.",
+      "explain": "Positive filters can use an External ID index when they match few rows. Equality (A) and `IN` (C) qualify. Negatives, leading wildcards and null checks can't use a default custom index.",
       "wrong": [
         "",
-        "Negative operators like != can't use an index.",
+        "Negative operators like `!=` can't use an index.",
         "",
         "A leading wildcard can't use the index, so it scans.",
-        "Default custom indexes skip nulls, so = null can't use them."
+        "Default custom indexes skip nulls, so `= null` can't use them."
       ],
       "source": "Apex Developer Guide: Working with Very Large SOQL Queries; Best Practices for Deployments with Large Data Volumes: Indexes"
     },
@@ -2260,19 +2260,19 @@
       "lesson": "perf-4",
       "difficulty": 3,
       "pack": "hard",
-      "q": "A trigger on Subscription__c (2M rows) finds renewals due this month by filtering on a formula field. The formula is Days_To_Renewal__c = Renewal_Date__c - TODAY(). Support says they can't index the field. What is the best way to make the query selective?",
+      "q": "A trigger on `Subscription__c` (2M rows) finds renewals due this month by filtering on a formula field. The formula is `Days_To_Renewal__c = Renewal_Date__c - TODAY()`. Support says they can't index the field. What is the best way to make the query selective?",
       "code": "SELECT Id FROM Subscription__c\nWHERE Days_To_Renewal__c >= 0\n  AND Days_To_Renewal__c <= 30",
       "lang": "soql",
       "options": [
-        "Add ORDER BY Days_To_Renewal__c so the optimizer can sort the rows by the formula value before it filters them.",
-        "Filter on Renewal_Date__c directly (>= :today AND <= :today.addDays(30)) and have it indexed if needed.",
+        "Add `ORDER BY Days_To_Renewal__c` so the optimizer can sort the rows by the formula value before it filters them.",
+        "Filter on `Renewal_Date__c` directly (`>= :today AND <= :today.addDays(30)`) and have it indexed if needed.",
         "Mark the formula field as an External ID so it is indexed automatically.",
         "Wrap the query in a SOQL for loop so it processes fewer rows at a time."
       ],
       "answer": [
         1
       ],
-      "explain": "A formula using TODAY() changes every day, so it can't be indexed. Filter on the real Renewal_Date__c instead. That field can be indexed, so the query stays selective.",
+      "explain": "A formula using `TODAY()` changes every day, so it can't be indexed. Filter on the real `Renewal_Date__c` instead. That field can be indexed, so the query stays selective.",
       "wrong": [
         "Sorting doesn't make a filter selective and can add cost.",
         "",
@@ -2286,7 +2286,7 @@
       "lesson": "perf-5",
       "difficulty": 3,
       "pack": "hard",
-      "q": "A logistics company has 40 million Shipment__c records. Its weekly dashboard reports read the same 15 fields, mixing standard and custom fields, and run slowly. A consultant suggests skinny tables. Which two statements about skinny tables are true? Choose 2.",
+      "q": "A logistics company has 40 million `Shipment__c` records. Its weekly dashboard reports read the same 15 fields, mixing standard and custom fields, and run slowly. A consultant suggests skinny tables. Which two statements about skinny tables are true? Choose 2.",
       "options": [
         "An admin creates and edits them in Setup under Object Manager.",
         "They hold standard and custom fields together, so reads that use only those fields avoid a database join.",
@@ -2313,20 +2313,20 @@
       "lesson": "perf-5",
       "difficulty": 2,
       "pack": "hard",
-      "q": "A data warehouse team must extract all 80 million Activity_Log__c records every quarter with Bulk API (version 1.0). Single extract batches time out. What should they do?",
+      "q": "A data warehouse team must extract all 80 million `Activity_Log__c` records every quarter with Bulk API (version 1.0). Single extract batches time out. What should they do?",
       "options": [
-        "Run the extract with the REST API query endpoint and queryMore so each call returns 2,000 rows.",
-        "Add OFFSET clauses in steps of 2,000 to split the query.",
-        "Enable PK chunking (Sforce-Enable-PKChunking header) to split the query into Id-range batches.",
+        "Run the extract with the REST API query endpoint and `queryMore` so each call returns 2,000 rows.",
+        "Add `OFFSET` clauses in steps of 2,000 to split the query.",
+        "Enable PK chunking (`Sforce-Enable-PKChunking` header) to split the query into Id-range batches.",
         "Create a skinny table so the extract reads fewer columns."
       ],
       "answer": [
         2
       ],
-      "explain": "Split a giant extract into smaller pieces by Id range. PK chunking (the Sforce-Enable-PKChunking header) makes each chunk its own batch. Default chunk size is 100,000; the max is 250,000.",
+      "explain": "Split a giant extract into smaller pieces by Id range. PK chunking (the `Sforce-Enable-PKChunking` header) makes each chunk its own batch. Default chunk size is 100,000; the max is 250,000.",
       "wrong": [
         "Paging 80 million rows 2,000 at a time over REST is far slower and burns API calls.",
-        "OFFSET is capped at 2,000, so it can't page through 80 million records.",
+        "`OFFSET` is capped at 2,000, so it can't page through 80 million records.",
         "",
         "Skinny tables speed reads on chosen fields, but they don't split an extract into batches."
       ],
@@ -2341,18 +2341,18 @@
       "code": "trigger CaseSync on Case (after update) {\n    CaseService.syncSiblings(Trigger.newMap.keySet());\n}\n\npublic class CaseService {\n    public static void syncSiblings(Set<Id> caseIds) {\n        List<Case> siblings = [SELECT Id, Priority FROM Case\n                               WHERE ParentId IN (SELECT ParentId FROM Case WHERE Id IN :caseIds)\n                               AND Id NOT IN :caseIds];\n        for (Case c : siblings) c.Priority = 'High';\n        update siblings;   // fires CaseSync again\n    }\n}",
       "lang": "apex",
       "options": [
-        "Keep a static Set<Id> of processed Case Ids in CaseService, skip Ids already in it, and add new Ids before the update.",
-        "Use a static Boolean that is set to true on the first run and blocks every later run in the transaction.",
+        "Keep a `static Set<Id>` of processed Case Ids in `CaseService`, skip Ids already in it, and add new Ids before the update.",
+        "Use a `static Boolean` that is set to `true` on the first run and blocks every later run in the transaction.",
         "Move the update into a Queueable that re-enqueues itself until no siblings remain.",
         "Change the trigger to before update so the update statement is no longer needed."
       ],
       "answer": [
         0
       ],
-      "explain": "Remember which records you already handled. A static Set<Id> lasts the whole transaction, so each record is processed once and the loop stops. Unlike one Boolean, it still lets later 200-record chunks through.",
+      "explain": "Remember which records you already handled. A `static Set<Id>` lasts the whole transaction, so each record is processed once and the loop stops. Unlike one `Boolean`, it still lets later 200-record chunks through.",
       "wrong": [
         "",
-        "One Boolean also blocks real records in later chunks of the same bulk save.",
+        "One `Boolean` also blocks real records in later chunks of the same bulk save.",
         "Self-chaining Queueables just move the loop to async and can run forever.",
         "A before trigger can change only the records being saved, not their siblings."
       ],
@@ -2363,24 +2363,24 @@
       "lesson": "perf-2",
       "difficulty": 3,
       "pack": "hard",
-      "q": "A nightly job started from a Schedulable totals Usage__c per Category__c on Asset__c and writes the totals to 12 Usage_Summary__c records. It was changed from a plain List query to a SOQL for loop to fix heap errors, which worked. The object has now grown to 62,000 active rows and the job fails again. What is happening and what is the best fix?",
+      "q": "A nightly job started from a `Schedulable` totals `Usage__c` per `Category__c` on `Asset__c` and writes the totals to 12 `Usage_Summary__c` records. It was changed from a plain List query to a SOQL for loop to fix heap errors, which worked. The object has now grown to 62,000 active rows and the job fails again. What is happening and what is the best fix?",
       "code": "Map<String, Decimal> totals = new Map<String, Decimal>();\nfor (List<Asset__c> chunk : [SELECT Category__c, Usage__c\n                              FROM Asset__c\n                              WHERE Active__c = true]) {\n    for (Asset__c a : chunk) {\n        Decimal t = totals.get(a.Category__c);\n        totals.put(a.Category__c, (t == null ? 0 : t) + a.Usage__c);\n    }\n}\nupsert SummaryBuilder.build(totals) Category__c;",
       "lang": "apex",
       "options": [
-        "Replace the loop with SELECT Category__c, SUM(Usage__c) ... GROUP BY Category__c, so only 12 rows count toward the limit.",
-        "SOQL for loops still count every row toward the 50,000 limit; use Batch Apex with Database.Stateful running totals.",
+        "Replace the loop with `SELECT Category__c, SUM(Usage__c) ... GROUP BY Category__c`, so only 12 rows count toward the limit.",
+        "SOQL for loops still count every row toward the 50,000 limit; use Batch Apex with `Database.Stateful` running totals.",
         "The for loop retrieves chunks of 2,000 rows, so the heap limit is hit again; switch to the single-record loop form.",
-        "Scheduled Apex gets asynchronous limits, so raise the row limit with Database.DMLOptions."
+        "Scheduled Apex gets asynchronous limits, so raise the row limit with `Database.DMLOptions`."
       ],
       "answer": [
         1
       ],
-      "explain": "A SOQL for loop saves heap, but every row still counts toward the 50,000-row limit. Batch Apex with Database.getQueryLocator can handle up to 50 million records. Each batch gets its own transaction, and Database.Stateful keeps the running totals.",
+      "explain": "A SOQL for loop saves heap, but every row still counts toward the 50,000-row limit. Batch Apex with `Database.getQueryLocator` can handle up to 50 million records. Each batch gets its own transaction, and `Database.Stateful` keeps the running totals.",
       "wrong": [
-        "SUM still counts every row it adds up, so 62,000 rows still passes 50,000.",
+        "`SUM` still counts every row it adds up, so 62,000 rows still passes 50,000.",
         "",
         "The list form returns 200 records per chunk, and the failure here is rows, not heap.",
-        "Scheduled Apex runs with sync limits, and DMLOptions has nothing to do with query rows."
+        "Scheduled Apex runs with sync limits, and `DMLOptions` has nothing to do with query rows."
       ],
       "source": "Apex Developer Guide: SOQL For Loops; Working with Aggregate SOQL Queries; Execution Governors and Limits"
     },
@@ -2389,24 +2389,24 @@
       "lesson": "perf-6",
       "difficulty": 3,
       "pack": "hard",
-      "q": "To avoid re-querying sales territories on every page load, a developer implements Cache.CacheBuilder and reads the value with Cache.Org.get(TerritoryCache.class, regionCode). The class fails to save. What is wrong?",
+      "q": "To avoid re-querying sales territories on every page load, a developer implements `Cache.CacheBuilder` and reads the value with `Cache.Org.get(TerritoryCache.class, regionCode)`. The class fails to save. What is wrong?",
       "code": "public class TerritoryCache implements Cache.CacheBuilder {\n    public static Object doLoad(String regionCode) {\n        return [SELECT Id, Name, Manager__c\n                FROM Territory__c\n                WHERE Region__c = :regionCode];\n    }\n}",
       "lang": "apex",
       "options": [
-        "doLoad must not be static; Salesforce creates an instance of the class and calls doLoad on it.",
-        "doLoad must return a Map<String, Object>, not a List of records.",
-        "The class must call Cache.Org.put() inside doLoad to store the result.",
-        "doLoad must take no parameters, because the cache key comes from the class name only."
+        "`doLoad` must not be `static`; Salesforce creates an instance of the class and calls `doLoad` on it.",
+        "`doLoad` must return a `Map<String, Object>`, not a List of records.",
+        "The class must call `Cache.Org.put()` inside `doLoad` to store the result.",
+        "`doLoad` must take no parameters, because the cache key comes from the class name only."
       ],
       "answer": [
         0
       ],
-      "explain": "With CacheBuilder, Salesforce makes an instance of your class and calls doLoad on it. So doLoad(String var) must not be static. A static method doesn't implement the interface method.",
+      "explain": "With `CacheBuilder`, Salesforce makes an instance of your class and calls `doLoad` on it. So `doLoad(String var)` must not be `static`. A static method doesn't implement the interface method.",
       "wrong": [
         "",
-        "doLoad can return any value, including a list of records.",
-        "With CacheBuilder you never call put(); Salesforce caches what doLoad returns.",
-        "doLoad must take a String, which Salesforce joins with the class name to build the key."
+        "`doLoad` can return any value, including a list of records.",
+        "With `CacheBuilder` you never call `put()`; Salesforce caches what `doLoad` returns.",
+        "`doLoad` must take a `String`, which Salesforce joins with the class name to build the key."
       ],
       "source": "Apex Developer Guide: Safely Cache Values with the CacheBuilder Interface"
     },
@@ -2415,24 +2415,24 @@
       "lesson": "perf-6",
       "difficulty": 3,
       "pack": "hard",
-      "q": "An admin created an org cache partition named Rates in an org with no namespace and made it the only partition. A developer wants to cache a Decimal exchange rate from Apex for all users. Which two snippets correctly store the value in that partition? Choose 2.",
+      "q": "An admin created an org cache partition named Rates in an org with no namespace and made it the only partition. A developer wants to cache a `Decimal` exchange rate from Apex for all users. Which two snippets correctly store the value in that partition? Choose 2.",
       "options": [
-        "Cache.Session.put('local.Rates.usdEur', 1.08); // shared with all users",
-        "Cache.Org.put('local.Rates.usdEur', 1.08, 259200); // keep 3 days",
-        "Cache.Org.put('local.Rates.usdEur', 1.08);",
-        "Decimal r = Cache.Org.get('local.Rates.usdEur'); // read it back",
-        "Cache.OrgPartition p = Cache.Org.getPartition('local.Rates');\np.put('usdEur', 1.08);"
+        "`Cache.Session.put('local.Rates.usdEur', 1.08); // shared with all users`",
+        "`Cache.Org.put('local.Rates.usdEur', 1.08, 259200); // keep 3 days`",
+        "`Cache.Org.put('local.Rates.usdEur', 1.08);`",
+        "`Decimal r = Cache.Org.get('local.Rates.usdEur'); // read it back`",
+        "`Cache.OrgPartition p = Cache.Org.getPartition('local.Rates');`\n`p.put('usdEur', 1.08);`"
       ],
       "answer": [
         2,
         4
       ],
-      "explain": "Org cache keys follow namespace.partition.key, and local means your own org. So put with `local.Rates.usdEur`. Or get the partition with getPartition('local.Rates') and put with just the key.",
+      "explain": "Org cache keys follow `namespace.partition.key`, and `local` means your own org. So put with `local.Rates.usdEur`. Or get the partition with `getPartition('local.Rates')` and put with just the key.",
       "wrong": [
         "Session cache belongs to one user's session, not all users.",
         "Org cache keeps items 48 hours at most (172,800 seconds), so 3 days is not valid.",
         "",
-        "This reads instead of stores, and get() returns Object, so it needs a cast.",
+        "This reads instead of stores, and `get()` returns `Object`, so it needs a cast.",
         ""
       ],
       "source": "Apex Developer Guide: Store and Retrieve Values from the Org Cache; Platform Cache Limits"
@@ -2446,7 +2446,7 @@
       "code": "List<Product2> catalog = [SELECT Id, Name, Description, Family\n                          FROM Product2 WHERE IsActive = true];\nCache.Org.put('local.Quoting.catalog', catalog);",
       "lang": "apex",
       "options": [
-        "The org cache stores only primitive values such as String, Integer and Decimal; serialize the list with JSON.serialize() first.",
+        "The org cache stores only primitive values such as `String`, `Integer` and `Decimal`; serialize the list with `JSON.serialize()` first.",
         "The key must be under 20 characters; shorten it.",
         "Org cache puts are not allowed from synchronous Apex; use a Queueable.",
         "Each cached item is limited to 100 KB; split the catalog into smaller items (e.g. by Family) with only needed fields."
@@ -2468,24 +2468,24 @@
       "lesson": "perf-7",
       "difficulty": 3,
       "pack": "hard",
-      "q": "An LWC shows 5,000 open Cases with a filter box and a sorted, grouped view. Typing in the box is laggy. Profiling shows sortedGroups runs several times per keystroke because the template references it in three places. What is the best fix?",
+      "q": "An LWC shows 5,000 open Cases with a filter box and a sorted, grouped view. Typing in the box is laggy. Profiling shows `sortedGroups` runs several times per keystroke because the template references it in three places. What is the best fix?",
       "code": "export default class CaseBoard extends LightningElement {\n    @track cases = [];\n    filterText = '';\n\n    get sortedGroups() {\n        const rows = this.cases\n            .filter(c => c.Subject.includes(this.filterText))\n            .sort((a, b) => a.Priority.localeCompare(b.Priority));\n        return groupByOwner(rows);\n    }\n    handleFilter(e) { this.filterText = e.target.value; }\n}",
       "lang": "js",
       "options": [
-        "Mark sortedGroups with @api so the engine caches its value between renders.",
+        "Mark `sortedGroups` with `@api` so the engine caches its value between renders.",
         "Compute the groups once when the data or filter changes (debounced), store them in a field, and bind the template to it.",
-        "Move the filtering into renderedCallback() so it runs after the DOM is ready.",
-        "Wrap the getter in @wire so the computed list is stored in the Lightning Data Service cache and reused on every later render."
+        "Move the filtering into `renderedCallback()` so it runs after the DOM is ready.",
+        "Wrap the getter in `@wire` so the computed list is stored in the Lightning Data Service cache and reused on every later render."
       ],
       "answer": [
         1
       ],
       "explain": "A getter reruns every time the template reads it, on every render. Three reads mean three full sorts per keystroke. Compute the groups once when data or filter changes, debounce the typing, and bind to a field.",
       "wrong": [
-        "@api makes a property public; it doesn't remember a getter's result.",
+        "`@api` makes a property public; it doesn't remember a getter's result.",
         "",
-        "Changing state in renderedCallback() causes another render and can loop.",
-        "@wire works with wire adapters like Apex methods, not local getters."
+        "Changing state in `renderedCallback()` causes another render and can loop.",
+        "`@wire` works with wire adapters like Apex methods, not local getters."
       ],
       "source": "LWC Developer Guide: Getters and Setters; Reactivity; Lightning Web Components Performance best practices"
     },
@@ -2498,20 +2498,20 @@
       "code": "<template>\n    <lightning-input type=\"toggle\" label=\"Show forecast\"\n        onchange={toggle}></lightning-input>\n    <div class={forecastClass}>\n        <c-forecast-panel record-id={recordId}></c-forecast-panel>\n    </div>\n</template>\n\n// JS\nget forecastClass() { return this.showForecast ? '' : 'slds-hide'; }",
       "lang": "html",
       "options": [
-        "slds-hide only hides it with CSS, so the child and its wires still run; wrap it in <template lwc:if={showForecast}>.",
-        "The child's wires run because record-id is passed; pass recordId only after the toggle is on, and keep the CSS class.",
-        "Add the lazy attribute to <c-forecast-panel> so the engine defers its constructor and connectedCallback until visible.",
-        "Switch the three wired methods to cacheable=false so they wait until the panel is visible."
+        "`slds-hide` only hides it with CSS, so the child and its wires still run; wrap it in `<template lwc:if={showForecast}>`.",
+        "The child's wires run because `record-id` is passed; pass `recordId` only after the toggle is on, and keep the CSS class.",
+        "Add the `lazy` attribute to `<c-forecast-panel>` so the engine defers its constructor and `connectedCallback` until visible.",
+        "Switch the three wired methods to `cacheable=false` so they wait until the panel is visible."
       ],
       "answer": [
         0
       ],
-      "explain": "Hiding with CSS isn't the same as not building. With slds-hide the child is still created and its wires still fetch data. `lwc:if` builds the child only when the toggle is on.",
+      "explain": "Hiding with CSS isn't the same as not building. With `slds-hide` the child is still created and its wires still fetch data. `lwc:if` builds the child only when the toggle is on.",
       "wrong": [
         "",
-        "A wire with an undefined parameter waits, but the component is still built; lwc:if is the clean fix.",
-        "LWC has no lazy attribute for child components.",
-        "Wired Apex must be cacheable=true, and hiding doesn't change when wires run."
+        "A wire with an undefined parameter waits, but the component is still built; `lwc:if` is the clean fix.",
+        "LWC has no `lazy` attribute for child components.",
+        "Wired Apex must be `cacheable=true`, and hiding doesn't change when wires run."
       ],
       "source": "LWC Developer Guide: Render DOM Elements Conditionally; Understand the Wire Service"
     },
@@ -2520,24 +2520,24 @@
       "lesson": "perf-7",
       "difficulty": 3,
       "pack": "hard",
-      "q": "A lightning-datatable loads Invoices 50 rows at a time with infinite loading and keyset paging. After the last page, the spinner keeps flashing and the server is called again and again with the same lastId. Which change fixes it?",
+      "q": "A `lightning-datatable` loads Invoices 50 rows at a time with infinite loading and keyset paging. After the last page, the spinner keeps flashing and the server is called again and again with the same `lastId`. Which change fixes it?",
       "code": "<lightning-datatable key-field=\"Id\" data={rows} columns={cols}\n    enable-infinite-loading={canLoadMore}\n    onloadmore={loadMore}></lightning-datatable>\n\n// JS\ncanLoadMore = true;\nasync loadMore(event) {\n    event.target.isLoading = true;\n    const page = await getInvoices({ lastId: this.lastId, pageSize: 50 });\n    this.rows = [...this.rows, ...page];\n    if (page.length) this.lastId = page[page.length - 1].Id;\n    event.target.isLoading = false;\n}",
       "lang": "js",
       "options": [
-        "Use OFFSET in getInvoices instead of lastId so each call returns a different page.",
-        "Raise pageSize to 2,000 so all invoices arrive in fewer calls.",
-        "Set canLoadMore = false when the returned page has fewer than 50 rows, so the table stops firing loadmore.",
-        "Remove event.target.isLoading so the table doesn't re-fire the event."
+        "Use `OFFSET` in `getInvoices` instead of `lastId` so each call returns a different page.",
+        "Raise `pageSize` to 2,000 so all invoices arrive in fewer calls.",
+        "Set `canLoadMore = false` when the returned page has fewer than 50 rows, so the table stops firing `loadmore`.",
+        "Remove `event.target.isLoading` so the table doesn't re-fire the event."
       ],
       "answer": [
         2
       ],
-      "explain": "Tell the table when there's nothing left. A page shorter than 50 rows means you reached the end. Set canLoadMore to false so the table stops firing loadmore.",
+      "explain": "Tell the table when there's nothing left. A page shorter than 50 rows means you reached the end. Set `canLoadMore` to `false` so the table stops firing `loadmore`.",
       "wrong": [
-        "OFFSET is capped at 2,000 and doesn't handle the end of the data.",
+        "`OFFSET` is capped at 2,000 and doesn't handle the end of the data.",
         "Bigger pages only delay the loop and make each call heavier.",
         "",
-        "isLoading shows the spinner and blocks overlapping loads; removing it makes duplicates more likely."
+        "`isLoading` shows the spinner and blocks overlapping loads; removing it makes duplicates more likely."
       ],
       "source": "Lightning Component Library: lightning-datatable (Loading More Data)"
     },
@@ -2546,22 +2546,22 @@
       "lesson": "perf-7",
       "difficulty": 3,
       "pack": "hard",
-      "q": "An LWC lists a user's open Opportunities with @wire to a cacheable Apex method. After the user closes one through an imperative Apex call, the list still shows it as open until a full page reload. Which change refreshes the list correctly?",
+      "q": "An LWC lists a user's open Opportunities with `@wire` to a cacheable Apex method. After the user closes one through an imperative Apex call, the list still shows it as open until a full page reload. Which change refreshes the list correctly?",
       "code": "import { LightningElement, wire } from 'lwc';\nimport getOpenOpps from '@salesforce/apex/OppController.getOpenOpps';\nimport closeOpp from '@salesforce/apex/OppController.closeOpp';\n\nexport default class MyOpps extends LightningElement {\n    opps;\n    @wire(getOpenOpps)\n    wiredOpps({ data, error }) {\n        if (data) this.opps = data;\n    }\n    async handleClose(e) {\n        await closeOpp({ oppId: e.target.dataset.id });\n    }\n}",
       "lang": "js",
       "options": [
-        "Call refreshApex(this.opps) after closeOpp, because opps holds the wired data.",
-        "Set cacheable=false on getOpenOpps so the wire never caches results.",
-        "Call getOpenOpps imperatively after closeOpp and assign the result, because imperative calls always bypass the client cache.",
-        "Keep the whole provisioned value (this.wiredResult = result) and call refreshApex(this.wiredResult) after closeOpp."
+        "Call `refreshApex(this.opps)` after `closeOpp`, because `opps` holds the wired data.",
+        "Set `cacheable=false` on `getOpenOpps` so the wire never caches results.",
+        "Call `getOpenOpps` imperatively after `closeOpp` and assign the result, because imperative calls always bypass the client cache.",
+        "Keep the whole provisioned value (`this.wiredResult = result`) and call `refreshApex(this.wiredResult)` after `closeOpp`."
       ],
       "answer": [
         3
       ],
-      "explain": "refreshApex() needs the exact object the wire handed you. Keep the whole provisioned value, like `this.wiredResult = result`. Then call refreshApex(this.wiredResult) after the update to fetch fresh data.",
+      "explain": "`refreshApex()` needs the exact object the wire handed you. Keep the whole provisioned value, like `this.wiredResult = result`. Then call `refreshApex(this.wiredResult)` after the update to fetch fresh data.",
       "wrong": [
-        "refreshApex needs the wire's object, not the data array copied from it.",
-        "A method must be cacheable=true to be used with @wire.",
+        "`refreshApex` needs the wire's object, not the data array copied from it.",
+        "A method must be `cacheable=true` to be used with `@wire`.",
         "Imperative calls to a cacheable method can return cached data, and the wired list stays stale.",
         ""
       ],
@@ -2572,24 +2572,24 @@
       "lesson": "perf-8",
       "difficulty": 3,
       "pack": "hard",
-      "q": "To cut view state, a developer marks the results list on a Visualforce search page as transient. The first search shows results, but clicking Next Page shows an empty table. What explains this?",
+      "q": "To cut view state, a developer marks the results list on a Visualforce search page as `transient`. The first search shows results, but clicking Next Page shows an empty table. What explains this?",
       "code": "public with sharing class SearchController {\n    public String term { get; set; }\n    public Integer pageNo { get; set; }\n    public transient List<Account> results { get; set; }\n\n    public PageReference search() {\n        pageNo = 0;\n        results = [SELECT Id, Name FROM Account\n                   WHERE Name LIKE :('%' + term + '%')\n                   ORDER BY Name LIMIT 50];\n        return null;\n    }\n    public PageReference nextPage() {\n        pageNo++;\n        return null;\n    }\n}",
       "lang": "apex",
       "options": [
-        "Transient fields are cleared only for read-only pages; the page needs readOnly=\"true\".",
-        "Transient fields aren't saved in view state, so results is null after the postback; nextPage must re-run the query.",
-        "Transient fields can't have getters and setters, so the apex:pageBlockTable on the page can't bind to results at all.",
-        "pageNo is also transient by default because it is an Integer, so the page resets to 0."
+        "Transient fields are cleared only for read-only pages; the page needs `readOnly=\"true\"`.",
+        "Transient fields aren't saved in view state, so `results` is null after the postback; `nextPage` must re-run the query.",
+        "Transient fields can't have getters and setters, so the `apex:pageBlockTable` on the page can't bind to `results` at all.",
+        "`pageNo` is also `transient` by default because it is an `Integer`, so the page resets to 0."
       ],
       "answer": [
         1
       ],
-      "explain": "Transient data isn't saved in view state, so it is gone on the next request. After Next Page, results is null. nextPage must run the query again.",
+      "explain": "Transient data isn't saved in view state, so it is gone on the next request. After Next Page, `results` is null. `nextPage` must run the query again.",
       "wrong": [
-        "transient works on any page; read-only mode has nothing to do with it.",
+        "`transient` works on any page; read-only mode has nothing to do with it.",
         "",
         "Transient properties can have getters and setters; they just aren't saved.",
-        "Only fields marked transient are left out, so pageNo is kept."
+        "Only fields marked `transient` are left out, so `pageNo` is kept."
       ],
       "source": "Visualforce Developer Guide: Best Practices for Improving Visualforce Performance; Apex Developer Guide: Using the transient Keyword"
     },
@@ -2603,19 +2603,19 @@
       "lang": "apex",
       "options": [
         "The three callouts run one after another, and each can wait up to 120 seconds, so a worst case takes about 6 minutes",
-        "The callouts run in parallel; processQuotes runs once, after all three respond, and gets the label map from state",
-        "processQuotes runs three times, once as each carrier responds, and labels holds only that carrier's label each time",
-        "The map is gone when the callback runs, because state holds only a String; keep carriers in a static Map instead"
+        "The callouts run in parallel; `processQuotes` runs once, after all three respond, and gets the label map from `state`",
+        "`processQuotes` runs three times, once as each carrier responds, and `labels` holds only that carrier's label each time",
+        "The map is gone when the callback runs, because `state` holds only a `String`; keep carriers in a `static Map` instead"
       ],
       "answer": [
         1
       ],
-      "explain": "One continuation can hold up to three callouts, and they run in parallel. The callback runs once, after all of them answer. The 120-second max covers the whole continuation, and state carries any Object to the callback.",
+      "explain": "One continuation can hold up to three callouts, and they run in parallel. The callback runs once, after all of them answer. The 120-second max covers the whole continuation, and `state` carries any `Object` to the callback.",
       "wrong": [
         "The callouts run in parallel, and the 120 seconds covers the continuation, not each request.",
         "",
         "The callback runs once, after every response is back, with all the labels.",
-        "state is an Object, so a Map works, and statics don't survive to the callback's new transaction."
+        "`state` is an `Object`, so a Map works, and statics don't survive to the callback's new transaction."
       ],
       "source": "Apex Developer Guide: Making Multiple Asynchronous Callouts; Continuation Class; Asynchronous Callout Limits"
     },
@@ -2624,12 +2624,12 @@
       "lesson": "perf-3",
       "difficulty": 3,
       "pack": "hard",
-      "q": "Lead has 5,000,000 records. A trigger's query filters only on CreatedDate, and the filter matches 850,000 records. How will the optimizer treat the CreatedDate index?",
+      "q": "Lead has 5,000,000 records. A trigger's query filters only on `CreatedDate`, and the filter matches 850,000 records. How will the optimizer treat the `CreatedDate` index?",
       "options": [
         "Not used: 850,000 is more than 10% of 5,000,000, which is the selectivity threshold for every index",
         "Not used: standard indexes are dropped once a filter matches more than 333,333 records on any large object",
         "Used: the standard-index threshold is 30% of the first million plus 15% of the other 4 million",
-        "Used, but only because CreatedDate is an audit date, and audit date filters skip selectivity thresholds"
+        "Used, but only because `CreatedDate` is an audit date, and audit date filters skip selectivity thresholds"
       ],
       "answer": [
         2
@@ -2639,7 +2639,7 @@
         "10% plus 5% is the custom-index rule, and CreatedDate has a standard index.",
         "333,333 is the cap for custom indexes, not standard ones.",
         "",
-        "CreatedDate follows the normal standard-index thresholds."
+        "`CreatedDate` follows the normal standard-index thresholds."
       ],
       "source": "Best Practices for Deployments with Large Data Volumes: Indexes"
     },
@@ -2648,25 +2648,25 @@
       "lesson": "perf-3",
       "difficulty": 3,
       "pack": "hard",
-      "q": "Policy__c has 3 million rows, and a team asks Salesforce Support to index some formula fields. Which two formulas can get a custom index? (Choose 2)",
+      "q": "`Policy__c` has 3 million rows, and a team asks Salesforce Support to index some formula fields. Which two formulas can get a custom index? (Choose 2)",
       "options": [
-        "Region_Code__c = LEFT(Postal_Code__c, 3), built only from a text field on the same record",
-        "Days_Open__c = TODAY() - Start_Date__c, so that the renewal queries can filter on age",
-        "Agency_Tier__c = Agency__r.Tier__c, which copies the tier from the parent Agency record",
-        "Premium_Band__c = IF(Annual_Premium__c > 10000, 'High', 'Standard') on a Number field",
-        "Status_Text__c = TEXT(Status__c), which turns the Status picklist value into plain text"
+        "`Region_Code__c = LEFT(Postal_Code__c, 3)`, built only from a text field on the same record",
+        "`Days_Open__c = TODAY() - Start_Date__c`, so that the renewal queries can filter on age",
+        "`Agency_Tier__c = Agency__r.Tier__c`, which copies the tier from the parent Agency record",
+        "`Premium_Band__c = IF(Annual_Premium__c > 10000, 'High', 'Standard')` on a Number field",
+        "`Status_Text__c = TEXT(Status__c)`, which turns the Status picklist value into plain text"
       ],
       "answer": [
         0,
         3
       ],
-      "explain": "Only deterministic formulas can be indexed: same inputs, same answer, every time. A and D use only fields on the same record. TODAY(), fields from other objects and TEXT() on a picklist rule a formula out.",
+      "explain": "Only deterministic formulas can be indexed: same inputs, same answer, every time. A and D use only fields on the same record. `TODAY()`, fields from other objects and `TEXT()` on a picklist rule a formula out.",
       "wrong": [
         "",
-        "TODAY() makes the formula non-deterministic.",
+        "`TODAY()` makes the formula non-deterministic.",
         "Reaching a field through a lookup makes the formula non-deterministic.",
         "",
-        "Formulas that call TEXT() on a picklist can't get a custom index."
+        "Formulas that call `TEXT()` on a picklist can't get a custom index."
       ],
       "source": "Best Practices for Deployments with Large Data Volumes: Indexes; Apex Developer Guide: Working with Very Large SOQL Queries"
     },
@@ -2675,23 +2675,23 @@
       "lesson": "perf-4",
       "difficulty": 3,
       "pack": "hard",
-      "q": "Ticket__c has 3 million rows; about 97% are Closed. Status__c has a custom index, and the open values (New, Working, Escalated) match about 60,000 rows. The query below fails as non-selective in a trigger. What is the best fix?",
+      "q": "`Ticket__c` has 3 million rows; about 97% are Closed. `Status__c` has a custom index, and the open values (New, Working, Escalated) match about 60,000 rows. The query below fails as non-selective in a trigger. What is the best fix?",
       "code": "List<Ticket__c> open = [\n    SELECT Id, Subject__c\n    FROM Ticket__c\n    WHERE Status__c != 'Closed'\n];",
       "lang": "apex",
       "options": [
-        "Rewrite the filter as Status__c IN ('New', 'Working', 'Escalated') so the index can be used",
-        "Add ORDER BY Status__c, so the optimizer reads the index in order and skips the closed rows quickly",
-        "Keep != and add LIMIT 200, because a LIMIT under the threshold makes any filter count as selective",
-        "Ask Support for a second index on Status__c that includes null values, to serve the negative filter"
+        "Rewrite the filter as `Status__c IN ('New', 'Working', 'Escalated')` so the index can be used",
+        "Add `ORDER BY Status__c`, so the optimizer reads the index in order and skips the closed rows quickly",
+        "Keep `!=` and add `LIMIT 200`, because a `LIMIT` under the threshold makes any filter count as selective",
+        "Ask Support for a second index on `Status__c` that includes null values, to serve the negative filter"
       ],
       "answer": [
         0
       ],
-      "explain": "Indexes find what is there, not what isn't. A negative filter like != usually can't use a custom index. Listing the open values with IN can, and 60,000 rows is well under the 200,000 threshold for 3 million rows.",
+      "explain": "Indexes find what is there, not what isn't. A negative filter like `!=` usually can't use a custom index. Listing the open values with `IN` can, and 60,000 rows is well under the 200,000 threshold for 3 million rows.",
       "wrong": [
         "",
         "Sorting doesn't make a negative filter selective.",
-        "LIMIT doesn't make a non-selective filter use an index.",
+        "`LIMIT` doesn't make a non-selective filter use an index.",
         "Adding nulls to the index doesn't help; the problem is the negative operator."
       ],
       "source": "Apex Developer Guide: Working with Very Large SOQL Queries"
@@ -2701,9 +2701,9 @@
       "lesson": "perf-5",
       "difficulty": 3,
       "pack": "hard",
-      "q": "Each month a batch job deletes about 2 million expired Event_Log__c records. Afterwards, queries and reports on the object stay slow for days, although far fewer live records remain. What is the best change?",
+      "q": "Each month a batch job deletes about 2 million expired `Event_Log__c` records. Afterwards, queries and reports on the object stay slow for days, although far fewer live records remain. What is the best change?",
       "options": [
-        "Add WHERE IsDeleted = false to every query, so the optimizer skips the deleted rows by using an index",
+        "Add `WHERE IsDeleted = false` to every query, so the optimizer skips the deleted rows by using an index",
         "Lower the batch scope to 200, so each delete commits faster and leaves fewer rows locked afterwards",
         "Delete them with the Bulk API 2.0 hard delete option, so they skip the Recycle Bin entirely",
         "Run the deletes in a chained Queueable instead, because async DML doesn't use the Recycle Bin"
@@ -2725,7 +2725,7 @@
       "lesson": "perf-5",
       "difficulty": 3,
       "pack": "hard",
-      "q": "A web-to-contact integration links every unmatched Contact to one \"Unassigned\" Account, which now has 400,000 Contacts. Loads fail with UNABLE_TO_LOCK_ROW, and sharing changes on that Account are very slow. What should the architect recommend?",
+      "q": "A web-to-contact integration links every unmatched Contact to one \"Unassigned\" Account, which now has 400,000 Contacts. Loads fail with `UNABLE_TO_LOCK_ROW`, and sharing changes on that Account are very slow. What should the architect recommend?",
       "options": [
         "Make the Account private and owned by an inactive user, so record locks and sharing no longer apply to it",
         "Turn on Defer Sharing Calculations permanently, so locks are released as soon as each insert commits",
