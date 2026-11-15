@@ -8,5 +8,11 @@ import '@fontsource/jetbrains-mono/400.css';
 import './styles/tokens.css';
 import './styles/global.css';
 import App from './App.jsx';
+import { ErrorBoundary } from './components/ErrorBoundary.jsx';
 
-createRoot(document.getElementById('root')).render(<StrictMode><App /></StrictMode>);
+// Ask the browser to keep our saved progress (Safari may clear site data that isn't installed).
+navigator.storage?.persist?.().catch(() => {});
+
+createRoot(document.getElementById('root')).render(
+  <StrictMode><ErrorBoundary><App /></ErrorBoundary></StrictMode>,
+);

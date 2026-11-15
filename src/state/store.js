@@ -56,21 +56,85 @@ export function initialState() {
   };
 }
 
+const kind = (v) => (v === null ? 'null' : Array.isArray(v) ? 'array' : typeof v);
+
+/** Keep only the fields of `saved` whose type matches the default; nested objects are checked one level down. */
+function sameShape(saved, base) {
+  if (kind(saved) !== 'object') return base;
+  const out = { ...base };
+  for (const [k, def] of Object.entries(base)) {
+    const v = saved[k];
+    if (v === undefined) continue;
+    if (def === null || kind(v) === kind(def)) out[k] = v;
+  }
+  return out;
+}
+
+/** A map of id -> object (srs items, stars, badges…): drop entries that are not the right type. */
+function cleanMap(map, valueKind) {
+  if (kind(map) !== 'object') return {};
+  return Object.fromEntries(Object.entries(map).filter(([, v]) => kind(v) === valueKind));
+}
+
+/**
+ * Repairs saved progress so one bad field can never white-screen the app.
+ * Unknown keys are dropped; wrong types fall back to defaults.
+ */
+export function sanitizeState(saved) {
+  const base = initialState();
+  if (kind(saved) !== 'object') return base;
+  const s = sameShape(saved, base);
+  const num = (v, d) => (Number.isFinite(v) ? v : d);
+  return {
+    ...s,
+    xp: Math.max(0, num(s.xp, 0)),
+    coins: Math.max(0, num(s.coins, 0)),
+    items: cleanMap(s.items, 'object'),
+    cards: cleanMap(s.cards, 'object'),
+    lessons: cleanMap(s.lessons, 'number'),
+    stars: cleanMap(s.stars, 'number'),
+    badges: cleanMap(s.badges, 'number'),
+    history: cleanMap(s.history, 'number'),
+    streak: sameShape(s.streak, base.streak),
+    today: sameShape(s.today, base.today),
+    day: { ...sameShape(s.day, base.day), stats: sameShape(s.day?.stats, base.day.stats), claimed: kind(s.day?.claimed) === 'array' ? s.day.claimed : [] },
+    bolt: sameShape(s.bolt, base.bolt),
+    settings: sameShape(s.settings, base.settings),
+    equipped: sameShape(s.equipped, base.equipped),
+    helpers: sameShape(s.helpers, base.helpers),
+    exams: s.exams.filter((e) => kind(e) === 'object' && Number.isFinite(e.score)),
+    parked: s.parked.filter((p) => kind(p) === 'object' && typeof p.text === 'string'),
+    owned: s.owned.filter((x) => typeof x === 'string'),
+    unlockedWorlds: s.unlockedWorlds.filter((x) => typeof x === 'string'),
+    events: [],
+  };
+}
+
 function load() {
   try {
     const raw = localStorage.getItem(KEY);
     if (!raw) return initialState();
-    const saved = JSON.parse(raw);
-    const base = initialState();
-    return {
-      ...base, ...saved,
-      settings: { ...base.settings, ...saved.settings },
-      equipped: { ...base.equipped, ...saved.equipped },
-      helpers: { ...base.helpers, ...saved.helpers },
-      events: [],
-    };
+    return sanitizeState(JSON.parse(raw));
   } catch {
     return initialState();
+  }
+}
+
+/** Progress as a JSON string, for backup. */
+export function exportProgress() {
+  const { events, ...rest } = state; // eslint-disable-line no-unused-vars
+  return JSON.stringify({ app: 'pd2-quest', exportedAt: new Date().toISOString(), state: rest });
+}
+
+/** Restore from a backup string. Returns true when it worked. */
+export function importProgress(text) {
+  try {
+    const data = JSON.parse(text);
+    const next = sanitizeState(data?.state ?? data);
+    setState(() => next);
+    return true;
+  } catch {
+    return false;
   }
 }
 

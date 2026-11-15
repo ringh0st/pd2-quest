@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { MotionConfig } from 'motion/react';
 import { useRoute, go } from './hooks/useRoute.js';
 import { useStore } from './state/store.js';
@@ -10,6 +10,7 @@ import { dueCardCount } from './state/selectors.js';
 import { FeedbackProvider } from './components/Feedback.jsx';
 import { CelebrationLayer } from './components/CelebrationLayer.jsx';
 import { BottomNav } from './components/BottomNav.jsx';
+import { ErrorBoundary } from './components/ErrorBoundary.jsx';
 import { Home } from './screens/Home.jsx';
 import { WorldMap } from './screens/WorldMap.jsx';
 import { World } from './screens/World.jsx';
@@ -88,6 +89,31 @@ function Screen({ route }) {
   }
 }
 
+const TITLES = {
+  '': 'Home', map: 'Adventure map', learn: 'Adventure map', world: 'World', section: 'World', play: 'Level', shop: 'Shop', bolt: 'Daily Bolt',
+  lesson: 'Lesson', sprint: 'Practice sprint', cards: 'Flashcards', exam: 'Exam simulator', me: 'Me', settings: 'Settings',
+  resources: 'Resources', welcome: 'Welcome',
+};
+
+/** On every screen change: a page title for the tab/screen reader, and focus on the new screen's heading. */
+function useRouteFocus(path) {
+  const first = useRef(true);
+  useEffect(() => {
+    const key = path.split('/')[1] || '';
+    document.title = `${TITLES[key] ?? 'PD2 Quest'} · PD2 Quest`;
+    if (first.current) { first.current = false; return; }
+    const t = setTimeout(() => {
+      const main = document.getElementById('main');
+      if (!main || main.contains(document.activeElement)) return;
+      const h = main.querySelector('h1') || main;
+      if (!h.hasAttribute('tabindex')) h.setAttribute('tabindex', '-1');
+      h.focus({ preventScroll: true });
+      window.scrollTo(0, 0);
+    }, 60);
+    return () => clearTimeout(t);
+  }, [path]);
+}
+
 export default function App() {
   const route = useRoute();
   const onboarded = useStore((s) => s.onboarded);
@@ -95,6 +121,7 @@ export default function App() {
   const reduced = useApplySettings();
   const focusFromScreen = useIsFocusMode();
   const focus = FOCUS_ROUTES.test(route.path) || focusFromScreen;
+  useRouteFocus(route.path);
 
   useEffect(() => {
     if (!onboarded && route.path !== '/welcome' && !route.path.startsWith('/lesson')) go('/welcome');
@@ -105,7 +132,7 @@ export default function App() {
       <FeedbackProvider>
         <a href="#main" className="sr-only skip-link">Skip to content</a>
         <div className="app">
-          <Screen route={route} />
+          <ErrorBoundary key={route.path}><Screen route={route} /></ErrorBoundary>
         </div>
         {!focus && onboarded && <BottomNav path={route.path} dueCards={dueCardCount(cards)} />}
         <CelebrationLayer />

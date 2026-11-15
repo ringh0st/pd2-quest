@@ -88,3 +88,18 @@ test('daily quests: 3, stable per day, distinct stats', () => {
 test('badges have unique ids', () => {
   assert.equal(new Set(BADGES.map((b) => b.id)).size, BADGES.length);
 });
+
+test('saved progress with broken fields is repaired, not crashed on', async () => {
+  globalThis.localStorage ??= { getItem: () => null, setItem: () => {}, removeItem: () => {} };
+  const { sanitizeState, initialState } = await import('../src/state/store.js');
+  const bad = sanitizeState({ xp: 'lots', coins: null, items: { a: 5, b: { box: 2 } }, exams: [null, { score: 80 }], settings: { textScale: 'big', sound: false }, streak: 7, stars: { x: '3', y: 2 } });
+  assert.equal(bad.xp, 0);
+  assert.equal(bad.coins, 0);
+  assert.deepEqual(Object.keys(bad.items), ['b']);
+  assert.equal(bad.exams.length, 1);
+  assert.equal(bad.settings.textScale, initialState().settings.textScale);
+  assert.equal(bad.settings.sound, false);
+  assert.deepEqual(bad.streak, initialState().streak);
+  assert.deepEqual(bad.stars, { y: 2 });
+  assert.deepEqual(sanitizeState('garbage').items, {});
+});
