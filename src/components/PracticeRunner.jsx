@@ -20,7 +20,7 @@ import { lessonById } from '../data/index.js';
 import { zapSays } from '../game/mascot.js';
 
 const PRAISE = ['Nailed it!', 'Yes!', 'Boom!', 'Correct!', 'Sharp!', 'You got it!', 'Brain on fire!', 'Clean!'];
-const KIND = ['Not quite', 'Close one', 'Almost', 'Good try'];
+const KIND = ['Not quite', 'Not yet', 'Good try'];
 const pick = (a) => a[Math.floor(Math.random() * a.length)];
 
 /** Hint text for a question: the lesson's memory hook, else its first text card. */
@@ -63,14 +63,27 @@ export function PracticeRunner({ questions, onDone, onExit, topRight, requeue = 
       return () => clearTimeout(t);
     }
     topRef.current?.scrollIntoView({ block: 'start' });
+    // after Continue, put focus on the new question so screen readers read it
+    if (idx > 0) {
+      const h = topRef.current?.querySelector('.question');
+      if (h) { h.setAttribute('tabindex', '-1'); h.focus({ preventScroll: true }); }
+    }
   }, [revealed, idx, reduced]);
 
   const q = byId[queue[idx]];
   const need = q.answer.length;
   const multi = need > 1;
 
+  const [overpick, setOverpick] = useState(0);
   const toggle = (i) => {
     if (revealed) return;
+    if (multi && !chosen.includes(i) && chosen.length >= need) {
+      // Never drop an earlier pick silently: say why and let the learner choose what to unpick.
+      setOverpick((n) => n + 1);
+      haptic('soft');
+      announce(`You can choose ${need}. Unselect one first.`);
+      return;
+    }
     setChosen((c) => (multi ? (c.includes(i) ? c.filter((x) => x !== i) : [...c, i]) : [i]));
   };
 
@@ -158,13 +171,12 @@ export function PracticeRunner({ questions, onDone, onExit, topRight, requeue = 
         </div>
       )}
 
-      <AnimatePresence mode="wait" initial={false}>
-        <motion.div
+      {/* Keyed, no exit animation: the previous question is never on screen to swallow a tap. */}
+      <motion.div
           key={`${q.id}-${idx}`}
-          initial={reduced ? { opacity: 0 } : { opacity: 0, x: 40 }}
+          initial={reduced ? false : { opacity: 0, x: 40 }}
           animate={{ opacity: 1, x: 0 }}
-          exit={reduced ? { opacity: 0 } : { opacity: 0, x: -40 }}
-          transition={{ duration: 0.28, ease: [0.2, 0, 0, 1] }}
+          transition={{ duration: 0.24, ease: [0.2, 0, 0, 1] }}
           style={{ position: 'relative' }}
         >
           <AnimatePresence>
@@ -178,9 +190,8 @@ export function PracticeRunner({ questions, onDone, onExit, topRight, requeue = 
               >+{pop.xp} XP{pop.mult > 1 ? ` ×${pop.mult}` : ''}</motion.div>
             )}
           </AnimatePresence>
-          <QuestionView question={q} chosen={chosen} onToggle={toggle} revealed={revealed} nudge={revealed && lastRight === false} hidden={hidden} />
-        </motion.div>
-      </AnimatePresence>
+          <QuestionView question={q} chosen={chosen} onToggle={toggle} revealed={revealed} nudge={revealed && lastRight === false} shake={overpick} hidden={hidden} />
+      </motion.div>
 
       {helpers && !revealed && (
         <div className="helper-row" role="group" aria-label="Helpers">
@@ -244,7 +255,7 @@ export function PracticeRunner({ questions, onDone, onExit, topRight, requeue = 
       <div className="sticky-actions">
         {!revealed ? (
           <button className="btn primary block big" disabled={chosen.length !== need} onClick={check}>
-            {chosen.length < need && multi ? `Pick ${need - chosen.length} more` : 'Check'}
+            {multi && chosen.length < need ? `Pick ${need - chosen.length} more` : 'Check'}
           </button>
         ) : (
           <button className="btn primary block big" onClick={next} autoFocus>

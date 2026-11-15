@@ -130,3 +130,10 @@ test('strength fades when a review is long overdue', async () => {
   assert.ok(strength(stale, now) < 0.5);
   assert.ok(strength(stale, now) >= 0.25);
 });
+
+test('streak ignores a device clock set back in time', () => {
+  const t = Date.UTC(2026, 10, 15, 12);
+  const { streak } = recordStudy({ ...emptyStreak(), count: 4, best: 4, lastDay: '2026-11-15' }, t - 3 * DAY);
+  assert.equal(streak.count, 4);
+  assert.equal(streak.lastDay, '2026-11-15');
+});

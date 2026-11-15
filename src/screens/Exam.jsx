@@ -252,11 +252,18 @@ function ExamRun({ run, onSubmit, onLeave, onDiscard }) {
   const q = questions[i];
   const chosen = answers[q.id] || [];
   const multi = q.answer.length > 1;
-  const toggle = (k) => setAnswers((a) => {
-    const cur = a[q.id] || [];
-    const next = multi ? (cur.includes(k) ? cur.filter((x) => x !== k) : [...cur, k].slice(-q.answer.length)) : [k];
-    return { ...a, [q.id]: next };
-  });
+  const [overpick, setOverpick] = useState(0);
+  const toggle = (k) => {
+    const cur = answers[q.id] || [];
+    if (multi && !cur.includes(k) && cur.length >= q.answer.length) {
+      setOverpick((n) => n + 1);
+      haptic('soft');
+      announce(`You can choose ${q.answer.length}. Unselect one first.`);
+      return;
+    }
+    const next = multi ? (cur.includes(k) ? cur.filter((x) => x !== k) : [...cur, k]) : [k];
+    setAnswers((a) => ({ ...a, [q.id]: next }));
+  };
   const sec = Math.ceil((remaining ?? 0) / 1000);
   const low = timed && sec < 300;
   const go = (k) => { sfx.flip(); setI(k); };
@@ -290,7 +297,7 @@ function ExamRun({ run, onSubmit, onLeave, onDiscard }) {
 
       {/* Keyed but no exit animation: the old question must never stay on screen to catch a tap. */}
       <motion.div key={q.id} initial={reduced ? false : { opacity: 0, x: 24 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.18 }}>
-        <QuestionView question={q} chosen={chosen} onToggle={toggle} revealed={false} />
+        <QuestionView question={q} chosen={chosen} onToggle={toggle} revealed={false} shake={overpick} />
       </motion.div>
 
       <div style={{ flex: 1 }} />

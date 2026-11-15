@@ -52,11 +52,11 @@ function weightedShuffle(list, rand) {
 }
 
 /**
- * Exam simulation: questions per section proportional to exam weight.
+ * Exam simulation: questions per section proportional to exam weight, about 60% exam-hard.
  * `hardOnly` draws exam-hard questions (difficulty 3) first; `items` lets it prefer questions
  * you have seen least, so repeated mocks show fresh questions before repeats.
  */
-export function buildExam(sections, { count = 60, rand = Math.random, hardOnly = false, items = {} } = {}) {
+export function buildExam(sections, { count = 60, rand = Math.random, hardOnly = false, items = {}, hardShare = 0.6 } = {}) {
   const total = sections.reduce((s, x) => s + x.weight, 0);
   const seenCount = (q) => items[q.id]?.seen ?? 0;
   const ordered = (pool) => shuffle(pool, rand).sort((a, b) => seenCount(a) - seenCount(b));
@@ -66,9 +66,18 @@ export function buildExam(sections, { count = 60, rand = Math.random, hardOnly =
       ? count - out.length
       : Math.round((s.weight / total) * count);
     const hard = s.questions.filter((q) => q.difficulty >= 3);
-    const pool = hardOnly
-      ? [...ordered(hard), ...ordered(s.questions.filter((q) => q.difficulty === 2))]
-      : ordered(s.questions);
+    const other = s.questions.filter((q) => !(q.difficulty >= 3));
+    let pool;
+    if (hardOnly) pool = [...ordered(hard), ...ordered(other.filter((q) => q.difficulty === 2))];
+    else {
+      // Real PD2 items are mostly long scenarios: ~60% exam-hard, the rest mixed.
+      // Fresh questions still come first; the hard share applies within them.
+      const fresh = (q) => !seenCount(q);
+      const hFresh = shuffle(hard.filter(fresh), rand);
+      const k = Math.min(hFresh.length, Math.round(n * hardShare));
+      const restFresh = shuffle([...hFresh.slice(k), ...other.filter(fresh)], rand);
+      pool = [...hFresh.slice(0, k), ...restFresh, ...ordered(s.questions.filter((q) => !fresh(q)))];
+    }
     out.push(...pool.slice(0, Math.max(0, n)));
   });
   return shuffle(out, rand).slice(0, count);

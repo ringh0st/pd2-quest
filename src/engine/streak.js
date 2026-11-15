@@ -13,6 +13,8 @@ export function recordStudy(streak = emptyStreak(), now = Date.now()) {
   const today = dayKey(now);
   const s = { ...emptyStreak(), ...streak };
   if (s.lastDay === today) return { streak: s, event: null };
+  // Device clock set back: never gain (or lose) a streak from time travel.
+  if (s.lastDay && daysBetween(s.lastDay, today) < 0) return { streak: s, event: null };
 
   let event = 'extended';
   if (!s.lastDay) {

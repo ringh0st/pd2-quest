@@ -20,10 +20,18 @@ import { haptic } from '../audio/haptics.js';
 function pickQuestions(level) {
   const sec = sectionById[level.world];
   const pool = level.kind === 'hard' ? sec.questions.filter((q) => level.covers.includes(q.lesson)) : sec.questions;
-  const tough = shuffle(pool.filter((q) => q.difficulty >= 2));
-  const easy = shuffle(pool.filter((q) => q.difficulty < 2));
-  const ordered = [...tough, ...easy];
-  return level.kind === 'hard' ? shuffle(ordered.slice(0, HARD_SIZE)) : ordered.slice(0, 16);
+  // Version-specific items (e.g. "API version 67.0") never open a fight.
+  const late = (q) => /API version \d/.test(q.q);
+  const ramp = (list) => list.sort((a, b) => (a.difficulty ?? 2) - (b.difficulty ?? 2) || late(a) - late(b));
+  if (level.kind === 'hard') {
+    const tough = shuffle(pool.filter((q) => q.difficulty >= 2));
+    const easy = shuffle(pool.filter((q) => q.difficulty < 2));
+    return ramp([...tough, ...easy].slice(0, HARD_SIZE));
+  }
+  // Boss: a warm-up or two, then it gets harder (16 drawn, 8 hits needed).
+  const tough = shuffle(pool.filter((q) => q.difficulty >= 2)).slice(0, 13);
+  const warm = shuffle(pool.filter((q) => q.difficulty < 2)).slice(0, 3);
+  return [...ramp(warm), ...ramp(tough)];
 }
 
 export function Play({ id }) {
@@ -32,6 +40,7 @@ export function Play({ id }) {
   const [run, setRun] = useState(0);
   const [result, setResult] = useState(null);
   const [extraHeart, setExtraHeart] = useState(false);
+  const [rematch, setRematch] = useState(false); // after a loss, the next try gets a free heart
   const stars = useStore((s) => s.stars);
   const heartsHeld = useStore((s) => s.helpers.heart ?? 0);
   const questions = useMemo(() => (level ? pickQuestions(level) : []), [level, run]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -41,7 +50,7 @@ export function Play({ id }) {
 
   const theme = WORLD_THEMES[level.world];
   const isBoss = level.kind === 'boss';
-  const baseHearts = isBoss ? BOSS_HEARTS : 3;
+  const baseHearts = (isBoss ? BOSS_HEARTS : 3) + (rematch ? 1 : 0);
 
   const start = () => {
     if (extraHeart && !useHelper('heart')) setExtraHeart(false);
@@ -62,16 +71,17 @@ export function Play({ id }) {
     setPhase('done');
   };
 
-  const retry = () => { setResult(null); setRun((x) => x + 1); setPhase('intro'); };
+  const retry = () => { setRematch(!result?.stars); setResult(null); setRun((x) => x + 1); setPhase('intro'); };
 
   if (phase === 'done') {
     return (
       <WinScreen
         kind={level.kind} title={isBoss ? theme.boss.name : `${theme.name} · ${level.title}`} worldId={level.world}
         stars={result.stars} prevStars={result.prev} coins={result.coins} xp={result.xp}
-        detail={isBoss
+        detail={(isBoss
           ? (result.stars ? `“${theme.boss.defeat}”` : `${result.right}/${BOSS_HP} hits landed. Every miss is now in your review queue.`)
-          : `${result.firstRight}/${result.total} right${result.stars ? '' : ' · need 3 to clear'}`}
+          : `${result.firstRight}/${result.total} right${result.stars ? '' : ' · need 3 to clear'}`)
+          + (result.stars ? '' : ' Rematch bonus: your next try gets +1 free heart 🩹')}
         next={result.stars ? nextLevelAfter(level.id) : null}
         onRetry={retry}
       />

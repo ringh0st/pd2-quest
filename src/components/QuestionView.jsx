@@ -9,7 +9,8 @@ import { useReducedMotion } from '../hooks/useMotionPrefs.js';
 const LETTERS = 'ABCDEF';
 
 export function cleanQuestion(text) {
-  return String(text).replace(/\s*\((choose|select) (\d|two|three)\)\s*$/i, '').trim();
+  // The UI already shows "Choose N answers", so drop "(Choose 2)" / "Choose 2." / "Select two." from the stem.
+  return String(text).replace(/\s*\(?(choose|select) (\d|two|three)(\s+answers)?[.)]?\s*$/i, '').trim();
 }
 
 // Arrow keys move between options like a native radio/checkbox group (Tab still works too).
@@ -23,14 +24,18 @@ function arrowNav(e) {
   opts[(k + d + opts.length) % opts.length].focus();
 }
 
-export function QuestionView({ question, chosen, onToggle, revealed, nudge, hidden = [] }) {
+export function QuestionView({ question, chosen, onToggle, revealed, nudge, shake = 0, hidden = [] }) {
   const reduced = useReducedMotion();
   const multi = question.answer.length > 1;
   const correct = new Set(question.answer);
 
   return (
     <div className="stack">
-      {multi && <div className="choose-n">Choose {question.answer.length} answers</div>}
+      {multi && (
+        <div className="choose-n" aria-live="polite">
+          Choose {question.answer.length} answers{!revealed && chosen.length ? ` · ${chosen.length}/${question.answer.length} picked` : ''}
+        </div>
+      )}
       <h2 className="question" id={`q-${question.id}`}><Rich text={cleanQuestion(question.q)} autoCode /></h2>
       {question.code && <CodeBlock code={question.code} lang={question.lang} />}
       <motion.div
@@ -38,7 +43,8 @@ export function QuestionView({ question, chosen, onToggle, revealed, nudge, hidd
         role={multi ? 'group' : 'radiogroup'}
         aria-labelledby={`q-${question.id}`}
         onKeyDown={arrowNav}
-        animate={nudge && !reduced ? { x: [0, -6, 6, -6, 6, 0] } : { x: 0 }}
+        // a new keyframe list (alternating by `shake`) replays the wiggle without remounting the options
+        animate={(nudge || shake) && !reduced ? { x: shake % 2 ? [0, 6, -6, 6, -6, 0] : [0, -6, 6, -6, 6, 0] } : { x: 0 }}
         transition={{ duration: 0.3 }}
       >
         {question.options.map((opt, i) => {
