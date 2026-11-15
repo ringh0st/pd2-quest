@@ -1,4 +1,6 @@
-import { useStore, updateSettings, setState, resetProgress } from '../state/store.js';
+import { useRef } from 'react';
+import { useStore, updateSettings, setState, resetProgress, exportProgress, importProgress } from '../state/store.js';
+import { FEEL_PRESETS, presetFor } from '../state/feelPresets.js';
 import { Switch, Segmented } from '../components/Controls.jsx';
 import { go } from '../hooks/useRoute.js';
 import { useFeedback } from '../components/Feedback.jsx';
@@ -7,6 +9,24 @@ export function Settings() {
   const s = useStore();
   const st = s.settings;
   const { showToast } = useFeedback();
+  const fileRef = useRef(null);
+  const preset = presetFor(st);
+  const backup = () => {
+    const blob = new Blob([exportProgress()], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `pd2-quest-backup-${new Date().toISOString().slice(0, 10)}.json`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+    showToast('💾 Backup saved');
+  };
+  const restore = async (e) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+    if (!confirm('Replace your current progress with this backup?')) return;
+    showToast(importProgress(await file.text()) ? '✅ Progress restored' : 'That file isn’t a PD2 Quest backup');
+  };
   return (
     <main className="screen" id="main">
       <div className="topbar">
@@ -31,10 +51,16 @@ export function Settings() {
 
       <section className="card stack">
         <h2>🌈 Feel</h2>
+        <Segmented
+          label="How do you like it?" value={preset ?? 'custom'}
+          onChange={(v) => FEEL_PRESETS[v] && updateSettings(FEEL_PRESETS[v].settings)}
+          options={Object.entries(FEEL_PRESETS).map(([k, p]) => [k, p.label])}
+        />
+        {!preset && <p className="small muted">Custom mix. Tap a preset to reset all of these at once.</p>}
         <Segmented label="Theme" value={st.theme} onChange={(v) => updateSettings({ theme: v })} options={[['system', 'Auto'], ['light', '☀️ Light'], ['dark', '🌙 Dark']]} />
         <Switch label="Calm mode" hint="Quieter colors, no confetti, no idle animations" checked={st.calm} onChange={(v) => updateSettings({ calm: v })} />
         <Segmented label="Motion" value={st.motion} onChange={(v) => updateSettings({ motion: v })} options={[['system', 'Auto'], ['full', 'Full'], ['reduced', 'Reduced']]} />
-        <Switch label="Confetti" checked={st.confetti !== false} onChange={(v) => updateSettings({ confetti: v })} />
+        <Switch label="Confetti" hint={st.calm ? 'Off while Calm mode is on' : undefined} disabled={st.calm} checked={!st.calm && st.confetti !== false} onChange={(v) => updateSettings({ confetti: v })} />
         <Switch label="Sounds" checked={st.sound} onChange={(v) => updateSettings({ sound: v })} />
         <Switch label="Haptics" hint="Vibration on Android, taps on iPhone" checked={st.haptics} onChange={(v) => updateSettings({ haptics: v })} />
       </section>
@@ -47,7 +73,12 @@ export function Settings() {
 
       <section className="card stack">
         <h2>🧹 Data</h2>
-        <p className="small muted">Your progress stays on this phone only. No account, no tracking.</p>
+        <p className="small muted">Your progress stays on this phone only. No account, no tracking. Save a backup now and then, because a browser can clear site data.</p>
+        <div className="row wrap">
+          <button className="btn grow" onClick={backup}>💾 Save backup</button>
+          <button className="btn grow" onClick={() => fileRef.current?.click()}>📂 Restore</button>
+          <input ref={fileRef} type="file" accept="application/json,.json" hidden onChange={restore} aria-label="Choose a backup file" />
+        </div>
         <button className="btn" onClick={() => {
           if (confirm('Reset all progress? XP, streak and reviews will be cleared. Settings stay.')) { resetProgress(); showToast('Fresh start ✨'); }
         }}>Reset progress</button>

@@ -436,9 +436,9 @@ a.card:not(.section-card):not(.stat):not(.row):not(.stack-s) { display: block; }
   border-radius: var(--radius-s); border: 2px solid var(--border);
   background: var(--surface); color: var(--text);
 }
-.segmented { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 6px; padding: 4px; border-radius: 16px; background: var(--surface-2); }
+.segmented { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 6px; padding: 4px; border-radius: 16px; background: var(--surface-2); }
 .segmented button {
-  min-height: 44px; border: 0; border-radius: 12px; background: transparent; font-weight: 700; color: var(--text-muted);
+  min-height: 44px; padding: 6px 4px; line-height: 1.2; overflow-wrap: anywhere; border: 0; border-radius: 12px; background: transparent; font-weight: 700; color: var(--text-muted);
   transition: background var(--dur-quick), color var(--dur-quick);
 }
 .segmented button[aria-checked='true'], .segmented button[aria-selected='true'] { background: var(--surface); color: var(--text); box-shadow: var(--shadow-1); }
@@ -654,3 +654,5 @@ a.card:not(.section-card):not(.stat):not(.row):not(.stack-s) { display: block; }
 .review-tag { font-weight: 700; }
 .celebrate-list { text-align: left; width: 100%; }
 .comeback { border: 2px solid var(--primary); }
+.flip-prompt { border-bottom: 1px solid var(--hairline); padding-bottom: 8px; }
+.switch:disabled { opacity: 0.55; cursor: not-allowed; }

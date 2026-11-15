@@ -3,7 +3,7 @@ import { useId } from 'react';
 import { sfx } from '../audio/sfx.js';
 import { haptic } from '../audio/haptics.js';
 
-export function Switch({ label, hint, checked, onChange }) {
+export function Switch({ label, hint, checked, onChange, disabled = false }) {
   const id = useId();
   return (
     <div className="switch-row">
@@ -12,7 +12,7 @@ export function Switch({ label, hint, checked, onChange }) {
         {hint && <div className="small muted" id={`${id}-hint`}>{hint}</div>}
       </div>
       <button
-        type="button" role="switch" aria-checked={checked} aria-labelledby={id} aria-describedby={hint ? `${id}-hint` : undefined} className="switch"
+        type="button" role="switch" aria-checked={checked} aria-labelledby={id} aria-describedby={hint ? `${id}-hint` : undefined} className="switch" disabled={disabled}
         onClick={() => { sfx.tap(); haptic('light'); onChange(!checked); }}
       />
     </div>

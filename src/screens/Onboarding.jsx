@@ -1,7 +1,8 @@
 // One short screen: pick a daily goal, optionally a name and exam date, then straight into lesson 1.
 import { useState } from 'react';
 import { motion } from 'motion/react';
-import { setState } from '../state/store.js';
+import { setState, updateSettings } from '../state/store.js';
+import { FEEL_PRESETS } from '../state/feelPresets.js';
 import { Segmented } from '../components/Controls.jsx';
 import { replace } from '../hooks/useRoute.js';
 import { sections } from '../data/index.js';
@@ -15,11 +16,13 @@ export function Onboarding() {
   const [goal, setGoal] = useState(50);
   const [name, setName] = useState('');
   const [date, setDate] = useState('');
+  const [feel, setFeel] = useState('balanced');
   const reduced = useReducedMotion();
   const anim = (i) => (reduced ? {} : { initial: { opacity: 0, y: 20 }, animate: { opacity: 1, y: 0 }, transition: { delay: 0.1 + i * 0.08, duration: 0.4, ease: [0.2, 0, 0, 1] } });
 
   const start = () => {
     sfx.levelUp(); haptic('success');
+    updateSettings(FEEL_PRESETS[feel].settings);
     setState({ onboarded: true, dailyGoal: goal, name: name.trim(), examDate: date });
     replace(`/lesson/${sections[0].lessons[0].id}`);
   };
@@ -40,6 +43,12 @@ export function Onboarding() {
       </motion.ul>
       <motion.div className="card stack" {...anim(2)}>
         <Segmented label="Daily goal (XP, about 1 min per 10 XP)" value={goal} onChange={setGoal} options={GOALS} />
+        <Segmented
+          label="How do you like it? (sound, buzz, confetti, motion)" value={feel}
+          onChange={setFeel}
+          options={Object.entries(FEEL_PRESETS).map(([k, p]) => [k, p.label])}
+        />
+        <p className="small muted">You can change this any time in Settings.</p>
         <div className="field">
           <label htmlFor="ob-name">What should we call you? (optional)</label>
           <input id="ob-name" className="input" value={name} maxLength={24} onChange={(e) => setName(e.target.value)} autoComplete="given-name" />

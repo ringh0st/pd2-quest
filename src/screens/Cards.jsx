@@ -107,7 +107,7 @@ export function Cards({ query }) {
         <span className="chip">{i + 1}/{deck.length}</span>
         <ParkIt />
       </div>
-      <span className="chip" style={{ justifySelf: 'start' }}>{sec.emoji} {sec.title}{!cards[card.id]?.seen ? ' · ✨ new' : ''}</span>
+      <span className="chip" style={{ justifySelf: 'start' }}>{sec.emoji} {sec.short}{!cards[card.id]?.seen ? ' · ✨ new' : ''}</span>
 
       <AnimatePresence mode="wait">
         <motion.div
@@ -123,14 +123,15 @@ export function Cards({ query }) {
             {(!reduced || !flipped) && (
               <div className="flip-face front" aria-hidden={flipped}>
                 <span className="small muted" style={{ fontWeight: 700 }}>QUESTION</span>
-                <strong><Rich text={card.front} /></strong>
+                <strong><Rich text={card.front} autoCode /></strong>
                 <span className="small muted">Tap to flip ↻</span>
               </div>
             )}
             {(!reduced || flipped) && (
               <div className="flip-face back" aria-hidden={!flipped}>
+                <p className="small muted flip-prompt"><Rich text={card.front} autoCode /></p>
                 <span className="small muted" style={{ fontWeight: 700 }}>ANSWER</span>
-                <p><Rich text={card.back} /></p>
+                <p><Rich text={card.back} autoCode /></p>
               </div>
             )}
           </motion.button>
