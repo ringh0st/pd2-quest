@@ -45,7 +45,7 @@ export function Onboarding() {
       <motion.div className="card stack" {...anim(2)}>
         <Segmented label="Daily goal (XP, about 1 min per 10 XP)" value={goal} onChange={setGoal} options={GOALS} />
         <Segmented
-          label="How do you like it? (sound, buzz, confetti, motion)" value={feel}
+          label="How do you like it? (sounds, buzz, confetti, motion)" value={feel}
           onChange={setFeel}
           options={Object.entries(FEEL_PRESETS).map(([k, p]) => [k, p.label])}
         />
@@ -55,14 +55,14 @@ export function Onboarding() {
           <input id="ob-name" className="input" value={name} maxLength={24} onChange={(e) => setName(e.target.value)} autoComplete="given-name" />
         </div>
         <div className="field">
-          <label htmlFor="ob-date">Exam date, if booked (optional)</label>
+          <label htmlFor="ob-date">Exam date, if booked (optional, tap to pick)</label>
           <input id="ob-date" className="input" type="date" value={date} onChange={(e) => setDate(e.target.value)} />
         </div>
       </motion.div>
       <motion.div {...anim(3)}>
         <button className="btn primary block big" onClick={() => start()}>Start my first lesson ▶</button>
         <button className="btn block" style={{ marginTop: 10 }} onClick={() => start(`/placement/${sections[0].id}`)}>
-          I have PD1 or Apex experience: skip what I know
+          Know Apex already? Skip ahead
         </button>
         <p className="small muted center" style={{ marginTop: 14 }}>On iPhone? Add it to your Home Screen first, so your progress lives in the app.</p>
         <div className="center" style={{ marginTop: 6 }}><InstallHelpButton /></div>

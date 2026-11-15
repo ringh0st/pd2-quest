@@ -43,7 +43,7 @@ export function Settings() {
         <Segmented label="Questions per round" value={st.sprintSize} onChange={(v) => updateSettings({ sprintSize: v })} options={[[3, '3'], [5, '5'], [8, '8'], [10, '10']]} />
         <Segmented label="Focus timer (minutes)" value={st.focusMinutes} onChange={(v) => updateSettings({ focusMinutes: v })} options={[[0, 'Off'], [5, '5'], [10, '10'], [15, '15'], [25, '25']]} />
         <div className="field">
-          <label htmlFor="exam-date">📅 Exam date (optional)</label>
+          <label htmlFor="exam-date">📅 Exam date (optional, tap to pick)</label>
           <input id="exam-date" className="input" type="date" value={s.examDate} onChange={(e) => setState({ examDate: e.target.value })} />
         </div>
         <div className="field">

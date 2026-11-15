@@ -432,13 +432,16 @@ a.card:not(.section-card):not(.stat):not(.row):not(.stack-s) { display: block; }
 .field { display: grid; gap: 6px; }
 .field label, .field .label { font-weight: 700; }
 .input, textarea.input, select.input {
-  width: 100%; min-height: 48px; padding: 10px 14px;
+  display: block; width: 100%; max-width: 100%; min-width: 0; min-height: 48px; padding: 10px 14px;
   border-radius: var(--radius-s); border: 2px solid var(--border);
   background: var(--surface); color: var(--text);
 }
+/* iPhone Safari gives date inputs a fixed intrinsic width, so they poke out of cards */
+.input[type='date'] { -webkit-appearance: none; appearance: none; text-align: left; line-height: 1.4; }
+.input[type='date']::-webkit-date-and-time-value { text-align: left; }
 .segmented { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 6px; padding: 4px; border-radius: 16px; background: var(--surface-2); }
 .segmented button {
-  min-height: 44px; padding: 6px 4px; line-height: 1.2; overflow-wrap: break-word; hyphens: auto; font-size: var(--fs-small); border: 0; border-radius: 12px; background: transparent; font-weight: 700; color: var(--text-muted);
+  min-height: 44px; padding: 6px 4px; line-height: 1.2; overflow-wrap: normal; hyphens: manual; font-size: var(--fs-small); border: 0; border-radius: 12px; background: transparent; font-weight: 700; color: var(--text-muted);
   transition: background var(--dur-quick), color var(--dur-quick);
 }
 .segmented button[aria-checked='true'], .segmented button[aria-selected='true'] { background: var(--surface); color: var(--text); box-shadow: var(--shadow-1); }
@@ -475,6 +478,9 @@ a.card:not(.section-card):not(.stat):not(.row):not(.stack-s) { display: block; }
 }
 
 .list-plain { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+/* a list that is also a card keeps the card's padding */
+.list-plain.card { padding: 18px; }
+.list-plain.card.tight { padding: 14px; }
 .divider { height: 1px; background: var(--hairline); border: 0; margin: 4px 0; }
 
 /* Reduced motion: only color/opacity may transition (≤150ms). Without the property list, the
