@@ -3,27 +3,27 @@
 export const WORLD_THEMES = {
   fund: {
     name: 'Sharing Shrine',
-    sky: ['#FFE3EC', '#FFF4E0'], skyDark: ['#2A1630', '#1A1424'],
+    sky: ['#FFE3EC', '#FFF4E0'], skyDark: ['#2B1A1C', '#1B1614'],
     boss: { name: 'The Sharing Sphinx', taunt: 'Who can see this record? Answer, or be locked out forever!', defeat: 'Fine… your access is… granted.' },
   },
   auto: {
     name: 'Async Forge',
-    sky: ['#FFE6D6', '#FFF6E8'], skyDark: ['#2E1A12', '#1C1418'],
+    sky: ['#FFE6D6', '#FFF6E8'], skyDark: ['#2E1D12', '#1C1612'],
     boss: { name: 'The Recursion Hydra', taunt: 'Cut off one trigger and two more fire!', defeat: 'Static Set<Id>… my one weakness…' },
   },
   ui: {
     name: 'Pixel Bay',
-    sky: ['#DDF6F1', '#FFF8EC'], skyDark: ['#0F2A2A', '#141A22'],
+    sky: ['#DDF6F1', '#FFF8EC'], skyDark: ['#14261F', '#161A16'],
     boss: { name: 'The Re-render Kraken', taunt: 'I will re-render your component… forever!', defeat: 'You used a guard flag?! Blub…' },
   },
   test: {
     name: 'Bug Swamp',
-    sky: ['#E6F5D8', '#FFF8EA'], skyDark: ['#1A2616', '#16181A'],
+    sky: ['#E6F5D8', '#FFF8EA'], skyDark: ['#1D2616', '#171713'],
     boss: { name: 'The Flaky Test Toad', taunt: 'Sometimes I pass, sometimes I fail. Ribbit!', defeat: 'You mocked my callouts… croak.' },
   },
   perf: {
     name: 'Turbo Peaks',
-    sky: ['#E8EEFF', '#FFF6EE'], skyDark: ['#171C2E', '#141420'],
+    sky: ['#E8EEFF', '#FFF6EE'], skyDark: ['#26221C', '#171412'],
     boss: { name: 'The Governor', taunt: '101 SOQL queries? LIMIT EXCEPTION!', defeat: 'Bulkified… I am… defeated.' },
   },
 };

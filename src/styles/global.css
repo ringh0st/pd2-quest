@@ -284,7 +284,7 @@ a.card:not(.section-card):not(.stat):not(.row):not(.stack-s) { display: block; }
 .code .tk-number { color: #FFB27A; }
 .code .tk-fn { color: #9FD0FF; }
 .code .tk-tag { color: #FF8FC6; }
-.inline-code { font-family: var(--font-code); font-size: 0.88em; overflow-wrap: anywhere; padding: 1px 6px; border-radius: 6px; background: var(--surface-2); }
+.inline-code { font-family: var(--font-code); font-size: 0.88em; overflow-wrap: break-word; padding: 1px 6px; border-radius: 6px; background: var(--surface-2); }
 
 /* ---------- quiz ---------- */
 .quiz-top { display: grid; grid-template-columns: 44px minmax(0, 1fr) auto auto; gap: 8px; align-items: center; }
@@ -931,15 +931,16 @@ h1[tabindex='-1']:focus, h2[tabindex='-1']:focus { outline: none; }
 .toast-text { display: inline-flex; align-items: center; gap: 6px; flex-wrap: wrap; min-width: 0; }
 /* stars: filled gold when earned, outlined when not */
 .stars .star { color: var(--border); text-shadow: none; -webkit-text-stroke: 0; line-height: 0; }
-.stars .star .icon { width: 1em; height: 1em; vertical-align: 0; fill: color-mix(in srgb, var(--surface-3) 70%, transparent); }
-.stars .star.on { color: var(--gold-ledge); -webkit-text-stroke: 0; }
+.stars .star .icon { width: 1em; height: 1em; vertical-align: 0; fill: var(--surface-3); }
+.stars .star.on { color: var(--gold-text); -webkit-text-stroke: 0; }
+:root[data-theme='dark'] .stars .star.on { color: var(--gold-ledge); }
 .stars .star.on .icon { fill: var(--gold); filter: drop-shadow(0 1px 0 color-mix(in srgb, var(--gold-ledge) 60%, transparent)); }
 .stars .star.raised { font-size: 1.3em; margin: 0 -0.05em; translate: 0 -0.2em; }
 /* coins */
 .coin-chip { gap: 6px; }
-.coin-chip-icon { display: inline-grid; place-items: center; color: var(--gold-ledge); }
+.coin-chip-icon { display: inline-grid; place-items: center; color: var(--gold-text); }
 :root[data-theme='dark'] .coin-chip-icon { color: #7A5200; }
-.star-chip { gap: 6px; min-height: 44px; font-size: 16px; background: color-mix(in srgb, var(--gold) 26%, var(--surface)); }
+.me-star-chip { gap: 6px; min-height: 44px; font-size: 16px; background: color-mix(in srgb, var(--gold) 26%, var(--surface)); }
 .me-week-meta { flex-wrap: wrap; justify-content: flex-end; }
 /* daily quests */
 .quest { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 8px 10px; }
@@ -1003,3 +1004,10 @@ h1[tabindex='-1']:focus, h2[tabindex='-1']:focus { outline: none; }
 .me-links .btn { flex-direction: column; gap: 4px; min-height: 64px; padding-inline: 4px; font-size: var(--fs-small); overflow-wrap: break-word; min-width: 0; }
 .me-links .btn .icon { margin: 0; color: var(--primary); }
 /* ===== end rewards art ===== */
+/* ===== lead polish ===== */
+/* disclosure cards: custom chevron instead of the browser triangle */
+.disclosure > summary { list-style: none; display: flex; align-items: center; gap: 10px; min-height: 44px; font-weight: 700; cursor: pointer; }
+.disclosure > summary::-webkit-details-marker { display: none; }
+.disclosure-chev { transition: transform var(--dur-quick) var(--ease); }
+.disclosure[open] .disclosure-chev { transform: rotate(180deg); }
+.disclosure > ul { margin: 10px 0 0; padding-left: 1.2em; display: grid; gap: 6px; }

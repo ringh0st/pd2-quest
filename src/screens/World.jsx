@@ -148,8 +148,8 @@ export function World({ id }) {
       </div>
 
       {sec.objectives?.length > 0 && (
-        <details className="card">
-          <summary style={{ fontWeight: 700, cursor: 'pointer', minHeight: 32 }}>Official exam objectives</summary>
+        <details className="card disclosure">
+          <summary><Icon name="checklist" /> <span className="grow">Official exam objectives</span> <Icon name="down" className="disclosure-chev" /></summary>
           <ul className="small" style={{ marginBottom: 0 }}>{sec.objectives.map((o) => <li key={o}>{o}</li>)}</ul>
         </details>
       )}

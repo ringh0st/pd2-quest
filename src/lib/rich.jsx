@@ -18,13 +18,19 @@ function isCodeToken(t) {
   return /[A-Z_]/.test(t) && t.length > 3;
 }
 
+/** Long API names get soft break points (after . ( , and between camelCase words) instead of breaking mid-word. */
+function softBreaks(token, key) {
+  const parts = token.split(/(?<=[.(,])|(?<=[a-z])(?=[A-Z])/);
+  return parts.flatMap((p, i) => (i ? [<wbr key={`${key}-w${i}`} />, p] : [p]));
+}
+
 function autoMark(text, keyBase) {
   const out = [];
   let last = 0;
   for (const m of text.matchAll(CODE_TOKEN)) {
     if (!isCodeToken(m[0])) continue;
     if (m.index > last) out.push(text.slice(last, m.index));
-    out.push(<code key={`${keyBase}-${m.index}`} className="inline-code">{m[0]}</code>);
+    out.push(<code key={`${keyBase}-${m.index}`} className="inline-code">{softBreaks(m[0], `${keyBase}-${m.index}`)}</code>);
     last = m.index + m[0].length;
   }
   if (last < text.length) out.push(text.slice(last));
@@ -40,7 +46,7 @@ export function Rich({ text = '', autoCode = false }) {
   const parts = String(text).split(/(\*\*[^*]+\*\*|`[^`]+`)/g);
   return parts.map((p, i) => {
     if (p.startsWith('**') && p.endsWith('**')) return <strong key={i}>{p.slice(2, -2)}</strong>;
-    if (p.startsWith('`') && p.endsWith('`')) return <code key={i} className="inline-code">{p.slice(1, -1)}</code>;
+    if (p.startsWith('`') && p.endsWith('`')) return <code key={i} className="inline-code">{softBreaks(p.slice(1, -1), i)}</code>;
     return autoCode ? autoMark(p, i) : p;
   });
 }

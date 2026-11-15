@@ -49,7 +49,7 @@ export function Me() {
           <span className="muted small"><CountUp value={s.xp} /> XP total · {lv.span - lv.into} XP to level {lv.level + 1}</span>
         </div>
         <span className="me-zap"><Zap size={64} mood="happy" /></span>
-        <div className="me-chips"><span className="chip star-chip"><span className="ic-gold-fill"><Icon name="star" /></span>{totalStars(s.stars)}<span className="sr-only"> stars</span></span><CoinChip /></div>
+        <div className="me-chips"><span className="chip me-star-chip"><span className="ic-gold-fill"><Icon name="star" /></span>{totalStars(s.stars)}<span className="sr-only"> stars</span></span><CoinChip /></div>
       </section>
 
       <div className="stat-row">
