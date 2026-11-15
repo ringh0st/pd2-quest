@@ -40,7 +40,8 @@ npm install
 npm run dev
 ```
 
-- `npm test`: unit tests for the learning engine (SRS, XP, streaks, sessions) and game rules (levels, stars, shop, quests, badges)
+- `npm test`: unit tests for the learning engine (SRS, XP, streaks, sessions), game rules (levels, stars, shop, quests, badges), saved-progress repair, and content quality (the correct option must not be guessable by its length)
+- `npm run e2e`: browser checks against `npm run preview`: no sideways scrolling on any screen at 320px and every text size, exam taps/resume/submit behaviour, and an axe accessibility scan in light and dark
 - `npm run validate`: checks every content file (ids, answer keys, card length)
 - `npm run build`: static site in `dist/`. Every push to `main` deploys to GitHub Pages via `.github/workflows/deploy.yml`.
 

@@ -26,7 +26,7 @@ const MODES = [
   { id: 'full', label: 'Full mock exam', count: exam.questions, minutes: exam.minutes, emoji: '🏁', blurb: `${exam.questions} questions · ${exam.minutes} min, like the real thing` },
   { id: 'hard', label: 'Exam-hard mock', count: exam.questions, minutes: exam.minutes, emoji: '🔥', blurb: `${exam.questions} of the toughest questions · ${exam.minutes} min`, hardOnly: true },
 ];
-const TIME = [['standard', 'Standard'], ['extra', '+50% time'], ['untimed', 'Untimed']];
+const TIME = [['standard', '⏱ Real'], ['extra', '+50%'], ['untimed', '∞ None']];
 const timeFor = (mode, time) => (time === 'untimed' ? null : Math.round(mode.minutes * (time === 'extra' ? 1.5 : 1)) * 60 * 1000);
 const letters = (idx) => idx.map((c) => LETTERS[c]).join(', ');
 
@@ -147,7 +147,7 @@ function ExamStart({ mode, onBack, onStart }) {
         <p className="muted">{mode.count} questions · no feedback until the end · pass mark {exam.passing}%</p>
       </div>
       <div className="card stack">
-        <Segmented label="Time" options={TIME} value={time} onChange={setTime} />
+        <Segmented label="Time limit (real exam: 2 min a question)" options={TIME} value={time} onChange={setTime} />
         <ul className="small" style={{ margin: 0, paddingLeft: '1.2em' }}>
           <li>Settle in: water, quiet, phone on do-not-disturb.</li>
           <li>Flag anything you’re unsure of and come back from the question map.</li>
