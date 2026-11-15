@@ -4,6 +4,8 @@ import { useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { highlight, toLines, LANG_LABEL } from '../lib/prism.js';
 import { Icon } from './icons/Icon.jsx';
 import { useFeedback } from './Feedback.jsx';
+import { sfx } from '../audio/sfx.js';
+import { haptic } from '../audio/haptics.js';
 
 export function CodeBlock({ code = '', lang = 'apex' }) {
   const lines = useMemo(() => toLines(highlight(code.replace(/\s+$/, ''), lang)), [code, lang]);
@@ -24,7 +26,7 @@ export function CodeBlock({ code = '', lang = 'apex' }) {
   }, [code]);
 
   const copy = async () => {
-    try { await navigator.clipboard.writeText(code); showToast('Code copied', 'check'); } catch { showToast('Copy not available here'); }
+    try { await navigator.clipboard.writeText(code); sfx.copy(); haptic('light'); showToast('Code copied', 'check'); } catch { showToast('Copy not available here'); }
   };
 
   return (

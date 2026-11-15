@@ -160,3 +160,10 @@ test('study plan: pace, status, final week and past date', async () => {
   const half = studyPlan({ ...base, examDate: '2027-01-14', stars: Object.fromEntries(levels.slice(0, 20).map((l) => [l.id, 2])) });
   assert.ok(half.today.some((t) => t.kind === 'mock' && /halfway/.test(t.label)));
 });
+
+test('every named sound and vibration runs safely without audio support', async () => {
+  const { sfx } = await import('../src/audio/sfx.js');
+  const { haptic } = await import('../src/audio/haptics.js');
+  for (const [name, fn] of Object.entries(sfx)) assert.doesNotThrow(() => fn(2), name);
+  for (const s of ['light', 'medium', 'soft', 'double', 'success', 'celebrate']) assert.doesNotThrow(() => haptic(s), s);
+});

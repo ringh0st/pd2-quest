@@ -93,7 +93,7 @@ export function Shop() {
 
   const purchase = (entry) => {
     buy({ ...entry.data, id: entry.ownId, price: entry.price }, entry.kind === 'helper' ? 'helper' : 'item');
-    sfx.chest(); haptic('success'); celebrate(30);
+    sfx.purchase(); haptic('success'); celebrate(30);
     if (entry.kind !== 'helper') equip(entry.slot, entry.id);
     showToast(`Got ${entry.name}!`, 'gift');
     announce(entry.kind === 'helper' ? `Bought one ${entry.name}.` : `Bought ${entry.name}. ${entry.kind === 'outfit' ? 'Zap is wearing it.' : 'Now in use.'}`);
@@ -102,13 +102,13 @@ export function Shop() {
   };
   const use = (entry) => {
     equip(entry.slot, entry.id);
-    sfx.tap(); haptic('light');
+    sfx.equip(); haptic('light');
     if (entry.kind === 'confetti') setTimeout(() => celebrate(30), 50);
     announce(entry.kind === 'outfit' ? `Zap is wearing ${entry.name}.` : `${entry.name} is now in use.`);
     close();
   };
   const takeOff = () => {
-    equip('hat', null); sfx.tap();
+    equip('hat', null); sfx.equip();
     announce('Outfit taken off.');
     close();
   };

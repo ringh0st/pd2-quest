@@ -253,6 +253,7 @@ function ExamRun({ run, onSubmit, onLeave, onDiscard }) {
       warned.current = true;
       announce('Five minutes left.');
       haptic('double');
+      sfx.timerWarn();
     }
   }, [remaining, timed, submit, announce]);
 
@@ -297,7 +298,7 @@ function ExamRun({ run, onSubmit, onLeave, onDiscard }) {
         </button>
         <button
           className={flags[q.id] ? 'chip gold' : 'chip'} style={{ border: 0, minHeight: 44 }}
-          aria-pressed={!!flags[q.id]} onClick={() => { sfx.tap(); setFlags((f) => ({ ...f, [q.id]: !f[q.id] })); }}
+          aria-pressed={!!flags[q.id]} onClick={() => { sfx.flag(); haptic('light'); setFlags((f) => ({ ...f, [q.id]: !f[q.id] })); }}
         ><Icon name="exam" fill={!!flags[q.id]} /> {flags[q.id] ? 'Flagged' : 'Flag'}</button>
       </div>
       <h1 className="sr-only" ref={heading} tabIndex={-1}>Question {i + 1} of {questions.length}</h1>
@@ -337,7 +338,7 @@ function ExamRun({ run, onSubmit, onLeave, onDiscard }) {
           })}
         </div>
         {!confirming ? (
-          <button className="btn primary block big" onClick={() => { haptic('medium'); if (blanks) setConfirming(true); else submit(); }}>
+          <button className="btn primary block big" onClick={() => { haptic('medium'); if (blanks) { sfx.sheetOpen(); setConfirming(true); } else { sfx.submit(); submit(); } }}>
             Submit exam {blanks ? `(${blanks} blank)` : <Icon name="check" />}
           </button>
         ) : (

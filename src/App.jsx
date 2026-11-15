@@ -31,6 +31,7 @@ import { Onboarding } from './screens/Onboarding.jsx';
 import { Placement } from './screens/Placement.jsx';
 import { Plan } from './screens/Plan.jsx';
 import { scrollToTop } from './lib/scroller.js';
+import { setMusicSettings } from './audio/music.js';
 
 const FOCUS_ROUTES = /^\/(lesson|sprint|welcome|play|bolt|placement)/;
 
@@ -57,6 +58,7 @@ function useApplySettings() {
     root.style.setProperty('--primary-soft', soft);
     document.querySelector('meta[name="theme-color"]')?.setAttribute('content', theme === 'dark' ? '#161412' : '#FFF9F2');
     setSoundEnabled(st.sound);
+    setMusicSettings({ sound: st.sound, music: st.music });
     setHapticsEnabled(st.haptics);
   }, [st, sysDark, reduced, accent]);
   return reduced;

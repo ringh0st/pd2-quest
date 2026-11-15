@@ -18,6 +18,7 @@ import { WinScreen } from '../components/game/WinScreen.jsx';
 import { ParkIt } from '../components/ParkIt.jsx';
 import { Icon } from '../components/icons/Icon.jsx';
 import { saveRun, loadRun, clearRun, questionsFor } from '../state/runSession.js';
+import { useStudyMusic } from '../hooks/useStudyMusic.js';
 
 const KIND_LABEL = {
   text: '', code: 'Code', list: '',
@@ -35,6 +36,7 @@ function cardLabel(card) {
 }
 
 export function Lesson({ id }) {
+  useStudyMusic();
   const lesson = lessonById[id];
   // Pick up where you left off: the card you were on, or the quick check mid-way.
   const [saved] = useState(() => (lesson ? loadRun(lesson.id) : null));

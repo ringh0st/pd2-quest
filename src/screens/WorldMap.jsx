@@ -65,7 +65,7 @@ export function WorldMap() {
                     <span className="small with-icon"><Icon name="lock" /> Opens at <Icon name="star" fill className="ic-gold-fill" />{WORLD_UNLOCK_STARS[sec.id]}<span className="sr-only"> stars</span> ({need} to go)</span>
                     <button
                       className="btn gold small" disabled={s.coins < WORLD_UNLOCK_COINS}
-                      onClick={() => { unlockWorld(sec.id, WORLD_UNLOCK_COINS); sfx.chest(); haptic('success'); celebrate(30); showToast(`${t.name} unlocked!`); }}
+                      onClick={() => { unlockWorld(sec.id, WORLD_UNLOCK_COINS); sfx.unlock(); haptic('success'); celebrate(30); showToast(`${t.name} unlocked!`); }}
                     ><Icon name="coin" />{WORLD_UNLOCK_COINS}<span className="sr-only"> coins:</span> Unlock<span className="sr-only"> {t.name} now</span></button>
                     <a className="btn small" href={`#/placement/${sec.id}`} onClick={() => sfx.tap()}><Icon name="target" /> Test in<span className="sr-only"> to {t.name}</span></a>
                   </div>

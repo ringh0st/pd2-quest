@@ -124,8 +124,7 @@ export function PracticeRunner({ questions, onDone, onExit, topRight, requeue = 
       haptic(nextCombo >= 3 ? 'double' : 'light');
       if ([3, 5, 10].includes(nextCombo)) { sfx.combo(nextCombo >= 10 ? 4 : nextCombo >= 5 ? 3 : 2); celebrate(24); }
     } else {
-      sfx.wrong();
-      haptic('soft');
+      if (heartsLeft != null) { sfx.heartLost(); haptic('double'); } else { sfx.wrong(); haptic('soft'); }
       if (requeue && !requeued.current.has(q.id)) {
         requeued.current.add(q.id);
         nextQueue = [...queue];

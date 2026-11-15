@@ -15,6 +15,7 @@ export const DEFAULT_SETTINGS = {
   calm: false,            // calm mode: fewer effects, softer celebrations
   motion: 'system',       // system | full | reduced
   sound: true,
+  music: true,           // soft background music in study screens (needs sound on)
   haptics: true,
   font: 'atkinson',       // atkinson | lexend
   textScale: 1,           // 0.9 .. 1.3

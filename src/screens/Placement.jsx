@@ -16,8 +16,10 @@ import { Icon } from '../components/icons/Icon.jsx';
 import { HeroArt } from '../components/art/HeroArt.jsx';
 import { WorldEmblem } from '../components/art/WorldEmblem.jsx';
 import { haptic } from '../audio/haptics.js';
+import { useStudyMusic } from '../hooks/useStudyMusic.js';
 
 export function Placement({ a, b }) {
+  useStudyMusic();
   const lessonMode = a === 'lesson';
   const lesson = lessonMode ? lessonById[b] : null;
   const section = lessonMode ? (lesson ? sectionById[lesson.section] : null) : sectionById[a];

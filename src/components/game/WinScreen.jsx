@@ -22,11 +22,17 @@ export function WinScreen({ kind, title, stars, prevStars = 0, coins = 0, xp = 0
   useHoldCelebrations(true); // badges & level-ups wait until you leave this screen
 
   useEffect(() => {
+    const timers = [];
     if (won) {
-      sfx.levelUp(); haptic('celebrate');
-      setTimeout(() => celebrate(kind === 'boss' ? 60 : 45), 300 + stars * 380);
-    } else { sfx.done(); haptic('soft'); }
+      if (kind === 'boss') sfx.bossWin(); else sfx.levelUp();
+      haptic('celebrate');
+      // one rising chime per star as each lands, then the coin clink when the rewards appear
+      for (let i = 1; i <= stars; i++) timers.push(setTimeout(() => { sfx.star(i); haptic('light'); }, 420 + i * 380));
+      if (coins > 0) timers.push(setTimeout(() => sfx.coin(), 1550));
+      timers.push(setTimeout(() => celebrate(kind === 'boss' ? 60 : 45), 300 + stars * 380));
+    } else { if (kind === 'boss') sfx.bossLose(); else sfx.done(); haptic('soft'); }
     announce(won ? `Level complete. ${stars} stars. Plus ${coins} coins and ${xp} XP.` : 'Not this time. Try again!');
+    return () => timers.forEach(clearTimeout);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const heading = !won ? (kind === 'boss' ? 'The boss got away!' : kind === 'lesson' ? 'Let’s run that again' : 'So close!') : kind === 'boss' ? 'BOSS DEFEATED!' : stars === 3 ? 'PERFECT!' : 'Level complete!';

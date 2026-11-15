@@ -68,7 +68,7 @@ export function QuestionView({ question, chosen, onToggle, revealed, nudge, shak
               aria-checked={isChosen}
               disabled={revealed || gone}
               aria-hidden={gone || undefined}
-              onClick={() => { sfx.tap(); haptic('light'); onToggle(i, multi); }}
+              onClick={() => { sfx.select(); haptic('light'); onToggle(i, multi); }}
               initial={reduced ? false : { opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: reduced ? 0 : 0.04 * i, duration: 0.25, ease: [0.2, 0, 0, 1] }}

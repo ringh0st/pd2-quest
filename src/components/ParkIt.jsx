@@ -5,6 +5,7 @@ import { useFeedback } from './Feedback.jsx';
 import { sfx } from '../audio/sfx.js';
 import { Sheet } from './Sheet.jsx';
 import { Icon } from './icons/Icon.jsx';
+import { haptic } from '../audio/haptics.js';
 
 export function ParkIt() {
   const [open, setOpen] = useState(false);
@@ -17,12 +18,12 @@ export function ParkIt() {
     parkThought(text);
     setText('');
     setOpen(false);
-    sfx.done();
+    sfx.park(); haptic('light');
     showToast(<><Icon name="park" /> Parked! Back to it.</>);
   };
   return (
     <>
-      <button className="icon-btn" onClick={() => { sfx.tap(); setOpen(true); }} aria-label="Park a distracting thought" title="Park a thought" aria-haspopup="dialog"><Icon name="park" /></button>
+      <button className="icon-btn" onClick={() => { sfx.sheetOpen(); setOpen(true); }} aria-label="Park a distracting thought" title="Park a thought" aria-haspopup="dialog"><Icon name="park" /></button>
       <Sheet open={open} onClose={close} labelledBy="park-title">
         <form className="stack" onSubmit={save}>
           <h2 id="park-title" className="pq-head"><span className="pq-tile" data-tone="green"><Icon name="park" /></span><span>Park that thought</span></h2>

@@ -20,6 +20,7 @@ import { sfx } from '../audio/sfx.js';
 import { haptic } from '../audio/haptics.js';
 import { Icon } from '../components/icons/Icon.jsx';
 import { BossArt } from '../components/art/BossArt.jsx';
+import { useStudyMusic } from '../hooks/useStudyMusic.js';
 
 /** A row of filled hearts, read out as a number. */
 function HeartRow({ count }) {
@@ -53,6 +54,7 @@ function pickQuestions(level) {
 }
 
 export function Play({ id }) {
+  useStudyMusic();
   const level = levelById[id];
   const [phase, setPhase] = useState('intro');
   const [run, setRun] = useState(0);
@@ -146,6 +148,7 @@ export function Play({ id }) {
         helpers
         onExit={leave}
         onDone={done}
+        onAnswer={isBoss ? (right) => { if (right) { sfx.bossHit(); haptic('medium'); } } : undefined}
         shouldStop={isBoss ? (s) => s.right >= BOSS_HP : undefined}
         header={isBoss ? (st) => <BossPanel theme={theme} world={level.world} hits={st.stats.right} lastRight={st.revealed ? st.lastRight : null} /> : undefined}
       />

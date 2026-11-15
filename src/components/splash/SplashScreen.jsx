@@ -44,7 +44,7 @@ export function SplashScreen({ onDone }) {
   }, [leaving, onDone]);
 
   const skip = () => setReady(true);
-  const start = (e) => { e.stopPropagation(); sfx.levelUp(); haptic('success'); setLeaving(true); };
+  const start = (e) => { e.stopPropagation(); sfx.start(); haptic('success'); setLeaving(true); };
 
   return (
     <div

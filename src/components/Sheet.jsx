@@ -2,6 +2,7 @@
 import { useEffect, useRef } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { useReducedMotion } from '../hooks/useMotionPrefs.js';
+import { sfx } from '../audio/sfx.js';
 
 const FOCUSABLE = 'button:not([disabled]), [href], input:not([disabled]), textarea:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
@@ -11,6 +12,7 @@ export function Sheet({ open, onClose, labelledBy, children }) {
 
   useEffect(() => {
     if (!open) return;
+    sfx.sheetOpen();
     const opener = document.activeElement;
     const first = () => {
       const el = ref.current;

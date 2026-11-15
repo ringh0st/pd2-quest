@@ -64,6 +64,7 @@ export function CelebrationLayer() {
       if (!items.length) { takeEvents(count); return; }
       const onlySmall = items.every((x) => x.small);
       if (calm || onlySmall) {
+        if (!calm) { sfx.streak(); haptic('light'); }
         showToast(items.slice(0, 2).map((x) => x.title).join(' · '), items[0].icon);
         takeEvents(count);
         return;
@@ -71,7 +72,7 @@ export function CelebrationLayer() {
       shownPath.current = path;
       setShown({ items, count });
       const top = items[0];
-      if (top.title.startsWith('Level')) sfx.levelUp(); else sfx.chest();
+      if (top.title.startsWith('Level')) sfx.levelUp(); else if (items.every((x) => x.small)) sfx.streak(); else sfx.chest();
       haptic('celebrate');
       celebrate(top.rank >= 3 ? 60 : 40);
       announce(items.map((x) => `${x.title} ${x.body}`).join('. '));

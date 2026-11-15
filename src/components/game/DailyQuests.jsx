@@ -41,7 +41,7 @@ export function DailyQuests() {
               {done && !got && (
                 <motion.button
                   className="btn gold small quest-claim" aria-label={`Claim ${COINS.dailyQuest} coins for: ${q.text}`} animate={reduced ? {} : { scale: [1, 1.08, 1] }} transition={{ duration: 0.9, repeat: 3 }}
-                  onClick={() => { claimQuest(q, { coins: COINS.dailyQuest, bonus: COINS.allQuestsBonus }); sfx.chest(); haptic('success'); celebrate(30); showToast(`+${COINS.dailyQuest} coins!`, 'coin'); }}
+                  onClick={() => { claimQuest(q, { coins: COINS.dailyQuest, bonus: COINS.allQuestsBonus }); sfx.quest(); haptic('success'); celebrate(30); showToast(`+${COINS.dailyQuest} coins!`, 'coin'); }}
                 >Claim <Icon name="coin" /> {COINS.dailyQuest}</motion.button>
               )}
             </li>

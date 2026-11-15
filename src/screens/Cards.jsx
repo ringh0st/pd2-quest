@@ -15,6 +15,7 @@ import { haptic } from '../audio/haptics.js';
 import { useFocusMode } from '../hooks/useFocusMode.js';
 import { ParkIt } from '../components/ParkIt.jsx';
 import { Icon } from '../components/icons/Icon.jsx';
+import { useStudyMusic } from '../hooks/useStudyMusic.js';
 
 const NEW_PER_DECK = 10;
 
@@ -27,6 +28,7 @@ function buildDeck(sectionId) {
 }
 
 export function Cards({ query }) {
+  useStudyMusic();
   const [sectionId, setSectionId] = useState(query.section || '');
   const [deck, setDeck] = useState(null);
   const [i, setI] = useState(0);
@@ -92,7 +94,7 @@ export function Cards({ query }) {
     gradeCard(card.id, g);
     earn(XP.flashcard);
     setTally((t) => ({ ...t, [g]: t[g] + 1 }));
-    if (g === 'again') { sfx.wrong(); haptic('soft'); } else { sfx.correct(g === 'easy' ? 3 : 1); haptic('light'); }
+    if (g === 'again') { sfx.gradeAgain(); haptic('soft'); } else if (g === 'easy') { sfx.gradeEasy(); haptic('double'); } else { sfx.gradeGood(); haptic('light'); }
     setFlipped(false);
     if (i + 1 >= deck.length) { sfx.done(); celebrate(40); }
     setI(i + 1);

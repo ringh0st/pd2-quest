@@ -13,7 +13,7 @@ export function Switch({ label, hint, checked, onChange, disabled = false }) {
       </div>
       <button
         type="button" role="switch" aria-checked={checked} aria-labelledby={id} aria-describedby={hint ? `${id}-hint` : undefined} className="switch" disabled={disabled}
-        onClick={() => { sfx.tap(); haptic('light'); onChange(!checked); }}
+        onClick={() => { if (checked) sfx.toggleOff(); else sfx.toggleOn(); haptic('light'); onChange(!checked); }}
       />
     </div>
   );
@@ -23,7 +23,7 @@ export function Segmented({ label, options, value, onChange }) {
   const id = useId();
   const pickAt = (k, e) => {
     const [v] = options[(k + options.length) % options.length];
-    sfx.tap(); haptic('light'); onChange(v);
+    sfx.select(); haptic('light'); onChange(v);
     const btns = e.currentTarget.parentElement.querySelectorAll('[role="radio"]');
     btns[(k + options.length) % options.length]?.focus();
   };
@@ -35,7 +35,7 @@ export function Segmented({ label, options, value, onChange }) {
           <button
             key={String(v)} type="button" role="radio" aria-checked={value === v}
             tabIndex={value === v || (k === 0 && !options.some(([x]) => x === value)) ? 0 : -1}
-            onClick={() => { sfx.tap(); haptic('light'); onChange(v); }}
+            onClick={() => { sfx.select(); haptic('light'); onChange(v); }}
             onKeyDown={(e) => {
               if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { e.preventDefault(); pickAt(k + 1, e); }
               if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); pickAt(k - 1, e); }

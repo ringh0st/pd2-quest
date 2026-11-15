@@ -15,6 +15,7 @@ import { isDue } from '../engine/srs.js';
 import { useHoldCelebrations } from '../hooks/useFocusMode.js';
 import { Icon } from '../components/icons/Icon.jsx';
 import { HeroArt } from '../components/art/HeroArt.jsx';
+import { useStudyMusic } from '../hooks/useStudyMusic.js';
 
 function makeRound(query) {
   const s = getState();
@@ -27,6 +28,7 @@ function makeRound(query) {
 }
 
 export function Sprint({ query }) {
+  useStudyMusic();
   const [round, setRound] = useState(() => ({ n: 1, questions: makeRound(query) }));
   const [result, setResult] = useState(null);
   const [totals, setTotals] = useState({ right: 0, answered: 0, xp: 0 });

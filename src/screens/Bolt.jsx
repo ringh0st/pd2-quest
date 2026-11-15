@@ -17,6 +17,7 @@ import { HeroArt } from '../components/art/HeroArt.jsx';
 import { totalLessons } from '../state/selectors.js';
 import { sfx } from '../audio/sfx.js';
 import { useHoldCelebrations } from '../hooks/useFocusMode.js';
+import { useStudyMusic } from '../hooks/useStudyMusic.js';
 
 /** Same 5 for everyone today: 2 warm-ups from the first worlds, then 3 from anywhere, easiest first. */
 export function boltQuestions(day) {
@@ -27,6 +28,7 @@ export function boltQuestions(day) {
 }
 
 export function Bolt() {
+  useStudyMusic();
   const today = dayKey();
   const bolt = useStore((s) => s.bolt);
   const questions = useMemo(() => boltQuestions(today), [today]);
