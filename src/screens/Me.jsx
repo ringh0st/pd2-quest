@@ -44,7 +44,7 @@ export function Me() {
 
       <section className="hero me-hero" aria-label="Level">
         <ProgressRing value={lv.progress} size={96} stroke={11} color="var(--gold-meter)" label={`Level ${lv.level}, ${Math.round(lv.progress * 100)}% to next`}>
-          <div><div style={{ fontSize: 12, fontWeight: 700 }} className="muted">LEVEL</div><div style={{ fontSize: 30, fontWeight: 700 }}>{lv.level}</div></div>
+          <div><div style={{ fontSize: 'calc(13px * var(--text-scale))', fontWeight: 700 }} className="muted">LEVEL</div><div style={{ fontSize: 30, fontWeight: 700 }}>{lv.level}</div></div>
         </ProgressRing>
         <div className="stack-s grow">
           <strong style={{ fontSize: 19 }}>{rankFor(lv.level)}</strong>

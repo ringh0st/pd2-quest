@@ -110,7 +110,7 @@ export function Home() {
             <motion.span aria-hidden="true" style={{ display: 'inline-grid' }} animate={reduced || !streak || calm ? {} : { scale: [1, 1.15, 1], rotate: [0, -5, 5, 0] }} transition={{ duration: 1.6, repeat: 1 }}><Icon name="flame" className={streak ? 'ic-flame' : ''} /></motion.span>
             <CountUp value={streak} />
             <span className="sr-only"> days, {s.streak.freezes} freezes. Open profile</span>
-            {s.streak.freezes > 0 && <span aria-hidden="true" className="ic-label" style={{ fontSize: 13, gap: 2 }}><Icon name="freeze" className="ic-freeze" />{s.streak.freezes}</span>}
+            {s.streak.freezes > 0 && <span aria-hidden="true" className="ic-label" style={{ fontSize: 'calc(14px * var(--text-scale))', gap: 2 }}><Icon name="freeze" className="ic-freeze" />{s.streak.freezes}</span>}
           </button>
           <CoinChip />
           <ThemeToggle />
@@ -151,7 +151,7 @@ export function Home() {
           <ProgressRing value={goalP} size={84} stroke={10} color={goalP >= 1 ? 'var(--gold-meter)' : 'var(--primary)'} label={`Daily goal ${today.xp} of ${s.dailyGoal} XP`}>
             <div>
               <div style={{ fontSize: 20, fontWeight: 700 }}>{goalP >= 1 ? <Icon name="target" className="ic-gold" size="1.2em" /> : <CountUp value={today.xp} />}</div>
-              <div className="small muted" style={{ fontSize: 11 }}>/ {s.dailyGoal} XP</div>
+              <div className="small muted" style={{ fontSize: 'calc(13px * var(--text-scale))' }}>/ {s.dailyGoal} XP</div>
             </div>
           </ProgressRing>
           <div className="grow stack-s" style={{ flex: '1 1 120px' }}>
