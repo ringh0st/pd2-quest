@@ -2,7 +2,7 @@
 // Run against `npm run preview` (E2E_BASE overrides the URL).
 const { chromium } = require('playwright');
 const BASE = process.env.E2E_BASE || 'http://localhost:4173/';
-const ROUTES = ['', 'map', 'world/fund', 'world/auto', 'world/test', 'lesson/fund-1', 'play/fund-hard-1', 'play/fund-boss', 'sprint', 'sprint?section=auto', 'sprint?section=test', 'sprint?hard=1', 'cards', 'exam', 'me', 'settings', 'resources', 'shop', 'bolt'];
+const ROUTES = ['', 'map', 'world/fund', 'world/auto', 'world/test', 'lesson/fund-1', 'play/fund-hard-1', 'play/fund-boss', 'sprint', 'sprint?section=auto', 'sprint?section=test', 'sprint?hard=1', 'cards', 'exam', 'me', 'settings', 'resources', 'shop', 'bolt', 'plan', 'placement/fund', 'placement/lesson/fund-2'];
 const seed = (scale, font) => ({
   v: 1, onboarded: true, name: 'Sam', xp: 900, coins: 400, stars: { 'fund-1': 3, 'fund-2': 2, 'fund-3': 3, 'fund-hard-1': 2 }, lessons: {},
   settings: { theme: 'light', calm: false, motion: 'reduced', sound: false, haptics: false, font, textScale: scale, sprintSize: 5, focusMinutes: 10 },

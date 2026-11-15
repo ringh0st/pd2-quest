@@ -75,9 +75,11 @@ function todayTasks({ remaining, dueReviews, perDay, mock }) {
 export function weeklyPlan({ remaining, daysLeft, learnDays, perDay }) {
   const weeks = [];
   const learnWeeks = Math.max(0, Math.ceil(Math.min(learnDays, Math.max(0, daysLeft - FINAL_DAYS)) / 7));
+  // Spread levels evenly over the learning weeks (no near-empty last week).
+  const perWeek = learnWeeks ? Math.ceil(remaining.length / learnWeeks) : perDay * 7;
   let k = 0;
   for (let w = 0; w < learnWeeks && k < remaining.length; w++) {
-    const chunk = remaining.slice(k, k + perDay * 7);
+    const chunk = remaining.slice(k, k + perWeek);
     k += chunk.length;
     weeks.push({ week: w + 1, kind: 'learn', levels: chunk.length, worlds: [...new Set(chunk.map((l) => l.world))], bosses: chunk.filter((l) => l.kind === 'boss').length });
   }

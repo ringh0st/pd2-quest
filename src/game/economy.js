@@ -17,14 +17,16 @@ export const HELPERS = {
   heart: { id: 'heart', name: 'Extra heart', emoji: '❤️', price: 60, max: 3, about: 'Start a Boss or Hard level with one more heart.' },
 };
 
+// Outfits are drawn as vector parts on Zap (src/components/game/Zap.jsx). `slot` says where they sit
+// (head: on the bolt's top edge, eyes: over the eyes) and `look` is the screen-reader description.
 export const OUTFITS = [
-  { id: 'cap', name: 'Dev cap', emoji: '🧢', price: 60 },
-  { id: 'shades', name: 'Deploy shades', emoji: '🕶️', price: 90 },
-  { id: 'top', name: 'Fancy top hat', emoji: '🎩', price: 120 },
-  { id: 'grad', name: 'Grad cap', emoji: '🎓', price: 150 },
-  { id: 'cowboy', name: 'Bug wrangler', emoji: '🤠', price: 180 },
-  { id: 'party', name: 'Party hat', emoji: '🥳', price: 200 },
-  { id: 'crown', name: 'PD2 crown', emoji: '👑', price: 400 },
+  { id: 'cap', name: 'Dev cap', emoji: '🧢', price: 60, slot: 'head', look: 'a teal baseball cap' },
+  { id: 'shades', name: 'Deploy shades', emoji: '🕶️', price: 90, slot: 'eyes', look: 'dark sunglasses' },
+  { id: 'top', name: 'Fancy top hat', emoji: '🎩', price: 120, slot: 'head', look: 'a tall black top hat' },
+  { id: 'grad', name: 'Grad cap', emoji: '🎓', price: 150, slot: 'head', look: 'a graduation cap with a gold tassel' },
+  { id: 'cowboy', name: 'Bug wrangler', emoji: '🤠', price: 180, slot: 'head', look: 'a brown cowboy hat' },
+  { id: 'party', name: 'Party hat', emoji: '🥳', price: 200, slot: 'head', look: 'a spotty party hat' },
+  { id: 'crown', name: 'PD2 crown', emoji: '👑', price: 400, slot: 'head', look: 'a gold crown with gems' },
 ];
 
 // Accent themes: every pair checked for WCAG AA (on-primary ≥4.5:1 on primary, primary ≥3:1 on bg).

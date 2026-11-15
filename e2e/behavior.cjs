@@ -102,6 +102,52 @@ const ok = (name, pass, info = '') => results.push(`${pass ? 'PASS' : 'FAIL'}  $
   await page.goto(BASE + '#/play/constructor'); await page.waitForTimeout(400);
   ok('#/play/constructor shows "not found", no crash', /not found/i.test(await page.evaluate(() => document.body.innerText)));
 
+  // 8. Boss run: leave mid-fight, come back, Resume continues at the next question
+  await page.evaluate(() => localStorage.setItem('pd2quest.v1', JSON.stringify({ v: 1, onboarded: true, settings: { motion: 'reduced', sound: false }, stars: Object.fromEntries(['fund-1', 'fund-2', 'fund-3', 'fund-hard-1', 'fund-4', 'fund-5', 'fund-6', 'fund-hard-2', 'fund-7', 'fund-8', 'fund-9'].map((id) => [id, 1])) })));
+  await page.goto(BASE + '#/play/fund-boss'); await page.reload(); await page.waitForTimeout(400);
+  const fight = page.getByRole('button', { name: /FIGHT/ });
+  if (await fight.count()) {
+    await fight.click(); await page.waitForTimeout(300);
+    for (let k = 0; k < 2; k++) {
+      const multi = await page.locator('.choose-n').count();
+      await page.locator('.option').nth(0).click();
+      if (multi) await page.locator('.option').nth(1).click();
+      await page.getByRole('button', { name: 'Check' }).click();
+      await page.getByRole('button', { name: /Continue|See result|Finish/ }).click();
+      await page.waitForTimeout(200);
+    }
+    await page.getByRole('button', { name: 'Leave session' }).click(); await page.waitForTimeout(300);
+    await page.goto(BASE + '#/play/fund-boss'); await page.waitForTimeout(400);
+    const resumeBtn = page.getByRole('button', { name: /Resume/ });
+    ok('boss fight can be resumed after leaving', await resumeBtn.count() === 1, await resumeBtn.count() ? await resumeBtn.innerText() : 'no button');
+    if (await resumeBtn.count()) {
+      await resumeBtn.click(); await page.waitForTimeout(300);
+      const now = await page.locator('.bar[aria-label="Session progress"]').getAttribute('aria-valuenow');
+      ok('resumed at question 3', now === '2', `progress=${now}`);
+    }
+  } else ok('boss intro reachable', false);
+
+  // 9. Placement: all wrong → nothing skipped; result screen lists lessons
+  await page.goto(BASE + '#/placement/fund'); await page.waitForTimeout(400);
+  await page.getByRole('button', { name: /Start/ }).click(); await page.waitForTimeout(200);
+  for (let k = 0; k < 15; k++) {
+    if (!(await page.locator('.option:not([disabled])').count())) break;
+    const multi = await page.locator('.choose-n').count();
+    await page.locator('.option').nth(0).click();
+    if (multi) await page.locator('.option').nth(1).click();
+    await page.getByRole('button', { name: 'Check' }).click();
+    await page.getByRole('button', { name: /Continue|Finish/ }).click();
+    await page.waitForTimeout(120);
+  }
+  ok('placement reaches its result', /Placement done/.test(await page.evaluate(() => document.body.innerText)));
+
+  // 10. Study plan with an exam date
+  await page.evaluate(() => { const s = JSON.parse(localStorage.getItem('pd2quest.v1')); s.examDate = new Date(Date.now() + 40 * 864e5).toISOString().slice(0, 10); localStorage.setItem('pd2quest.v1', JSON.stringify(s)); });
+  await page.goto(BASE + '#/'); await page.reload(); await page.waitForTimeout(900);
+  ok('Home shows Today’s plan', /Today’s plan/.test(await page.evaluate(() => document.body.innerText)));
+  await page.goto(BASE + '#/plan'); await page.waitForTimeout(400);
+  ok('week-by-week plan renders', (await page.locator('main li.card').count()) >= 2);
+
   ok('no uncaught page errors', errors.length === 0, errors.slice(0, 3).join(' | '));
   await browser.close();
   console.log(results.join('\n'));
