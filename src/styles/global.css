@@ -952,6 +952,13 @@ h1[tabindex='-1']:focus, h2[tabindex='-1']:focus { outline: none; }
 @media (max-width: 359px) { .quest-claim { grid-column: 2 / -1; justify-self: start; } }
 /* shop */
 .shop-tab { display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
+/* one row of four tabs (icon over label) from 340px up; 2x2 below */
+@media (min-width: 340px) {
+  .shop-tabs { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .shop-tabs button { padding-inline: 2px; font-size: var(--fs-small); }
+  .shop-tab { flex-direction: column; gap: 2px; }
+  .shop-tab .icon { font-size: 1.25em; }
+}
 .shop-tab .icon { color: var(--text-muted); }
 .shop-tabs button[aria-selected='true'] .shop-tab .icon { color: var(--primary); }
 .shop-chips { display: flex; flex-wrap: wrap; gap: 6px; justify-content: inherit; }
@@ -966,7 +973,8 @@ h1[tabindex='-1']:focus, h2[tabindex='-1']:focus { outline: none; }
 .tryon-state .ic-label { vertical-align: middle; }
 .tryon .btn .icon { vertical-align: -0.15em; }
 /* daily bolt */
-.bolt-tile { --tile: calc(84px * var(--text-scale)); color: var(--gold-ledge); }
+.bolt-screen > .bolt-card { margin: auto; }
+.bolt-tile { --tile: calc(88px * var(--text-scale)); font-size: calc(var(--tile) * 0.58); color: var(--gold-ledge); }
 .bolt-tile .icon { fill: var(--gold); }
 .bolt-reward { display: grid; gap: 2px; justify-items: center; }
 .bolt-card .btn .icon { vertical-align: -0.15em; }

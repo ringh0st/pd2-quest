@@ -18,10 +18,12 @@ import { Icon } from './icons/Icon.jsx';
 
 const SETTLE_MS = 900;
 
+const withArticle = (w) => `${/^[aeiou]/i.test(w) ? 'an' : 'a'} ${w}`;
+
 // Each moment: `art` is the HeroArt kind for the big picture, `icon` the Icon used in lists and toasts.
 function line(ev) {
   switch (ev.type) {
-    case 'levelUp': return { art: 'levelUp', icon: 'trend', tone: 'primary', title: `Level ${ev.level}!`, body: `You’re now a ${rankFor(ev.level)}.`, rank: 3 };
+    case 'levelUp': return { art: 'levelUp', icon: 'trend', tone: 'primary', title: `Level ${ev.level}!`, body: `You’re now ${withArticle(rankFor(ev.level))}.`, rank: 3 };
     case 'goal': return { art: 'goal', icon: 'target', tone: 'correct', title: 'Daily goal smashed!', body: 'Anything more today is bonus XP.', rank: 2 };
     case 'chest': return ev.coins
       ? { art: 'chest', icon: 'gift', tone: 'gold', title: ev.title || 'Bonus chest!', body: `+${ev.coins} coins for the shop.`, rank: 1 }

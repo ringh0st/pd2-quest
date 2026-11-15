@@ -8,7 +8,6 @@ import { shuffle } from '../engine/session.js';
 import { COINS } from '../game/economy.js';
 import { dayKey } from '../engine/dates.js';
 import { PracticeRunner } from '../components/PracticeRunner.jsx';
-import { Zap } from '../components/game/Zap.jsx';
 import { Stars } from '../components/game/Stars.jsx';
 import { go } from '../hooks/useRoute.js';
 import { useFeedback } from '../components/Feedback.jsx';
@@ -63,11 +62,11 @@ export function Bolt() {
 
   const stars = result ? (result.right >= 5 ? 3 : result.right >= 4 ? 2 : result.right >= 2 ? 1 : 0) : 0;
   return (
-    <main className="screen focus" id="main" style={{ justifyContent: 'center' }}>
-      <div className="topbar" style={{ position: 'absolute', top: 'calc(12px + var(--safe-t))', left: 16 }}>
+    <main className="screen focus bolt-screen" id="main">
+      <div className="topbar">
         <button className="icon-btn" onClick={() => go('/')} aria-label="Close Daily Bolt"><Icon name="close" /></button>
       </div>
-      <motion.div className="celebrate-card bolt-card" style={{ margin: '0 auto' }} initial={reduced ? { opacity: 0 } : { scale: 0.7, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ type: 'spring', stiffness: 380, damping: 20 }}>
+      <motion.div className="celebrate-card bolt-card" initial={reduced ? { opacity: 0 } : { scale: 0.7, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ type: 'spring', stiffness: 380, damping: 20 }}>
         {phase === 'intro' || stars < 3
           ? (
             <motion.div
@@ -83,7 +82,6 @@ export function Bolt() {
           <>
             <p>5 surprise questions, warm-ups first. Same for everyone today.</p>
             <p className="small muted bolt-reward"><span className="ic-label"><span className="ic-gold"><Icon name="coin" /></span>{COINS.dailyBolt} coins + 4 per right answer</span><span>Counts toward the Bolt Chaser badge</span></p>
-            <Zap mood="cheer" size={70} />
             <button className="btn primary block big" autoFocus onClick={() => { sfx.tap(); setPhase('run'); }}><Icon name="bolt" fill /> Strike!</button>
           </>
         ) : (

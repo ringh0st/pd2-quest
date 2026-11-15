@@ -203,7 +203,7 @@ function TryOn({ entry, s, titleId, onBuy, onUse, onTakeOff, onCancel }) {
 
       <div className="stack-s">
         {needsBuying && short === 0 && (
-          <button className="btn gold block" onClick={() => onBuy(entry)} aria-label={`Buy ${entry.name} for ${entry.price} coins`}>Buy for <Icon name="coin" /> {entry.price}</button>
+          <button className="btn gold block" onClick={() => onBuy(entry)} aria-label={`Buy ${entry.name} for ${entry.price} coins`}>Buy for <span className="ic-label"><Icon name="coin" />{entry.price}</span></button>
         )}
         {needsBuying && short > 0 && (
           <>
