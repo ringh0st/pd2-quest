@@ -106,9 +106,9 @@ export function Exam() {
           <Icon name="chevron" />
         </button>
       ))}
-      <a className="card link row" href="#/sprint?hard=1" onClick={() => sfx.tap()}>
+      <a className="card link section-card" href="#/sprint?hard=1" onClick={() => sfx.tap()}>
         <span className="ic-tile lg flame" aria-hidden="true"><Icon name="flame" /></span>
-        <span className="grow"><strong>Exam-hard sprint</strong><br /><span className="small muted">Short rounds of only the toughest questions, with explanations</span></span>
+        <span><strong>Exam-hard sprint</strong><br /><span className="small muted">Short rounds of only the toughest questions, with explanations</span></span>
         <Icon name="chevron" />
       </a>
       {last && (

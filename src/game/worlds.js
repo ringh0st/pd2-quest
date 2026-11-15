@@ -2,29 +2,29 @@
 
 export const WORLD_THEMES = {
   fund: {
-    name: 'Sharing Shrine', emoji: '🏯', scenery: ['🌸', '🪷', '🏮', '🌿', '🗻'],
+    name: 'Sharing Shrine',
     sky: ['#FFE3EC', '#FFF4E0'], skyDark: ['#2A1630', '#1A1424'],
-    boss: { name: 'The Sharing Sphinx', emoji: '🗿', taunt: 'Who can see this record? Answer, or be locked out forever!', defeat: 'Fine… your access is… granted.' },
+    boss: { name: 'The Sharing Sphinx', taunt: 'Who can see this record? Answer, or be locked out forever!', defeat: 'Fine… your access is… granted.' },
   },
   auto: {
-    name: 'Async Forge', emoji: '⚙️', scenery: ['🔥', '⛓️', '🛠️', '🪨', '⚒️'],
+    name: 'Async Forge',
     sky: ['#FFE6D6', '#FFF6E8'], skyDark: ['#2E1A12', '#1C1418'],
-    boss: { name: 'The Recursion Hydra', emoji: '🐉', taunt: 'Cut off one trigger and two more fire!', defeat: 'Static Set<Id>… my one weakness…' },
+    boss: { name: 'The Recursion Hydra', taunt: 'Cut off one trigger and two more fire!', defeat: 'Static Set<Id>… my one weakness…' },
   },
   ui: {
-    name: 'Pixel Bay', emoji: '🏝️', scenery: ['🌴', '🐚', '⛵', '🦀', '🌊'],
+    name: 'Pixel Bay',
     sky: ['#DDF6F1', '#FFF8EC'], skyDark: ['#0F2A2A', '#141A22'],
-    boss: { name: 'The Re-render Kraken', emoji: '🐙', taunt: 'I will re-render your component… forever!', defeat: 'You used a guard flag?! Blub…' },
+    boss: { name: 'The Re-render Kraken', taunt: 'I will re-render your component… forever!', defeat: 'You used a guard flag?! Blub…' },
   },
   test: {
-    name: 'Bug Swamp', emoji: '🐸', scenery: ['🍄', '🪲', '🐌', '🌾', '🪵'],
+    name: 'Bug Swamp',
     sky: ['#E6F5D8', '#FFF8EA'], skyDark: ['#1A2616', '#16181A'],
-    boss: { name: 'The Flaky Test Toad', emoji: '🦂', taunt: 'Sometimes I pass, sometimes I fail. Ribbit!', defeat: 'You mocked my callouts… croak.' },
+    boss: { name: 'The Flaky Test Toad', taunt: 'Sometimes I pass, sometimes I fail. Ribbit!', defeat: 'You mocked my callouts… croak.' },
   },
   perf: {
-    name: 'Turbo Peaks', emoji: '🏔️', scenery: ['❄️', '🌲', '🦅', '⛷️', '🌨️'],
+    name: 'Turbo Peaks',
     sky: ['#E8EEFF', '#FFF6EE'], skyDark: ['#171C2E', '#141420'],
-    boss: { name: 'The Governor', emoji: '👹', taunt: '101 SOQL queries? LIMIT EXCEPTION!', defeat: 'Bulkified… I am… defeated.' },
+    boss: { name: 'The Governor', taunt: '101 SOQL queries? LIMIT EXCEPTION!', defeat: 'Bulkified… I am… defeated.' },
   },
 };
 

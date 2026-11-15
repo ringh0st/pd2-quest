@@ -779,6 +779,9 @@ h1[tabindex='-1']:focus, h2[tabindex='-1']:focus { outline: none; }
 .placement-list li .icon { vertical-align: -0.15em; }
 /* plan header art */
 .plan-head { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.comeback .btn { text-align: center; }
+.grade-row .btn { flex-direction: column; gap: 2px; min-width: 0; padding: 8px 6px; line-height: 1.15; text-align: center; }
+.grade-row .btn .icon { width: 1.25em; height: 1.25em; }
 /* ===== end icons: home, nav, exam, sprint, cards, lesson, placement, plan ===== */
 /* ===== icons: settings, onboarding, resources, install, practice ===== */
 /* Rounded icon tile where an emoji used to be a big visual. Set the tone with data-tone. */
@@ -819,6 +822,7 @@ h1[tabindex='-1']:focus, h2[tabindex='-1']:focus { outline: none; }
   position: absolute; right: -6px; top: -6px; width: calc(20px * var(--text-scale)); height: calc(20px * var(--text-scale));
   border-radius: 999px; font-size: calc(11px * var(--text-scale)); box-shadow: 0 0 0 2px var(--surface-2);
 }
+.install-tip { background: var(--surface-2); box-shadow: inset 4px 0 0 var(--gold); }
 .pq-path .icon { color: var(--text-muted); vertical-align: -0.2em; }
 /* practice: answer marks, verdict, combo, hearts, helpers */
 .option .mark .icon { stroke-width: 3; }
@@ -827,7 +831,166 @@ h1[tabindex='-1']:focus, h2[tabindex='-1']:focus { outline: none; }
 .hearts .icon { color: var(--incorrect); }
 .hearts .lost .icon { color: var(--text-muted); }
 .hint-card strong .icon { color: var(--gold-text); }
-.why-card .icon { color: var(--incorrect); }
+.why-card li { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 8px; align-items: start; }
+.why-card .icon { color: var(--incorrect); margin-top: 0.15em; }
 .why-card { margin: 0; padding: 10px 12px; border-radius: var(--radius-s); background: var(--surface-2); display: grid; gap: 6px; }
 .pq-error-art { display: grid; place-items: center; }
+.pq-hint { margin: 0; }
+.pq-btn-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 150px), 1fr)); gap: 10px; }
+.pq-btn-grid .btn { white-space: nowrap; }
+.nowrap-date { white-space: nowrap; }
+.pq-weeks { display: grid; gap: 8px; }
+.pq-weeks details { border-radius: var(--radius-s); background: var(--surface-2); }
+.pq-weeks summary {
+  display: flex; align-items: center; gap: 10px; min-height: 48px; padding: 8px 12px;
+  cursor: pointer; list-style: none; font-weight: 700; font-size: calc(15.5px * var(--text-scale)); line-height: 1.3; border-radius: var(--radius-s);
+}
+.pq-weeks summary::-webkit-details-marker { display: none; }
+.pq-week-num {
+  flex: none; display: grid; place-items: center; width: calc(28px * var(--text-scale)); height: calc(28px * var(--text-scale));
+  border-radius: 999px; background: color-mix(in srgb, var(--correct) 18%, var(--surface)); color: var(--correct); font-size: var(--fs-small);
+}
+.pq-week-chev { color: var(--text-muted); transition: transform var(--dur-quick); }
+.pq-weeks details[open] .pq-week-chev { transform: rotate(180deg); }
+.pq-weeks details ul { margin: 0; padding: 0 14px 12px calc(2.4em + 12px); display: grid; gap: 4px; }
 /* ===== end icons: settings, onboarding, resources, install, practice ===== */
+/* ===== worlds & bosses art (WorldMap, World, Play, WinScreen) ===== */
+.with-icon .icon, .with-icon .boss-art { vertical-align: -0.2em; }
+.with-icon .boss-art { vertical-align: middle; margin: -6px 2px -6px 0; }
+.title-with-icon { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.topbar .title-with-icon { overflow-wrap: break-word; line-height: 1.15; }
+.map-head { flex-wrap: wrap; row-gap: 8px; }
+.star-chip { gap: 0.3em; }
+.heart-row { display: inline-flex; align-items: center; gap: 0.1em; color: var(--incorrect); vertical-align: -0.18em; }
+.heart-row.star-row { color: var(--gold-ledge); }
+.heart-row.star-row .icon { fill: var(--gold); }
+.heart-fill { fill: currentColor; }
+.helpers-note { justify-content: center; }
+.resume-meta { display: inline-flex; align-items: center; gap: 0.3em; flex-wrap: wrap; }
+.next-label { min-width: 0; overflow-wrap: anywhere; }
+
+/* scenery layer: decorative, behind content, never interactive */
+.scenery-layer { position: absolute; inset: 0; pointer-events: none; overflow: hidden; opacity: 0.5; z-index: 0; }
+:root[data-theme='dark'] .scenery-layer { opacity: 0.38; }
+:root[data-calm='true'] .scenery-layer { opacity: 0.28; }
+.scenery-bit { position: absolute; display: block; }
+.scenery-card .scenery-bit { transform: translateX(-50%); }
+.world-card > :not(.scenery-layer) { position: relative; z-index: 1; }
+.world-card .world-emblem-big { filter: drop-shadow(0 4px 6px rgb(0 0 0 / 0.14)); }
+.world-card.locked .world-emblem-big { filter: grayscale(1); opacity: 0.6; }
+.world-stats { align-items: center; gap: 8px; flex-wrap: wrap; }
+
+/* the climbing path */
+.world-actions { flex-wrap: wrap; }
+.world-actions .btn { min-width: 0; flex: 1 1 auto; white-space: nowrap; }
+.path-map .scenery-layer { opacity: 0.55; }
+:root[data-theme='dark'] .path-map .scenery-layer { opacity: 0.4; }
+.path-map .path-line, .path-map ol { z-index: 1; }
+.node-face { display: grid; place-items: center; line-height: 1; }
+.node-num { font-variant-numeric: tabular-nums; }
+.level-node.done .node-face .icon { color: var(--gold-ledge); fill: var(--surface); }
+.level-node.hard .node-face .icon { font-size: 1.05em; }
+.level-node.boss { overflow: visible; background: color-mix(in srgb, var(--incorrect) 12%, var(--surface)); }
+.level-node.boss.done { background: var(--gold); }
+.level-node.boss.locked .node-face .icon { color: var(--incorrect); }
+.node-wrap.boss .node-label { color: var(--incorrect); letter-spacing: 0.06em; }
+.node-paused .icon { width: 0.95em; height: 0.95em; }
+
+/* intros, battle, KO */
+.stamp { display: inline-flex; align-items: center; gap: 0.4em; }
+.boss-avatar { display: grid; place-items: center; font-size: inherit; filter: drop-shadow(0 8px 10px rgb(0 0 0 / 0.18)); }
+.boss-face { display: grid; place-items: center; font-size: inherit; line-height: 0; flex: none; }
+.dmg { display: inline-flex; align-items: center; gap: 0.2em; line-height: 1.2; }
+.boss-ko { display: inline-grid; place-items: center; font-size: inherit; filter: none; justify-self: center; }
+.boss-ko .ko-stamp {
+  position: absolute; right: -22px; top: 2px;
+  padding: 2px 8px; border-radius: 8px; border: 3px solid var(--incorrect); background: var(--surface);
+  font-size: calc(16px * var(--text-scale)); font-weight: 800; letter-spacing: 0.06em; color: var(--incorrect);
+}
+.win-actions { flex-wrap: wrap; }
+.win-actions .btn { flex: 1 1 auto; white-space: nowrap; }
+.ko-row { display: flex; align-items: flex-end; justify-content: center; gap: 18px; }
+/* ===== end worlds & bosses art ===== */
+/* ===== rewards art: hero art, medals, stars, coins, quests, shop, bolt, me, celebrations ===== */
+/* hero art backdrop: the kind's tone mixed into the surface (follows theme + dark mode) */
+.hero-art .ha-disc, .hero-art .ha-disc[stroke] { fill: color-mix(in srgb, var(--ha-tone, var(--gold)) 22%, var(--surface)); }
+:root[data-theme='dark'] .hero-art .ha-disc { fill: color-mix(in srgb, var(--ha-tone, var(--gold)) 26%, var(--surface-2)); }
+.hero-art, .badge-medal { overflow: visible; }
+.badge-medal .icon, .hero-art .icon { vertical-align: 0; }
+/* celebration card */
+.celebrate-art { display: grid; place-items: center; min-height: 112px; }
+.celebrate-card h2 { overflow-wrap: anywhere; }
+.celebrate-card > p { margin: -6px 0 0; }
+.celebrate-list { display: grid; gap: 8px; padding: 10px; border-radius: var(--radius-m); background: var(--surface-2); }
+.celebrate-item { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.celebrate-item .ic-tile .badge-medal { display: block; }
+.celebrate-line { display: grid; gap: 1px; min-width: 0; overflow-wrap: anywhere; }
+/* toast: icon + text, wraps instead of overflowing on narrow phones */
+.toast { display: flex; align-items: center; gap: 8px; white-space: normal; width: max-content; max-width: calc(100vw - 32px); text-align: left; line-height: 1.3; }
+.toast-icon { display: inline-grid; place-items: center; color: var(--gold); flex: none; }
+.toast-text { display: inline-flex; align-items: center; gap: 6px; flex-wrap: wrap; min-width: 0; }
+/* stars: filled gold when earned, outlined when not */
+.stars .star { color: var(--border); text-shadow: none; -webkit-text-stroke: 0; line-height: 0; }
+.stars .star .icon { width: 1em; height: 1em; vertical-align: 0; fill: color-mix(in srgb, var(--surface-3) 70%, transparent); }
+.stars .star.on { color: var(--gold-ledge); -webkit-text-stroke: 0; }
+.stars .star.on .icon { fill: var(--gold); filter: drop-shadow(0 1px 0 color-mix(in srgb, var(--gold-ledge) 60%, transparent)); }
+.stars .star.raised { font-size: 1.3em; margin: 0 -0.05em; translate: 0 -0.2em; }
+/* coins */
+.coin-chip { gap: 6px; }
+.coin-chip-icon { display: inline-grid; place-items: center; color: var(--gold-ledge); }
+:root[data-theme='dark'] .coin-chip-icon { color: #7A5200; }
+.star-chip { gap: 6px; min-height: 44px; font-size: 16px; }
+/* daily quests */
+.quest { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 8px 10px; }
+.quest > .grow { min-width: 0; }
+.quest-head { gap: 8px; align-items: baseline; }
+.quest-head > span:first-child { min-width: 0; overflow-wrap: break-word; }
+.quest-count { flex: none; font-variant-numeric: tabular-nums; }
+.quest-claim { display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; min-height: 44px; }
+.quest-foot { align-items: flex-start; }
+.quest-foot .icon { margin-top: 0.15em; color: var(--gold-text); }
+@media (max-width: 359px) { .quest-claim { grid-column: 2 / -1; justify-self: start; } }
+/* shop */
+.shop-tab { display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
+.shop-tab .icon { color: var(--text-muted); }
+.shop-tabs button[aria-selected='true'] .shop-tab .icon { color: var(--primary); }
+.shop-chips { display: flex; flex-wrap: wrap; gap: 6px; justify-content: inherit; }
+.shop-card:not(.wide) .shop-chips { justify-content: center; }
+.shop-card .chip .icon { flex: none; }
+.shop-card.wide .ic-tile { --tile: calc(56px * var(--text-scale)); }
+.confetti-sample .cf-disc { fill: color-mix(in srgb, var(--gold) 18%, var(--surface-2)); }
+.tryon-stage.helper { padding-top: 40px; }
+.tryon-stage.helper .ic-tile.xl { --tile: calc(96px * var(--text-scale)); border-radius: 30px; }
+.tryon-bit { display: grid; place-items: center; }
+.tryon-cost { justify-content: center; flex-wrap: wrap; }
+.tryon-state .ic-label { vertical-align: middle; }
+.tryon .btn .icon { vertical-align: -0.15em; }
+/* daily bolt */
+.bolt-tile { --tile: calc(84px * var(--text-scale)); color: var(--gold-ledge); }
+.bolt-tile .icon { fill: var(--gold); }
+.bolt-reward { display: grid; gap: 2px; justify-items: center; }
+.bolt-card .btn .icon { vertical-align: -0.15em; }
+/* me */
+.me-title { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.me-title > span:last-child { min-width: 0; overflow-wrap: anywhere; }
+.me-hero { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 12px 16px; }
+.me-hero .me-chips { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 8px; }
+.me-hero .me-chips > * { flex: 1 1 0; display: flex; }
+.me-hero .me-chips .chip { flex: 1; justify-content: center; min-height: 44px; font-size: 16px; }
+.me-hero .me-chips .plain-link { text-decoration: none; }
+@media (max-width: 359px) { .me-hero { grid-template-columns: auto minmax(0, 1fr); } .me-zap { display: none; } }
+.me-sec { min-width: 0; }
+.week .cell .week-flame { color: var(--on-gold); width: 1.05em; height: 1.05em; vertical-align: 0; }
+.badge-grid { grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); }
+.badge { align-content: start; gap: 4px; padding: 12px 8px; border: 1.5px dashed var(--border); background: var(--surface); }
+.badge.got { border: 1.5px solid color-mix(in srgb, var(--gold-ledge) 45%, transparent); background: color-mix(in srgb, var(--gold) 16%, var(--surface)); }
+.badge .badge-medal { margin-bottom: 2px; }
+.badge strong { font-size: calc(14px * var(--text-scale)); overflow-wrap: break-word; line-height: 1.2; }
+.badge { padding-inline: 4px; }
+.badge-grid .badge > * { min-width: 0; max-width: 100%; }
+:root[data-theme='dark'] .badge.got { background: color-mix(in srgb, var(--gold) 9%, var(--surface)); }
+.badge .muted { line-height: 1.3; }
+.me-links { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.me-links .btn { flex-direction: column; gap: 4px; min-height: 64px; padding-inline: 4px; font-size: var(--fs-small); overflow-wrap: break-word; min-width: 0; }
+.me-links .btn .icon { margin: 0; color: var(--primary); }
+/* ===== end rewards art ===== */

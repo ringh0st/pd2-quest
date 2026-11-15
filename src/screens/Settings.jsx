@@ -83,9 +83,9 @@ export function Settings() {
       <section className="card stack">
         <h2 className="pq-head"><span className="pq-tile" data-tone="flame"><Icon name="database" /></span><span>Data</span></h2>
         <p className="small muted">Your progress stays on this phone only. No account, no tracking. Save a backup now and then, because a browser can clear site data.</p>
-        <div className="row wrap">
-          <button className="btn grow" onClick={backup}><Icon name="download" /> Save backup</button>
-          <button className="btn grow" onClick={() => fileRef.current?.click()}><Icon name="upload" /> Restore</button>
+        <div className="pq-btn-grid">
+          <button className="btn" onClick={backup}><Icon name="download" /> Save backup</button>
+          <button className="btn" onClick={() => fileRef.current?.click()}><Icon name="upload" /> Restore</button>
           <input ref={fileRef} type="file" accept="application/json,.json" hidden onChange={restore} aria-label="Choose a backup file" />
         </div>
         <button className="btn" onClick={() => {

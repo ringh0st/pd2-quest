@@ -1,4 +1,4 @@
-// Daily Bolt ⚡: the same 5 mixed questions all day. Coins the first time each day; replay just for fun.
+// Daily Bolt: the same 5 mixed questions all day. Coins the first time each day; replay just for fun.
 import { useMemo, useState } from 'react';
 import { motion } from 'motion/react';
 import { allQuestions } from '../data/index.js';
@@ -12,7 +12,9 @@ import { Zap } from '../components/game/Zap.jsx';
 import { Stars } from '../components/game/Stars.jsx';
 import { go } from '../hooks/useRoute.js';
 import { useFeedback } from '../components/Feedback.jsx';
-import { useReducedMotion } from '../hooks/useMotionPrefs.js';
+import { useReducedMotion, useCalm } from '../hooks/useMotionPrefs.js';
+import { Icon } from '../components/icons/Icon.jsx';
+import { HeroArt } from '../components/art/HeroArt.jsx';
 import { totalLessons } from '../state/selectors.js';
 import { sfx } from '../audio/sfx.js';
 import { useHoldCelebrations } from '../hooks/useFocusMode.js';
@@ -34,6 +36,8 @@ export function Bolt() {
   const [result, setResult] = useState(playedToday ? { right: bolt.score, coins: 0, replay: true } : null);
   const { celebrate } = useFeedback();
   const reduced = useReducedMotion();
+  const calm = useCalm();
+  const still = reduced || calm;
   useHoldCelebrations(phase === 'done' && !!result && !result.replay);
 
   const done = (r) => {
@@ -61,23 +65,32 @@ export function Bolt() {
   return (
     <main className="screen focus" id="main" style={{ justifyContent: 'center' }}>
       <div className="topbar" style={{ position: 'absolute', top: 'calc(12px + var(--safe-t))', left: 16 }}>
-        <button className="icon-btn" onClick={() => go('/')} aria-label="Close Daily Bolt">✕</button>
+        <button className="icon-btn" onClick={() => go('/')} aria-label="Close Daily Bolt"><Icon name="close" /></button>
       </div>
       <motion.div className="celebrate-card bolt-card" style={{ margin: '0 auto' }} initial={reduced ? { opacity: 0 } : { scale: 0.7, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ type: 'spring', stiffness: 380, damping: 20 }}>
-        <motion.div className="big-emoji" aria-hidden="true" animate={reduced ? {} : { rotate: [0, -12, 12, 0], scale: [1, 1.2, 1] }} transition={{ duration: 0.8 }}>⚡</motion.div>
+        {phase === 'intro' || stars < 3
+          ? (
+            <motion.div
+              className="ic-tile xl gold bolt-tile"
+              initial={still ? false : { scale: 0.4, rotate: -20 }}
+              animate={still ? { scale: 1, rotate: 0 } : { scale: [null, 1.15, 1], rotate: [null, 12, -8, 0] }}
+              transition={{ duration: 0.8, ease: 'easeOut' }}
+            ><Icon name="bolt" fill strokeWidth={1.8} /></motion.div>
+          )
+          : <HeroArt kind="star" size={104} />}
         <h1>Daily Bolt</h1>
         {phase === 'intro' ? (
           <>
             <p>5 surprise questions, warm-ups first. Same for everyone today.</p>
-            <p className="small muted">🪙 {COINS.dailyBolt} + 4 per right answer · counts toward Bolt Chaser badge</p>
+            <p className="small muted bolt-reward"><span className="ic-label"><span className="ic-gold"><Icon name="coin" /></span>{COINS.dailyBolt} coins + 4 per right answer</span><span>Counts toward the Bolt Chaser badge</span></p>
             <Zap mood="cheer" size={70} />
-            <button className="btn primary block big" autoFocus onClick={() => { sfx.tap(); setPhase('run'); }}>Strike! ⚡</button>
+            <button className="btn primary block big" autoFocus onClick={() => { sfx.tap(); setPhase('run'); }}><Icon name="bolt" fill /> Strike!</button>
           </>
         ) : (
           <>
             <Stars count={stars} size={40} animateIn={!result.replay || !!result.coins} />
-            <p><strong>{result.right}/5</strong> right {result.right === 5 ? '🎯' : ''}</p>
-            {result.coins > 0 ? <span className="chip gold">🪙 +{result.coins}</span> : <p className="small muted">Today’s coins collected. New Bolt tomorrow!</p>}
+            <p className="ic-label"><strong>{result.right}/5</strong> right{result.right === 5 && <span className="ic-ok"><Icon name="target" label="Perfect" /></span>}</p>
+            {result.coins > 0 ? <span className="chip gold"><Icon name="coin" /> +{result.coins}<span className="sr-only"> coins</span></span> : <p className="small muted">Today’s coins collected. New Bolt tomorrow!</p>}
             <button className="btn primary block" autoFocus onClick={() => go('/')}>Back home</button>
             <button className="btn block" onClick={() => setPhase('run')}>Replay for fun</button>
           </>

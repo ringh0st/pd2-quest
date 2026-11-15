@@ -1,9 +1,10 @@
-// Global feedback services: screen-reader announcements, toasts and confetti bursts.
-import { createContext, useCallback, useContext, useRef, useState } from 'react';
+// Global feedback services: screen-reader announcements, toasts (text plus an optional Icon) and confetti bursts.
+import { createContext, isValidElement, useCallback, useContext, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { Confetti } from './Confetti.jsx';
 import { useReducedMotion, useCalm } from '../hooks/useMotionPrefs.js';
 import { useStore } from '../state/store.js';
+import { Icon } from './icons/Icon.jsx';
 
 const Ctx = createContext(null);
 
@@ -22,9 +23,11 @@ export function FeedbackProvider({ children }) {
     setMsg('');
     setTimeout(() => setMsg(text), 30);
   }, []);
-  const showToast = useCallback((text) => {
+  /** showToast('Saved', 'check'), showToast({ text, icon }) or showToast(<>…</>). `icon` is an optional Icon name. */
+  const showToast = useCallback((text, icon) => {
+    const t = text && typeof text === 'object' && !isValidElement(text) && 'text' in text ? text : { text, icon };
     clearTimeout(timer.current);
-    setToast({ text, id: Date.now() });
+    setToast({ text: t.text, icon: t.icon, id: Date.now() });
     timer.current = setTimeout(() => setToast(null), 2200);
   }, []);
   const celebrate = useCallback((size = 40) => {
@@ -43,7 +46,10 @@ export function FeedbackProvider({ children }) {
             key={toast.id} className="toast" role="status"
             initial={{ y: -40, opacity: 0, x: '-50%' }} animate={{ y: 0, opacity: 1, x: '-50%' }} exit={{ y: -40, opacity: 0, x: '-50%' }}
             transition={{ type: 'spring', stiffness: 400, damping: 25 }}
-          >{toast.text}</motion.div>
+          >
+            {toast.icon && <span className="toast-icon"><Icon name={toast.icon} /></span>}
+            <span className="toast-text">{toast.text}</span>
+          </motion.div>
         )}
       </AnimatePresence>
       {burst > 0 && <Confetti fire={burst} count={burstCount} kind={confettiKind} />}

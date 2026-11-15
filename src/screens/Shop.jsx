@@ -13,12 +13,14 @@ import { useReducedMotion, useCalm } from '../hooks/useMotionPrefs.js';
 import { totalLessons } from '../state/selectors.js';
 import { sfx } from '../audio/sfx.js';
 import { haptic } from '../audio/haptics.js';
+import { Icon } from '../components/icons/Icon.jsx';
+import { ConfettiPiece, ConfettiSample, CONFETTI_STYLES } from '../components/Confetti.jsx';
 
 const TABS = [
-  { id: 'outfits', icon: '🎩', label: 'Outfits' },
-  { id: 'themes', icon: '🎨', label: 'Themes' },
-  { id: 'confetti', icon: '🎊', label: 'Confetti' },
-  { id: 'helpers', icon: '🧰', label: 'Helpers' },
+  { id: 'outfits', icon: 'shirt', label: 'Outfits' },
+  { id: 'themes', icon: 'palette', label: 'Themes' },
+  { id: 'confetti', icon: 'party', label: 'Confetti' },
+  { id: 'helpers', icon: 'tools', label: 'Helpers' },
 ];
 
 /** Normalises every shop entry into one shape the grid and the try-on sheet share. */
@@ -38,12 +40,16 @@ function statusOf(entry, s) {
   return { owned, on: s.equipped[entry.slot] === entry.id };
 }
 
-function statusText(entry, st) {
-  if (entry.kind === 'helper') return st.full ? `${st.held} owned (max ${entry.data.max}) · Full` : `${st.held} owned (max ${entry.data.max})`;
-  if (st.on) return entry.kind === 'outfit' ? 'Wearing ✓' : 'In use ✓';
-  if (st.owned) return 'Owned';
-  return `🪙 ${entry.price}`;
+/** The status chip: `text` plus an optional Icon; `label` is the screen-reader version. */
+function chipFor(entry, st) {
+  if (entry.kind === 'helper') return { text: st.full ? `${st.held}/${entry.data.max} · Full` : `${st.held}/${entry.data.max} held`, label: `${st.held} of ${entry.data.max} held${st.full ? ', full' : ''}` };
+  if (st.on) return { icon: 'check', text: entry.kind === 'outfit' ? 'Wearing' : 'In use' };
+  if (st.owned) return { text: 'Owned' };
+  return { icon: 'coin', text: `${entry.price}`, label: `${entry.price} coins`, price: true };
 }
+
+/** Accent per helper tile. */
+const HELPER_TONE = { fifty: '', hint: 'gold', heart: 'flame' };
 
 function ItemArt({ entry, size = 56 }) {
   if (entry.kind === 'outfit') return <OutfitIcon id={entry.id} size={size} />;
@@ -51,7 +57,8 @@ function ItemArt({ entry, size = 56 }) {
     const th = entry.data;
     return <span className="shop-swatch" aria-hidden="true" style={{ background: `linear-gradient(135deg, ${th.light[0]} 50%, ${th.dark[0]} 50%)` }} />;
   }
-  return <span className="shop-emoji" aria-hidden="true">{entry.kind === 'confetti' ? entry.data.sample : entry.data.emoji}</span>;
+  if (entry.kind === 'confetti') return <ConfettiSample kind={entry.id} size={size} />;
+  return <span className={`ic-tile lg ${HELPER_TONE[entry.id] ?? ''}`} aria-hidden="true"><Icon name={entry.data.icon} /></span>;
 }
 
 export function Shop() {
@@ -88,7 +95,7 @@ export function Shop() {
     buy({ ...entry.data, id: entry.ownId, price: entry.price }, entry.kind === 'helper' ? 'helper' : 'item');
     sfx.chest(); haptic('success'); celebrate(30);
     if (entry.kind !== 'helper') equip(entry.slot, entry.id);
-    showToast(`🛍️ Got ${entry.name}!`);
+    showToast(`Got ${entry.name}!`, 'gift');
     announce(entry.kind === 'helper' ? `Bought one ${entry.name}.` : `Bought ${entry.name}. ${entry.kind === 'outfit' ? 'Zap is wearing it.' : 'Now in use.'}`);
     checkBadges({ totalLessons: totalLessons() });
     close();
@@ -111,8 +118,8 @@ export function Shop() {
   return (
     <main className="screen" id="main">
       <div className="topbar">
-        <button className="icon-btn" onClick={() => go('/')} aria-label="Back">←</button>
-        <h1 className="grow">🛍️ Shop</h1>
+        <button className="icon-btn" onClick={() => go('/')} aria-label="Back"><Icon name="back" /></button>
+        <h1 className="grow">Shop</h1>
         <CoinChip link={false} />
       </div>
 
@@ -128,7 +135,7 @@ export function Shop() {
             key={t.id} id={tabId(t.id)} ref={(el) => { tabRefs.current[t.id] = el; }}
             role="tab" aria-selected={tab === t.id} aria-controls={panelId} tabIndex={tab === t.id ? 0 : -1}
             onClick={() => choose(t.id)} onKeyDown={onTabKey}
-          ><span aria-hidden="true">{t.icon}</span> {t.label}</button>
+          ><span className="shop-tab"><Icon name={t.icon} /><span>{t.label}</span></span></button>
         ))}
       </div>
 
@@ -136,7 +143,7 @@ export function Shop() {
         <motion.ul key={tab} className="list-plain shop-grid2" initial={reduced ? false : { opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
           {entries.map((entry) => {
             const st = statusOf(entry, s);
-            const text = statusText(entry, st);
+            const chip = chipFor(entry, st);
             const wide = entry.kind === 'helper';
             return (
               <li key={entry.key} className={wide ? 'wide' : undefined}>
@@ -145,8 +152,14 @@ export function Shop() {
                   <span className="shop-card-text">
                     <strong>{entry.name}</strong>
                     {wide && <span className="small muted">{entry.data.about}</span>}
-                    <span className={`chip${st.on ? ' primary' : ''}`}>{text}</span>
-                    {wide && !st.full && <span className="chip gold">🪙 {entry.price}</span>}
+                    <span className="shop-chips">
+                      <span className={`chip${st.on ? ' primary' : ''}${chip.price ? ' gold' : ''}`}>
+                        {chip.icon && <Icon name={chip.icon} strokeWidth={chip.icon === 'check' ? 3 : 2.25} />}
+                        <span aria-hidden={chip.label ? true : undefined}>{chip.text}</span>
+                        {chip.label && <span className="sr-only">{chip.label}</span>}
+                      </span>
+                      {wide && !st.full && <span className="chip gold"><Icon name="coin" />{entry.price}<span className="sr-only"> coins</span></span>}
+                    </span>
                   </span>
                   <span className="sr-only">{wide ? (st.full ? ', details' : ', buy one') : ', try it on'}</span>
                 </button>
@@ -183,28 +196,28 @@ function TryOn({ entry, s, titleId, onBuy, onUse, onTakeOff, onCancel }) {
 
       {needsBuying && (
         <p className="center tryon-price">
-          <span>Price: <strong>🪙 {entry.price}</strong></span>
-          <span className="small muted">You have 🪙 {s.coins}{short === 0 && <> · 🪙 {s.coins - entry.price} left after</>}</span>
+          <span className="ic-label tryon-cost">Price: <strong className="ic-label"><span className="ic-gold"><Icon name="coin" /></span>{entry.price} coins</strong></span>
+          <span className="small muted">You have {s.coins} coins{short === 0 && <> · {s.coins - entry.price} left after</>}</span>
         </p>
       )}
 
       <div className="stack-s">
         {needsBuying && short === 0 && (
-          <button className="btn gold block" onClick={() => onBuy(entry)} aria-label={`Buy ${entry.name} for ${entry.price} coins`}>Buy for 🪙 {entry.price}</button>
+          <button className="btn gold block" onClick={() => onBuy(entry)} aria-label={`Buy ${entry.name} for ${entry.price} coins`}>Buy for <Icon name="coin" /> {entry.price}</button>
         )}
         {needsBuying && short > 0 && (
           <>
-            <p className="center tryon-short" role="status"><strong>Need 🪙 {short} more.</strong> Play lessons to earn coins.</p>
-            <a className="btn primary block" href="#/" onClick={onCancel}>▶ Play to earn coins</a>
+            <p className="center tryon-short" role="status"><strong>Need {short} more coins.</strong> Play lessons to earn them.</p>
+            <a className="btn primary block" href="#/" onClick={onCancel}><Icon name="play" fill /> Play to earn coins</a>
           </>
         )}
-        {helper && st.full && <p className="center" role="status"><strong>Full ✓</strong> You already hold the most allowed.</p>}
+        {helper && st.full && <p className="center tryon-state" role="status"><strong className="ic-label"><span className="ic-ok"><Icon name="ok" /></span>Full</strong> You already hold the most allowed.</p>}
         {!helper && st.owned && !st.on && (
           <button className="btn primary block" data-autofocus onClick={() => onUse(entry)}>{entry.kind === 'outfit' ? 'Wear it' : 'Use it'}</button>
         )}
         {!helper && st.on && (
           <>
-            <p className="center" role="status"><strong>{entry.kind === 'outfit' ? 'Equipped ✓' : 'In use ✓'}</strong></p>
+            <p className="center tryon-state" role="status"><strong className="ic-label"><span className="ic-ok"><Icon name="ok" /></span>{entry.kind === 'outfit' ? 'Equipped' : 'In use'}</strong></p>
             {entry.kind === 'outfit' && <button className="btn block" onClick={onTakeOff}>Take it off</button>}
           </>
         )}
@@ -225,33 +238,34 @@ function Preview({ entry }) {
       <div className="tryon-stage theme" style={{ '--primary': p, '--primary-ledge': ledge, '--on-primary': on, '--primary-soft': soft }}>
         <Zap size={110} mood="happy" label={`Preview of Zap in the ${entry.name} theme`} />
         <div className="tryon-sample" aria-hidden="true">
-          <span className="btn primary small">▶ Start lesson</span>
+          <span className="btn primary small"><Icon name="play" fill /> Start lesson</span>
           <span className="bar"><span style={{ width: '62%' }} /></span>
           <span className="chip primary">Next level</span>
         </div>
       </div>
     );
   }
-  if (entry.kind === 'confetti') return <div className="tryon-stage"><ConfettiPreview sample={entry.data.sample} name={entry.name} /></div>;
-  return <div className="tryon-stage"><span className="shop-emoji big" aria-hidden="true">{entry.data.emoji}</span></div>;
+  if (entry.kind === 'confetti') return <div className="tryon-stage"><ConfettiPreview kind={entry.id} name={entry.name} /></div>;
+  return <div className="tryon-stage helper"><span className={`ic-tile xl ${HELPER_TONE[entry.id] ?? ''}`} aria-hidden="true"><Icon name={entry.data.icon} /></span></div>;
 }
 
 const BITS = [[-62, -38], [58, -46], [-44, 30], [66, 22], [-8, -64], [30, 52], [-74, -2], [80, -14]];
 
-function ConfettiPreview({ sample, name }) {
+function ConfettiPreview({ kind, name }) {
   const reduced = useReducedMotion();
   const calm = useCalm();
   const still = reduced || calm;
+  const st = CONFETTI_STYLES[kind] ?? CONFETTI_STYLES.classic;
   return (
     <div className="tryon-confetti" role="img" aria-label={`Preview of Zap cheering with ${name} confetti`}>
       <Zap size={110} mood="cheer" label="" bounce={!still} />
       {BITS.map(([x, y], i) => (
         <motion.span
-          key={`${sample}-${i}`} aria-hidden="true" className="tryon-bit"
+          key={`${kind}-${i}`} aria-hidden="true" className="tryon-bit"
           initial={still ? false : { x: 0, y: 0, opacity: 0, scale: 0.4 }}
           animate={{ x, y, opacity: 1, scale: 1, rotate: still ? 0 : (i % 2 ? 20 : -20) }}
           transition={{ duration: 0.6, delay: i * 0.04, ease: 'easeOut' }}
-        >{sample}</motion.span>
+        ><ConfettiPiece shape={st.shapes[i % st.shapes.length]} color={st.colors[i % st.colors.length]} size={26} rotate={i * 37} /></motion.span>
       ))}
     </div>
   );

@@ -77,8 +77,9 @@ function Sphinx({ mood }) {
   return (
     <>
       {/* plinth */}
-      <rect x="10" y="78" width="76" height="10" rx="4" fill={shade(acc)} />
-      <rect x="14" y="80" width="68" height="3" rx="1.5" fill={light(acc)} opacity="0.5" />
+      <rect x="8" y="76" width="80" height="13" rx="4" fill="color-mix(in srgb, var(--gold-ledge) 55%, #fff)" />
+      <rect x="8" y="85" width="80" height="4" rx="2" fill="color-mix(in srgb, var(--gold-ledge) 80%, #000)" opacity="0.5" />
+      <path d="M30 80 h10 M56 80 h10" stroke="color-mix(in srgb, var(--gold-ledge) 80%, #000)" strokeWidth="1.4" strokeLinecap="round" opacity="0.5" />
       {/* paws */}
       <rect x="18" y="68" width="22" height="12" rx="6" fill={stone} />
       <rect x="56" y="68" width="22" height="12" rx="6" fill={stone} />
@@ -274,13 +275,13 @@ const BOSSES = { fund: Sphinx, auto: Hydra, ui: Kraken, test: Toad, perf: Govern
 const MOVES = {
   idle: { animate: { y: [0, -3, 0] }, transition: { duration: 2.4, repeat: Infinity, ease: 'easeInOut' } },
   hit: { animate: { x: [0, -6, 6, -4, 4, 0], scaleX: [1, 1.14, 0.94, 1.04, 1], scaleY: [1, 0.82, 1.06, 0.97, 1] }, transition: { duration: 0.5 } },
-  taunt: { animate: { rotate: -7, scale: 1.08, y: -2 }, transition: { type: 'spring', stiffness: 260, damping: 12 } },
+  taunt: { animate: { rotate: -6, scale: 1.04 }, transition: { type: 'spring', stiffness: 260, damping: 12 } },
   defeated: { animate: { rotate: 14, y: 4, opacity: 0.6 }, transition: { duration: 0.7, ease: 'easeOut' } },
 };
 const STILL = {
   idle: undefined,
   hit: { transform: 'scale(1.1, 0.88)' },
-  taunt: { transform: 'rotate(-7deg) scale(1.06)' },
+  taunt: { transform: 'rotate(-6deg) scale(1.04)' },
   defeated: { transform: 'rotate(14deg) translateY(4px)', opacity: 0.6 },
 };
 const ORIGIN = { transformOrigin: '48px 86px', transformBox: 'view-box' };

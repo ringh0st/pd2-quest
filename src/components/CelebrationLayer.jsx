@@ -12,28 +12,32 @@ import { useFeedback } from './Feedback.jsx';
 import { useReducedMotion, useCalm } from '../hooks/useMotionPrefs.js';
 import { useIsHolding } from '../hooks/useFocusMode.js';
 import { useRoute } from '../hooks/useRoute.js';
+import { HeroArt } from './art/HeroArt.jsx';
+import { BadgeMedal } from './art/BadgeMedal.jsx';
+import { Icon } from './icons/Icon.jsx';
 
 const SETTLE_MS = 900;
 
+// Each moment: `art` is the HeroArt kind for the big picture, `icon` the Icon used in lists and toasts.
 function line(ev) {
   switch (ev.type) {
-    case 'levelUp': return { emoji: '🚀', title: `Level ${ev.level}!`, body: `You’re now a ${rankFor(ev.level)}.`, rank: 3 };
-    case 'goal': return { emoji: '🎯', title: 'Daily goal smashed!', body: 'Anything more today is bonus XP.', rank: 2 };
+    case 'levelUp': return { art: 'levelUp', icon: 'trend', tone: 'primary', title: `Level ${ev.level}!`, body: `You’re now a ${rankFor(ev.level)}.`, rank: 3 };
+    case 'goal': return { art: 'goal', icon: 'target', tone: 'correct', title: 'Daily goal smashed!', body: 'Anything more today is bonus XP.', rank: 2 };
     case 'chest': return ev.coins
-      ? { emoji: '🎁', title: ev.title || 'Bonus chest!', body: `+${ev.coins} coins for the shop.`, rank: 1 }
-      : { emoji: '🎁', title: `Lucky drop: +${ev.xp} XP`, body: 'Surprise bonus for finishing a round.', rank: 1 };
-    case 'passed': return { emoji: '🏆', title: 'Platform Developer II!', body: 'You did it. Zap is so proud. Go celebrate!', rank: 4 };
-    case 'badge': return { emoji: ev.badge.emoji, title: `Badge: ${ev.badge.name}`, body: `${ev.badge.about}.`, rank: 2 };
+      ? { art: 'chest', icon: 'gift', tone: 'gold', title: ev.title || 'Bonus chest!', body: `+${ev.coins} coins for the shop.`, rank: 1 }
+      : { art: 'chest', icon: 'gift', tone: 'gold', title: `Lucky drop: +${ev.xp} XP`, body: 'Surprise bonus for finishing a round.', rank: 1 };
+    case 'passed': return { art: 'trophy', icon: 'trophy', tone: 'gold', title: 'Platform Developer II!', body: 'You did it. Zap is so proud. Go celebrate!', rank: 4 };
+    case 'badge': return { badge: ev.badge?.id, icon: 'medal', tone: 'gold', title: `Badge: ${ev.badge?.name}`, body: `${ev.badge?.about}.`, rank: 2 };
     case 'streak': {
       const n = ev.count;
       const t = {
-        started: { emoji: '🔥', title: `Streak started: day ${n}` },
-        extended: { emoji: '🔥', title: `${n}-day streak!` },
-        earnedFreeze: { emoji: '🧊', title: `${n} days! You earned a streak freeze` },
-        frozen: { emoji: '🧊', title: `A freeze saved your streak: day ${n}` },
-        restarted: { emoji: '👋', title: 'Welcome back! A fresh streak starts today' },
+        started: { icon: 'flame', tone: 'flame', title: `Streak started: day ${n}` },
+        extended: { icon: 'flame', tone: 'flame', title: `${n}-day streak!` },
+        earnedFreeze: { icon: 'freeze', tone: 'correct', title: `${n} days! You earned a streak freeze` },
+        frozen: { icon: 'freeze', tone: 'correct', title: `A freeze saved your streak: day ${n}` },
+        restarted: { icon: 'hand', tone: 'gold', title: 'Welcome back! A fresh streak starts today' },
       }[ev.event];
-      return t ? { ...t, body: '', rank: 0, small: true } : null;
+      return t ? { art: 'streak', ...t, body: '', rank: 0, small: true } : null;
     }
     default: return null;
   }
@@ -58,7 +62,7 @@ export function CelebrationLayer() {
       if (!items.length) { takeEvents(count); return; }
       const onlySmall = items.every((x) => x.small);
       if (calm || onlySmall) {
-        showToast(items.slice(0, 2).map((x) => `${x.emoji} ${x.title}`).join(' · '));
+        showToast(items.slice(0, 2).map((x) => x.title).join(' · '), items[0].icon);
         takeEvents(count);
         return;
       }
@@ -107,18 +111,19 @@ export function CelebrationLayer() {
             exit={reduced ? { opacity: 0 } : { scale: 0.9, opacity: 0 }}
             transition={{ type: 'spring', stiffness: 400, damping: 25 }}
           >
-            <motion.div
-              className="big-emoji" aria-hidden="true"
-              animate={reduced ? {} : { rotate: [0, -12, 12, -6, 0], scale: [1, 1.2, 1] }}
-              transition={{ duration: 0.8, delay: 0.15 }}
-            >{top.emoji}</motion.div>
+            <div className="celebrate-art">
+              {top.badge
+                ? <BadgeMedalPop id={top.badge} reduced={reduced || calm} />
+                : <HeroArt kind={top.art} size={112} />}
+            </div>
             <h2 id="celebrate-title">{top.title}</h2>
             {top.body && <p className="muted">{top.body}</p>}
             {rest.length > 0 && (
               <ul className="list-plain stack-s celebrate-list">
                 {rest.map((x, k) => (
-                  <motion.li key={k} initial={reduced ? false : { opacity: 0, x: -12 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.3 + k * 0.12 }}>
-                    <span aria-hidden="true">{x.emoji}</span> <strong>{x.title}</strong>{x.body ? <span className="muted small"> · {x.body}</span> : null}
+                  <motion.li key={k} className="celebrate-item" initial={reduced ? false : { opacity: 0, x: -12 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.3 + k * 0.12 }}>
+                    <span className={`ic-tile sm ${x.tone}`}>{x.badge ? <BadgeMedal id={x.badge} size={30} /> : <Icon name={x.icon} />}</span>
+                    <span className="celebrate-line"><strong>{x.title}</strong>{x.body ? <span className="muted small">{x.body}</span> : null}</span>
                   </motion.li>
                 ))}
               </ul>
@@ -128,5 +133,19 @@ export function CelebrationLayer() {
         </motion.div>
       )}
     </AnimatePresence>
+  );
+}
+
+/** A newly earned badge, shown big: drops in with a little swing. */
+function BadgeMedalPop({ id, reduced }) {
+  return (
+    <motion.div
+      style={{ originY: 0 }}
+      initial={reduced ? false : { scale: 0.3, rotate: -25, y: -20 }}
+      animate={{ scale: 1, rotate: 0, y: 0 }}
+      transition={{ type: 'spring', stiffness: 260, damping: 9, delay: 0.1 }}
+    >
+      <BadgeMedal id={id} size={112} />
+    </motion.div>
   );
 }

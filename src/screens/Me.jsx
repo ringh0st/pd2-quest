@@ -12,6 +12,8 @@ import { BADGES } from '../game/badges.js';
 import { totalStars } from '../game/worlds.js';
 import { Zap } from '../components/game/Zap.jsx';
 import { CoinChip } from '../components/game/CoinChip.jsx';
+import { Icon } from '../components/icons/Icon.jsx';
+import { BadgeMedal } from '../components/art/BadgeMedal.jsx';
 
 function lastDays(n) {
   const out = [];
@@ -34,37 +36,37 @@ export function Me() {
   return (
     <main className="screen" id="main">
       <div className="spread">
-        <h1>😎 {s.name || 'Your progress'}</h1>
-        <a className="icon-btn" href="#/settings" aria-label="Settings" onClick={() => sfx.tap()}>⚙️</a>
+        <h1 className="me-title"><span className="ic-tile" aria-hidden="true"><Icon name="me" /></span><span>{s.name || 'Your progress'}</span></h1>
+        <a className="icon-btn" href="#/settings" aria-label="Settings" onClick={() => sfx.tap()}><Icon name="settings" /></a>
       </div>
 
-      <section className="hero row" style={{ gap: 16 }} aria-label="Level">
+      <section className="hero me-hero" aria-label="Level">
         <ProgressRing value={lv.progress} size={96} stroke={11} color="var(--gold-meter)" label={`Level ${lv.level}, ${Math.round(lv.progress * 100)}% to next`}>
           <div><div style={{ fontSize: 12, fontWeight: 700 }} className="muted">LEVEL</div><div style={{ fontSize: 30, fontWeight: 700 }}>{lv.level}</div></div>
         </ProgressRing>
         <div className="stack-s grow">
           <strong style={{ fontSize: 19 }}>{rankFor(lv.level)}</strong>
           <span className="muted small"><CountUp value={s.xp} /> XP total · {lv.span - lv.into} XP to level {lv.level + 1}</span>
-          <div className="row" style={{ gap: 8 }}><span className="chip">⭐ {totalStars(s.stars)}</span><CoinChip /></div>
         </div>
-        <Zap size={64} mood="happy" />
+        <span className="me-zap"><Zap size={64} mood="happy" /></span>
+        <div className="me-chips"><span className="chip star-chip"><span className="ic-gold-fill"><Icon name="star" /></span>{totalStars(s.stars)}<span className="sr-only"> stars</span></span><CoinChip /></div>
       </section>
 
       <div className="stat-row">
-        <div className="stat"><span className="num">🔥{streak}</span><span className="lbl">Streak (best {s.streak.best})</span></div>
+        <div className="stat"><span className="num ic-label"><span className="ic-flame"><Icon name="flame" /></span>{streak}</span><span className="lbl">Streak (best {s.streak.best})</span></div>
         <div className="stat"><span className="num">{acc ?? '–'}{acc != null && '%'}</span><span className="lbl">Accuracy</span></div>
         <div className="stat"><span className="num">{Object.keys(s.lessons).length}/{totalLessons()}</span><span className="lbl">Lessons</span></div>
       </div>
 
       <section className="card stack" aria-label="Last 7 days">
-        <div className="spread"><strong>This week</strong><span className="small muted">🧊 {s.streak.freezes} freeze{s.streak.freezes === 1 ? '' : 's'}</span></div>
+        <div className="spread"><strong>This week</strong><span className="small muted ic-label"><span className="ic-freeze"><Icon name="freeze" /></span>{s.streak.freezes} freeze{s.streak.freezes === 1 ? '' : 's'}</span></div>
         <div className="week">
           {days.map((d) => {
             const xp = s.history[d.key] || 0;
             const lvl = xp === 0 ? '' : xp < s.dailyGoal / 2 ? 'lvl1' : xp < s.dailyGoal ? 'lvl2' : 'lvl3';
             return (
               <div className="day" key={d.key}>
-                <div className={`cell ${lvl} ${d.key === today ? 'today' : ''}`} role="img" aria-label={`${d.key}: ${xp} XP`}>{xp >= s.dailyGoal ? '🔥' : ''}</div>
+                <div className={`cell ${lvl} ${d.key === today ? 'today' : ''}`} role="img" aria-label={`${d.key}: ${xp} XP${xp >= s.dailyGoal ? ', goal met' : ''}`}>{xp >= s.dailyGoal ? <Icon name="flame" className="week-flame" /> : null}</div>
                 <span aria-hidden="true">{d.label}</span>
               </div>
             );
@@ -74,12 +76,12 @@ export function Me() {
       </section>
 
       <section className="card stack" aria-label="Mastery by section">
-        <div className="spread"><strong>🎓 Exam readiness</strong><strong>{ready}%</strong></div>
+        <div className="spread"><strong className="ic-label"><span className="ic-gold"><Icon name="exam" /></span>Exam readiness</strong><strong>{ready}%</strong></div>
         {sections.map((sec) => {
           const m = Math.round(sectionMastery(sec, s.items) * 100);
           return (
             <a key={sec.id} href={`#/world/${sec.id}`} className="stack-s" style={{ color: 'inherit', textDecoration: 'none' }}>
-              <div className="spread small"><span>{sec.emoji} {sec.title} <span className="muted">({sec.weight}%)</span></span><strong>{m}%</strong></div>
+              <div className="spread small"><span className="ic-label me-sec" style={{ '--sec-accent': sec.accent }}><span className="ic-sec"><Icon name={sec.id} /></span><span>{sec.title} <span className="muted">({sec.weight}%)</span></span></span><strong>{m}%</strong></div>
               <div className="bar"><span style={{ width: `${Math.max(2, m)}%`, background: sec.accent }} /></div>
             </a>
           );
@@ -88,13 +90,13 @@ export function Me() {
       </section>
 
       <section className="card stack" aria-labelledby="badges-title">
-        <div className="spread"><h2 id="badges-title" style={{ fontSize: 'calc(18px * var(--text-scale))' }}>🏅 Badges</h2><span className="chip">{Object.keys(s.badges).length}/{BADGES.length}</span></div>
+        <div className="spread"><h2 id="badges-title" className="ic-label" style={{ fontSize: 'calc(18px * var(--text-scale))' }}><span className="ic-gold"><Icon name="medal" /></span>Badges</h2><span className="chip">{Object.keys(s.badges).length}/{BADGES.length}</span></div>
         <ul className="list-plain badge-grid">
           {BADGES.map((b) => {
             const got = !!s.badges[b.id];
             return (
               <li key={b.id} className={`badge ${got ? 'got' : ''}`}>
-                <span className="badge-emoji" aria-hidden="true">{got ? b.emoji : '❔'}</span>
+                <BadgeMedal id={b.id} earned={got} size={60} />
                 <strong className="small">{b.name}</strong>
                 <span className="small muted">{b.about}</span>
                 <span className="sr-only">{got ? 'Earned' : 'Not earned yet'}</span>
@@ -105,26 +107,26 @@ export function Me() {
       </section>
 
       <section className="card stack" aria-label="Parked thoughts">
-        <strong>🅿️ Parked thoughts</strong>
+        <strong className="ic-label"><span className="ic-sec" style={{ '--sec-accent': 'var(--correct)' }}><Icon name="park" /></span>Parked thoughts</strong>
         {s.parked.length === 0
-          ? <p className="small muted">Nothing parked. When a distracting thought pops up mid-study, tap 🅿️ to drop it here.</p>
+          ? <p className="small muted">Nothing parked. When a distracting thought pops up mid-study, tap the Park button to drop it here.</p>
           : (
             <ul className="list-plain">
               {s.parked.map((p) => (
                 <li key={p.id} className="spread">
                   <span className="grow">{p.text}</span>
-                  <button className="btn small" onClick={() => { sfx.done(); unparkThought(p.id); }} aria-label={`Done: ${p.text}`}>✓ Done</button>
+                  <button className="btn small" onClick={() => { sfx.done(); unparkThought(p.id); }} aria-label={`Done: ${p.text}`}><Icon name="check" /> Done</button>
                 </li>
               ))}
             </ul>
           )}
       </section>
 
-      <div className="row">
-        <a className="btn grow" href="#/shop" onClick={() => sfx.tap()}>🛍️ Shop</a>
-        <a className="btn grow" href="#/resources" onClick={() => sfx.tap()}>📚 Resources</a>
-        <a className="btn grow" href="#/settings" onClick={() => sfx.tap()}>⚙️ Settings</a>
-      </div>
+      <nav className="me-links" aria-label="More">
+        <a className="btn" href="#/shop" onClick={() => sfx.tap()}><Icon name="shirt" /> Shop</a>
+        <a className="btn" href="#/resources" onClick={() => sfx.tap()}><Icon name="book" /> Resources</a>
+        <a className="btn" href="#/settings" onClick={() => sfx.tap()}><Icon name="settings" /> Settings</a>
+      </nav>
     </main>
   );
 }

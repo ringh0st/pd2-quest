@@ -248,11 +248,11 @@ export function PracticeRunner({ questions, onDone, onExit, topRight, requeue = 
             {q.wrong?.some(Boolean) && (
               <>
                 <button className="btn ghost small" onClick={() => setShowWhy((v) => !v)} aria-expanded={showWhy}>
-                  <Icon name={showWhy ? 'eye' : 'idea'} /> {showWhy ? 'Hide' : 'Why not the others?'}
+                  <Icon name={showWhy ? 'close' : 'idea'} /> {showWhy ? 'Hide' : 'Why not the others?'}
                 </button>
                 {showWhy && (
                   <ul className="list-plain small why-card">
-                    {q.options.map((o, i) => q.wrong[i] ? <li key={i}><Icon name="wrong" /> <strong>{'ABCDEF'[i]}.</strong> <Rich text={q.wrong[i]} /></li> : null)}
+                    {q.options.map((o, i) => q.wrong[i] ? <li key={i}><Icon name="wrong" /><span><strong>{'ABCDEF'[i]}.</strong> <Rich text={q.wrong[i]} /></span></li> : null)}
                   </ul>
                 )}
               </>

@@ -9,16 +9,16 @@ import { useFeedback } from '../Feedback.jsx';
 import { zapSays } from '../../game/mascot.js';
 import { sfx } from '../../audio/sfx.js';
 import { haptic } from '../../audio/haptics.js';
-import { WORLD_THEMES } from '../../game/worlds.js';
 import { routeForLevel } from '../../state/gameSelectors.js';
 import { useHoldCelebrations } from '../../hooks/useFocusMode.js';
+import { Icon } from '../icons/Icon.jsx';
+import { BossArt } from '../art/BossArt.jsx';
 
 export function WinScreen({ kind, title, stars, prevStars = 0, coins = 0, xp = 0, detail, next, worldId, onRetry }) {
   const reduced = useReducedMotion();
   const { celebrate, announce } = useFeedback();
   const won = stars > 0;
   const newBest = won && stars > prevStars;
-  const theme = WORLD_THEMES[worldId];
   useHoldCelebrations(true); // badges & level-ups wait until you leave this screen
 
   useEffect(() => {
@@ -39,8 +39,15 @@ export function WinScreen({ kind, title, stars, prevStars = 0, coins = 0, xp = 0
         animate={{ scale: 1, y: 0, opacity: 1 }}
         transition={{ type: 'spring', stiffness: 360, damping: 22 }}
       >
-        {kind === 'boss' && won && <div className="boss-ko" aria-hidden="true">{theme?.boss.emoji}<span>KO!</span></div>}
-        <Zap mood={won ? 'cheer' : 'sad'} size={88} />
+        {kind === 'boss' && won && worldId ? (
+          <div className="ko-row">
+            <div className="boss-ko" aria-hidden="true">
+              <BossArt world={worldId} size={92} mood="defeated" />
+              <motion.span className="ko-stamp" initial={reduced ? false : { scale: 2.6, rotate: -30, opacity: 0 }} animate={{ scale: 1, rotate: 12, opacity: 1 }} transition={{ delay: 0.9, type: 'spring', stiffness: 420, damping: 13 }}>KO!</motion.span>
+            </div>
+            <Zap mood="cheer" size={80} />
+          </div>
+        ) : <Zap mood={won ? 'cheer' : 'sad'} size={88} />}
         <h1>{heading}</h1>
         <p className="muted small">{title}</p>
         <Stars count={stars} size={46} animateIn />
@@ -50,20 +57,22 @@ export function WinScreen({ kind, title, stars, prevStars = 0, coins = 0, xp = 0
         {detail && <p className="small">{detail}</p>}
         {won && (
           <motion.div className="row" style={{ justifyContent: 'center', flexWrap: 'wrap' }} initial={reduced ? false : { opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 1.5 }}>
-            {coins > 0 && <span className="chip gold">🪙 +{coins}</span>}
+            {coins > 0 && <span className="chip gold"><Icon name="coin" /> +{coins}<span className="sr-only"> coins</span></span>}
             {xp > 0 && <span className="chip primary">+{xp} XP</span>}
           </motion.div>
         )}
         <p className="muted small">“{zapSays(!won ? 'lose' : stars === 3 ? 'win' : 'okwin')}”</p>
         {won && next && (
           <button className="btn primary block big" autoFocus onClick={() => { sfx.tap(); go(routeForLevel(next)); }}>
-            Next: {next.kind === 'boss' ? '👹 Boss!' : next.kind === 'hard' ? '💀 Hard level' : next.title} →
+            {next.kind === 'boss' ? <BossArt world={next.world} size={30} /> : next.kind === 'hard' ? <Icon name="skull" /> : null}
+            <span className="next-label">Next: {next.kind === 'boss' ? 'Boss!' : next.kind === 'hard' ? 'Hard level' : next.title}</span>
+            <Icon name="next" />
           </button>
         )}
-        {!won && onRetry && <button className="btn primary block big" autoFocus onClick={onRetry}>Try again 🔁</button>}
-        <div className="row" style={{ width: '100%' }}>
-          {won && onRetry && stars < 3 && <button className="btn grow" onClick={onRetry}>Replay for ★★★</button>}
-          <button className="btn grow" onClick={() => go(worldId ? `/world/${worldId}` : '/map')}>🗺️ Map</button>
+        {!won && onRetry && <button className="btn primary block big" autoFocus onClick={onRetry}><Icon name="retry" /> Try again</button>}
+        <div className="row win-actions" style={{ width: '100%' }}>
+          {won && onRetry && stars < 3 && <button className="btn grow" onClick={onRetry}>Replay for <span className="heart-row star-row" role="img" aria-label="3 stars"><Icon name="star" fill /><Icon name="star" fill /><Icon name="star" fill /></span></button>}
+          <button className="btn grow" onClick={() => go(worldId ? `/world/${worldId}` : '/map')}><Icon name="map" /> Map</button>
         </div>
       </motion.div>
     </main>

@@ -65,7 +65,7 @@ function primaryAction(s, dueQ) {
     const t = WORLD_THEMES[next.world];
     return {
       label: next.kind === 'boss' ? `Fight ${t.boss.name}!` : next.kind === 'hard' ? `${next.title}: Hard level` : next.title,
-      sub: <span className="play-sub"><WorldEmblem world={next.world} size={18} />{t.name}{next.kind === 'lesson' ? ` · ${next.minutes} min` : ''}</span>,
+      sub: <span className="play-sub"><WorldEmblem world={next.world} size={20} />{t.name}{next.kind === 'lesson' ? ` · ${next.minutes} min` : ''}</span>,
       to: routeForLevel(next),
       art: next.kind === 'boss' ? <BossArt world={next.world} size={44} /> : <Icon name={next.kind === 'hard' ? 'skull' : 'play'} fill={next.kind !== 'hard'} />,
     };
@@ -134,7 +134,7 @@ export function Home() {
         <motion.section className="card stack-s comeback" {...enter(1)} aria-labelledby="comeback-title">
           <strong id="comeback-title" className="ic-label"><span className="ic-tile sm gold" aria-hidden="true"><Icon name="hand" /></span>Welcome back!</strong>
           <p className="small">Everything you learned is still here{s.streak.best ? `, and your best streak (${s.streak.best} days) is saved` : ''}. A tiny warm-up starts a fresh streak today.</p>
-          <a className="btn block" href="#/sprint?mode=review&n=3" onClick={() => sfx.tap()}>Start a 3-question warm-up</a>
+          <a className="btn block" href="#/sprint?mode=review&n=3" onClick={() => sfx.tap()}><Icon name="play" fill /> Start a 3-question warm-up</a>
         </motion.section>
       )}
 
@@ -152,7 +152,7 @@ export function Home() {
               <div className="small muted" style={{ fontSize: 11 }}>/ {s.dailyGoal} XP</div>
             </div>
           </ProgressRing>
-          <div className="grow stack-s" style={{ flex: '1 1 150px' }}>
+          <div className="grow stack-s" style={{ flex: '1 1 120px' }}>
             <div className="spread"><strong>Level {lv.level}</strong><span className="small muted">{lv.into}/{lv.span} XP</span></div>
             <div className="bar gold" role="progressbar" aria-label="Level progress" aria-valuenow={Math.round(lv.progress * 100)} aria-valuemin={0} aria-valuemax={100}>
               <span style={{ width: `${Math.max(3, lv.progress * 100)}%` }} />

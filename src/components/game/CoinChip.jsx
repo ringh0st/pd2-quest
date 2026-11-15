@@ -2,6 +2,7 @@
 import { motion } from 'motion/react';
 import { useStore } from '../../state/store.js';
 import { CountUp } from '../CountUp.jsx';
+import { Icon } from '../icons/Icon.jsx';
 import { useReducedMotion } from '../../hooks/useMotionPrefs.js';
 import { sfx } from '../../audio/sfx.js';
 
@@ -14,7 +15,7 @@ export function CoinChip({ link = true }) {
       initial={reduced ? false : { scale: 1.25 }} animate={{ scale: 1 }}
       transition={{ type: 'spring', stiffness: 500, damping: 14 }}
     >
-      <span aria-hidden="true">🪙</span><CountUp value={coins} />
+      <span className="coin-chip-icon"><Icon name="coin" /></span><CountUp value={coins} />
     </motion.span>
   );
   if (!link) return <span aria-label={`${coins} coins`}>{body}</span>;

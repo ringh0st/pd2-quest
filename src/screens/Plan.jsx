@@ -36,9 +36,9 @@ export function Plan() {
                   <p className="small">
                     {w.levels} level{w.levels === 1 ? '' : 's'} in{' '}
                     {w.worlds.map((id, k) => (
-                      <span key={id}>{k ? ', ' : ''}<Icon name={id} className="ic-sec" style={{ '--sec-accent': `var(--sec-${id})` }} /> {sectionById[id]?.short}</span>
+                      <span key={id}>{k ? ', ' : ''}<span style={{ whiteSpace: 'nowrap' }}><Icon name={id} className="ic-sec" style={{ '--sec-accent': `var(--sec-${id})` }} /> {sectionById[id]?.short}</span></span>
                     ))}
-                    {w.bosses ? <> · <Icon name="swords" className="ic-bad" /> {w.bosses} boss fight{w.bosses === 1 ? '' : 's'}</> : ''}
+                    {w.bosses ? <> · <span style={{ whiteSpace: 'nowrap' }}><Icon name="swords" className="ic-bad" /> {w.bosses} boss fight{w.bosses === 1 ? '' : 's'}</span></> : ''}
                   </p>
                 ) : (
                   <ul className="small" style={{ margin: 0, paddingLeft: '1.2em' }}>

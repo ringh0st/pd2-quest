@@ -11,16 +11,20 @@ export function Resources() {
         <button className="icon-btn" onClick={() => go('/map')} aria-label="Back"><Icon name="back" /></button>
         <h1 className="grow pq-head"><span className="pq-tile s"><Icon name="library" /></span><span>Free resources</span></h1>
       </div>
-      <p className="muted small">Official, free Salesforce material. Opens in your browser. Exam facts last checked {exam.lastVerified}.</p>
+      <p className="muted small">Official, free Salesforce material. Opens in your browser. Exam facts last checked <span className="nowrap-date">{exam.lastVerified}</span>.</p>
 
       <section className="card stack">
         <h2 className="pq-head"><span className="pq-tile" data-tone="teal"><Icon name="plan" /></span><span>{exam.studyPlan.length}-week plan</span></h2>
-        <ol className="list-plain">
+        <ol className="list-plain pq-weeks">
           {exam.studyPlan.map((w) => (
             <li key={w.week}>
               <details>
-                <summary style={{ cursor: 'pointer', fontWeight: 700, minHeight: 32 }}>Week {w.week}: {w.focus}</summary>
-                <ul className="small" style={{ paddingLeft: '1.2em' }}>{w.tasks.map((t) => <li key={t}>{t}</li>)}</ul>
+                <summary>
+                  <span className="pq-week-num" aria-hidden="true">{w.week}</span>
+                  <span className="grow"><span className="sr-only">Week {w.week}: </span>{w.focus}</span>
+                  <Icon name="down" className="pq-week-chev" />
+                </summary>
+                <ul className="small">{w.tasks.map((t) => <li key={t}>{t}</li>)}</ul>
               </details>
             </li>
           ))}

@@ -2,6 +2,8 @@
 // and holds detail at 96px. Colors come from tokens (the world's --sec-* accent plus shared tokens),
 // so every emblem follows light and dark mode. world: fund|auto|ui|test|perf.
 
+import { useId } from 'react';
+
 const mix = (a, pct, b) => `color-mix(in srgb, ${a} ${pct}%, ${b})`;
 const INK = '#2A2133'; // features drawn on colored fills, so one dark ink works in both themes
 
@@ -102,7 +104,7 @@ function Bay() {
       <circle cx="25" cy="16.6" r="1.4" fill={mix('var(--flame)', 75, 'var(--text)')} />
       {/* pixel waves */}
       <path d="M5 35 h4 v-2 h4 v2 h6 v-2 h4 v2 h6 v-2 h4 v2 h6 v-2 h4 v2 V40 H5 Z" fill={sea} />
-      <path d="M8 40 h4 v-2 h4 v2 h6 v-2 h4 v2 h6 v-2 h4 v2 h4 V43 C33 46.5 15 46.5 8 43 Z" fill={mix(sea, 70, 'var(--text)')} />
+      <path d="M8 40 h4 v-2 h4 v2 h6 v-2 h4 v2 h6 v-2 h4 v2 h4 V43 C33 46.5 15 46.5 8 43 Z" fill={mix(sea, 60, 'var(--surface)')} />
       <rect x="14" y="36.2" width="2" height="1.6" fill="var(--surface)" opacity="0.8" />
       <rect x="30" y="36.2" width="2" height="1.6" fill="var(--surface)" opacity="0.8" />
     </>
@@ -162,9 +164,11 @@ const EMBLEMS = { fund: Shrine, auto: Forge, ui: Bay, test: Swamp, perf: Peaks }
 
 export function WorldEmblem({ world, size = 48, className = '' }) {
   const Art = EMBLEMS[world] ?? Shrine;
+  const clip = `emblem-${useId().replace(/:/g, '')}`;
   return (
     <svg className={`art world-emblem ${className}`} width={size} height={size} viewBox="0 0 48 48" aria-hidden="true" focusable="false" data-world={world}>
-      <Art />
+      <defs><clipPath id={clip}><circle cx="24" cy="24.75" r="22.75" /></clipPath></defs>
+      <g clipPath={`url(#${clip})`}><Art /></g>
     </svg>
   );
 }

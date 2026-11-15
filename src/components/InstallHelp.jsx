@@ -72,7 +72,7 @@ function InstallGuide({ onClose, onAdded }) {
   return (
     <div className="stack install-sheet">
       <div className="pq-install-head">
-        <HeroArt kind="install" size={64} />
+        <HeroArt kind="install" size={56} />
         <h2 id="install-guide-title">Add PD2 Quest to your Home Screen</h2>
       </div>
       <p className="small muted">One minute, once: its own icon, full screen, works offline, and safer from Safari clearing site data.</p>
@@ -82,7 +82,7 @@ function InstallGuide({ onClose, onAdded }) {
         <ol className="install-guide">
           {IPHONE_STEPS.map((st, k) => (
             <li key={k}>
-              <span className="pq-tile pq-step-tile" aria-hidden="true"><Icon name={st.mark} /><span className="install-num">{k + 1}</span></span>
+              <span className="pq-tile s pq-step-tile" aria-hidden="true"><Icon name={st.mark} /><span className="install-num">{k + 1}</span></span>
               <div className="stack-s" style={{ gap: 4 }}>
                 <strong>{st.title} {st.icon}</strong>
                 <span className="small">{st.body}</span>
@@ -109,9 +109,9 @@ function InstallGuide({ onClose, onAdded }) {
         </section>
       )}
 
-      <div className="row wrap">
-        <button type="button" className="btn primary grow" onClick={onAdded}><Icon name="check" /> I added it</button>
-        <button type="button" className="btn grow" data-autofocus onClick={onClose}>Later</button>
+      <div className="pq-btn-grid">
+        <button type="button" className="btn primary" onClick={onAdded}><Icon name="check" /> I added it</button>
+        <button type="button" className="btn" data-autofocus onClick={onClose}>Later</button>
       </div>
       <p className="small muted">Tap “I added it” once it’s on your Home Screen and this button goes away.</p>
     </div>
