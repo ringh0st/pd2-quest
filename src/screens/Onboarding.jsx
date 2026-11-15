@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { motion } from 'motion/react';
 import { setState, updateSettings } from '../state/store.js';
 import { FEEL_PRESETS } from '../state/feelPresets.js';
+import { InstallHelpButton } from '../components/InstallHelp.jsx';
 import { Segmented } from '../components/Controls.jsx';
 import { replace } from '../hooks/useRoute.js';
 import { sections } from '../data/index.js';
@@ -63,6 +64,8 @@ export function Onboarding() {
         <button className="btn block" style={{ marginTop: 10 }} onClick={() => start(`/placement/${sections[0].id}`)}>
           I have PD1 or Apex experience: skip what I know
         </button>
+        <p className="small muted center" style={{ marginTop: 14 }}>On iPhone? Add it to your Home Screen first, so your progress lives in the app.</p>
+        <div className="center" style={{ marginTop: 6 }}><InstallHelpButton /></div>
       </motion.div>
     </main>
   );

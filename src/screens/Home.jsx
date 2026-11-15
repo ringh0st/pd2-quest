@@ -17,7 +17,7 @@ import { ZapSays } from '../components/game/Zap.jsx';
 import { CoinChip } from '../components/game/CoinChip.jsx';
 import { DailyQuests } from '../components/game/DailyQuests.jsx';
 import { ParkIt } from '../components/ParkIt.jsx';
-import { InstallCard } from '../components/InstallCard.jsx';
+import { InstallHelpButton } from '../components/InstallHelp.jsx';
 import { StudyPlanCard } from '../components/plan/StudyPlanCard.jsx';
 import { go } from '../hooks/useRoute.js';
 import { useReducedMotion } from '../hooks/useMotionPrefs.js';
@@ -155,8 +155,6 @@ export function Home() {
         </a>
       </motion.div>
 
-      <InstallCard show={Object.keys(s.lessons).length >= 1} />
-
       <motion.div {...enter(4)}><DailyQuests /></motion.div>
 
       <motion.a className="card link stack-s" href="#/me" {...enter(5)}>
@@ -180,6 +178,8 @@ export function Home() {
         <span aria-hidden="true" style={{ fontSize: 22 }}>💡</span>
         <p className="small">{tip}</p>
       </motion.aside>
+
+      <InstallHelpButton />
     </main>
   );
 }

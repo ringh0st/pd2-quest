@@ -1,6 +1,7 @@
 import { useRef } from 'react';
 import { useStore, updateSettings, setState, resetProgress, exportProgress, importProgress } from '../state/store.js';
 import { FEEL_PRESETS, presetFor } from '../state/feelPresets.js';
+import { InstallHelpButton } from '../components/InstallHelp.jsx';
 import { Switch, Segmented } from '../components/Controls.jsx';
 import { go } from '../hooks/useRoute.js';
 import { useFeedback } from '../components/Feedback.jsx';
@@ -34,6 +35,7 @@ export function Settings() {
         <button className="icon-btn" onClick={() => go('/me')} aria-label="Back">←</button>
         <h1 className="grow">⚙️ Settings</h1>
       </div>
+      <InstallHelpButton />
 
       <section className="card stack">
         <h2>🎯 Goals</h2>

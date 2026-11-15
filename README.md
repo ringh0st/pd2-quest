@@ -30,7 +30,14 @@ A phone-first study app for the **Salesforce Platform Developer II** exam, desig
 
 Open the GitHub Pages link, then:
 
-- **iPhone (Safari):** Share → **Add to Home Screen**
+- **iPhone / iPad (Safari):**
+  1. Open the link in **Safari** (from another app, tap “Open in Safari” first).
+  2. Tap **Share** (the square with an arrow, bottom of the screen; top right on iPad). Only see **⋯**? Tap it, then **Share**.
+  3. Scroll down and tap **Add to Home Screen** (not listed? tap **View More** / **Edit Actions** and add it).
+  4. Keep **Open as Web App** on and tap **Add**. Open PD2 Quest from the new ⚡ icon.
+  5. Studied in Safari before? The home-screen app keeps its own progress: Safari → Settings → **Save backup**, then in the app → Settings → **Restore**.
+
+  The app also has a small **📲 Add to Home Screen** button (Home and Settings) with these steps. It disappears once you add the app.
 - **Android (Chrome):** ⋮ → **Install app** / **Add to Home screen**
 
 ## Develop

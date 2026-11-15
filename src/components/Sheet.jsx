@@ -16,7 +16,9 @@ export function Sheet({ open, onClose, labelledBy, children }) {
       const el = ref.current;
       if (!el) return;
       const auto = el.querySelector('[autofocus], [data-autofocus]');
-      (auto || el.querySelector(FOCUSABLE) || el).focus();
+      (auto || el.querySelector(FOCUSABLE) || el).focus({ preventScroll: true });
+      el.scrollTop = 0;
+      el.querySelector('.install-sheet, form')?.scrollTo?.(0, 0);
     };
     const t = setTimeout(first, 30);
     const onKey = (e) => {

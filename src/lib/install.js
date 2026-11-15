@@ -1,9 +1,7 @@
-// Install prompt: captures Chromium's beforeinstallprompt early and caps how often the card shows.
+// Install prompt: captures Chromium's beforeinstallprompt early and remembers when the app was added.
 import { isIos, isStandalone } from './displayMode.js';
 
 const KEY = 'pd2quest.install.v1';
-export const MAX_INSTALL_SHOWS = 2;
-const SNOOZE_MS = 3 * 24 * 60 * 60 * 1000; // "Not now" keeps it away for a few days
 
 let deferredPrompt = null;
 let installed = false;
@@ -15,14 +13,14 @@ export function initInstallCapture() {
   if (typeof window === 'undefined' || window.__pd2InstallCapture) return;
   window.__pd2InstallCapture = true;
   window.addEventListener('beforeinstallprompt', (e) => {
-    e.preventDefault(); // keep the browser's own mini-infobar away; our card asks at a calm moment
+    e.preventDefault(); // keep the browser's own mini-infobar away; the 📲 button offers it instead
     deferredPrompt = e;
     notify();
   });
   window.addEventListener('appinstalled', () => {
     installed = true;
     deferredPrompt = null;
-    writeInstallState({ ...readInstallState(), installed: true });
+    writeInstallState({ installed: true });
     notify();
   });
 }
@@ -42,40 +40,31 @@ export function installMode() {
 export function readInstallState() {
   try {
     const s = JSON.parse(localStorage.getItem(KEY) ?? 'null');
-    return { shows: Number(s?.shows) || 0, snoozedAt: Number(s?.snoozedAt) || 0, installed: s?.installed === true };
+    return { installed: s?.installed === true };
   } catch {
-    return { shows: 0, snoozedAt: 0, installed: false };
+    return { installed: false };
   }
 }
 
 function writeInstallState(state) {
   try {
     localStorage.setItem(KEY, JSON.stringify(state));
-  } catch { /* storage blocked: the card may show again, still capped per session */ }
+  } catch { /* storage blocked: the button may show again next time */ }
 }
 
-let countedThisSession = false;
-let hiddenThisSession = false;
-
-/** True while the card may appear: not installed, under the show cap, not snoozed. */
-export function installCardAllowed(now = Date.now()) {
-  const s = readInstallState();
-  if (s.installed || hiddenThisSession) return false;
-  if (countedThisSession) return true; // this session's show already counted: keep it steady
-  return s.shows < MAX_INSTALL_SHOWS && now - s.snoozedAt > SNOOZE_MS;
+/**
+ * True once the app is on the home screen as far as we can tell: running standalone, the browser
+ * reported an install (Android/desktop), or the learner tapped "I added it" (iPhone Safari never reports it).
+ */
+export function installDone() {
+  return installed || isStandalone() || readInstallState().installed;
 }
 
-/** Counts one show per app session. */
-export function markInstallCardShown() {
-  if (countedThisSession) return;
-  countedThisSession = true;
-  const s = readInstallState();
-  writeInstallState({ ...s, shows: s.shows + 1 });
-}
-
-export function snoozeInstallCard() {
-  writeInstallState({ ...readInstallState(), snoozedAt: Date.now() });
-  hiddenThisSession = true;
+/** "✓ I added it": hide every install hint in this browser from now on. */
+export function markInstalled() {
+  installed = true;
+  deferredPrompt = null;
+  writeInstallState({ installed: true });
   notify();
 }
 
@@ -87,13 +76,8 @@ export async function promptInstall() {
   try {
     await e.prompt();
     const { outcome } = await e.userChoice;
-    if (outcome === 'accepted') {
-      installed = true;
-      writeInstallState({ ...readInstallState(), installed: true });
-    } else {
-      snoozeInstallCard();
-    }
-    notify();
+    if (outcome === 'accepted') markInstalled();
+    else notify();
     return outcome;
   } catch {
     notify();

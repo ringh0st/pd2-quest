@@ -662,17 +662,18 @@ a.card:not(.section-card):not(.stat):not(.row):not(.stack-s) { display: block; }
 .flip-prompt { border-bottom: 1px solid var(--hairline); padding-bottom: 8px; }
 .switch:disabled { opacity: 0.55; cursor: not-allowed; }
 
-/* ===== install card + study reminders (InstallCard.jsx, ReminderSettings.jsx) ===== */
-.install-steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; counter-reset: install-step; }
-.install-steps li {
-  counter-increment: install-step;
-  display: flex; align-items: center; gap: 10px;
-  min-height: 44px; padding: 8px 12px; border-radius: var(--radius-s);
-  background: var(--surface-2);
+/* ===== add to home screen (InstallHelp.jsx) ===== */
+.install-help-btn { align-self: center; justify-self: center; width: auto; min-height: 40px; padding: 6px 16px; border-radius: 999px; }
+.install-guide { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.install-guide li { display: flex; gap: 12px; align-items: flex-start; padding: 10px 12px; border-radius: var(--radius-s); background: var(--surface-2); }
+.install-num {
+  flex: none; width: 28px; height: 28px; border-radius: 14px; display: grid; place-items: center;
+  background: var(--primary); color: var(--on-primary); font-weight: 700; font-size: calc(14px * var(--text-scale));
 }
-.install-steps li::before { content: counter(install-step) '.'; font-weight: 700; color: var(--text-muted); min-width: 1.2em; }
-.install-icon { flex: none; color: var(--primary); }
-/* ===== end install card + study reminders ===== */
+.ios-key { display: inline-grid; place-items: center; vertical-align: middle; width: 30px; height: 30px; border-radius: 8px; background: var(--surface); color: var(--primary); box-shadow: inset 0 0 0 1.5px var(--border); }
+.install-tip { padding: 12px; border-radius: var(--radius-s); background: color-mix(in srgb, var(--gold) 16%, var(--surface)); }
+.install-sheet { max-height: 78vh; overflow-y: auto; }
+/* ===== end add to home screen ===== */
 /* ===== placement + resume ===== */
 .test-out-link { display: inline-block; margin-top: 6px; font-weight: 700; min-height: 32px; }
 .placement-list { text-align: left; width: 100%; }
