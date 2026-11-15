@@ -1027,7 +1027,7 @@ h1[tabindex='-1']:focus, h2[tabindex='-1']:focus { outline: none; }
   /* 46px circle in the 30px icon slot: same bottom as the other icons, the extra 16px grows upward only */
   display: grid; place-items: center; width: calc(46px * var(--text-scale)); height: calc(46px * var(--text-scale));
   margin-top: calc(-16px * var(--text-scale));
-  border-radius: 50%; font-size: calc(22px * var(--text-scale));
+  border-radius: 50%; font-size: calc(26px * var(--text-scale));
   background: color-mix(in srgb, var(--primary) 18%, var(--surface)); color: var(--primary);
   box-shadow: 0 2px 6px color-mix(in srgb, var(--primary) 18%, transparent);
   transition: background var(--dur-quick), color var(--dur-quick);
@@ -1100,3 +1100,7 @@ h1[tabindex='-1']:focus, h2[tabindex='-1']:focus { outline: none; }
 
 /* a single name longer than the line may still break, but only as a last resort */
 .inline-code { overflow-wrap: break-word; word-break: normal; }
+/* chunky two-tone tab icons */
+.nav-item .nav-icon { font-size: calc(26px * var(--text-scale)); }
+.nav-svg { display: block; }
+.nav-center-tile svg { translate: 1px 0; width: 1em; height: 1em; }

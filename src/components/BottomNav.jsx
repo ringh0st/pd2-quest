@@ -4,7 +4,7 @@
 import { motion } from 'motion/react';
 import { sfx } from '../audio/sfx.js';
 import { haptic } from '../audio/haptics.js';
-import { Icon } from './icons/Icon.jsx';
+import { NAV_ICONS, PlayGlyph } from './icons/NavIcons.jsx';
 import { useReducedMotion, useCalm } from '../hooks/useMotionPrefs.js';
 
 const ITEMS = [
@@ -32,7 +32,7 @@ export function BottomNav({ path, dueCards }) {
               key={to} href={`#${to}`} className={`nav-item nav-center${on ? ' on' : ''}`} aria-current={on ? 'page' : undefined}
               onClick={() => { sfx.tap(); haptic('light'); }}
             >
-              <span className="nav-center-tile" aria-hidden="true"><Icon name={icon} size="1em" fill strokeWidth={2} /></span>
+              <span className="nav-center-tile" aria-hidden="true"><PlayGlyph /></span>
               <span className="nav-center-label">{label}</span>
             </a>
           );
@@ -43,9 +43,7 @@ export function BottomNav({ path, dueCards }) {
             onClick={() => { sfx.tap(); haptic('light'); }}
           >
             {on && <motion.span layoutId="nav-pill" className="nav-pill" transition={still ? STILL : { type: 'spring', stiffness: 500, damping: 35 }} />}
-            <span className="nav-icon" aria-hidden="true">
-              <Icon name={icon} size="1em" strokeWidth={on ? 2.75 : 2} fill={false} />
-            </span>
+            <span className="nav-icon" aria-hidden="true">{(() => { const C = NAV_ICONS[icon]; return <C on={on} />; })()}</span>
             <span>{label}</span>
             {to === '/cards' && dueCards > 0 && <span className="nav-badge"><span aria-hidden="true">{dueCards > 99 ? '99+' : dueCards}</span><span className="sr-only">, {dueCards} due</span></span>}
           </a>
