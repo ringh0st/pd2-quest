@@ -1251,9 +1251,10 @@ h1[tabindex='-1']:focus, h2[tabindex='-1']:focus { outline: none; }
 .check-pair { grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr); }
 .check-pair .btn { min-width: 0; padding-inline: 8px; }
 .check-v { flex-wrap: wrap; justify-content: center; text-align: center; }
-/* The bar's own colour carries on below the screen edge. On iPhones where the browser parks the
-   bar a little above the bottom (Safari's floating toolbar, home-screen app), nothing shows through
-   underneath it, so it never looks like it is floating. */
+/* iPhone home-screen app: iOS can leave a strip below the page that nothing can be drawn in; it only
+   takes the root background. The root takes the bar's colour (the page itself keeps --bg on body),
+   and the bar's colour carries on below it, so the bar always reaches the bottom edge. */
+html { background: var(--surface); }
 .bottom-nav::after {
   content: ''; position: absolute; left: 0; right: 0; top: 100%; height: 120px;
   background: var(--surface); pointer-events: none;
