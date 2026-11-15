@@ -3897,6 +3897,1556 @@
         "Catching the error doesn't let the callout go through."
       ],
       "source": "Salesforce Help: Run Parts of a Record-Triggered Flow Asynchronously; Apex Developer Guide: InvocableMethod Annotation"
+    },
+    {
+      "id": "auto-x63",
+      "lesson": "auto-1",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "An after update trigger on Case sets a field on the same Cases and saves them again. In that second (recursive) save, which two run again for those Cases? (Choose 2)",
+      "code": "trigger CaseStamp on Case (after update) {\n    List<Case> again = new List<Case>();\n    for (Case c : Trigger.new) {\n        if (c.Status == 'Escalated' && c.Escalated_On__c == null) {\n            again.add(new Case(Id = c.Id, Escalated_On__c = System.now()));\n        }\n    }\n    update again;\n}",
+      "lang": "apex",
+      "options": [
+        "Before update triggers on Case",
+        "Assignment rules that route the Case to a queue",
+        "After update triggers on Case, including this one",
+        "Auto-response rules that email the Case contact",
+        "Escalation rules for Case"
+      ],
+      "answer": [
+        0,
+        2
+      ],
+      "explain": "A **recursive save** happens when code saves the same records again inside the first save. The DML fires the triggers again, so before and after update triggers run. Salesforce skips the steps from assignment rules through roll-up summaries.",
+      "wrong": [
+        "",
+        "Assignment rules are one of the steps skipped in a recursive save.",
+        "",
+        "Auto-response rules are skipped in a recursive save too.",
+        "Escalation rules fall inside the skipped steps as well."
+      ],
+      "source": "Apex Developer Guide: Triggers and Order of Execution"
+    },
+    {
+      "id": "auto-x64",
+      "lesson": "auto-1",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "On Opportunity, a before-save flow sets `Stage_Gate__c` to 'Review'. A before update trigger then sets it to 'Ready' when `Score__c` > 80. A validation rule blocks 'Ready' when `Approver__c` is blank. A user saves a record with a score of 90 and no approver. What happens?",
+      "options": [
+        "It saves as 'Review', because the before-save flow runs after the trigger and overwrites it",
+        "It saves as 'Ready', because validation rules run before triggers and saw 'Review'",
+        "The save is blocked: validation runs after the trigger and sees 'Ready'",
+        "It saves as 'Ready', because validation rules ignore values set by Apex code"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "Before-save flows run first, then before triggers, then custom validation rules. So the rule checks the value the trigger set: 'Ready'. With no approver, the save fails.",
+      "wrong": [
+        "Before-save flows run before before triggers, not after them.",
+        "Custom validation rules run after before triggers.",
+        "",
+        "Validation rules check the final values, whoever set them."
+      ],
+      "source": "Apex Developer Guide: Triggers and Order of Execution"
+    },
+    {
+      "id": "auto-x65",
+      "lesson": "auto-1",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "An after insert trigger on `Order__c` calls `System.enqueueJob()` to notify the warehouse. Later in the same save, a roll-up summary updates the parent Account, and an Account validation rule fails. What happens to the warehouse job?",
+      "options": [
+        "It never runs: the save rolls back, and the queued job goes with it",
+        "It runs, but its `execute()` fails because the `Order__c` record doesn't exist",
+        "It waits in the queue until a user fixes the Account and saves the Order again",
+        "It runs anyway, because an enqueued job is stored in the queue right away"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "Async jobs only start **after commit**. If the transaction rolls back, the Queueable jobs it queued are never processed. The failed Account validation rolls back the whole save, so the job never runs.",
+      "wrong": [
+        "",
+        "The job never starts, so it has no chance to fail on a missing record.",
+        "A rolled-back job is gone; a new save would enqueue a new one.",
+        "Jobs are held until commit, so a rollback cancels them."
+      ],
+      "source": "Apex Developer Guide: Queueable Apex; Triggers and Order of Execution"
+    },
+    {
+      "id": "auto-x66",
+      "lesson": "auto-1",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A data steward merges three duplicate Contacts into one. A developer's Contact triggers must log which records lost and which one won. Which two statements are true? (Choose 2)",
+      "options": [
+        "A special `merge` trigger event fires once for the whole operation",
+        "In after delete, each losing record's `MasterRecordId` in `Trigger.old` holds the winner's Id",
+        "Cases and Opportunities moved to the winner fire their own update triggers",
+        "The winning record fires update triggers, like any normal update",
+        "`MasterRecordId` is already set in the before delete trigger"
+      ],
+      "answer": [
+        1,
+        3
+      ],
+      "explain": "A merge has no trigger event of its own. Losing records fire delete triggers, and the winner fires update triggers. `MasterRecordId` points to the winner, but only in after delete.",
+      "wrong": [
+        "There's no merge event; merges fire delete and update events.",
+        "",
+        "Child records that get a new parent don't fire triggers.",
+        "",
+        "`MasterRecordId` is only set in after delete events."
+      ],
+      "source": "Apex Developer Guide: Triggers and Merge Statements"
+    },
+    {
+      "id": "auto-x67",
+      "lesson": "auto-1",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "To stamp `Last_Reviewed__c`, an after update trigger on Account queries the same Accounts, sets the field and calls `update`. Every edit now fails with 'Maximum trigger depth exceeded'. What is the best fix?",
+      "options": [
+        "Call the `update` from an `@future` method so it runs outside the trigger",
+        "Use `Database.update(accts, false)` so that the repeated saves are allowed to finish",
+        "Wrap the `update` in a try/catch so the error is logged and the user's edit still saves",
+        "Set the field on `Trigger.new` in a before update trigger, with no DML"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "Each `update` on the same records fires the trigger again, which updates again, and so on. Apex stops this loop at a depth of 16. In a **before** trigger you just change `Trigger.new`, so no extra save happens.",
+      "wrong": [
+        "The future update fires the trigger again, which then calls a future from a future and fails.",
+        "Partial success doesn't stop the trigger from firing again and again.",
+        "A try/catch hides the error but doesn't remove the loop.",
+        ""
+      ],
+      "source": "Apex Developer Guide: Trigger Context Variable Considerations; Execution Governors and Limits"
+    },
+    {
+      "id": "auto-q55",
+      "lesson": "auto-1",
+      "difficulty": 2,
+      "q": "Opportunity has two after-save record-triggered flows. 'Set Region' must always run before 'Notify Region Lead'. What should the admin do?",
+      "options": [
+        "Move both flows to the Run Asynchronously path so that they run one at a time",
+        "Give 'Set Region' a lower Trigger Order value than 'Notify Region Lead'",
+        "Nothing: after-save flows always run in the order they were activated",
+        "Turn 'Set Region' into an Apex trigger, which always runs after flows"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "For record-triggered flows on the same object and timing, the **Trigger Order** value (1 to 2,000) decides which runs first. Lower numbers run first.",
+      "wrong": [
+        "Async paths don't promise any order between flows.",
+        "",
+        "Activation order isn't a promise; set a Trigger Order instead.",
+        "Apex after triggers run before after-save flows, not after them."
+      ],
+      "source": "Salesforce Help: Manage Record-Triggered Flows (Flow Trigger Explorer)"
+    },
+    {
+      "id": "auto-x68",
+      "lesson": "auto-2",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A web-to-lead import inserts 50 Leads in one transaction. How many of them get a `Score__c` from this trigger?",
+      "code": "public class LeadGuard {\n    public static Set<Id> seen = new Set<Id>();\n}\n\ntrigger LeadScore on Lead (before insert, before update) {\n    for (Lead l : Trigger.new) {\n        if (!LeadGuard.seen.add(l.Id)) continue;\n        l.Score__c = LeadScorer.score(l);\n    }\n}",
+      "lang": "apex",
+      "options": [
+        "It doesn't compile, because a `Set<Id>` can't be used as a static guard",
+        "All 50, because each Lead gets added to the set the first time the loop sees it",
+        "Only the first Lead, because every new Lead has a null Id in before insert",
+        "None, because `Set.add()` returns false for a record that has no Id"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "In before insert, records have no Id yet, so `l.Id` is null. The first `add(null)` returns true, and every later one returns false. So only the first Lead is scored. Think: 50 kids all wearing the same blank name tag.",
+      "wrong": [
+        "It compiles; the bug is the null Id, not the type.",
+        "All 50 share the same Id value: null.",
+        "",
+        "A set can hold one null, so the first `add` returns true."
+      ],
+      "source": "Apex Developer Guide: Trigger Context Variables; Apex Reference Guide: Set Class"
+    },
+    {
+      "id": "auto-x69",
+      "lesson": "auto-2",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "Every Contact insert fails with this trigger. Why?",
+      "code": "trigger ContactDefaults on Contact (before insert) {\n    ContactService.prepare(Trigger.newMap.keySet());\n    for (Contact c : Trigger.new) {\n        c.Source__c = 'Import';\n    }\n}",
+      "lang": "apex",
+      "options": [
+        "`Trigger.newMap` is null in before insert, since new records have no Id",
+        "`Trigger.new` is read-only in before insert, so `Source__c` can't be set",
+        "`Trigger.newMap` can't be passed to another class; copy it into a new map first",
+        "Field changes in before insert must be saved with an `update` statement"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "`newMap` is keyed by record Id. In before insert, no Ids exist yet, so `Trigger.newMap` is null. Calling `keySet()` on it throws a `NullPointerException`.",
+      "wrong": [
+        "",
+        "Before triggers are exactly where you change `Trigger.new` fields.",
+        "Trigger maps can be passed to other methods like any map.",
+        "Changes in a before trigger are saved without any DML."
+      ],
+      "source": "Apex Developer Guide: Trigger Context Variables"
+    },
+    {
+      "id": "auto-x70",
+      "lesson": "auto-2",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "Apex code runs `update opps;` on 50 Opportunities. A before update trigger calls `addError()` on 3 of them. Which two statements are true? (Choose 2)",
+      "options": [
+        "The errors are shown only in the UI, so Apex can't catch them",
+        "The other 47 Opportunities are saved, and only the 3 flagged ones are skipped",
+        "No Opportunity is saved: one error rolls back the whole statement",
+        "`addError()` only takes effect in after triggers, so this whole update still succeeds",
+        "All 50 records are still checked, so the `DmlException` can list all 3 errors"
+      ],
+      "answer": [
+        2,
+        4
+      ],
+      "explain": "An Apex DML statement is **all or nothing**. One `addError()` rolls back the whole `update`. Salesforce still checks every record, so the exception holds the full list of failures.",
+      "wrong": [
+        "The errors come back to Apex as a `DmlException` you can catch.",
+        "Partial saves need `Database.update(opps, false)`, not a plain `update`.",
+        "",
+        "`addError()` works in before and after triggers; before is faster.",
+        ""
+      ],
+      "source": "Apex Developer Guide: Trigger Exceptions; Bulk DML Exception Handling"
+    },
+    {
+      "id": "auto-x71",
+      "lesson": "auto-2",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "This method runs in a synchronous transaction with 150 Account Ids. What happens?",
+      "code": "try {\n    for (Id accId : accountIds) {        // 150 Ids\n        Account a = [SELECT Id, Name FROM Account WHERE Id = :accId];\n        AuditService.check(a);\n    }\n} catch (Exception e) {\n    Logger.save(e.getMessage());\n} finally {\n    Logger.flush();\n}",
+      "lang": "apex",
+      "options": [
+        "The loop stops quietly after 100 queries, and the method returns normally",
+        "The catch block logs 'Too many SOQL queries: 101' and the finally block flushes",
+        "Only the finally block runs, because a `LimitException` skips catch blocks",
+        "The transaction stops with a `LimitException`; neither catch nor finally runs"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "Some errors can't be caught. A **`LimitException`** stops the transaction at once, and its catch and finally blocks don't run. The real fix is one query outside the loop.",
+      "wrong": [
+        "Hitting a limit always throws; Apex never skips queries quietly.",
+        "`catch (Exception e)` can't catch a `LimitException`.",
+        "Uncatchable exceptions skip finally blocks too.",
+        ""
+      ],
+      "source": "Apex Developer Guide: Exception Statements; Execution Governors and Limits"
+    },
+    {
+      "id": "auto-x72",
+      "lesson": "auto-2",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "An import uses a plain `insert rows;` on 300 records. Support wants a log line for each failed row: its position in the list and its error text. Which code in the `DmlException` catch block does this?",
+      "options": [
+        "`log(e.getCause().getMessage());` inside a loop over every record in `rows`",
+        "`for (Integer i = 0; i < e.getNumDml(); i++) log(e.getDmlIndex(i), e.getDmlMessage(i));`",
+        "`log(e.getLineNumber(), e.getMessage());` once, since that one message already lists every failed row",
+        "`for (Database.SaveResult r : e.getResults()) log(r.getId(), r.getErrors());`"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "A `DmlException` keeps a list of every failed row. `getNumDml()` says how many failed. For each one, `getDmlIndex(i)` gives its position in the list and `getDmlMessage(i)` gives its error.",
+      "wrong": [
+        "`getCause()` is for a wrapped exception and is usually null here.",
+        "",
+        "`getLineNumber()` is the code line, and `getMessage()` names only the first error.",
+        "`DmlException` has no `getResults()`; save results come from `Database.insert(rows, false)`."
+      ],
+      "source": "Apex Developer Guide: Built-In Exceptions and Common Methods"
+    },
+    {
+      "id": "auto-x73",
+      "lesson": "auto-2",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A data load inserts Contacts, several of them under the same Account. The load fails with this trigger. What is the cause and the fix?",
+      "code": "trigger ContactStamp on Contact (after insert) {\n    List<Account> toUpdate = new List<Account>();\n    for (Contact c : Trigger.new) {\n        if (c.AccountId != null) {\n            toUpdate.add(new Account(Id = c.AccountId,\n                                     Last_Contact_Added__c = Date.today()));\n        }\n    }\n    update toUpdate;\n}",
+      "lang": "apex",
+      "options": [
+        "An sObject built with just an Id can't be updated; query each Account first, then update",
+        "The update hits row locks on the Account; add `FOR UPDATE` to a query first",
+        "One list holds the same Account twice ('Duplicate id in list'); use a `Map<Id, Account>`",
+        "After insert triggers can't update parent records; move the logic to before insert"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "One DML list can't hold the same record Id twice, or it throws 'Duplicate id in list'. Two Contacts on one Account add that Account twice. A `Map<Id, Account>` keeps one entry per Id.",
+      "wrong": [
+        "You can update a record with just its Id set; no query is needed.",
+        "Locks aren't the error here; the duplicate Ids are.",
+        "",
+        "After triggers are the right place to update related records."
+      ],
+      "source": "Apex Developer Guide: Bulk Apex Triggers; Common Bulk Trigger Idioms"
+    },
+    {
+      "id": "auto-x74",
+      "lesson": "auto-3",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "This job is enqueued from a button. What happens when `execute()` runs?",
+      "code": "public class ExportJob implements Queueable, Database.AllowsCallouts {\n    private List<Id> recordIds;\n    private transient HttpRequest template;\n\n    public ExportJob(List<Id> ids) {\n        recordIds = ids;\n        template = new HttpRequest();\n        template.setMethod('POST');\n    }\n    public void execute(QueueableContext ctx) {\n        template.setEndpoint('callout:Export_API/batch');\n        // ...\n    }\n}",
+      "lang": "apex",
+      "options": [
+        "It throws a `NullPointerException`: `transient` fields are null when the job runs",
+        "It fails to enqueue, because an `HttpRequest` can't be a member of a Queueable",
+        "It runs, but `recordIds` is empty, because lists aren't kept between transactions",
+        "It works: the constructor's `HttpRequest` is kept with the job"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "When a Queueable is queued, its member variables are saved and restored when it runs. **`transient`** fields are skipped, so `template` is null in `execute()`. Build the request inside `execute()` instead.",
+      "wrong": [
+        "",
+        "As a `transient` field it isn't saved, so it can't block the enqueue.",
+        "Non-transient members like `recordIds` are kept, even lists and sObjects.",
+        "`transient` means 'don't save this', so the request is lost."
+      ],
+      "source": "Apex Developer Guide: Queueable Apex"
+    },
+    {
+      "id": "auto-x75",
+      "lesson": "auto-3",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A Queueable job runs in its own asynchronous transaction. Which two can its `execute()` method do? (Choose 2)",
+      "options": [
+        "Enqueue one child Queueable job to continue the work",
+        "Make callouts without `Database.AllowsCallouts`, since it's already async",
+        "Enqueue two child Queueable jobs, one for each region",
+        "Call `@future` methods, up to 50 of them",
+        "Make 150 callouts, since async jobs get a higher callout limit"
+      ],
+      "answer": [
+        0,
+        3
+      ],
+      "explain": "From a running Queueable you can add only **one** child job with `System.enqueueJob`. A Queueable may still call up to 50 future methods. Callouts need `Database.AllowsCallouts`, and the limit stays 100.",
+      "wrong": [
+        "",
+        "Queueables need `Database.AllowsCallouts` to make callouts.",
+        "Only one child job can be added from an executing job.",
+        "",
+        "The callout limit is 100 in sync and async code alike."
+      ],
+      "source": "Apex Developer Guide: Queueable Apex; Execution Governors and Limits"
+    },
+    {
+      "id": "auto-x76",
+      "lesson": "auto-3",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A Queueable polls a partner for a report and re-enqueues itself until the report is ready. In production it must stop after at most 10 runs. Which approach is best?",
+      "options": [
+        "Call `Limits.getQueueableJobs()` in each run and stop chaining once it reports 10 jobs",
+        "Nothing extra: chained Queueables stop at a stack depth of 5 in every kind of org",
+        "Keep a `static Integer` counter on the class, add 1 in each `execute()`, and stop when it reaches 10",
+        "Use `AsyncOptions` to set `MaximumQueueableStackDepth` to 10, and check `AsyncInfo` first"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "Each chained job is a new transaction, so static variables start over. `MaximumQueueableStackDepth` in `AsyncOptions` caps the chain. `AsyncInfo.getCurrentQueueableStackDepth()` tells the job how deep it is, so it can stop cleanly.",
+      "wrong": [
+        "`Limits.getQueueableJobs()` counts only the jobs queued in this transaction.",
+        "The default depth of 5 applies only to Developer and Trial Edition orgs.",
+        "Static variables reset in every new job, so the counter never passes 1.",
+        ""
+      ],
+      "source": "Apex Developer Guide: Queueable Apex (Adding a Queueable Job with a Specified Stack Depth)"
+    },
+    {
+      "id": "auto-q56",
+      "lesson": "auto-3",
+      "difficulty": 2,
+      "q": "A trigger must hand Account Ids to an asynchronous method that calls a tax API. Which `@future` declaration compiles?",
+      "options": [
+        "`@future(callout=true) public static void sync(List<Account> accounts)`",
+        "`@future(callout=true) public static void sync(Set<Id> accountIds)`",
+        "`@future(callout=true) public static Boolean sync(Set<Id> accountIds)`",
+        "`@future(callout=true) public void sync(Set<Id> accountIds)`"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "A future method must be `static` and return `void`. Its parameters must be primitives or collections of primitives, such as `Set<Id>`. sObjects can't be passed.",
+      "wrong": [
+        "Future methods can't take sObjects; pass their Ids.",
+        "",
+        "Future methods can only return `void`.",
+        "Future methods must be `static`."
+      ],
+      "source": "Apex Developer Guide: Future Annotation"
+    },
+    {
+      "id": "auto-x77",
+      "lesson": "auto-3",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "This works when users create Orders one at a time. A data load inserts 200 Orders in one chunk. What happens?",
+      "code": "trigger OrderSync on Order__c (after insert) {\n    for (Order__c o : Trigger.new) {\n        System.enqueueJob(new OrderSyncJob(o.Id));\n    }\n}",
+      "lang": "apex",
+      "options": [
+        "The first 50 jobs are queued and the other 150 are dropped without an error",
+        "Salesforce merges the 200 calls into one job, because `OrderSyncJob` is the same class",
+        "The 51st `enqueueJob` call throws a `LimitException`, and the whole chunk fails",
+        "All 200 jobs are queued, and each `execute()` runs in parallel as resources allow"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "A synchronous transaction can add at most **50** jobs with `System.enqueueJob`. The 51st call throws an uncatchable `LimitException`. Enqueue one job that takes all the Ids instead.",
+      "wrong": [
+        "Going over a limit throws; nothing is dropped quietly.",
+        "Each call makes its own job; Salesforce never merges them.",
+        "",
+        "The limit is 50 per transaction, so 200 calls can't all succeed."
+      ],
+      "source": "Apex Developer Guide: Queueable Apex; Execution Governors and Limits"
+    },
+    {
+      "id": "auto-x78",
+      "lesson": "auto-4",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "When an import Queueable fails, its finalizer builds a report that runs 120 SOQL queries. What happens in the finalizer?",
+      "options": [
+        "It fails at query 101, because most finalizer limits are the synchronous ones",
+        "It shares the failed job's limits, so it can run only the queries the job didn't use",
+        "It runs fine, because finalizers aren't subject to governor limits",
+        "It runs fine, because finalizers get the async limit of 200 queries"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "A finalizer runs in its **own** transaction with fresh limits. Most are the synchronous limits, such as 100 SOQL queries. Only heap size and the async job counts use async limits.",
+      "wrong": [
+        "",
+        "The finalizer runs in a separate transaction with its own limits.",
+        "Finalizers have governor limits like any other Apex.",
+        "Finalizers use the synchronous SOQL limit of 100, not 200."
+      ],
+      "source": "Apex Developer Guide: Transaction Finalizers"
+    },
+    {
+      "id": "auto-x79",
+      "lesson": "auto-4",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A finalizer must post the error to a Slack webhook whenever its Queueable fails. Which statement is true?",
+      "options": [
+        "`ctx.getException()` returns the last exception the job caught, even when the job succeeded",
+        "The callout fails with 'uncommitted work pending', because the finalizer shares the job's DML",
+        "Finalizers can't make callouts, so it must enqueue an `@future(callout=true)` method",
+        "It can call out, and `ctx.getException()` holds the error when the result is `UNHANDLED_EXCEPTION`"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "Finalizers are allowed to make **callouts**. They run in a separate transaction, so the job's DML doesn't block them. `getException()` returns the job's error only when `getResult()` is `UNHANDLED_EXCEPTION`; otherwise it's null.",
+      "wrong": [
+        "`getException()` is null when the job succeeds.",
+        "The finalizer runs in its own transaction, apart from the job's DML.",
+        "Callouts are allowed directly in a finalizer.",
+        ""
+      ],
+      "source": "Apex Developer Guide: Transaction Finalizers"
+    },
+    {
+      "id": "auto-q57",
+      "lesson": "auto-4",
+      "difficulty": 2,
+      "q": "Where does a developer attach a finalizer to a Queueable job?",
+      "options": [
+        "In the code that enqueues the job, by passing the finalizer in `AsyncOptions`",
+        "Inside `execute()`, by calling `System.attachFinalizer(new LogFinalizer())`",
+        "In a separate class that implements both `Finalizer` and `Schedulable`",
+        "In the Queueable's constructor, with `System.attachFinalizer(new LogFinalizer())`"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "You attach a finalizer **while the job runs**. Call `System.attachFinalizer()` inside the Queueable's `execute()` method. Only one finalizer can be attached to each job.",
+      "wrong": [
+        "`AsyncOptions` sets delay, depth and duplicate checks, not finalizers.",
+        "",
+        "Finalizers attach to Queueable jobs, not scheduled ones.",
+        "The constructor runs before the job is queued, not as part of the job."
+      ],
+      "source": "Apex Developer Guide: Transaction Finalizers"
+    },
+    {
+      "id": "auto-x80",
+      "lesson": "auto-5",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "This test of a batch class fails, though the batch works in production. What is the problem?",
+      "code": "@IsTest\nstatic void archivesOldCases() {\n    List<Case> cases = new List<Case>();\n    for (Integer i = 0; i < 300; i++) {\n        cases.add(new Case(Subject = 'Old ' + i, Status = 'Closed'));\n    }\n    insert cases;\n    Test.startTest();\n    Database.executeBatch(new ArchiveCasesBatch());\n    Test.stopTest();\n    Assert.areEqual(0, [SELECT COUNT() FROM Case]);\n}",
+      "lang": "apex",
+      "options": [
+        "`COUNT()` queries can't be used inside an assertion; assign the count first",
+        "`Test.stopTest()` doesn't wait for batch jobs; check the results in a new test method",
+        "A test can run only one `execute()`; use 200 or fewer records, or a larger scope",
+        "Batch classes can't be started in tests; call `start()`, `execute()` and `finish()` directly"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "In a test, a batch job can run its `execute()` method only **once**. 300 records at the default scope of 200 need two runs, so the test fails. Use 200 or fewer test records, or a scope big enough for all of them.",
+      "wrong": [
+        "`COUNT()` in an assertion is fine; the record count is the problem.",
+        "`Test.stopTest()` does run the batch before the next line.",
+        "",
+        "Tests start batches with `executeBatch` between `startTest` and `stopTest`."
+      ],
+      "source": "Apex Developer Guide: Using Batch Apex (Best Practices)"
+    },
+    {
+      "id": "auto-x81",
+      "lesson": "auto-5",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A batch updates `Inventory__c` stock while warehouse users edit the same records. The developer wants to lock each chunk's records so no edits are overwritten. What should they do?",
+      "options": [
+        "In `execute()`, query the chunk's Ids again with `FOR UPDATE`, then update them",
+        "Implement `Database.Stateful`, which locks records between chunks",
+        "Set the scope to 1, because one-record chunks are locked automatically",
+        "Add `FOR UPDATE` to the `start()` query so every record is locked for the whole job"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "`FOR UPDATE` in the start query doesn't apply to Batch Apex. Instead, select just the Id in `start()`. Then re-query each chunk with `FOR UPDATE` inside `execute()`. The lock lasts until that chunk's transaction ends.",
+      "wrong": [
+        "",
+        "`Database.Stateful` keeps variables, not record locks.",
+        "Chunk size has nothing to do with locking.",
+        "`FOR UPDATE` isn't applicable to a batch's `QueryLocator`."
+      ],
+      "source": "Apex Developer Guide: Using Batch Apex"
+    },
+    {
+      "id": "auto-x82",
+      "lesson": "auto-5",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A team schedules `NightlyPriceSync` with `System.schedule()`. Which two statements about this scheduled class are true? (Choose 2)",
+      "options": [
+        "Member values set before `System.schedule()` are saved with the job; `transient` ones aren't",
+        "An org can have up to 250 scheduled Apex jobs at one time",
+        "Deploying changes to it fails while jobs are pending, unless Deployment Settings allow it",
+        "Its `execute()` method gets a `Database.BatchableContext` that holds the scheduled job's Id",
+        "It can call an external API right inside `execute()` if the class also implements `Database.AllowsCallouts`"
+      ],
+      "answer": [
+        0,
+        2
+      ],
+      "explain": "Scheduled Apex saves the class's state when you schedule it; mark fields `transient` to skip that. You can't deploy a class with pending jobs unless Deployment Settings allow it. Callouts must go through a Queueable or a batch.",
+      "wrong": [
+        "",
+        "The limit is 100 scheduled Apex jobs at one time.",
+        "",
+        "`execute()` gets a `SchedulableContext`; its `getTriggerId()` returns the `CronTrigger` Id.",
+        "Scheduled Apex can't make synchronous callouts; use a Queueable or a batch with `Database.AllowsCallouts`."
+      ],
+      "source": "Apex Developer Guide: Apex Scheduler"
+    },
+    {
+      "id": "auto-x83",
+      "lesson": "auto-5",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A nightly batch's `start()` returns `Database.getQueryLocator('SELECT Id, (SELECT Id, Email FROM Contacts) FROM Account')`. It runs much slower than similar jobs. What should the developer change?",
+      "options": [
+        "Raise the scope to 2,000 so that fewer `execute()` calls are needed",
+        "Add `Database.Stateful` so the Contacts are cached across chunks",
+        "Return an `Iterable` instead, which always processes faster than a `QueryLocator`",
+        "Drop the subquery from `start()` and query the Contacts inside `execute()`"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "A `QueryLocator` with a **relationship subquery** makes the batch use a slower, non-chunking method. Keep `start()` to a plain query. Then fetch the Contacts in `execute()`, one chunk at a time.",
+      "wrong": [
+        "Bigger chunks don't fix the slow mode, and they risk hitting limits.",
+        "`Database.Stateful` adds the cost of saving state; it caches nothing.",
+        "An `Iterable` also uses the slower, non-chunking method.",
+        ""
+      ],
+      "source": "Apex Developer Guide: Using Batch Apex (Best Practices)"
+    },
+    {
+      "id": "auto-q58",
+      "lesson": "auto-5",
+      "difficulty": 2,
+      "q": "Batch job B must start only after batch job A has fully finished. What should the developer do?",
+      "options": [
+        "Start both jobs together; the flex queue runs batches strictly one at a time",
+        "Call `Database.executeBatch(new BatchB())` in A's `finish()` method",
+        "Call `Database.executeBatch(new BatchB())` at the end of A's last `execute()`",
+        "Schedule B with `System.schedule()` for one hour after A is started"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "`finish()` runs once, after every chunk is done. Starting B there **chains** the jobs, so B can't overlap A.",
+      "wrong": [
+        "Up to five batch jobs can run at the same time.",
+        "",
+        "`execute()` can't tell which chunk is last, and chunk order isn't guaranteed.",
+        "A fixed delay is a guess; A may take longer than an hour."
+      ],
+      "source": "Apex Developer Guide: Using Batch Apex"
+    },
+    {
+      "id": "auto-x84",
+      "lesson": "auto-5",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A developer must run `CleanupBatch` once, 60 minutes from now, with a scope of 500. They don't want to write a Schedulable class. Which line does this?",
+      "options": [
+        "`System.schedule('Cleanup once', '0 0 * * * ?', new CleanupBatch(), 500);`",
+        "`System.enqueueJob(new CleanupBatch(), 60);`",
+        "`System.scheduleBatch(new CleanupBatch(), 'Cleanup once', 60, 500);`",
+        "`Database.executeBatch(new CleanupBatch(), 60);`"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "`System.scheduleBatch()` runs a batch **once**, a set number of minutes from now. It takes the batch, a job name, the minutes and an optional scope. No Schedulable class is needed.",
+      "wrong": [
+        "`System.schedule()` takes a name, a cron string and a Schedulable, with no scope.",
+        "`enqueueJob` is for Queueable jobs, and its delay can be at most 10 minutes.",
+        "",
+        "The second number is the scope, so this starts now with chunks of 60."
+      ],
+      "source": "Apex Developer Guide: Using Batch Apex (Using the System.scheduleBatch Method)"
+    },
+    {
+      "id": "auto-x85",
+      "lesson": "auto-5",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "There are 80,000 `Visit__c` records. What happens when this batch starts?",
+      "code": "public Iterable<Visit__c> start(Database.BatchableContext bc) {\n    return [SELECT Id, Score__c FROM Visit__c];\n}",
+      "lang": "apex",
+      "options": [
+        "It fails at 50,000 rows: an `Iterable` keeps the SOQL row limit",
+        "It works, but only the first 2,000 records are passed to `execute()`",
+        "It doesn't compile, because `start()` must return a `QueryLocator`",
+        "It works, because a batch can always read up to 50 million records, however `start()` is written"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "Only a `QueryLocator` skips the 50,000-row query limit, up to 50 million records. A list or other `Iterable` still counts the rows, so 80,000 is too many.",
+      "wrong": [
+        "",
+        "There's no 2,000 cap; the query fails before `execute()` runs.",
+        "`start()` may return an `Iterable` or a `QueryLocator`.",
+        "The 50 million figure applies only to a `QueryLocator`."
+      ],
+      "source": "Apex Developer Guide: Using Batch Apex"
+    },
+    {
+      "id": "auto-x86",
+      "lesson": "auto-6",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "Five minutes after a user submits a loan, the org must re-check the credit bureau once. The team doesn't want to use up scheduled-job slots. Which approach fits best?",
+      "options": [
+        "`System.schedule()` with a cron expression built for five minutes from now",
+        "`@future(callout=true, delay=5)` on the method that checks the bureau",
+        "`Database.executeBatch(new CreditRecheck(loanId), 5)` with a scope of 5",
+        "`System.enqueueJob(new CreditRecheck(loanId), 5)`, a Queueable with a delay in minutes"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "`System.enqueueJob(job, delay)` starts a Queueable after a **minimum delay** of 0 to 10 minutes. It doesn't take a scheduled-job slot. A cron job would count toward the 100 scheduled Apex jobs.",
+      "wrong": [
+        "It works, but each one uses one of the 100 scheduled Apex job slots.",
+        "`@future` has no delay option.",
+        "The second argument of `executeBatch` is the scope, not a delay.",
+        ""
+      ],
+      "source": "Apex Developer Guide: Queueable Apex"
+    },
+    {
+      "id": "auto-x87",
+      "lesson": "auto-6",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "Once a quarter, 2 million `Policy__c` records need a new risk score. Which two statements help the developer pick the right tool? (Choose 2)",
+      "options": [
+        "A future method can take a `QueryLocator` and split the work itself",
+        "A batch `QueryLocator` can return up to 50 million records",
+        "A Queueable can query all 2 million rows, since async limits are higher",
+        "Each batch `execute()` gets a fresh set of governor limits",
+        "Batch chunks always run in the order they come from `start()`"
+      ],
+      "answer": [
+        1,
+        3
+      ],
+      "explain": "Batch Apex is built for big jobs. Its `QueryLocator` can return up to **50 million** records, and each chunk runs as its own transaction with fresh limits. A single Queueable is still capped at 50,000 query rows.",
+      "wrong": [
+        "Future methods take only primitive types, not a `QueryLocator`.",
+        "",
+        "The 50,000-row query limit is the same in sync and async Apex.",
+        "",
+        "Chunks tend to run in order, but the order isn't guaranteed."
+      ],
+      "source": "Apex Developer Guide: Using Batch Apex; Execution Governors and Limits"
+    },
+    {
+      "id": "auto-x88",
+      "lesson": "auto-7",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "`Shipment_Ready__e` uses Publish After Commit. What happens when this runs in one transaction with 160 shipments?",
+      "code": "for (Shipment__c s : shipments) {          // 160 records\n    EventBus.publish(new Shipment_Ready__e(\n        Shipment_Id__c = s.Id));\n}",
+      "lang": "apex",
+      "options": [
+        "All 160 events publish, because platform events have no Apex limits",
+        "It fails at call 151: each publish counts as one DML statement",
+        "Only the first 100 events publish, and the rest wait for the next transaction",
+        "It fails after 50 calls, because publishing counts like an async job"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "For **Publish After Commit** events, each `EventBus.publish()` call counts as one DML statement. The limit is 150 per transaction, so call 151 fails. Build a list and publish it once.",
+      "wrong": [
+        "Publishing uses governor limits like other DML.",
+        "",
+        "Limits throw an error; nothing is held over to another transaction.",
+        "Publishing isn't counted against the 50 queued-job limit."
+      ],
+      "source": "Platform Events Developer Guide: Publish Event Messages with Apex; Apex Developer Guide: Execution Governors and Limits"
+    },
+    {
+      "id": "auto-x89",
+      "lesson": "auto-7",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A platform event trigger creates Cases. The Cases show Automated Process as owner and creator, and large batches of 2,000 events often time out. What should the developer do?",
+      "options": [
+        "Call `setResumeCheckpoint()` before each insert, which makes the next batches smaller",
+        "Add `System.runAs()` around the DML in the trigger to switch users",
+        "Use `PlatformEventSubscriberConfig` to set a running user and a smaller batch size",
+        "Raise the trigger's API version, which makes it run as the user who published"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "By default, a platform event trigger runs as **Automated Process** with batches of up to 2,000 events. `PlatformEventSubscriberConfig`, set through Tooling or Metadata API, changes both the running user and the batch size.",
+      "wrong": [
+        "A checkpoint marks where to resume; it doesn't set the batch size.",
+        "`System.runAs()` only works in test methods.",
+        "",
+        "The API version doesn't change who the trigger runs as."
+      ],
+      "source": "Platform Events Developer Guide: Configure the User and Batch Size for Your Platform Event Trigger"
+    },
+    {
+      "id": "auto-x90",
+      "lesson": "auto-7",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "An LWC must show a toast whenever `Order_Shipped__e` is published, using `lightning/empApi`. Which two statements are true? (Choose 2)",
+      "options": [
+        "A replay Id of `-2` gets only new events published after subscribing",
+        "The component must poll the server every few seconds with `setInterval`",
+        "Subscribe to the channel `'/event/Order_Shipped__e'`",
+        "Subscribe to the channel `'/data/Order_Shipped__e'`",
+        "A replay Id of `-1` gets only new events published after subscribing"
+      ],
+      "answer": [
+        2,
+        4
+      ],
+      "explain": "Platform event channels use the form `/event/EventName__e`. Replay Id `-1` means 'only new events from now on'. Replay Id `-2` replays all events still kept, then new ones.",
+      "wrong": [
+        "`-2` replays all retained events, not just new ones.",
+        "`empApi` pushes events to the page; no polling is needed.",
+        "",
+        "`/data/` channels are for Change Data Capture events.",
+        ""
+      ],
+      "source": "Lightning Web Components Developer Guide: lightning/empApi; Platform Events Developer Guide: Message Durability"
+    },
+    {
+      "id": "auto-x91",
+      "lesson": "auto-7",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A trigger on `Payment__e` must send each payment to an accounting API. Callouts aren't allowed directly in the trigger. What should the developer do?",
+      "options": [
+        "Enqueue a Queueable that implements `Database.AllowsCallouts`, passing it the event data",
+        "Add `callout=true` to the trigger definition so the trigger itself is allowed to call the API",
+        "Throw `EventBus.RetryableException` so the callout runs on the retry",
+        "Use `Test.getEventBus().deliver()` to send the events on to the API"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "Platform event triggers follow trigger rules, so they generally can't make callouts. Hand the work to async Apex. A Queueable with `Database.AllowsCallouts` can make the call.",
+      "wrong": [
+        "",
+        "Triggers have no `callout=true` option.",
+        "A retry runs the same trigger again, still without callouts.",
+        "`Test.getEventBus().deliver()` only delivers events in Apex tests."
+      ],
+      "source": "Platform Events Developer Guide: Subscribe to Platform Event Notifications with Apex Triggers"
+    },
+    {
+      "id": "auto-q59",
+      "lesson": "auto-7",
+      "difficulty": 2,
+      "q": "A Pub/Sub API client that processes `Order_Placed__e` events was down for 30 hours. It saved the Replay Id of the last event it handled. What can it do?",
+      "options": [
+        "Query `Order_Placed__e` with SOQL to find the events it missed",
+        "Ask an admin to resend the missed events from the Platform Events page in Setup",
+        "Nothing: events are deleted as soon as one subscriber receives them",
+        "Subscribe again from that Replay Id; events are kept for 72 hours"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "High-volume platform events are kept for **72 hours**. A subscriber can pass a saved Replay Id to get the events after it. 30 hours is inside that window.",
+      "wrong": [
+        "Platform events can't be queried with SOQL.",
+        "Setup can't resend old events; replay them with the Replay Id.",
+        "Events stay in the event bus for 72 hours, whoever has read them.",
+        ""
+      ],
+      "source": "Platform Events Developer Guide: Message Durability"
+    },
+    {
+      "id": "auto-x92",
+      "lesson": "auto-8",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "An ERP listens to `AccountChangeEvent`, then writes its own updates back to Salesforce through the REST API with the client Id `erp-sync`. Each write-back creates another change event, and the loop never ends. What should the ERP subscriber do?",
+      "options": [
+        "Skip any event that has the same `transactionKey` as the one before it",
+        "Skip events whose `ChangeEventHeader.changeOrigin` contains `client=erp-sync`",
+        "Skip events whose `changedFields` list is empty, since write-backs change nothing",
+        "Ask an admin to turn off Change Data Capture for Account while each sync is running"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "`changeOrigin` names the API and the client Id that made the change. If the ERP sends a client Id when it writes, it can spot and skip its own echoes. That breaks the loop.",
+      "wrong": [
+        "Each write-back is its own transaction, with a new `transactionKey`.",
+        "",
+        "Write-backs do change fields, so `changedFields` isn't empty.",
+        "Turning CDC off would miss real user changes during the sync."
+      ],
+      "source": "Change Data Capture Developer Guide: ChangeEventHeader Fields"
+    },
+    {
+      "id": "auto-x93",
+      "lesson": "auto-8",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A CDC trigger on `OpportunityChangeEvent` reads `Margin_Pct__c`, a formula field, to decide whether to alert finance. The value is always null, even when the margin changes. Why?",
+      "options": [
+        "The field must first be added to the event's `changedFields` list in Setup",
+        "Formula values appear only in the change event that follows this one",
+        "CDC doesn't support formula fields, so they're always null in the event",
+        "Change event triggers run as Automated Process, which can't see formula fields"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "Change Data Capture doesn't include **formula fields**. They're null in a change event trigger, changed or not. Query the record, or work the value out from the fields that did change.",
+      "wrong": [
+        "`changedFields` is filled by Salesforce; you can't add fields to it.",
+        "No later event carries the formula value either.",
+        "",
+        "Automated Process isn't the reason; CDC never sends formula values."
+      ],
+      "source": "Change Data Capture Developer Guide: Change Event Trigger Considerations"
+    },
+    {
+      "id": "auto-x94",
+      "lesson": "auto-8",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A user clears `Fax` and changes `Phone` on an Account. Which two statements about the `AccountChangeEvent` an Apex trigger receives are true? (Choose 2)",
+      "options": [
+        "The trigger runs as the user who edited the Account",
+        "`changedFields` is also filled in for record creation events",
+        "The trigger runs in the same transaction as the user's save",
+        "Fields the user didn't change are null in the Apex event",
+        "`nulledFields` in the header lists `Fax`"
+      ],
+      "answer": [
+        3,
+        4
+      ],
+      "explain": "In Apex, every field exists on the event, but unchanged ones are **null**. That's why `nulledFields` matters: it tells you `Fax` was really cleared. The trigger runs later, as Automated Process.",
+      "wrong": [
+        "Change event triggers run as Automated Process by default.",
+        "`changedFields` is empty for create events.",
+        "It runs asynchronously, after the change is committed.",
+        "",
+        ""
+      ],
+      "source": "Change Data Capture Developer Guide: Change Event Triggers; ChangeEventHeader Fields"
+    },
+    {
+      "id": "auto-q60",
+      "lesson": "auto-8",
+      "difficulty": 2,
+      "q": "A developer saves an Apex trigger on `Invoice__ChangeEvent` without errors, but it never fires when Invoices change. What is the most likely cause?",
+      "options": [
+        "`Invoice__c` isn't selected on the Change Data Capture page in Setup",
+        "Change event triggers must be `before insert`, not `after insert`",
+        "The trigger must call `EventBus.subscribe()` once to start listening",
+        "Custom objects send change events only for edits made in the UI"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "You can save a change event trigger for any object. But it only fires once the object is **selected** for change notifications on the Change Data Capture page.",
+      "wrong": [
+        "",
+        "Change event triggers are always `after insert`.",
+        "Triggers subscribe by themselves; there's no subscribe call.",
+        "Changes from Apex, the API and the UI all send change events."
+      ],
+      "source": "Change Data Capture Developer Guide: Change Event Trigger Considerations"
+    },
+    {
+      "id": "auto-q61",
+      "lesson": "auto-9",
+      "difficulty": 2,
+      "q": "A named credential `Billing_API` points to `https://billing.example.com`. Which line calls `/invoices` with the query string `status=open`?",
+      "options": [
+        "`req.setEndpoint('named:Billing_API/invoices?status=open');`",
+        "`req.setEndpoint('https://Billing_API/invoices?status=open');`",
+        "`req.setEndpoint('callout:Billing_API').setParam('status', 'open');`",
+        "`req.setEndpoint('callout:Billing_API/invoices?status=open');`"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "A named credential URL starts with **`callout:`**, then the name, then an optional path. You can add a query string after a `?`.",
+      "wrong": [
+        "The scheme is `callout:`, not `named:`.",
+        "A plain https URL skips the named credential and its sign-in.",
+        "`HttpRequest` has no `setParam` method.",
+        ""
+      ],
+      "source": "Apex Developer Guide: Named Credentials as Callout Endpoints"
+    },
+    {
+      "id": "auto-x95",
+      "lesson": "auto-9",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "Each sales rep must call a partner's API with their own partner login, so the partner's audit log shows who did what. The endpoint and secrets must stay out of code. What should the developer set up?",
+      "options": [
+        "A hard-coded endpoint, with each rep's password sent in a header",
+        "A named credential with an external credential that uses a per-user principal",
+        "A named credential with an external credential that uses one named principal for all reps",
+        "A Remote Site Setting, plus each rep's token stored in a custom setting"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "An **external credential** holds the sign-in settings. A per-user principal means each user signs in and gets their own token. Users get access through a permission set mapped to that principal.",
+      "wrong": [
+        "Hard-coded endpoints and passwords are what named credentials avoid.",
+        "",
+        "A named principal makes every rep call as the same partner account.",
+        "Custom settings aren't a secure place for tokens, and this puts sign-in logic in code."
+      ],
+      "source": "Salesforce Help: Named Credentials and External Credentials; Apex Developer Guide: Named Credentials as Callout Endpoints"
+    },
+    {
+      "id": "auto-x96",
+      "lesson": "auto-9",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "An LWC calls this method with 4 Ids from the page. What happens?",
+      "code": "@AuraEnabled(continuation=true cacheable=true)\npublic static Object startChecks(List<String> ids) {\n    Continuation con = new Continuation(60);\n    con.continuationMethod = 'processChecks';\n    for (String id : ids) {\n        HttpRequest req = new HttpRequest();\n        req.setMethod('GET');\n        req.setEndpoint('callout:Credit_API/check/' + id);\n        con.addHttpRequest(req);\n    }\n    return con;\n}",
+      "lang": "apex",
+      "options": [
+        "It fails: a timeout of 60 seconds is above the continuation maximum",
+        "All 4 callouts run in parallel, and `processChecks` gets 4 responses",
+        "It fails: one continuation can hold at most 3 parallel callouts",
+        "The first 3 run now, and the 4th runs after `processChecks` returns"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "A **Continuation** can run up to 3 callouts in parallel, so adding a 4th request fails. Split the work into smaller groups. The timeout can be up to 120 seconds, so 60 is fine.",
+      "wrong": [
+        "Continuation timeouts can go up to 120 seconds.",
+        "The cap is 3 parallel callouts per continuation.",
+        "",
+        "There's no automatic queue for extra requests."
+      ],
+      "source": "Apex Developer Guide: Asynchronous Callout Limits"
+    },
+    {
+      "id": "auto-x97",
+      "lesson": "auto-9",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "This test fails with 'You have uncommitted work pending'. What is the fix?",
+      "code": "@IsTest\nstatic void sendsInvoice() {\n    Account acc = new Account(Name = 'Acme');\n    insert acc;\n    Test.setMock(HttpCalloutMock.class, new InvoiceMock());\n    InvoiceService.send(acc.Id);   // makes an HTTP callout\n    Assert.isTrue([SELECT Sent__c FROM Account].Sent__c);\n}",
+      "lang": "apex",
+      "options": [
+        "Call `Test.startTest()` before `Test.setMock()`, and `Test.stopTest()` after the call",
+        "Use `StaticResourceCalloutMock` instead of `HttpCalloutMock`, because it allows DML before the callout",
+        "Add `@IsTest(SeeAllData=true)` so the Account no longer needs to be inserted",
+        "Call `Test.setMock()` before the `insert`, so the mock is ready earlier"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "In a test, DML before a mock callout is fine if the callout part sits between **`Test.startTest()`** and `Test.stopTest()`. `startTest()` must come before `setMock()`.",
+      "wrong": [
+        "",
+        "Every mock type follows the same `startTest()` rule.",
+        "Relying on org data makes tests fragile; the right fix is `startTest()`.",
+        "The order of `setMock()` and the insert doesn't matter; the DML is still pending."
+      ],
+      "source": "Apex Developer Guide: Performing DML Operations and Mock Callouts"
+    },
+    {
+      "id": "auto-x98",
+      "lesson": "auto-9",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "In a Lightning controller method, which two operations, run before an HTTP callout in the same transaction, cause 'You have uncommitted work pending'? (Choose 2)",
+      "options": [
+        "An `insert` of a log record",
+        "A call to an `@future` method",
+        "A `System.debug()` of the request body",
+        "Reading a value from a custom metadata type",
+        "A SOQL query that reads the Account to send"
+      ],
+      "answer": [
+        0,
+        1
+      ],
+      "explain": "**Pending work** is something waiting for commit: DML, async Apex such as future or batch jobs, scheduled Apex, or email. Do the callout first. Reads like SOQL or debug lines are fine.",
+      "wrong": [
+        "",
+        "",
+        "Debug logging doesn't create pending work.",
+        "Reading custom metadata is a query, not pending work.",
+        "Queries don't create pending work."
+      ],
+      "source": "Apex Developer Guide: Callout Limits and Limitations"
+    },
+    {
+      "id": "auto-x99",
+      "lesson": "auto-9",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A test needs a fake reply from a WSDL2Apex-generated SOAP class. Which line completes this mock?",
+      "code": "@IsTest\nglobal class QuoteServiceMock implements WebServiceMock {\n    global void doInvoke(Object stub, Object request,\n            Map<String, Object> response, String endpoint,\n            String soapAction, String requestName,\n            String responseNS, String responseName,\n            String responseType) {\n        QuoteSvc.getQuoteResponse_element fake =\n            new QuoteSvc.getQuoteResponse_element();\n        fake.price = 99.5;\n        // missing line\n    }\n}",
+      "lang": "apex",
+      "options": [
+        "`Test.setMock(HttpCalloutMock.class, fake);`",
+        "`stub.response_x = fake;`",
+        "`return fake;`",
+        "`response.put('response_x', fake);`"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "`doInvoke()` returns nothing. You hand back the fake reply by putting it in the **`response` map** under the key `'response_x'`. The test then calls `Test.setMock(WebServiceMock.class, new QuoteServiceMock())`.",
+      "wrong": [
+        "SOAP stubs use `WebServiceMock`, and `setMock` belongs in the test, not the mock.",
+        "`stub` is a plain `Object`; the reply goes in the `response` map.",
+        "`doInvoke()` is `void`, so it can't return a value.",
+        ""
+      ],
+      "source": "Apex Developer Guide: Test Web Service Callouts"
+    },
+    {
+      "id": "auto-x100",
+      "lesson": "auto-10",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A partner calls an Apex REST class that has no custom status handling. Which two default responses will they see? (Choose 2)",
+      "options": [
+        "201 whenever an `@HttpPost` method succeeds",
+        "400 when the method throws an unhandled exception",
+        "500 Internal Server Error when the method throws an unhandled exception",
+        "204 when a `@HttpPatch` method with a `void` return succeeds",
+        "400 when the URL doesn't match any `urlMapping`"
+      ],
+      "answer": [
+        1,
+        3
+      ],
+      "explain": "Apex REST sets status codes for you. An unhandled exception returns **400**, an unmapped URL returns 404, and a successful `void` PATCH returns 204. For anything else, set `RestContext.response.statusCode` yourself.",
+      "wrong": [
+        "Apex doesn't send 201 by itself; set `statusCode` to 201 in code.",
+        "",
+        "An unhandled exception in Apex REST returns 400, not 500.",
+        "",
+        "An unmapped URL returns 404."
+      ],
+      "source": "Apex Developer Guide: Apex REST Methods"
+    },
+    {
+      "id": "auto-x101",
+      "lesson": "auto-10",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "An `@HttpGet` method returns a `PriceDto` object. The mobile app expects a `discount` key even when it's null, but the key is missing from the JSON. What should the developer do?",
+      "options": [
+        "Mark `discount` as `transient`, so that Apex REST always writes it into the JSON response",
+        "Return `void` and write `JSON.serialize(dto)` into `RestContext.response.responseBody`",
+        "Change `discount` from `Decimal` to `String`, because String fields are never left out of JSON",
+        "Add `@JsonAccess(serializable='always')` to the class so null values are serialized"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "When Apex REST serializes a return value, it **drops fields that are null**. `JSON.serialize()` keeps nulls by default. So write the JSON yourself into `responseBody` and return `void`.",
+      "wrong": [
+        "`transient` members are left out of serialization entirely.",
+        "",
+        "Null Strings are dropped just like null Decimals.",
+        "`@JsonAccess` controls who may serialize the class, not how nulls are handled."
+      ],
+      "source": "Apex Developer Guide: Apex REST Methods; Apex Reference Guide: JSON Class"
+    },
+    {
+      "id": "auto-x102",
+      "lesson": "auto-10",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "Class A has `urlMapping='/orders/*'` and class B has `urlMapping='/orders/returns/*'`. A client calls `/services/apexrest/orders/returns/8812`. Which class handles it?",
+      "options": [
+        "Class A, because the shortest pattern is checked first",
+        "Class A, because the class that was saved first always wins a clash",
+        "Class B, because the longest matching wildcard pattern wins",
+        "Neither: overlapping URL mappings make the request fail with HTTP 409"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "An exact match wins first. If there is none, Salesforce picks the **longest** wildcard pattern that matches. `/orders/returns/*` is longer, so class B handles the call.",
+      "wrong": [
+        "Longer patterns win, not shorter ones.",
+        "Save order only settles a tie between `/x` and `/x/*`, which this isn't.",
+        "",
+        "Overlapping mappings are allowed; the longest match wins."
+      ],
+      "source": "Apex Developer Guide: RestResource Annotation; Apex REST Methods"
+    },
+    {
+      "id": "auto-q62",
+      "lesson": "auto-10",
+      "difficulty": 2,
+      "q": "A partner's Java system must call a custom Apex SOAP web service. What does the partner need?",
+      "options": [
+        "The WSDL generated from the Apex class, plus a session Id or OAuth token for each call",
+        "The org's Metadata API WSDL, because custom Apex services are defined as part of the metadata",
+        "Only the class name, because Apex SOAP services accept anonymous calls",
+        "An Apex REST URL, because Apex SOAP services are reached through `/services/apexrest`"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "Each Apex SOAP class can generate its **own WSDL** from its Setup page. The client builds its calls from it. Every call must be signed in, with a session Id from a login or an OAuth token.",
+      "wrong": [
+        "",
+        "The Metadata API WSDL is for deploying metadata, not for calling your logic.",
+        "Apex SOAP calls need a signed-in session.",
+        "`/services/apexrest` is for Apex REST, not SOAP."
+      ],
+      "source": "Apex Developer Guide: Exposing Apex Methods as SOAP Web Services"
+    },
+    {
+      "id": "auto-x103",
+      "lesson": "auto-11",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A pricing rule must run from a screen flow and from an LWC on the Quote page. The developer already has an `@InvocableMethod` for the flow. What is the best way to reuse the logic in the LWC?",
+      "options": [
+        "Import the invocable method into the LWC with `@salesforce/apex`, the same way as any Apex method",
+        "Make the class `global` so the LWC can call the invocable method directly",
+        "Add `@AuraEnabled` to the existing `@InvocableMethod`, so the flow and the LWC share one method",
+        "Move the logic into a service class used by both the invocable and an `@AuraEnabled` method"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "The only annotation allowed alongside `@InvocableMethod` is `@Deprecated`. So keep the real logic in a **service class**. A thin invocable wrapper serves Flow, and a thin `@AuraEnabled` method serves the LWC.",
+      "wrong": [
+        "An LWC can only import Apex methods marked `@AuraEnabled`.",
+        "`global` changes package visibility; it doesn't expose a method to LWC.",
+        "`@InvocableMethod` can't be combined with `@AuraEnabled`.",
+        ""
+      ],
+      "source": "Apex Developer Guide: InvocableMethod Annotation"
+    },
+    {
+      "id": "auto-x104",
+      "lesson": "auto-11",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A record-triggered flow on Lead calls an invocable action that checks addresses. When one of 200 Leads in a load has a bad address, the action throws and the whole batch fails. What should the developer change?",
+      "options": [
+        "Throw a custom exception instead, because that fails only the interview that caused it",
+        "Catch errors per input and return one result for each, with a success flag and a message",
+        "Return results only for the Leads that passed, so the flow quietly skips the bad one",
+        "Add `callout=true`, which makes Flow retry the failed interviews one at a time"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "An invocable method gets all the interviews' inputs in one list. An uncaught exception fails them all. Catch errors per input and **return one result per input**, in the same order, so each interview sees its own outcome.",
+      "wrong": [
+        "Any uncaught exception, custom or not, fails the whole batch.",
+        "",
+        "Outputs must match inputs in size and order, or interviews get the wrong values.",
+        "`callout=true` only says the action calls out; it adds no retries."
+      ],
+      "source": "Apex Developer Guide: InvocableMethod Annotation"
+    },
+    {
+      "id": "auto-x105",
+      "lesson": "auto-11",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "This class is the input type for a flow action. Which two problems must be fixed? (Choose 2)",
+      "code": "public class RefundRequest {\n    @InvocableVariable(required=true defaultValue='EUR')\n    public String currencyCode;\n    @InvocableVariable(label='Amount')\n    private Decimal amount;\n    @InvocableVariable(label='Order' required=true)\n    public Id orderId;\n    @InvocableVariable(description='Why the refund was given')\n    public String reason;\n}",
+      "lang": "apex",
+      "options": [
+        "`reason` needs a `label` too, because a `description` on its own isn't allowed",
+        "The class must be `global` to be used by a flow in the same org",
+        "`currencyCode` can't use `defaultValue` together with `required=true`",
+        "`amount` is `private`, but invocable variables must be `public` or `global`",
+        "`orderId` can't be an `Id`; flows need record Ids passed as a `String`"
+      ],
+      "answer": [
+        2,
+        3
+      ],
+      "explain": "Only **`public` or `global`** variables can be invocable variables, so `amount` fails. And `defaultValue` throws an error when used with `required`. `Id` fields and a lone `description` are fine.",
+      "wrong": [
+        "`label` and `description` are both optional.",
+        "A `public` class works for flows in the same org.",
+        "",
+        "",
+        "`Id` is a supported invocable variable type."
+      ],
+      "source": "Apex Developer Guide: InvocableVariable Annotation"
+    },
+    {
+      "id": "auto-q63",
+      "lesson": "auto-11",
+      "difficulty": 2,
+      "q": "Admins can't find a new Apex action in Flow Builder because it's listed under Uncategorized. How does the developer list it under 'Billing'?",
+      "options": [
+        "`@InvocableMethod(label='Billing: Create Invoice')`",
+        "`@InvocableMethod(label='Create Invoice' iconName='Billing')`",
+        "`@InvocableMethod(label='Create Invoice' category='Billing')`",
+        "`@InvocableMethod(label='Create Invoice' group='Billing')`"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "The **`category`** modifier sets the group an action appears under in Flow Builder. Without it, actions show as Uncategorized.",
+      "wrong": [
+        "The label is only the action's name; it doesn't create a category.",
+        "`iconName` sets the action's icon, not its category.",
+        "",
+        "There's no `group` modifier on `@InvocableMethod`."
+      ],
+      "source": "Apex Developer Guide: InvocableMethod Annotation"
+    },
+    {
+      "id": "auto-x106",
+      "lesson": "auto-12",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A global search box runs this SOSL. Which records does `second` hold?",
+      "code": "List<List<SObject>> found = [\n    FIND :term IN NAME FIELDS\n    RETURNING Contact(Id, Name), Lead(Id, Name), Account(Id, Name)\n];\nList<SObject> second = found[1];",
+      "lang": "apex",
+      "options": [
+        "Leads, because the lists follow the order in the `RETURNING` clause",
+        "Accounts, because `Account` is a parent object and parents are listed last",
+        "Contacts, because the lists are sorted by object name",
+        "A mix of all three objects, sorted by search relevance, in one `List<SObject>`"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "SOSL returns a **list of lists**, one per object. The lists always come back in the same order as the `RETURNING` clause. Contact is index 0, so index 1 is Lead.",
+      "wrong": [
+        "",
+        "Parent and child links don't change the list order.",
+        "SOSL keeps the `RETURNING` order, not alphabetical order.",
+        "Each inner list holds just one object type."
+      ],
+      "source": "Apex Developer Guide: Dynamic SOSL; SOQL and SOSL Reference: RETURNING FieldSpec"
+    },
+    {
+      "id": "auto-x107",
+      "lesson": "auto-12",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "This test always fails, even though the Account is inserted first. Why, and what is the fix?",
+      "code": "@IsTest\nstatic void findsPartner() {\n    insert new Account(Name = 'Bluefin Partners');\n    List<List<SObject>> res = [FIND 'Bluefin' IN NAME FIELDS\n                               RETURNING Account(Id, Name)];\n    Assert.areEqual(1, res[0].size());\n}",
+      "lang": "apex",
+      "options": [
+        "The search index needs time; put `Test.startTest()` and `Test.stopTest()` around the insert",
+        "SOSL in tests only sees org data; add `@IsTest(SeeAllData=true)`",
+        "Use `Search.query()` instead, because inline SOSL isn't allowed in test methods",
+        "Tests return empty SOSL results; set them with `Test.setFixedSearchResults()`"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "In a test method, every SOSL query returns **empty results** by default. `Test.setFixedSearchResults()` sets the record Ids that later searches return. Any `WHERE` or `LIMIT` in the search still filters them.",
+      "wrong": [
+        "`startTest()` and `stopTest()` don't index records; SOSL stays empty.",
+        "Test SOSL is empty by design; the fix is `Test.setFixedSearchResults()`.",
+        "Inline SOSL works in tests; it just returns nothing by default.",
+        ""
+      ],
+      "source": "Apex Developer Guide: Adding SOSL Queries to Unit Tests"
+    },
+    {
+      "id": "auto-x108",
+      "lesson": "auto-12",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "Sales ops wants every Account that has no open Opportunities. Which query returns them?",
+      "options": [
+        "`SELECT Id FROM Account WHERE Id NOT IN (SELECT Id FROM Opportunity WHERE IsClosed = false)`",
+        "`SELECT Id FROM Account WHERE Id NOT IN (SELECT AccountId FROM Opportunity WHERE IsClosed = false)`",
+        "`SELECT Id FROM Account WHERE Id IN (SELECT AccountId FROM Opportunity WHERE IsClosed = true)`",
+        "`SELECT Id, (SELECT Id FROM Opportunities WHERE IsClosed = false) FROM Account WHERE Opportunities = null`"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "An **anti-join** is `NOT IN` with a subquery. The subquery must return a field that points to the same object, here `AccountId`. So `Id NOT IN (SELECT AccountId … WHERE IsClosed = false)` keeps only Accounts with no open deals.",
+      "wrong": [
+        "The subquery must return `AccountId`, which points to Account, not the Opportunity `Id`.",
+        "",
+        "This semi-join finds Accounts that do have closed deals.",
+        "A child relationship can't be compared to null in `WHERE`; use an anti-join."
+      ],
+      "source": "SOQL and SOSL Reference: Comparison Operators (Semi-Joins and Anti-Joins)"
+    },
+    {
+      "id": "auto-x109",
+      "lesson": "auto-12",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A pipeline report groups Opportunities by stage. Which key reads the total Amount from each `AggregateResult`?",
+      "code": "AggregateResult[] rows = [\n    SELECT StageName, SUM(Amount), MAX(CloseDate) lastClose\n    FROM Opportunity\n    GROUP BY StageName\n];\nfor (AggregateResult ar : rows) {\n    Decimal total = (Decimal) ar.get(KEY);\n}",
+      "lang": "apex",
+      "options": [
+        "`'expr1'`",
+        "`'SUM(Amount)'`",
+        "`'expr0'`",
+        "`'Amount'`"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "Each aggregate without an alias gets an automatic one: `expr0`, `expr1` and so on, counting only the unaliased ones. `MAX(CloseDate)` has the alias `lastClose`, so `SUM(Amount)` is `expr0`.",
+      "wrong": [
+        "`expr1` would be a second aggregate without an alias, and there isn't one.",
+        "The function text isn't a key; unaliased aggregates use `expr0`, `expr1` and so on.",
+        "",
+        "`Amount` isn't grouped or aliased, so no key has that name."
+      ],
+      "source": "Apex Developer Guide: Working with SOQL Aggregate Functions"
+    },
+    {
+      "id": "auto-x110",
+      "lesson": "auto-12",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A nightly job loops over `[SELECT OwnerId, COUNT(Id) n FROM Task GROUP BY OwnerId]` in a SOQL for loop. The org has about 3,500 task owners. What happens?",
+      "options": [
+        "It fails: aggregate queries can't use `queryMore`, so over 2,000 rows throws",
+        "It works, but only the first 2,000 owners are processed, and no error is ever raised",
+        "It doesn't compile, because a SOQL for loop can't use `GROUP BY`",
+        "It works, because SOQL for loops fetch rows in chunks of 200"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "SOQL for loops normally fetch rows in chunks with `queryMore`. **Aggregate queries can't use `queryMore`.** So a for loop over an aggregate query that returns more than 2,000 rows throws a run-time exception.",
+      "wrong": [
+        "",
+        "Going past 2,000 aggregate rows throws; it doesn't stop quietly.",
+        "It compiles; the failure happens at run time.",
+        "Chunking needs `queryMore`, which aggregate queries don't support."
+      ],
+      "source": "Apex Developer Guide: SOQL For Loops"
+    },
+    {
+      "id": "auto-x111",
+      "lesson": "auto-12",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "What happens when this code reaches the last line?",
+      "code": "Savepoint sp1 = Database.setSavepoint();\ninsert new Order__c(Name = 'A');\nSavepoint sp2 = Database.setSavepoint();\ninsert new Order__c(Name = 'B');\nDatabase.rollback(sp1);\ninsert new Order__c(Name = 'C');\nDatabase.rollback(sp2);",
+      "lang": "apex",
+      "options": [
+        "Nothing happens, because `sp2` was already used up when the code rolled back to `sp1`",
+        "Order C is rolled back, and no Orders are left",
+        "Order C is rolled back, and Orders A and B are kept",
+        "It fails at run time, because rolling back to `sp1` voided `sp2`"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "Rolling back to an earlier savepoint also wipes out every **later** savepoint. After `rollback(sp1)`, `sp2` is invalid, and using it throws a run-time error.",
+      "wrong": [
+        "Using an invalid savepoint throws an error; it isn't silently ignored.",
+        "The last rollback throws instead of running.",
+        "B was undone by `rollback(sp1)`, and `sp2` can't be used at all.",
+        ""
+      ],
+      "source": "Apex Developer Guide: Transaction Control"
+    },
+    {
+      "id": "auto-x112",
+      "lesson": "auto-12",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "Which two statements about `Database.setSavepoint()` and `Database.rollback()` are true? (Choose 2)",
+      "options": [
+        "A savepoint saved in a static variable can be used in a later trigger invocation",
+        "Static variables keep their values after a rollback",
+        "A rollback clears the Ids on sObjects inserted after the savepoint",
+        "Each savepoint you set counts toward the DML statement limit",
+        "After `rollback()`, the code can make a callout without releasing any savepoint"
+      ],
+      "answer": [
+        1,
+        3
+      ],
+      "explain": "Savepoints and rollbacks each count as a **DML statement**. A rollback undoes database changes only: static variables and sObject Ids stay as they were. Savepoints can't cross trigger invocations.",
+      "wrong": [
+        "Savepoints can't cross trigger invocations; this throws a run-time error.",
+        "",
+        "Ids stay on the sObjects, which is why inserting them again fails.",
+        "",
+        "Active savepoints must be released with `Database.releaseSavepoint()` before a callout."
+      ],
+      "source": "Apex Developer Guide: Transaction Control"
+    },
+    {
+      "id": "auto-x113",
+      "lesson": "auto-12",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A user deleted several Contacts from the 'Bluefin' Account last week. A developer must restore them in Apex. Which approach works?",
+      "options": [
+        "Call `Database.emptyRecycleBin()` on their Ids, which puts them back",
+        "Query them with `WHERE IsDeleted = true ALL ROWS`, then call `undelete` on the list",
+        "Query them with `WHERE IsDeleted = true`; deleted rows come back without extra keywords",
+        "Query them with `ALL ROWS FOR UPDATE` to lock them, then call `undelete`"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "Normal queries skip deleted records. **`ALL ROWS`** includes records in the Recycle Bin, so you can find them and `undelete` them. `ALL ROWS` can't be combined with `FOR UPDATE`.",
+      "wrong": [
+        "`emptyRecycleBin()` deletes records for good; it doesn't restore them.",
+        "",
+        "Without `ALL ROWS`, deleted records aren't returned at all.",
+        "`ALL ROWS` and `FOR UPDATE` can't be used together."
+      ],
+      "source": "Apex Developer Guide: Querying All Records with a SOQL Statement"
+    },
+    {
+      "id": "auto-x114",
+      "lesson": "auto-12",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "An import tool reads an object API name, such as `'Shipment__c'`, from Custom Metadata into `objName`. It then sets fields with `rec.put()` and inserts `rec`. Which line creates `rec`?",
+      "options": [
+        "`SObject rec = (SObject) JSON.deserializeUntyped(objName);`",
+        "`SObject rec = Schema.getGlobalDescribe().get(objName).getDescribe().newRecord();`",
+        "`SObject rec = Schema.getGlobalDescribe().get(objName).newSObject();`",
+        "`SObject rec = new SObject(objName);`"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "To build a record whose type is only known at run time, get its **`SObjectType` token** from `Schema.getGlobalDescribe()`. Then call `newSObject()`. After that, `put()` sets fields by name.",
+      "wrong": [
+        "Deserializing a plain name doesn't create an sObject.",
+        "There's no `newRecord()` method; `newSObject()` lives on the `SObjectType` token.",
+        "",
+        "You can't create a generic `SObject` with `new`."
+      ],
+      "source": "Apex Developer Guide: Understanding Apex Describe Information; Apex Reference Guide: SObjectType Class"
+    },
+    {
+      "id": "auto-q64",
+      "lesson": "auto-12",
+      "difficulty": 2,
+      "q": "A lookup helper runs one SOSL search per keyword inside a loop. A user enters 25 keywords. What happens?",
+      "options": [
+        "Search 21 fails: the limit is 20 SOSL queries; use one `FIND` with `OR`",
+        "Only the first 20 searches run, and the rest return an empty `List<List<SObject>>`",
+        "All 25 run, because SOSL limits apply only inside triggers",
+        "All 25 searches run, because SOSL shares the 100 SOQL query limit"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "A transaction can run only **20 SOSL** queries, sync or async. Search 21 throws a `LimitException`. One SOSL query can search several terms joined with `OR`.",
+      "wrong": [
+        "",
+        "Search 21 throws; no search quietly returns empty lists.",
+        "The SOSL limit applies to every transaction.",
+        "SOSL has its own limit of 20, apart from SOQL's 100."
+      ],
+      "source": "Apex Developer Guide: Execution Governors and Limits"
     }
   ]
 }

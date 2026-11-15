@@ -1,5 +1,5 @@
 // One question: options are radio buttons (single answer) or checkboxes ("Choose N"), built on <button> for the big tap targets.
-import { motion } from 'motion/react';
+import { motion, useAnimate } from 'motion/react';
 import { CodeBlock } from './CodeBlock.jsx';
 import { Rich, isCodeOnly, singleCodeSpan } from '../lib/rich.jsx';
 import { InlineCode } from './InlineCode.jsx';
@@ -8,6 +8,8 @@ import { haptic } from '../audio/haptics.js';
 import { useReducedMotion } from '../hooks/useMotionPrefs.js';
 import { Icon } from './icons/Icon.jsx';
 import { SpeakButton } from './SpeakButton.jsx';
+import { useEffect, useRef } from 'react';
+import { useCalm } from '../hooks/useMotionPrefs.js';
 
 const LETTERS = 'ABCDEF';
 
@@ -27,15 +29,28 @@ function arrowNav(e) {
   opts[(k + d + opts.length) % opts.length].focus();
 }
 
-export function QuestionView({ question, chosen, onToggle, revealed, nudge, shake = 0, hidden = [] }) {
+/**
+ * `shake` is a counter bumped when an extra pick is blocked on a "Choose N" question: the label pulses
+ * once (imperatively, so it never replays on the next question). Wrong answers don't shake anything:
+ * the red mark, the verdict and Zap already say it, and a shake can feel like being scolded.
+ */
+export function QuestionView({ question, chosen, onToggle, revealed, shake = 0, hidden = [] }) {
   const reduced = useReducedMotion();
+  const calm = useCalm();
+  const [labelRef, animateLabel] = useAnimate();
+  const lastShake = useRef(shake);
+  useEffect(() => {
+    if (shake === lastShake.current) return;
+    lastShake.current = shake;
+    if (!reduced && !calm && labelRef.current) animateLabel(labelRef.current, { scale: [1, 1.08, 1] }, { duration: 0.28 });
+  }, [shake, reduced, calm, animateLabel, labelRef]);
   const multi = question.answer.length > 1;
   const correct = new Set(question.answer);
 
   return (
     <div className="stack">
       {multi && (
-        <div className="choose-n" aria-live="polite">
+        <div className="choose-n" aria-live="polite" ref={labelRef}>
           Choose {question.answer.length} answers{!revealed && chosen.length ? ` · ${chosen.length}/${question.answer.length} picked` : ''}
         </div>
       )}
@@ -47,14 +62,11 @@ export function QuestionView({ question, chosen, onToggle, revealed, nudge, shak
         />
       </div>
       {question.code && <CodeBlock code={question.code} lang={question.lang} />}
-      <motion.div
+      <div
         className="options"
         role={multi ? 'group' : 'radiogroup'}
         aria-labelledby={`q-${question.id}`}
         onKeyDown={arrowNav}
-        // a new keyframe list (alternating by `shake`) replays the wiggle without remounting the options
-        animate={(nudge || shake) && !reduced ? { x: shake % 2 ? [0, 6, -6, 6, -6, 0] : [0, -6, 6, -6, 6, 0] } : { x: 0 }}
-        transition={{ duration: 0.3 }}
       >
         {question.options.map((opt, i) => {
           const isChosen = chosen.includes(i);
@@ -76,9 +88,9 @@ export function QuestionView({ question, chosen, onToggle, revealed, nudge, shak
               disabled={revealed || gone}
               aria-hidden={gone || undefined}
               onClick={() => { sfx.select(); haptic('light'); onToggle(i, multi); }}
-              initial={reduced ? false : { opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: reduced ? 0 : 0.04 * i, duration: 0.25, ease: [0.2, 0, 0, 1] }}
+              initial={reduced ? false : { opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: reduced ? 0 : 0.03 * i, duration: 0.2 }}
             >
               <span className="letter" aria-hidden="true">{LETTERS[i]}</span>
               <span>{singleCodeSpan(opt) != null ? <InlineCode text={singleCodeSpan(opt)} block /> : isCodeOnly(opt) ? <InlineCode text={opt} block /> : <Rich text={opt} autoCode />}<span className="sr-only">{srState}</span></span>
@@ -86,7 +98,7 @@ export function QuestionView({ question, chosen, onToggle, revealed, nudge, shak
             </motion.button>
           );
         })}
-      </motion.div>
+      </div>
     </div>
   );
 }

@@ -20,6 +20,7 @@ import { lessonById } from '../data/index.js';
 import { zapSays } from '../game/mascot.js';
 import { Icon } from './icons/Icon.jsx';
 import { SpeakButton } from './SpeakButton.jsx';
+import { scrollToTop } from '../lib/scroller.js';
 
 const PRAISE = ['Nailed it!', 'Yes!', 'Boom!', 'Correct!', 'Sharp!', 'You got it!', 'Brain on fire!', 'Clean!'];
 const KIND = ['Not quite', 'Not yet', 'Good try'];
@@ -68,7 +69,7 @@ export function PracticeRunner({ questions, onDone, onExit, topRight, requeue = 
       const t = setTimeout(() => feedbackRef.current?.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'nearest' }), reduced ? 0 : 120);
       return () => clearTimeout(t);
     }
-    topRef.current?.scrollIntoView({ block: 'start' });
+    scrollToTop(); // the screen's own top (not the runner's), so the header never jumps
     // after Continue, put focus on the new question so screen readers read it
     if (idx > 0) {
       const h = topRef.current?.querySelector('.question');
@@ -151,6 +152,7 @@ export function PracticeRunner({ questions, onDone, onExit, topRight, requeue = 
       onDone({ ...s, total: unique, firstRight, heartsLeft, failed: outOfHearts });
       return;
     }
+    setOverpick(0);
     setHidden([]);
     setHint(null);
     setIdx(idx + 1);
@@ -188,23 +190,12 @@ export function PracticeRunner({ questions, onDone, onExit, topRight, requeue = 
       {/* Keyed, no exit animation: the previous question is never on screen to swallow a tap. */}
       <motion.div
           key={`${q.id}-${idx}`}
-          initial={reduced ? false : { opacity: 0, x: 40 }}
+          initial={reduced ? false : { opacity: 0, x: 24 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.24, ease: [0.2, 0, 0, 1] }}
           style={{ position: 'relative' }}
         >
-          <AnimatePresence>
-            {pop && (
-              <motion.div
-                key={pop.id} className="xp-pop" aria-hidden="true"
-                initial={{ opacity: 0, y: 20, scale: 0.6 }}
-                animate={{ opacity: [0, 1, 1, 0], y: [20, -10, -24, -40], scale: [0.6, 1.15, 1, 1] }}
-                transition={{ duration: 1.3, times: [0, 0.2, 0.7, 1] }}
-                onAnimationComplete={() => setPop(null)}
-              >+{pop.xp} XP{pop.mult > 1 ? ` ×${pop.mult}` : ''}</motion.div>
-            )}
-          </AnimatePresence>
-          <QuestionView question={q} chosen={chosen} onToggle={toggle} revealed={revealed} nudge={revealed && lastRight === false} shake={overpick} hidden={hidden} />
+          <QuestionView question={q} chosen={chosen} onToggle={toggle} revealed={revealed} shake={overpick} hidden={hidden} />
       </motion.div>
 
       {helpers && !revealed && (
@@ -277,6 +268,18 @@ export function PracticeRunner({ questions, onDone, onExit, topRight, requeue = 
 
       <div style={{ flex: 1 }} />
       <div className="sticky-actions">
+          <AnimatePresence>
+          {pop && (
+            <motion.div
+              key={pop.id} className="xp-pop" aria-hidden="true"
+              initial={reduced ? { opacity: 0, x: '-50%' } : { opacity: 0, x: '-50%', y: 10, scale: 0.7 }}
+              animate={reduced ? { opacity: [0, 1, 1, 0], x: '-50%' } : { opacity: [0, 1, 1, 0], x: '-50%', y: [10, -14, -26, -40], scale: [0.7, 1.12, 1, 1] }}
+              transition={{ duration: 1.3, times: [0, 0.2, 0.7, 1] }}
+              onAnimationComplete={() => setPop(null)}
+            >+{pop.xp} XP{pop.mult > 1 ? ` ×${pop.mult}` : ''}</motion.div>
+          )}
+        </AnimatePresence>
+
         {!revealed ? (
           multi && chosen.length < need ? (
             <button className="btn primary block big" disabled>{`Pick ${need - chosen.length} more`}</button>

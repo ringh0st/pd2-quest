@@ -274,7 +274,7 @@ function ExamRun({ run, onSubmit, onLeave, onDiscard }) {
   };
   const sec = Math.ceil((remaining ?? 0) / 1000);
   const low = timed && sec < 300;
-  const go = (k) => { sfx.flip(); setI(k); };
+  const go = (k) => { sfx.flip(); setOverpick(0); setI(k); };
 
   return (
     <main className="screen focus" id="main">
@@ -297,7 +297,7 @@ function ExamRun({ run, onSubmit, onLeave, onDiscard }) {
           Q {i + 1}/{questions.length}<span className="sr-only">, open question map</span> <Icon name="down" size="1em" />
         </button>
         <button
-          className={flags[q.id] ? 'chip gold' : 'chip'} style={{ border: 0, minHeight: 44 }}
+          className={flags[q.id] ? 'chip gold flag-chip' : 'chip flag-chip'} style={{ border: 0, minHeight: 44 }}
           aria-pressed={!!flags[q.id]} onClick={() => { sfx.flag(); haptic('light'); setFlags((f) => ({ ...f, [q.id]: !f[q.id] })); }}
         ><Icon name="exam" fill={!!flags[q.id]} /> {flags[q.id] ? 'Flagged' : 'Flag'}</button>
       </div>

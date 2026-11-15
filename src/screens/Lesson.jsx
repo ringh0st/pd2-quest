@@ -121,11 +121,13 @@ export function Lesson({ id }) {
       <div>
         <p className="small muted ic-label" style={{ fontWeight: 700 }}><Icon name={sec.id} className="ic-sec" style={{ '--sec-accent': `var(--sec-${sec.id})` }} />{sec.title}</p>
         <h1 style={{ fontSize: 'calc(22px * var(--text-scale))' }}>{lesson.title}</h1>
-        {i === 0 && (
-          <a className="small test-out-link" href={`#/placement/lesson/${lesson.id}`} onClick={() => sfx.tap()}>
-            Know this already? Test out in 4 questions <Icon name="next" />
-          </a>
-        )}
+        {/* stays in the layout (just hidden) after the first card, so the cards don't jump up */}
+        <a
+          className="small test-out-link" href={`#/placement/lesson/${lesson.id}`} onClick={() => sfx.tap()}
+          style={i === 0 ? undefined : { visibility: 'hidden' }} aria-hidden={i === 0 ? undefined : true} tabIndex={i === 0 ? undefined : -1}
+        >
+          Know this already? Test out in 4 questions <Icon name="next" />
+        </a>
       </div>
 
       <div className="lesson-stage" aria-live="polite">

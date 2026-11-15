@@ -65,7 +65,7 @@ strong { font-weight: 700; }
   flex-direction: column;
   gap: 18px;
 }
-.screen.focus { padding-bottom: calc(24px + var(--safe-b)); }
+.screen.focus { padding-bottom: calc(12px + var(--safe-b)); } /* equals the sticky bar's offset: no 12px bob at the end of a scroll */
 .topbar { display: flex; align-items: center; gap: 10px; min-height: 44px; }
 .topbar h1 { font-size: calc(22px * var(--text-scale)); }
 
@@ -348,8 +348,7 @@ a.card:not(.section-card):not(.stat):not(.row):not(.stack-s) { display: block; }
   color: var(--text); font-weight: 700; font-variant-numeric: tabular-nums;
 }
 .xp-pop {
-  position: absolute; left: 50%; top: -6px;
-  transform: translateX(-50%);
+  position: absolute; left: 50%; top: -4px; z-index: 2;
   pointer-events: none;
   padding: 6px 14px; border-radius: 999px;
   background: var(--gold); color: var(--on-gold);
@@ -1232,3 +1231,23 @@ h1[tabindex='-1']:focus, h2[tabindex='-1']:focus { outline: none; }
 .lesson-card-tools { position: absolute; top: 12px; right: 12px; }
 .lesson-card > .kind { padding-right: 48px; }
 .lesson-card-tools + h2 { padding-right: 48px; }
+
+/* ===== no-jump fixes (measured by the UX review) ===== */
+/* P2: the mark column (check/cross) is reserved, so options don't reflow when answers are revealed */
+.option { grid-template-columns: 34px minmax(0, 1fr) 24px; }
+.option .mark { width: 24px; display: grid; place-items: center; }
+/* P3: the explanation card can't grow wider than the screen because of a long code token */
+.feedback { grid-template-columns: minmax(0, 1fr); }
+.feedback .inline-code, .answer-pill .inline-code { overflow-wrap: anywhere; }
+/* P6: the bottom bar keeps one height in every state (Pick N more, Check pair, Continue; flashcards) */
+.sticky-actions { min-height: calc(68px * var(--text-scale) + 22px); align-content: end; }
+.check-pair .btn { min-height: 68px; }
+.grade-row .btn { min-height: 68px; }
+/* P7: chips that change text keep their width */
+.timer-pill { min-width: 6.5em; justify-content: center; font-variant-numeric: tabular-nums; }
+.flag-chip { min-width: 7.5em; justify-content: center; }
+/* ===== end no-jump fixes ===== */
+/* the Check pair shrinks to fit the smallest phones at the largest text size */
+.check-pair { grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr); }
+.check-pair .btn { min-width: 0; padding-inline: 8px; }
+.check-v { flex-wrap: wrap; justify-content: center; text-align: center; }

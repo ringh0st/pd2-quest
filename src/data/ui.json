@@ -3137,6 +3137,1106 @@
         "`lightning-formatted-text` shows plain text and links; it doesn't render HTML formatting."
       ],
       "source": "Lightning Component Reference: lightning-formatted-rich-text"
+    },
+    {
+      "id": "ui-x49",
+      "lesson": "ui-1",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A developer writes `<template lwc:if={!isLoading}>` to show results once loading ends. The component fails to compile. What is the fix?",
+      "options": [
+        "Wrap the value in quotes, as in `lwc:if=\"{!isLoading}\"`, so the compiler reads it as an expression",
+        "Bind `lwc:if={isLoaded}` to a getter returning `!this.isLoading`, as templates allow no operators",
+        "Replace `lwc:if` with `if:true={!isLoading}`, because only the older directive accepts the `!` operator",
+        "Write `lwc:if={isLoading == false}`, because templates allow comparisons but not the `!` operator"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "LWC template expressions can't contain operators: no `!`, no `==`, no `&&`. Put the logic in a JavaScript getter and bind to it. Or use `lwc:if={isLoading}` with `lwc:else`.",
+      "wrong": [
+        "`{!...}` is Aura syntax, and LWC doesn't allow `!` in any form.",
+        "",
+        "`if:true` doesn't accept `!` either.",
+        "Comparisons are operators too, so they aren't allowed."
+      ],
+      "source": "LWC Developer Guide: Data Binding in a Template; Render HTML Conditionally"
+    },
+    {
+      "id": "ui-x50",
+      "lesson": "ui-1",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A parent LWC contains one child. Both log from their `constructor()`, `connectedCallback()` and `renderedCallback()`. In which order do the `connectedCallback()` and `renderedCallback()` logs appear?",
+      "options": [
+        "`connectedCallback()`: child, then parent. `renderedCallback()`: parent, then child",
+        "Both hooks run in the parent first, then the child, since rendering flows down the tree",
+        "Both hooks run in the child first, then the parent, since a parent waits for its children",
+        "`connectedCallback()`: parent, then child. `renderedCallback()`: child, then parent"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "Setup flows down the tree, and finishing flows up. `connectedCallback()` runs in the parent before the child. `renderedCallback()` runs in the child first, because the parent is done only when its children are.",
+      "wrong": [
+        "It's the other way round for both hooks.",
+        "`renderedCallback()` flows up, from child to parent.",
+        "`connectedCallback()` flows down, from parent to child.",
+        ""
+      ],
+      "source": "LWC Developer Guide: Lifecycle Flow"
+    },
+    {
+      "id": "ui-x51",
+      "lesson": "ui-1",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A component's template has `<canvas lwc:ref=\"chart\"></canvas>`. Its `connectedCallback()` calls `this.refs.chart.getContext('2d')` and throws a `TypeError`. What should the developer do?",
+      "options": [
+        "Use `this.template.querySelector('canvas')` instead, which does work in `connectedCallback()`",
+        "Add `lwc:dom=\"manual\"` to the canvas, because refs work only on elements you add yourself",
+        "Move it to `renderedCallback()`, after the template renders, with a guard so it runs once",
+        "Call `this.refs.chart` in the `constructor()`, because refs exist before the component connects"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "In `connectedCallback()`, the template hasn't rendered yet, so the canvas doesn't exist. Use the ref in `renderedCallback()`. That hook runs after every render, so use a flag to set up the chart once.",
+      "wrong": [
+        "`querySelector()` has the same problem; nothing has rendered yet.",
+        "`lwc:dom=\"manual\"` is for DOM you add by hand, not for refs.",
+        "",
+        "The constructor runs even earlier, before anything renders."
+      ],
+      "source": "LWC Developer Guide: Access Elements the Component Owns (refs); Lifecycle Hooks"
+    },
+    {
+      "id": "ui-q44",
+      "lesson": "ui-1",
+      "difficulty": 2,
+      "q": "A search bar shows only a `lightning-input` and a magnifier icon, with no visible label. An accessibility audit says screen readers announce it as an unlabeled edit field. What should the developer do?",
+      "options": [
+        "Set `label=\"Search accounts\"` with `variant=\"label-hidden\"`, so the label is read but not shown",
+        "Set `placeholder=\"Search accounts\"`, because screen readers treat a placeholder as the label",
+        "Wrap it in a `<div title=\"Search accounts\">`, so the tooltip names the field for screen readers",
+        "Add `aria-hidden=\"true\"` to the icon only, so screen readers name the field from the icon"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "Every input needs a real label, even if you don't show it. Set `label`, then hide it visually with `variant=\"label-hidden\"`. Screen readers still read it, and a placeholder is no substitute.",
+      "wrong": [
+        "",
+        "Placeholders disappear as you type and aren't a reliable label.",
+        "A title on a wrapper doesn't label the input inside.",
+        "Hiding the icon removes noise but still leaves the field unnamed."
+      ],
+      "source": "Lightning Component Library: lightning-input (Accessibility); LWC Developer Guide: Accessibility"
+    },
+    {
+      "id": "ui-x52",
+      "lesson": "ui-1",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A row of icon-only `lightning-button-icon` buttons (Edit, Delete) fails an accessibility review. Each row's status is also shown only as a red or green dot. Which two fixes are correct? (Choose 2)",
+      "options": [
+        "Add `title` attributes to the dots, and keep color as the only visible signal",
+        "Give each button an `alternative-text` value, such as `alternative-text=\"Delete\"`",
+        "Set `tabindex=\"-1\"` on the buttons, so screen readers skip them and read the row",
+        "Add `aria-live=\"assertive\"` to each button, so its name is read when the page loads",
+        "Show the status as text or an icon too, so color isn't the only way to tell"
+      ],
+      "answer": [
+        1,
+        4
+      ],
+      "explain": "Icon-only buttons need text a screen reader can say, and `alternative-text` gives it. Color alone fails people who can't tell colors apart. Add a word or a shape next to the dot.",
+      "wrong": [
+        "A tooltip helps a little, but color is still the only thing most people see.",
+        "",
+        "That takes the buttons out of keyboard reach.",
+        "Live regions announce changes; they don't name buttons.",
+        ""
+      ],
+      "source": "Lightning Component Library: lightning-button-icon; Lightning Design System: Accessibility"
+    },
+    {
+      "id": "ui-x53",
+      "lesson": "ui-2",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "This picker never receives any values for `Industry`. What is missing?",
+      "code": "import { LightningElement, wire } from 'lwc';\nimport { getPicklistValues } from 'lightning/uiObjectInfoApi';\nimport INDUSTRY_FIELD from '@salesforce/schema/Account.Industry';\n\nexport default class IndustryPicker extends LightningElement {\n    @wire(getPicklistValues, { fieldApiName: INDUSTRY_FIELD })\n    industries;\n}",
+      "lang": "js",
+      "options": [
+        "An `objectApiName: 'Account'` value, because `fieldApiName` alone doesn't name the object",
+        "The `@track` decorator on `industries`, because wired results aren't reactive on their own",
+        "A `recordTypeId`, such as `'$objectInfo.data.defaultRecordTypeId'` from `getObjectInfo`",
+        "A call to `refreshApex(this.industries)` in `connectedCallback()` to load the first values"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "Picklist values can differ by record type, so `getPicklistValues` needs a `recordTypeId`. Get it from `getObjectInfo`, often its `defaultRecordTypeId`. Pass it with `$` so the wire waits for it.",
+      "wrong": [
+        "The field import already names the object; the record type is missing.",
+        "Wired properties are already reactive.",
+        "",
+        "`refreshApex()` is for Apex wires, and it can't add a missing parameter."
+      ],
+      "source": "LWC Developer Guide: getPicklistValues"
+    },
+    {
+      "id": "ui-q45",
+      "lesson": "ui-2",
+      "difficulty": 2,
+      "q": "A Mark Done button runs `updateRecord({ fields: { Status__c: 'Done' } })`. The promise rejects every time. What is wrong?",
+      "options": [
+        "`updateRecord` needs an `apiName` value too, like `createRecord`, to know the object to update",
+        "The `fields` object must include the record's `Id`, so the call knows which record to update",
+        "`updateRecord` works only inside a `lightning-record-edit-form`, not in a click handler",
+        "Field names must be schema imports; plain strings like `Status__c` are always rejected"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "`updateRecord` finds the record by the `Id` inside `fields`. Without it, there's nothing to update. Use `fields: { Id: this.recordId, Status__c: 'Done' }`.",
+      "wrong": [
+        "`apiName` belongs to `createRecord`; updates use the `Id`.",
+        "",
+        "It's a JavaScript function you can call from any handler.",
+        "Strings work; imports just add checks when you save."
+      ],
+      "source": "LWC Developer Guide: updateRecord"
+    },
+    {
+      "id": "ui-x54",
+      "lesson": "ui-2",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "An LWC on the Account record page must list the account's Contacts with Name and Email, using Lightning Data Service and no Apex. Which wire is correct?",
+      "options": [
+        "`@wire(getRecord, { recordId: '$recordId', fields: ['Account.Contacts.Name', 'Account.Contacts.Email', 'Account.Id'] })`",
+        "`@wire(getRelatedListRecords, { recordId: 'recordId', relatedListId: 'Contact', fields: ['Name', 'Email', 'Id'] })`",
+        "`@wire(getListUi, { objectApiName: 'Contact', parentRecordId: '$recordId', fields: ['Name', 'Email'] })`",
+        "`@wire(getRelatedListRecords, { parentRecordId: '$recordId', relatedListId: 'Contacts', fields: ['Contact.Name', 'Contact.Email'] })`"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "`getRelatedListRecords` from `lightning/uiRelatedListApi` reads one related list. It needs `parentRecordId`, the list's Id (`Contacts`) and fields named `Object.Field`. Use `$recordId` so the wire reacts.",
+      "wrong": [
+        "`getRecord` can't read a child list through `Account.Contacts`.",
+        "The key is `parentRecordId`, the Id needs `$`, and the list is `Contacts`.",
+        "`getListUi` reads list views, not related lists.",
+        ""
+      ],
+      "source": "LWC Developer Guide: getRelatedListRecords"
+    },
+    {
+      "id": "ui-x55",
+      "lesson": "ui-2",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "In a record page LWC, `@wire(getRecord, { recordId: 'recordId', fields: FIELDS })` always returns an error, though `this.recordId` holds the right value. What is wrong?",
+      "options": [
+        "`'recordId'` is plain text; it must be `'$recordId'` so the wire reads the property",
+        "`recordId` must use `@track`, because an `@api` property can't feed a wire adapter",
+        "`FIELDS` must move to `optionalFields`, because `fields` fails for record page wires",
+        "`getRecord` can't run on record pages, so it must use `CurrentPageReference` instead"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "In a wire's config, a string that starts with `$` points to a property. Without the `$`, the adapter gets the literal text `recordId`, which isn't an Id. With `'$recordId'`, the wire also reruns when the Id changes.",
+      "wrong": [
+        "",
+        "`@api` properties work fine as reactive wire parameters.",
+        "`fields` works on record pages; the Id is the problem.",
+        "`getRecord` is made for record pages."
+      ],
+      "source": "LWC Developer Guide: Understand the Wire Service (reactive parameters)"
+    },
+    {
+      "id": "ui-x56",
+      "lesson": "ui-2",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A team picks between `lightning-record-form`, `lightning-record-edit-form` and `lightning-record-view-form`. Which two statements are true? (Choose 2)",
+      "options": [
+        "`lightning-record-form` can show a full or compact layout without listing each field",
+        "`lightning-record-form` lets you place each field yourself with `lightning-input-field`",
+        "`lightning-record-view-form` edits a field inline when the user double-clicks on it",
+        "`lightning-record-edit-form` lets you change field values in `onsubmit` before saving",
+        "All three forms ignore field-level security, so the component must hide fields itself"
+      ],
+      "answer": [
+        0,
+        3
+      ],
+      "explain": "`lightning-record-form` is the quickest: give it a layout type or a field list. `lightning-record-edit-form` gives you control: your own layout and an `onsubmit` hook. All three respect field-level security.",
+      "wrong": [
+        "",
+        "That's `lightning-record-edit-form`; `lightning-record-form` lays out fields itself.",
+        "`lightning-record-view-form` is read-only.",
+        "",
+        "All three respect field-level security."
+      ],
+      "source": "LWC Developer Guide: Compare Base Components for Forms"
+    },
+    {
+      "id": "ui-x57",
+      "lesson": "ui-2",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "Two LWCs on an Opportunity record page both wire `getRecord` for the same record. One saves a new Stage with `updateRecord`. What happens in the other component?",
+      "options": [
+        "It keeps the old Stage until it calls `refreshApex()` on its own wired `getRecord` value",
+        "It gets the new Stage itself, since both read from one Lightning Data Service cache",
+        "It keeps the old Stage until a reload, because each component holds a private record cache",
+        "It gets the new Stage only if both components import the field through the same schema path"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "Lightning Data Service keeps one shared cache per record. A change made with `updateRecord` updates that cache. Every component wired to that record gets the new value.",
+      "wrong": [
+        "`refreshApex()` is for Apex wires, and LDS updates without it.",
+        "",
+        "Components share one LDS cache, not private ones.",
+        "Any field import for the same field reads the same cache."
+      ],
+      "source": "LWC Developer Guide: Lightning Data Service"
+    },
+    {
+      "id": "ui-x58",
+      "lesson": "ui-3",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A type-ahead LWC calls an imperative Apex search on every keystroke. Fast typists cause many server calls and slow results. What is the recommended fix?",
+      "options": [
+        "Make the method `cacheable=true` and wire it, since wired calls never hit the server for new text",
+        "Call the Apex method from `renderedCallback()`, which batches all keystrokes into a single call",
+        "Wait about 300 ms after the last key with `setTimeout`, clearing the old timer, then call Apex",
+        "Use `Promise.all()` to send all the keystrokes' calls together in one network round trip"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "Don't call the server for every key. **Debounce**: start a short timer on each keystroke and clear the old one. Only the last timer fires, so you make one call when the user pauses.",
+      "wrong": [
+        "New search text still means a new server call, wired or not.",
+        "`renderedCallback()` doesn't batch anything; it runs after each render.",
+        "",
+        "`Promise.all()` still sends every call."
+      ],
+      "source": "LWC Recipes (GitHub): apexImperativeMethodWithParams; LWC Developer Guide: Performance"
+    },
+    {
+      "id": "ui-x59",
+      "lesson": "ui-3",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A `lightning-datatable` must let users browse up to 50,000 Cases. Loading all of them at once is very slow. Which approach fits best?",
+      "options": [
+        "Load every row with one `cacheable=true` call, because cached Apex results skip the heap size limit",
+        "Use `for:each` over all the rows inside `lightning-layout`, which draws only the rows on screen",
+        "Return all rows from an `@AuraEnabled` method marked `@ReadOnly`, which lifts the query limits",
+        "Set `enable-infinite-loading` and handle `onloadmore` to fetch the next page of rows as users scroll"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "Load data in pages, not all at once. With `enable-infinite-loading`, the table fires `onloadmore` near the bottom. Fetch the next batch then, and set `isLoading` while it loads.",
+      "wrong": [
+        "Caching doesn't lift the heap limit, and the browser still gets every row.",
+        "`for:each` draws every row; it doesn't skip hidden ones.",
+        "`@ReadOnly` doesn't apply to `@AuraEnabled` methods, and the page would still choke.",
+        ""
+      ],
+      "source": "Lightning Component Library: lightning-datatable (Loading More Data)"
+    },
+    {
+      "id": "ui-q46",
+      "lesson": "ui-3",
+      "difficulty": 2,
+      "q": "An LWC runs `getCases({ accId: this.recordId })`. The Apex method is `public static List<Case> getCases(Id accountId)`, and inside it `accountId` is always `null`. What should change?",
+      "options": [
+        "Rename the key to `accountId`, because the object's keys must match the Apex parameter names",
+        "Pass the Id as a plain value, `getCases(this.recordId)`, because imperative calls use position",
+        "Change the parameter type to `String`, since an `Id` can't be passed from JavaScript to Apex",
+        "Add `cacheable=true`, because methods without it receive parameters only when they are wired"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "Apex parameters are matched by name, not by position. The JavaScript object's keys must match the parameter names. Here `accId` doesn't match `accountId`, so `accountId` stays `null`.",
+      "wrong": [
+        "",
+        "Imperative calls take one object of named values, not positions.",
+        "An Id string passes to an `Id` parameter just fine.",
+        "Parameters reach non-cacheable methods too."
+      ],
+      "source": "LWC Developer Guide: Call Apex Methods Imperatively"
+    },
+    {
+      "id": "ui-x60",
+      "lesson": "ui-3",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A record page LWC is slow to open. It loads a 2 MB charting library and renders a chart tab that most users never open. Which two changes improve load time? (Choose 2)",
+      "options": [
+        "Paste the library into the component's own JavaScript file, so no extra file loads",
+        "Hide the chart with CSS `display: none`, which stops the child from being created",
+        "Render the chart tab's child component with `lwc:if` only once the tab is opened",
+        "Mark every Apex method `cacheable=false`, so the browser skips all its cache lookups",
+        "Load the library with `loadScript()` the first time the chart is shown, not on load"
+      ],
+      "answer": [
+        2,
+        4
+      ],
+      "explain": "Do less work until the user needs it. `lwc:if` doesn't create the chart component until the tab opens. Loading the library at that moment too keeps the first load light.",
+      "wrong": [
+        "Inlining still downloads the same 2 MB on every load.",
+        "Hidden elements are still created and rendered.",
+        "",
+        "Turning off caching makes loading slower, not faster.",
+        ""
+      ],
+      "source": "LWC Developer Guide: Performance Best Practices; Use Third-Party JavaScript Libraries"
+    },
+    {
+      "id": "ui-x61",
+      "lesson": "ui-4",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A delete button uses `if (window.confirm('Delete?'))`. In Chrome the prompt no longer appears in Lightning Experience, and nothing gets deleted. What should the developer use?",
+      "options": [
+        "`ShowToastEvent` with variant `warning`, then delete when the user closes the toast message",
+        "`LightningConfirm.open()` from `lightning/confirm`, then delete if the promise gives `true`",
+        "`window.top.confirm()`, which reaches past the cross-origin frame that blocks the dialog box",
+        "`this.template.confirm()`, the component-scoped version of the browser dialog in Lightning"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "Chrome blocks native dialogs like `confirm()` in cross-origin frames. `LightningConfirm.open()` shows a Lightning modal instead. It returns a promise that resolves to `true` or `false`.",
+      "wrong": [
+        "A toast isn't a question, and closing it doesn't mean yes.",
+        "",
+        "Reaching the top window from a Lightning frame is blocked and unsupported.",
+        "There's no `template.confirm()` method."
+      ],
+      "source": "LWC Developer Guide: lightning/confirm (LightningConfirm)"
+    },
+    {
+      "id": "ui-q47",
+      "lesson": "ui-4",
+      "difficulty": 2,
+      "q": "A form must show \"End date must be after start date\" under the End Date `lightning-input` when the dates are wrong. Which code does that?",
+      "options": [
+        "`endInput.messageWhenBadInput = 'End date must be after start date'; endInput.focus();`",
+        "`this.dispatchEvent(new ShowToastEvent({ message: 'End date must be after start date' }));`",
+        "`endInput.validity.valid = false; endInput.errorMessage = 'End date must be after start date';`",
+        "`endInput.setCustomValidity('End date must be after start date'); endInput.reportValidity();`"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "`setCustomValidity()` sets your own error message on the field. `reportValidity()` then shows it right under the input. Pass an empty string later to clear it.",
+      "wrong": [
+        "`messageWhenBadInput` covers only the built-in bad-input check, not your own rule.",
+        "A toast shows away from the field and then goes away.",
+        "`validity` is read-only, and there's no `errorMessage` property.",
+        ""
+      ],
+      "source": "Lightning Component Library: lightning-input (Custom Validity)"
+    },
+    {
+      "id": "ui-x62",
+      "lesson": "ui-4",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A team is writing error-handling guidelines for LWCs and their Apex controllers. Which two guidelines match Salesforce best practices? (Choose 2)",
+      "options": [
+        "Send `e.getStackTraceString()` to the browser, so users can report the failing Apex line",
+        "Throw `AuraHandledException` in Apex with a message that is safe and useful for users",
+        "Use `console.error()` as the only feedback, because toasts interrupt users during errors",
+        "Show a field's own error next to it with `setCustomValidity()` and `reportValidity()`",
+        "Catch each error in the `errorCallback()` of the same component that threw it, then show a fallback"
+      ],
+      "answer": [
+        1,
+        3
+      ],
+      "explain": "Users need clear, safe messages close to the problem. `AuraHandledException` sends your chosen message to the client without internal details. Field errors belong next to the field.",
+      "wrong": [
+        "Stack traces leak internal details and don't help users.",
+        "",
+        "Users don't see the browser console.",
+        "",
+        "`errorCallback()` catches errors from child components, not from its own component."
+      ],
+      "source": "LWC Developer Guide: Handle Errors; Apex Reference Guide: AuraHandledException"
+    },
+    {
+      "id": "ui-x63",
+      "lesson": "ui-4",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A child LWC reads `this.label` in its `constructor()` to build a heading. The parent sets `label=\"Orders\"`, but the heading is always empty. Where should the code read `label`?",
+      "options": [
+        "In the `constructor()` after calling `super()` twice, so the parent's values are copied in",
+        "In `disconnectedCallback()`, which runs once the parent has passed in all of its properties",
+        "In `connectedCallback()` or a getter; public properties are set after the constructor",
+        "In `errorCallback()`, because reading a public property in the constructor raises an error"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "The constructor runs before the parent sets public properties. So `this.label` is still empty there. Read it in `connectedCallback()`, or better, in a getter that always uses the current value.",
+      "wrong": [
+        "`super()` is called once, and that doesn't bring in public properties.",
+        "`disconnectedCallback()` runs when the component is removed.",
+        "",
+        "Nothing is thrown; the value just isn't set yet."
+      ],
+      "source": "LWC Developer Guide: Lifecycle Hooks (constructor)"
+    },
+    {
+      "id": "ui-x64",
+      "lesson": "ui-5",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "In `c-order-list`, a `<div onpick={handlePick}>` wraps many `<c-order-row>` elements. When a row's button is clicked, the row runs `this.dispatchEvent(new CustomEvent('pick', { bubbles: true }))`. How does `handlePick` know which row fired?",
+      "options": [
+        "`event.target` is the `c-order-row` that fired, so read its `@api` values or `dataset`",
+        "`event.target` is the `<button>` inside the row, so read the button's `data-id` attribute",
+        "`event.target` is always the `<div>` that has the listener, so the row must send `detail`",
+        "`event.target` is `null` for custom events, so the row must call a method on the list"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "The row dispatches from `this`, so the event's target is the row's host element. The button lives in the row's shadow DOM, which the list can't see. So `event.target` is the `c-order-row`.",
+      "wrong": [
+        "",
+        "The button sits in the row's shadow tree, and the event was fired on the row.",
+        "That's `event.currentTarget`; `target` is the element that fired.",
+        "Custom events have a target like any other event."
+      ],
+      "source": "LWC Developer Guide: Event Retargeting; Configure Event Propagation"
+    },
+    {
+      "id": "ui-x65",
+      "lesson": "ui-5",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "`c-wizard` wants one listener for `step` events fired by child components in its own template. Its `connectedCallback()` runs `this.addEventListener('step', this.handleStep)`. Children dispatch with `bubbles: true` only. Why does the handler never run?",
+      "options": [
+        "Use `window.addEventListener('step', ...)`, because only the window hears events from children",
+        "Move the call into the `constructor()`, because listeners added after connecting are ignored",
+        "Use `this.template.addEventListener('step', ...)`, since the event stops at the shadow root",
+        "Dispatch with `bubbles: false`, because `this.addEventListener` skips events that bubble"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "`this.template` is the component's shadow root, where its own children live. A bubbling event that isn't `composed` stops at that shadow root. So listen on `this.template`; `this` only hears events that reach the host.",
+      "wrong": [
+        "The event never leaves the shadow tree, so the window never hears it.",
+        "Listeners added in `connectedCallback()` work fine.",
+        "",
+        "Without bubbling, the event never leaves the child at all."
+      ],
+      "source": "LWC Developer Guide: Handle Events (Attach Event Listeners Programmatically); Configure Event Propagation"
+    },
+    {
+      "id": "ui-x66",
+      "lesson": "ui-5",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A team uses Lightning Message Service to share a selected product between components on a Lightning page. Which two statements are true? (Choose 2)",
+      "options": [
+        "An LWC gets the context with `@wire(MessageContext)`, then calls `subscribe()` with it",
+        "Messages reach components in any browser tab where the same user has Lightning open",
+        "Visualforce pages and Aura components can publish and subscribe on the same channel",
+        "A channel is created at runtime by the first component that calls `publish()` on it",
+        "Apex triggers can call `publish()` to send messages straight to the open components"
+      ],
+      "answer": [
+        0,
+        2
+      ],
+      "explain": "LMS links components on one Lightning page, across LWC, Aura and Visualforce. A channel is `LightningMessageChannel` metadata that you deploy. In LWC, get the context with `@wire(MessageContext)`, then `publish()` or `subscribe()`.",
+      "wrong": [
+        "",
+        "LMS works within one browser tab, not across tabs.",
+        "",
+        "Channels are metadata you deploy, not runtime objects.",
+        "LMS is client-side; Apex can't publish to it."
+      ],
+      "source": "LWC Developer Guide: Communicate Across the DOM with Lightning Message Service"
+    },
+    {
+      "id": "ui-q48",
+      "lesson": "ui-5",
+      "difficulty": 2,
+      "q": "A child LWC dispatches `new CustomEvent('change', { detail: this.filters })`, where `filters` is an object. A parent edits `event.detail.status`, and the child's filters change unexpectedly. What is the best practice?",
+      "options": [
+        "Mark `filters` with `@api`, which makes that object read-only for every listener it reaches",
+        "Send primitives or a copy, like `detail: { ...this.filters }`, to keep the child's data safe",
+        "Set `composed: true` on the event, which passes `detail` to listeners as a frozen deep copy",
+        "Use `@track` on `filters`, which makes the framework send a fresh copy on each dispatch"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "`detail` passes objects by reference, so a listener can change the sender's data. Send primitive values, or a copy of the object. Then each side owns its own data.",
+      "wrong": [
+        "`@api` is for values a parent passes down, not for event payloads.",
+        "",
+        "`composed` controls how far the event travels, not copying.",
+        "`@track` watches changes; it doesn't copy the payload."
+      ],
+      "source": "LWC Developer Guide: Event Best Practices"
+    },
+    {
+      "id": "ui-x67",
+      "lesson": "ui-6",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A Recalculate quick action on Opportunity must run logic with no modal. The LWC's `js-meta.xml` uses target `lightning__RecordAction` with `<actionType>Action</actionType>`. What must the JavaScript provide?",
+      "options": [
+        "A `connectedCallback()` that runs the logic, then a `CloseActionScreenEvent` to close",
+        "A `render()` method that returns `null`, so the action shows no modal while it runs",
+        "An `@api recordId` setter that runs the logic, as headless actions call only setters",
+        "A public `invoke()` method, marked `@api`, which runs when the user clicks the action"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "A headless quick action, with `actionType` `Action`, shows no UI. Salesforce calls the component's `@api invoke()` method when the user clicks. The method can still use `@api recordId`.",
+      "wrong": [
+        "Headless actions run `invoke()`; `CloseActionScreenEvent` is for screen actions.",
+        "`render()` picks a template; it doesn't make an action headless.",
+        "The setter isn't the entry point; `invoke()` is.",
+        ""
+      ],
+      "source": "LWC Developer Guide: Create Headless Quick Actions"
+    },
+    {
+      "id": "ui-x68",
+      "lesson": "ui-6",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "Admins must pick a Region for a component in Lightning App Builder. The list of regions comes from a custom metadata type. Which setup works?",
+      "options": [
+        "A `<property>` with `datasource=\"apex://RegionPicklist\"`, a class extending `VisualEditor.DynamicPickList`",
+        "A `<property>` with `type=\"Picklist\"` and `values=\"{!Region__mdt}\"`, which reads the records at design time",
+        "An `@api regions` property filled by `@wire(getPicklistValues)` that App Builder reads when it opens",
+        "A `<property>` with `datasource=\"Region__mdt\"`, which lists all of that type's records in App Builder"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "App Builder can fill a property's list from Apex. Point `datasource` at `apex://ClassName`, where the class extends `VisualEditor.DynamicPickList`. It returns the default value and the list of values.",
+      "wrong": [
+        "",
+        "There's no `Picklist` type or merge field like that in `js-meta.xml`.",
+        "App Builder doesn't read wired values; and the regions aren't a picklist field.",
+        "`datasource` takes a list of values or an `apex://` class, not an object name."
+      ],
+      "source": "LWC Developer Guide: Component Configuration Tags (datasource); Apex Reference: VisualEditor.DynamicPickList"
+    },
+    {
+      "id": "ui-q49",
+      "lesson": "ui-6",
+      "difficulty": 2,
+      "q": "A New Case button in an LWC must open the standard New Case form with Origin already set to Web. Which page reference does that?",
+      "options": [
+        "`standard__recordPage` with `actionName: 'new'` and `attributes: { Origin: 'Web' }`, which pre-fills the new record",
+        "`standard__objectPage` for Case, `actionName: 'new'`, and `defaultFieldValues` from `encodeDefaultFieldValues()` in `state`",
+        "`standard__objectPage` for Case, `actionName: 'new'`, and `state: { c__Origin: 'Web' }`, which the standard form reads",
+        "`standard__webPage` with the URL `/lightning/o/Case/new?Origin=Web`, so that the form reads the query parameter"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "To pre-fill a standard New form, navigate to the object page with `actionName: 'new'`. Put the values in `state.defaultFieldValues`. Build that string with `encodeDefaultFieldValues()` from `lightning/pageReferenceUtils`.",
+      "wrong": [
+        "A record page shows an existing record, and attributes don't set fields.",
+        "",
+        "`c__` state is for your own components; the standard form reads `defaultFieldValues`.",
+        "A plain query parameter like `Origin=Web` isn't read by the form."
+      ],
+      "source": "LWC Developer Guide: Navigate to a Record Create Page with Default Field Values"
+    },
+    {
+      "id": "ui-x69",
+      "lesson": "ui-6",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A component must be draggable in Experience Builder, with a Title property that site admins can set there. Which `js-meta.xml` setup is correct?",
+      "options": [
+        "Target `lightning__AppPage` only, because Experience Builder lists every App Builder component",
+        "Target `lightningCommunity__Page` only, with the `<property>` inside that target's own `targetConfig`",
+        "Targets `lightningCommunity__Page` and `lightningCommunity__Default`, with the property in `Default`",
+        "Targets `lightning__CommunityPage` and `lightning__HomePage`, with `<isExposed>false</isExposed>`"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "`lightningCommunity__Page` puts the component in Experience Builder. Properties that admins set there go in a `targetConfig` for `lightningCommunity__Default`. The component also needs `<isExposed>true</isExposed>`.",
+      "wrong": [
+        "App page targets don't make a component show in Experience Builder.",
+        "Properties for Experience Builder go in the `lightningCommunity__Default` config.",
+        "",
+        "Those target names are wrong, and the component must be exposed."
+      ],
+      "source": "LWC Developer Guide: Configure a Component for Experience Builder"
+    },
+    {
+      "id": "ui-x70",
+      "lesson": "ui-6",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A flow screen LWC must move to the next screen as soon as the user picks a warehouse, without the user clicking Next. What should it do?",
+      "options": [
+        "Dispatch `new FlowAttributeChangeEvent('next', true)`, which tells the flow to move ahead",
+        "Call `this[NavigationMixin.Navigate]` with type `standard__flowScreen` and `actionName: 'next'`",
+        "Fire `new CustomEvent('next', { bubbles: true, composed: true })`, which the flow handles",
+        "Check that `availableActions` includes `'NEXT'`, then dispatch `new FlowNavigationNextEvent()`"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "Flow screens give components navigation events in `lightning/flowSupport`. Declare `@api availableActions`, check that it contains `'NEXT'`, then dispatch `FlowNavigationNextEvent`. The flow moves on.",
+      "wrong": [
+        "That event updates an output value; it doesn't navigate.",
+        "There's no `standard__flowScreen` page type.",
+        "The flow runtime doesn't listen for a custom `next` event.",
+        ""
+      ],
+      "source": "LWC Developer Guide: Flow Screen Components (Navigation Events)"
+    },
+    {
+      "id": "ui-x71",
+      "lesson": "ui-7",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "An Aura component must be placeable on Account record pages in Lightning App Builder and must read the current record's Id. Which two interfaces should it implement? (Choose 2)",
+      "options": [
+        "`force:appHostable`",
+        "`lightning:isUrlAddressable`",
+        "`flexipage:availableForAllPageTypes` only, which also passes in `recordId`",
+        "`flexipage:availableForRecordHome`",
+        "`force:hasRecordId`"
+      ],
+      "answer": [
+        3,
+        4
+      ],
+      "explain": "`flexipage:availableForRecordHome` lets App Builder place the component on record pages. `force:hasRecordId` gives it the record's Id in `v.recordId`. You need both.",
+      "wrong": [
+        "That makes a component usable as a custom tab.",
+        "That lets a component open from a URL; it doesn't add it to pages.",
+        "That puts it on any page but doesn't pass the record Id.",
+        "",
+        ""
+      ],
+      "source": "Lightning Aura Components Developer Guide: Configure Components for Lightning Experience Record Pages"
+    },
+    {
+      "id": "ui-x72",
+      "lesson": "ui-7",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "An Aura component updates `v.status` inside a `setTimeout` callback. The value changes, but the view doesn't redraw until the user clicks something. What is the fix?",
+      "options": [
+        "Wrap the callback in `$A.getCallback()`, so it runs inside the Aura lifecycle",
+        "Call `component.rerender()` right after `component.set()` in the callback to force a redraw",
+        "Replace `setTimeout` with `window.requestAnimationFrame()`, which Aura always watches",
+        "Move the code into the renderer's `afterRender` function, which Aura reruns after timers"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "Code that runs outside Aura's own flow, like a `setTimeout` or a third-party callback, must be wrapped. `$A.getCallback()` brings it back into the framework's lifecycle. Then Aura sees the change and redraws.",
+      "wrong": [
+        "",
+        "Forcing a redraw isn't the supported fix; the change happened outside Aura.",
+        "Aura doesn't watch animation frames any more than timers.",
+        "`afterRender` runs after a render, not after timers."
+      ],
+      "source": "Lightning Aura Components Developer Guide: Modifying Components Outside the Framework Lifecycle"
+    },
+    {
+      "id": "ui-q50",
+      "lesson": "ui-7",
+      "difficulty": 2,
+      "q": "An Aura component calls `getRegions`, an `@AuraEnabled(cacheable=true)` Apex method, every time it loads. The list rarely changes. How can it show cached results right away?",
+      "options": [
+        "Call `action.setBackground()`, which saves the response in the browser for later page loads",
+        "Call `action.setStorable()` before `$A.enqueueAction(action)`, so the client cache can answer",
+        "Store the list in an `aura:attribute` with `access=\"global\"`, which keeps it across page loads",
+        "Call `action.setAbortable()`, which keeps the last response for the next time the page loads"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "In Aura, a storable action can be answered from the client cache. Mark the Apex method `cacheable=true` and call `action.setStorable()`. The cached response shows fast, and a fresh one can follow.",
+      "wrong": [
+        "Background actions change queue priority, not caching.",
+        "",
+        "`access` controls who can use the attribute, not how long it lasts.",
+        "Abortable actions can be cancelled; they don't cache."
+      ],
+      "source": "Lightning Aura Components Developer Guide: Storable Actions"
+    },
+    {
+      "id": "ui-x73",
+      "lesson": "ui-7",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "An Aura component must react every time its `v.accountId` attribute changes, including when the parent sets it later. Which markup fits?",
+      "options": [
+        "`<aura:handler name=\"init\" value=\"{!v.accountId}\" action=\"{!c.onIdChange}\"/>`",
+        "`<aura:handler event=\"aura:doneRendering\" action=\"{!c.onIdChange}\"/>` on its own",
+        "`<aura:attribute name=\"accountId\" type=\"Id\" onchange=\"{!c.onIdChange}\"/>`",
+        "`<aura:handler name=\"change\" value=\"{!v.accountId}\" action=\"{!c.onIdChange}\"/>`"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "In Aura, a `change` handler watches one attribute. Set `name=\"change\"` and point `value` at `{!v.accountId}`. The `init` handler runs only once, when the component starts.",
+      "wrong": [
+        "`init` runs once at startup, not on later changes.",
+        "That event fires after rendering, not when one attribute changes.",
+        "`aura:attribute` has no `onchange` attribute.",
+        ""
+      ],
+      "source": "Lightning Aura Components Developer Guide: Detecting Data Changes with Change Handlers"
+    },
+    {
+      "id": "ui-x74",
+      "lesson": "ui-8",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A Visualforce page uses a custom controller to show and edit Opportunities. A security review asks which permissions apply. Which two statements are true? (Choose 2)",
+      "options": [
+        "A custom controller always enforces the user's field-level security in every SOQL query it runs",
+        "A standard controller respects the user's object permissions, field-level security and sharing",
+        "A custom controller runs in system mode, and sharing applies only if the class is `with sharing`",
+        "Adding a controller extension switches a standard controller page to system mode for every action",
+        "`<apex:inputField>` ignores field-level security on pages that use a custom controller"
+      ],
+      "answer": [
+        1,
+        2
+      ],
+      "explain": "Standard controllers run in user mode, so object, field and record access all apply. Custom controllers and extensions run in system mode. Use `with sharing` for record access, and check fields yourself.",
+      "wrong": [
+        "Custom controller queries run in system mode unless you add checks.",
+        "",
+        "",
+        "Extension methods run in system mode, but standard actions still run in user mode.",
+        "Components bound to fields, like `apex:inputField`, still respect field-level security."
+      ],
+      "source": "Visualforce Developer Guide: Security of Custom Controllers and Controller Extensions"
+    },
+    {
+      "id": "ui-x75",
+      "lesson": "ui-8",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A three-page Visualforce wizard shares one custom controller. Step 1 calls the `next()` method below. On step 2, the values entered on step 1 are gone. Which line causes this?",
+      "code": "public PageReference next() {\n    PageReference p = Page.WizardStep2;\n    p.setRedirect(true);\n    return p;\n}",
+      "lang": "apex",
+      "options": [
+        "`Page.WizardStep2`, because wizard pages must be opened with `new PageReference('/apex/...')`",
+        "`return p;`, because the method must return `null` so that the state is kept between pages",
+        "`p.setRedirect(true);`, because a client redirect starts a new request and drops view state",
+        "`public PageReference next()`, because wizard actions must be `static` to keep values around"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "With `setRedirect(true)`, the browser makes a fresh request, so the controller and view state start over. With `false`, and the same controller on both pages, the view state carries over. That's how wizards keep data.",
+      "wrong": [
+        "Both forms point to the same page; the redirect flag is the issue.",
+        "Returning `null` keeps the user on step 1.",
+        "",
+        "Static members aren't kept in view state at all."
+      ],
+      "source": "Visualforce Developer Guide: Creating a Wizard; Apex Reference: PageReference.setRedirect"
+    },
+    {
+      "id": "ui-x76",
+      "lesson": "ui-8",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A Visualforce custom controller logs each visit by inserting a `Page_Visit__c` record in its constructor. The page fails with \"DML currently not allowed\". What should the developer do?",
+      "options": [
+        "Move the insert into a method named in the page's `action` attribute, which may run DML",
+        "Mark the constructor `@future`, so that the insert runs later in its own separate transaction",
+        "Use `Database.insert(visit, false)`, which is allowed in constructors because it doesn't throw",
+        "Move the insert into the getter of a property the page shows, since getters run after load"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "Visualforce doesn't allow DML in a controller's constructor or getters. Put it in an action method, like one set in `<apex:page action=\"{!logVisit}\">`. Keep page actions to safe work like logging, because they run on load.",
+      "wrong": [
+        "",
+        "Constructors can't be `@future`.",
+        "The rule blocks all DML there, whatever the method.",
+        "Getters can't run DML either."
+      ],
+      "source": "Visualforce Developer Guide: Custom Controllers (DML restrictions); apex:page action attribute"
+    },
+    {
+      "id": "ui-q51",
+      "lesson": "ui-8",
+      "difficulty": 2,
+      "q": "A developer writes an extension for `<apex:page standardController=\"Case\" extensions=\"CaseExt\">`. Which constructor must `CaseExt` have?",
+      "options": [
+        "`public CaseExt(Case record)`",
+        "`public CaseExt(ApexPages.StandardSetController ctrl)`",
+        "`public CaseExt(ApexPages.StandardController ctrl)`",
+        "`public CaseExt()` with no arguments"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "An extension of a standard controller gets that controller passed in. So it needs a constructor that takes one `ApexPages.StandardController`. From it, `getRecord()` returns the Case.",
+      "wrong": [
+        "The page passes the controller, not the record.",
+        "`StandardSetController` is for pages with `recordSetVar`.",
+        "",
+        "A no-argument constructor is for custom controllers."
+      ],
+      "source": "Visualforce Developer Guide: Building a Controller Extension"
+    },
+    {
+      "id": "ui-x77",
+      "lesson": "ui-9",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A Visualforce form has several required fields. Its Cancel button calls `cancelEdit()`, but users who leave required fields empty see \"You must enter a value\" and can't leave. What should the developer do?",
+      "options": [
+        "Add `rerender=\"none\"` to the Cancel button, so the form isn't sent before `cancelEdit()` runs",
+        "Add `immediate=\"true\"` to the Cancel button, which skips validation and doesn't apply values",
+        "Wrap the required fields in an `apex:actionRegion`, which skips them for every page button",
+        "Set `required=\"false\"` on every field when Cancel is clicked, with an `onclick` handler"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "`immediate=\"true\"` runs the action without validating or saving the form's values. That's what Cancel needs. An `actionRegion` limits what is sent for actions inside it, not for buttons elsewhere.",
+      "wrong": [
+        "A rerender still sends and validates the form.",
+        "",
+        "Buttons outside the region still send the whole form.",
+        "Client-side tricks don't change server-side validation."
+      ],
+      "source": "Visualforce Developer Guide: apex:commandButton (immediate attribute)"
+    },
+    {
+      "id": "ui-q52",
+      "lesson": "ui-9",
+      "difficulty": 2,
+      "q": "A Search button rerenders a results panel after a slow query. Users click it several times because nothing shows that the search is running. What should the developer add?",
+      "options": [
+        "An `apex:actionPoller` that checks every second whether the search has finished yet",
+        "An `apex:pageMessages` component, which shows a progress bar while any action runs",
+        "An `apex:outputPanel` with `layout=\"block\"` around the button, which disables it while busy",
+        "An `apex:actionStatus` with \"Searching…\" text, named in the button's `status` attribute"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "`apex:actionStatus` shows something while an AJAX request runs, like a spinner or text. Point the button's `status` attribute at it. Then users can see the search is working.",
+      "wrong": [
+        "A poller sends more requests and shows no progress.",
+        "Page messages show errors and info, not progress.",
+        "An output panel just groups markup; it disables nothing.",
+        ""
+      ],
+      "source": "Visualforce Developer Guide: apex:actionStatus"
+    },
+    {
+      "id": "ui-x78",
+      "lesson": "ui-9",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "An upload page has `<apex:inputFile value=\"{!doc.Body}\"/>` and an `apex:commandButton` with `rerender=\"msgs\"`. Clicking Upload fails with an error about `apex:inputFile`. What is the fix?",
+      "options": [
+        "Remove `rerender` from the button, because `apex:inputFile` can't be used with a rerendering action",
+        "Move the `apex:inputFile` into an `apex:actionRegion`, which allows file uploads during rerenders",
+        "Add `enctype=\"multipart/form-data\"` to the `apex:commandButton`, which turns on AJAX file posts",
+        "Mark `doc` as `transient`, because files can't be kept in view state during a partial refresh"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "A file upload needs a full page post, not a partial AJAX refresh. So `apex:inputFile` can't work with a button that uses `rerender`. Drop `rerender` and let the page reload.",
+      "wrong": [
+        "",
+        "An action region doesn't make AJAX posts carry files.",
+        "Buttons have no `enctype`; and the AJAX request still can't send the file.",
+        "`transient` helps view state size, but the error is about `rerender`."
+      ],
+      "source": "Visualforce Developer Guide: apex:inputFile"
+    },
+    {
+      "id": "ui-x79",
+      "lesson": "ui-9",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A `@RemoteAction` method can take up to 90 seconds. Calls from the page fail after 30 seconds. How should the page call it?",
+      "options": [
+        "Add `@RemoteAction(timeout=90)` to the Apex method, since the server sets the time limit",
+        "Pass `{ timeout: 120000 }` in the config of `Visualforce.remoting.Manager.invokeAction()`",
+        "Pass `{ buffer: false }` in the call's config, which turns off the 30-second time limit",
+        "Split the work into `@future` methods, as remoting calls can never run past 30 seconds"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "Remoting requests time out after 30 seconds by default. Set the `timeout` option in the call's config, up to 120,000 ms. That covers a 90-second call.",
+      "wrong": [
+        "`@RemoteAction` has no timeout setting.",
+        "",
+        "`buffer` controls grouping of requests, not the timeout.",
+        "The limit can be raised to 120 seconds."
+      ],
+      "source": "Visualforce Developer Guide: Configuring JavaScript Remoting Requests"
+    },
+    {
+      "id": "ui-x80",
+      "lesson": "ui-10",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A Visualforce page has `<button onclick=\"greet('{!$CurrentPage.parameters.name}')\">`. Which encoding fixes the XSS risk in this spot?",
+      "options": [
+        "`{!HTMLENCODE($CurrentPage.parameters.name)}`, because the value sits inside an HTML tag",
+        "`{!URLENCODE($CurrentPage.parameters.name)}`, because the value came in through the URL",
+        "`{!JSINHTMLENCODE($CurrentPage.parameters.name)}`, for JavaScript in an HTML attribute",
+        "`{!JSENCODE($CurrentPage.parameters.name)}`, because only JavaScript runs on the click"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "Pick the encoding for where the value lands. Here it's JavaScript inside an HTML attribute, so use `JSINHTMLENCODE`. `JSENCODE` alone suits a `<script>` block, not an `onclick` attribute.",
+      "wrong": [
+        "HTML encoding alone doesn't make the value safe inside JavaScript.",
+        "URL encoding is for values placed in links.",
+        "",
+        "In an attribute, the browser HTML-decodes first, so `JSENCODE` alone isn't enough."
+      ],
+      "source": "Secure Coding Guide: Cross-Site Scripting (Visualforce encoding functions)"
+    },
+    {
+      "id": "ui-x81",
+      "lesson": "ui-10",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A security review flags this method, which a search LWC calls with the user's text. What is the best fix?",
+      "code": "@AuraEnabled(cacheable=true)\npublic static List<Account> search(String term) {\n    return Database.query(\n        'SELECT Id, Name FROM Account WHERE Name LIKE \\'%' + term + '%\\'');\n}",
+      "lang": "apex",
+      "options": [
+        "Encode `term` in the LWC with `encodeURIComponent()` before sending it to the Apex method",
+        "Add `with sharing` to the class, which stops injected filters from reading extra records",
+        "Mark the method `cacheable=false`, because cacheable methods can't check their inputs",
+        "Bind it: set `String pattern = '%' + term + '%';` and query `WHERE Name LIKE :pattern`"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "Gluing user text into a query string lets the user change the query. That's **SOQL injection**. Use a bind variable, like `:pattern`, so the text is treated as data, never as SOQL.",
+      "wrong": [
+        "Browser encoding is easy to skip, and it doesn't stop quotes reaching the query.",
+        "Sharing limits records, but injected filters still change the query.",
+        "Caching has nothing to do with input checks.",
+        ""
+      ],
+      "source": "Apex Developer Guide: SOQL Injection; Secure Coding Guide"
+    },
+    {
+      "id": "ui-x82",
+      "lesson": "ui-10",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A new LWC works for admins, but sales users get an error saying they don't have access to the Apex class. The class is `with sharing`, and the users can read the objects. What should the developer do?",
+      "options": [
+        "Give the users access to the Apex class through a permission set's Apex Class Access",
+        "Change the class to `without sharing`, so users without sharing access can still run it",
+        "Mark the method `@AuraEnabled(cacheable=true)`, which needs no Apex class permission",
+        "Make the class `global`, because only `global` classes can be called by every user"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "Signed-in users can call an `@AuraEnabled` method only with access to its Apex class. Grant it with Apex Class Access in a permission set or profile. Sharing and object access are separate checks.",
+      "wrong": [
+        "",
+        "Sharing mode doesn't grant access to the class itself.",
+        "Cacheable methods need class access too.",
+        "`global` is about namespaces, not user access."
+      ],
+      "source": "LWC Developer Guide: Apex Class Access for @AuraEnabled methods; Salesforce Help: Set Apex Class Access"
+    },
+    {
+      "id": "ui-x83",
+      "lesson": "ui-10",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A team reviews how its LWCs show text that users typed. Which two statements are true? (Choose 2)",
+      "options": [
+        "Text bound with `{comment}` in a template is escaped, so markup in it shows as plain text",
+        "Setting `element.innerHTML = this.comment` in `renderedCallback()` is safe under Lightning Web Security",
+        "`lwc:dom=\"manual\"` cleans anything that the component adds to that element by hand",
+        "Binding `{comment}` to an `href` is always safe, because attribute values are encoded",
+        "`lightning-formatted-rich-text` shows allowed formatting and strips unsafe tags and scripts"
+      ],
+      "answer": [
+        0,
+        4
+      ],
+      "explain": "LWC templates escape bound text, so `{comment}` can't inject markup. For rich text, `lightning-formatted-rich-text` keeps safe formatting and removes the rest. Raw `innerHTML` skips these protections.",
+      "wrong": [
+        "",
+        "LWS isolates namespaces, but raw `innerHTML` with user text is still an XSS risk.",
+        "`lwc:dom=\"manual\"` only lets you add DOM; it cleans nothing.",
+        "A value like `javascript:` in an `href` can still run code.",
+        ""
+      ],
+      "source": "LWC Developer Guide: Security with Lightning Web Security; lightning-formatted-rich-text"
+    },
+    {
+      "id": "ui-q53",
+      "lesson": "ui-10",
+      "difficulty": 2,
+      "q": "After saving, a Visualforce controller sends users to the URL in the `retURL` page parameter. A review flags an open redirect. What is the best fix?",
+      "options": [
+        "Wrap the value in `String.escapeSingleQuotes()` before building the `PageReference` object",
+        "Allow only relative paths that start with one `/`, and use a fixed page otherwise",
+        "Encode the value with `EncodingUtil.urlEncode()`, so that outside links can't be opened",
+        "Use `setRedirect(false)`, which keeps the browser inside Salesforce for any URL value"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "An open redirect lets a link send users from your page to an attacker's site. Check the value before you use it. Accept only paths inside your org, like ones starting with one `/`, else use a safe default.",
+      "wrong": [
+        "That stops SOQL injection, not redirects.",
+        "",
+        "Encoding the value doesn't stop a redirect to an outside site.",
+        "The redirect flag doesn't check where the URL points."
+      ],
+      "source": "Secure Coding Guide: Open Redirect"
     }
   ]
 }
