@@ -45,8 +45,12 @@ export function isDue(item, now = Date.now()) {
   return !!item && item.seen > 0 && item.due <= now;
 }
 
-/** 0..1 how well this item is known */
-export function strength(item) {
+/** 0..1 how well this item is known now: its box, fading the longer a review is overdue. */
+export function strength(item, now = Date.now()) {
   if (!item || !item.seen) return 0;
-  return Math.min(item.box, MASTERED_BOX) / MASTERED_BOX;
+  const base = Math.min(item.box, MASTERED_BOX) / MASTERED_BOX;
+  const overdueDays = (now - item.due) / DAY;
+  if (overdueDays <= 0) return base;
+  const interval = Math.max(1, INTERVAL_DAYS[item.box] || 1);
+  return base * Math.max(0.25, Math.exp(-overdueDays / interval));
 }

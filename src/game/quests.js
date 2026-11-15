@@ -6,10 +6,10 @@ export const QUEST_POOL = [
   { id: 'answer20', text: 'Answer 20 questions', emoji: '📝', stat: 'answered', goal: 20 },
   { id: 'right8', text: 'Get 8 answers right', emoji: '✅', stat: 'right', goal: 8 },
   { id: 'combo5', text: 'Hit a 5× combo', emoji: '🔥', stat: 'bestCombo', goal: 5 },
-  { id: 'lesson1', text: 'Finish a lesson', emoji: '📖', stat: 'lessons', goal: 1 },
+  { id: 'lesson1', text: 'Finish a lesson (new or replay)', emoji: '📖', stat: 'lessons', goal: 1 },
   { id: 'lesson2', text: 'Finish 2 lessons', emoji: '📚', stat: 'lessons', goal: 2 },
   { id: 'cards8', text: 'Review 8 flashcards', emoji: '🃏', stat: 'cards', goal: 8 },
-  { id: 'stars3', text: 'Earn 3 stars', emoji: '⭐', stat: 'stars', goal: 3 },
+  { id: 'stars3', text: 'Collect 3 stars (replays count)', emoji: '⭐', stat: 'stars', goal: 3 },
   { id: 'bolt', text: 'Play the Daily Bolt', emoji: '⚡', stat: 'bolt', goal: 1 },
 ];
 

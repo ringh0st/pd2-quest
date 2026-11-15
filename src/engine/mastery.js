@@ -30,3 +30,20 @@ export function accuracy(items) {
   for (const it of Object.values(items)) { right += it.right; seen += it.right + it.wrong; }
   return seen ? Math.round((right / seen) * 100) : null;
 }
+
+/**
+ * Score estimate from mock exams: the average of the last two timed full-length mocks
+ * (60 questions), or null if there aren't any yet. Mocks are the best evidence of exam
+ * performance; readiness above only says how well this question bank is remembered.
+ */
+export function mockEstimate(exams, fullLength = 60) {
+  const real = exams.filter((e) => e.timed !== false && e.total >= fullLength).slice(-2);
+  if (!real.length) return null;
+  return { score: Math.round(real.reduce((a, e) => a + e.score, 0) / real.length), count: real.length };
+}
+
+/** Booking rule shown on Home: two timed full mocks at 80%+. */
+export function readyToBook(exams, fullLength = 60) {
+  const est = mockEstimate(exams, fullLength);
+  return !!est && est.count >= 2 && est.score >= 80;
+}

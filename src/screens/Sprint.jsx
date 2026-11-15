@@ -16,7 +16,7 @@ import { useHoldCelebrations } from '../hooks/useFocusMode.js';
 
 function makeRound(query) {
   const s = getState();
-  const size = s.settings.sprintSize;
+  const size = query.n ? Math.min(10, Math.max(1, Number(query.n) || s.settings.sprintSize)) : s.settings.sprintSize;
   if (query.mode === 'review') {
     const due = sections.flatMap((x) => x.questions).filter((q) => isDue(s.items[q.id]));
     if (due.length) return buildSprint(sections, s.items, { count: size });

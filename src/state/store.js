@@ -239,7 +239,8 @@ export function gradeCard(id, grade, now = Date.now()) {
 
 export function completeLesson(id, now = Date.now()) {
   setState((prev) => {
-    const s = prev.lessons[id] ? prev : bump(prev, { lessons: 1 });
+    // Replays count for quests too, so "Finish a lesson" is always possible.
+    const s = bump(prev, { lessons: 1 });
     return { ...s, lessons: { ...s.lessons, [id]: s.lessons[id] || now } };
   });
 }
@@ -254,12 +255,11 @@ export function saveStars(levelId, stars) {
   const before = state.stars[levelId] ?? 0;
   const gained = Math.max(0, stars - before);
   const coins = gained * COINS.perNewStar;
-  if (gained) {
-    setState((prev) => {
-      const s = bump(prev, { stars: gained });
-      return { ...s, stars: { ...s.stars, [levelId]: stars }, coins: s.coins + coins };
-    });
-  }
+  // Quests count every star collected (replays too); coins and the map only count new stars.
+  setState((prev) => {
+    const s = stars ? bump(prev, { stars }) : prev;
+    return gained ? { ...s, stars: { ...s.stars, [levelId]: stars }, coins: s.coins + coins } : s;
+  });
   return { gained, coins, before };
 }
 

@@ -81,7 +81,7 @@ test('isCorrect handles choose-2 in any order', () => {
 
 test('readiness weighted', () => {
   const items = {};
-  sections[1].questions.forEach((q) => (items[q.id] = { ...newItem(), seen: 1, box: 4 }));
+  sections[1].questions.forEach((q) => (items[q.id] = { ...newItem(), seen: 1, box: 4, due: Date.now() + DAY }));
   assert.equal(readiness(sections, items), 70);
 });
 
@@ -119,4 +119,14 @@ test('a miss relearned in the same session is not promoted above a first-try rig
   // a due item answered right does move up
   const later = review(firstRight, 'good', firstRight.due + 1);
   assert.equal(later.box, firstRight.box + 1);
+});
+
+test('strength fades when a review is long overdue', async () => {
+  const { strength } = await import('../src/engine/srs.js');
+  const now = 1_000_000_000_000;
+  const fresh = { ...newItem(), seen: 1, box: 4, due: now + DAY };
+  const stale = { ...fresh, due: now - 60 * DAY };
+  assert.equal(strength(fresh, now), 1);
+  assert.ok(strength(stale, now) < 0.5);
+  assert.ok(strength(stale, now) >= 0.25);
 });

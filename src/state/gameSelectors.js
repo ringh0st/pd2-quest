@@ -36,6 +36,20 @@ export function continueLevel(stars, unlocked) {
   return null;
 }
 
+/** Every level has at least one star. */
+export function mapCleared(stars) {
+  return sections.every((s) => worldLevels[s.id].every((l) => stars[l.id] > 0));
+}
+
+/** First level that is not yet ★★★ (for "keep your crowns" after the map is cleared). */
+export function firstImperfectLevel(stars) {
+  for (const s of sections) {
+    const l = worldLevels[s.id].find((x) => (stars[x.id] ?? 0) < 3);
+    if (l) return l;
+  }
+  return null;
+}
+
 export function routeForLevel(level) {
   if (!level) return '/map';
   return level.kind === 'lesson' ? `/lesson/${level.lessonId}` : `/play/${level.id}`;
