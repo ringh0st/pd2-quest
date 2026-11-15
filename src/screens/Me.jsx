@@ -53,13 +53,13 @@ export function Me() {
       </section>
 
       <div className="stat-row">
-        <div className="stat"><span className="num ic-label"><span className="ic-flame"><Icon name="flame" /></span>{streak}</span><span className="lbl">Streak (best {s.streak.best})</span></div>
+        <div className="stat"><span className="num ic-label"><span className="ic-flame"><Icon name="flame" /></span>{streak}</span><span className="lbl">Day streak</span></div>
         <div className="stat"><span className="num">{acc ?? '–'}{acc != null && '%'}</span><span className="lbl">Accuracy</span></div>
         <div className="stat"><span className="num">{Object.keys(s.lessons).length}/{totalLessons()}</span><span className="lbl">Lessons</span></div>
       </div>
 
       <section className="card stack" aria-label="Last 7 days">
-        <div className="spread"><strong>This week</strong><span className="small muted ic-label"><span className="ic-freeze"><Icon name="freeze" /></span>{s.streak.freezes} freeze{s.streak.freezes === 1 ? '' : 's'}</span></div>
+        <div className="spread"><strong>This week</strong><span className="small muted ic-label me-week-meta"><span>Best {s.streak.best}</span><span aria-hidden="true">·</span><span className="ic-freeze"><Icon name="freeze" /></span>{s.streak.freezes} freeze{s.streak.freezes === 1 ? '' : 's'}</span></div>
         <div className="week">
           {days.map((d) => {
             const xp = s.history[d.key] || 0;
