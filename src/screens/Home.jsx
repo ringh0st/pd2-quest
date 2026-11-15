@@ -18,6 +18,7 @@ import { CoinChip } from '../components/game/CoinChip.jsx';
 import { DailyQuests } from '../components/game/DailyQuests.jsx';
 import { ParkIt } from '../components/ParkIt.jsx';
 import { InstallHelpButton } from '../components/InstallHelp.jsx';
+import { ThemeToggle } from '../components/ThemeToggle.jsx';
 import { StudyPlanCard } from '../components/plan/StudyPlanCard.jsx';
 import { Icon } from '../components/icons/Icon.jsx';
 import { BossArt } from '../components/art/BossArt.jsx';
@@ -112,6 +113,7 @@ export function Home() {
             {s.streak.freezes > 0 && <span aria-hidden="true" className="ic-label" style={{ fontSize: 13, gap: 2 }}><Icon name="freeze" className="ic-freeze" />{s.streak.freezes}</span>}
           </button>
           <CoinChip />
+          <ThemeToggle />
           <ParkIt />
         </div>
       </motion.header>

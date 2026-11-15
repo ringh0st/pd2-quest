@@ -3,6 +3,7 @@ import { MotionConfig } from 'motion/react';
 import { useRoute, go } from './hooks/useRoute.js';
 import { useStore } from './state/store.js';
 import { useReducedMotion } from './hooks/useMotionPrefs.js';
+import { useSystemDark } from './hooks/useSystemDark.js';
 import { useIsFocusMode } from './hooks/useFocusMode.js';
 import { setSoundEnabled } from './audio/sfx.js';
 import { setHapticsEnabled } from './audio/haptics.js';
@@ -30,18 +31,6 @@ import { Placement } from './screens/Placement.jsx';
 import { Plan } from './screens/Plan.jsx';
 
 const FOCUS_ROUTES = /^\/(lesson|sprint|welcome|play|bolt|placement)/;
-
-function useSystemDark() {
-  const [dark, setDark] = useState(() => window.matchMedia?.('(prefers-color-scheme: dark)').matches ?? false);
-  useEffect(() => {
-    const mq = window.matchMedia?.('(prefers-color-scheme: dark)');
-    if (!mq) return;
-    const fn = () => setDark(mq.matches);
-    mq.addEventListener('change', fn);
-    return () => mq.removeEventListener('change', fn);
-  }, []);
-  return dark;
-}
 
 function useApplySettings() {
   const st = useStore((s) => s.settings);

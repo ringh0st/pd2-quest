@@ -12,6 +12,7 @@ import { BADGES } from '../game/badges.js';
 import { totalStars } from '../game/worlds.js';
 import { Zap } from '../components/game/Zap.jsx';
 import { CoinChip } from '../components/game/CoinChip.jsx';
+import { ThemeToggle } from '../components/ThemeToggle.jsx';
 import { Icon } from '../components/icons/Icon.jsx';
 import { BadgeMedal } from '../components/art/BadgeMedal.jsx';
 
@@ -37,6 +38,7 @@ export function Me() {
     <main className="screen" id="main">
       <div className="spread">
         <h1 className="me-title"><span className="ic-tile" aria-hidden="true"><Icon name="me" /></span><span>{s.name || 'Your progress'}</span></h1>
+        <ThemeToggle />
         <a className="icon-btn" href="#/settings" aria-label="Settings" onClick={() => sfx.tap()}><Icon name="settings" /></a>
       </div>
 
