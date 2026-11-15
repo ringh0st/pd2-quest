@@ -7,7 +7,7 @@ import { XP } from '../engine/xp.js';
 import { CodeBlock } from '../components/CodeBlock.jsx';
 import { PracticeRunner } from '../components/PracticeRunner.jsx';
 import { Rich } from '../lib/rich.jsx';
-import { back } from '../hooks/useRoute.js';
+import { go } from '../hooks/useRoute.js';
 import { useReducedMotion } from '../hooks/useMotionPrefs.js';
 import { sfx } from '../audio/sfx.js';
 import { haptic } from '../audio/haptics.js';
@@ -62,7 +62,7 @@ export function Lesson({ id }) {
     return (
       <main className="screen focus" id="main">
         <h1 className="small muted center" style={{ fontSize: 'var(--fs-small)' }}>Quick check · {checks.length} questions</h1>
-        <PracticeRunner questions={checks} requeue={false} onExit={() => back(`/world/${sec.id}`)} onDone={finish} />
+        <PracticeRunner questions={checks} requeue={false} onExit={() => go(`/world/${sec.id}`)} onDone={finish} />
       </main>
     );
   }
@@ -83,7 +83,7 @@ export function Lesson({ id }) {
   return (
     <main className="screen focus" id="main">
       <div className="quiz-top">
-        <button className="icon-btn" onClick={() => back(`/world/${sec.id}`)} aria-label="Close lesson">✕</button>
+        <button className="icon-btn" onClick={() => go(`/world/${sec.id}`)} aria-label="Close lesson">✕</button>
         <div className="bar" role="progressbar" aria-label="Lesson progress" aria-valuemin={0} aria-valuemax={cards.length} aria-valuenow={i + 1}>
           <span style={{ width: `${((i + 1) / (cards.length + 1)) * 100}%` }} />
         </div>

@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { motion } from 'motion/react';
 import { setState } from '../state/store.js';
 import { Segmented } from '../components/Controls.jsx';
-import { go } from '../hooks/useRoute.js';
+import { replace } from '../hooks/useRoute.js';
 import { sections } from '../data/index.js';
 import { useReducedMotion } from '../hooks/useMotionPrefs.js';
 import { sfx } from '../audio/sfx.js';
@@ -21,7 +21,7 @@ export function Onboarding() {
   const start = () => {
     sfx.levelUp(); haptic('success');
     setState({ onboarded: true, dailyGoal: goal, name: name.trim(), examDate: date });
-    go(`/lesson/${sections[0].lessons[0].id}`);
+    replace(`/lesson/${sections[0].lessons[0].id}`);
   };
 
   return (

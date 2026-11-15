@@ -12,7 +12,7 @@ test('srs: correct moves up, miss drops to box 1 due soon', () => {
   let it = review(newItem(), 'good', t0);
   assert.equal(it.box, 1);
   assert.equal(it.due, t0 + DAY);
-  it = review(it, 'easy', t0);
+  it = review(it, 'easy', it.due);
   assert.equal(it.box, 3);
   it = review(it, 'again', t0);
   assert.equal(it.box, 1);
@@ -92,4 +92,31 @@ test('exam: hardOnly prefers difficulty 3, fresh questions first', () => {
   const items = Object.fromEntries(Array.from({ length: 20 }, (_, i) => ['z' + i, { seen: 3 }]));
   const f = buildExam(secs, { count: 10, items });
   assert.ok(f.every((q) => !items[q.id]));
+});
+
+test('shuffleOptions keeps answer and wrong-reasons attached to their options', async () => {
+  const { shuffleOptions, isCorrect } = await import('../src/engine/session.js');
+  const q = { id: 'x', options: ['a', 'b', 'c', 'd', 'e'], answer: [1, 3], wrong: ['wa', '', 'wc', '', 'we'] };
+  for (let s = 1; s < 30; s++) {
+    let seed = s;
+    const rand = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+    const r = shuffleOptions(q, rand);
+    assert.deepEqual(r.answer.map((i) => r.options[i]).sort(), ['b', 'd']);
+    r.options.forEach((o, i) => assert.equal(r.wrong[i], q.wrong[q.options.indexOf(o)]));
+    assert.ok(isCorrect(r, r.answer));
+  }
+});
+
+test('a miss relearned in the same session is not promoted above a first-try right', () => {
+  const t = 1_000_000_000_000;
+  const firstRight = review(newItem(), 'good', t);
+  const missed = review(newItem(), 'again', t);
+  const relearned = review(missed, 'good', t + 3 * 60 * 1000);
+  assert.ok(relearned.box <= firstRight.box, `relearned box ${relearned.box} > first-right box ${firstRight.box}`);
+  assert.ok(relearned.due >= t + DAY - 1);
+  const helped = review(newItem(), 'good', t, { noPromote: true });
+  assert.equal(helped.box, 1);
+  // a due item answered right does move up
+  const later = review(firstRight, 'good', firstRight.due + 1);
+  assert.equal(later.box, firstRight.box + 1);
 });

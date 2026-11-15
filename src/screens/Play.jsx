@@ -12,7 +12,7 @@ import { PracticeRunner } from '../components/PracticeRunner.jsx';
 import { WinScreen } from '../components/game/WinScreen.jsx';
 import { Zap } from '../components/game/Zap.jsx';
 import { Stars } from '../components/game/Stars.jsx';
-import { go, back } from '../hooks/useRoute.js';
+import { go } from '../hooks/useRoute.js';
 import { useReducedMotion } from '../hooks/useMotionPrefs.js';
 import { sfx } from '../audio/sfx.js';
 import { haptic } from '../audio/haptics.js';
@@ -90,7 +90,7 @@ export function Play({ id }) {
         requeue={false}
         hearts={baseHearts + (extraHeart ? 1 : 0)}
         helpers
-        onExit={() => back(`/world/${level.world}`)}
+        onExit={() => go(`/world/${level.world}`)}
         onDone={done}
         shouldStop={isBoss ? (s) => s.right >= BOSS_HP : undefined}
         header={isBoss ? (st) => <BossPanel theme={theme} hits={st.stats.right} lastRight={st.revealed ? st.lastRight : null} /> : undefined}
@@ -105,7 +105,7 @@ function LevelIntro({ level, theme, best, heartsHeld, extraHeart, setExtraHeart,
   return (
     <main className={`screen focus level-intro world-${level.world}`} id="main" style={{ justifyContent: 'center' }}>
       <div className="topbar">
-        <button className="icon-btn" onClick={() => back(`/world/${level.world}`)} aria-label="Back to map">←</button>
+        <button className="icon-btn" onClick={() => go(`/world/${level.world}`)} aria-label="Back to map">←</button>
       </div>
       <motion.div className="celebrate-card" style={{ margin: '0 auto' }} initial={reduced ? { opacity: 0 } : { y: 40, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ type: 'spring', stiffness: 300, damping: 24 }}>
         <motion.span

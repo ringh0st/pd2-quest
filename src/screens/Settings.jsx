@@ -1,6 +1,6 @@
 import { useStore, updateSettings, setState, resetProgress } from '../state/store.js';
 import { Switch, Segmented } from '../components/Controls.jsx';
-import { back } from '../hooks/useRoute.js';
+import { go } from '../hooks/useRoute.js';
 import { useFeedback } from '../components/Feedback.jsx';
 
 export function Settings() {
@@ -10,7 +10,7 @@ export function Settings() {
   return (
     <main className="screen" id="main">
       <div className="topbar">
-        <button className="icon-btn" onClick={() => back('/me')} aria-label="Back">←</button>
+        <button className="icon-btn" onClick={() => go('/me')} aria-label="Back">←</button>
         <h1 className="grow">⚙️ Settings</h1>
       </div>
 

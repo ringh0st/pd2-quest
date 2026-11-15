@@ -26,7 +26,7 @@ export function go(to) {
   window.location.hash = to;
 }
 
-export function back(fallback = '/') {
-  if (window.history.length > 1) window.history.back();
-  else go(fallback);
+/** Navigate without leaving the old screen in history (e.g. onboarding → first lesson). */
+export function replace(to) {
+  window.location.replace(`${window.location.pathname}${window.location.search}#${to}`);
 }

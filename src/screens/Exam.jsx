@@ -3,7 +3,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { motion } from 'motion/react';
 import { sections, sectionById, exam } from '../data/index.js';
-import { buildExam, isCorrect } from '../engine/session.js';
+import { buildExam, isCorrect, shuffleOptions } from '../engine/session.js';
+import { seeded } from '../game/random.js';
 import { useStore, answerQuestion, earn, recordExam, getState } from '../state/store.js';
 import { XP } from '../engine/xp.js';
 import { QuestionView, cleanQuestion } from '../components/QuestionView.jsx';
@@ -162,7 +163,11 @@ function ExamStart({ mode, onBack, onStart }) {
 }
 
 function ExamRun({ run, onSubmit, onLeave, onDiscard }) {
-  const { questions } = run;
+  // Stable per attempt (seeded by start time), so a resumed exam shows the same option order.
+  const questions = useMemo(
+    () => run.questions.map((q) => shuffleOptions(q, seeded(`${q.id}:${run.startedAt}`))),
+    [run.questions, run.startedAt],
+  );
   const timed = run.limitMs != null;
   const [i, setI] = useState(run.i);
   const [answers, setAnswers] = useState(run.answers);

@@ -1,5 +1,5 @@
 import { exam, sectionById } from '../data/index.js';
-import { back } from '../hooks/useRoute.js';
+import { go } from '../hooks/useRoute.js';
 
 const TYPE_EMOJI = { trailmix: '🧭', module: '🎒', doc: '📘', guide: '📋', video: '🎬', trail: '🥾' };
 
@@ -7,7 +7,7 @@ export function Resources() {
   return (
     <main className="screen" id="main">
       <div className="topbar">
-        <button className="icon-btn" onClick={() => back('/map')} aria-label="Back">←</button>
+        <button className="icon-btn" onClick={() => go('/map')} aria-label="Back">←</button>
         <h1 className="grow">📚 Free resources</h1>
       </div>
       <p className="muted small">Official, free Salesforce material. Opens in your browser. Exam facts last checked {exam.lastVerified}.</p>

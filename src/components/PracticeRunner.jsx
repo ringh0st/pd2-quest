@@ -5,7 +5,7 @@ import { QuestionView } from './QuestionView.jsx';
 import { Rich } from '../lib/rich.jsx';
 import { answerQuestion, earn, getState } from '../state/store.js';
 import { answerXp, comboMultiplier } from '../engine/xp.js';
-import { isCorrect } from '../engine/session.js';
+import { isCorrect, shuffleOptions } from '../engine/session.js';
 import { sfx } from '../audio/sfx.js';
 import { haptic } from '../audio/haptics.js';
 import { useFeedback } from './Feedback.jsx';
@@ -32,7 +32,8 @@ function hintFor(q) {
 
 export function PracticeRunner({ questions, onDone, onExit, topRight, requeue = true, hearts = null, helpers = false, header, onAnswer, shouldStop }) {
   const [queue, setQueue] = useState(() => questions.map((q) => q.id));
-  const byId = useMemo(() => Object.fromEntries(questions.map((q) => [q.id, q])), [questions]);
+  // Options are reshuffled each session so learners remember the idea, not the letter.
+  const byId = useMemo(() => Object.fromEntries(questions.map((q) => [q.id, shuffleOptions(q)])), [questions]);
   const [idx, setIdx] = useState(0);
   const [chosen, setChosen] = useState([]);
   const [revealed, setRevealed] = useState(false);
@@ -78,7 +79,7 @@ export function PracticeRunner({ questions, onDone, onExit, topRight, requeue = 
     const firstTime = right && !(getState().items[q.id]?.right > 0);
     const nextCombo = right ? combo + 1 : 0;
     const xp = answerXp(right, nextCombo, firstTime);
-    answerQuestion(q.id, right, nextCombo);
+    answerQuestion(q.id, right, nextCombo, Date.now(), { helped: hidden.length > 0 || !!hint });
     earn(xp);
 
     const s = stats.current;

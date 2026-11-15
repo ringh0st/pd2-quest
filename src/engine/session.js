@@ -79,3 +79,17 @@ export function isCorrect(question, chosen) {
   const c = [...chosen].sort().join(',');
   return a === c;
 }
+
+/**
+ * Same question with its options in a new order, so a learner remembers the idea, not the letter.
+ * `answer` and `wrong` move with their options. Pass a seeded `rand` to get a stable order.
+ */
+export function shuffleOptions(question, rand = Math.random) {
+  const order = shuffle(question.options.map((_, i) => i), rand);
+  return {
+    ...question,
+    options: order.map((i) => question.options[i]),
+    wrong: question.wrong ? order.map((i) => question.wrong[i]) : question.wrong,
+    answer: question.answer.map((a) => order.indexOf(a)).sort((x, y) => x - y),
+  };
+}

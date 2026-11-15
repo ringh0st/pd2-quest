@@ -29,7 +29,7 @@ export function WinScreen({ kind, title, stars, prevStars = 0, coins = 0, xp = 0
     announce(won ? `Level complete. ${stars} stars. Plus ${coins} coins and ${xp} XP.` : 'Not this time. Try again!');
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const heading = !won ? (kind === 'boss' ? 'The boss got away!' : 'So close!') : kind === 'boss' ? 'BOSS DEFEATED!' : stars === 3 ? 'PERFECT!' : 'Level complete!';
+  const heading = !won ? (kind === 'boss' ? 'The boss got away!' : kind === 'lesson' ? 'Let’s run that again' : 'So close!') : kind === 'boss' ? 'BOSS DEFEATED!' : stars === 3 ? 'PERFECT!' : 'Level complete!';
 
   return (
     <main className="screen focus win-screen" id="main" style={{ justifyContent: 'center' }}>
@@ -54,7 +54,7 @@ export function WinScreen({ kind, title, stars, prevStars = 0, coins = 0, xp = 0
             {xp > 0 && <span className="chip primary">+{xp} XP</span>}
           </motion.div>
         )}
-        <p className="muted small">“{zapSays(won ? 'win' : 'lose')}”</p>
+        <p className="muted small">“{zapSays(!won ? 'lose' : stars === 3 ? 'win' : 'okwin')}”</p>
         {won && next && (
           <button className="btn primary block big" autoFocus onClick={() => { sfx.tap(); go(routeForLevel(next)); }}>
             Next: {next.kind === 'boss' ? '👹 Boss!' : next.kind === 'hard' ? '💀 Hard level' : next.title} →

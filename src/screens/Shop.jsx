@@ -5,7 +5,7 @@ import { useStore, buy, equip, checkBadges } from '../state/store.js';
 import { OUTFITS, THEMES, CONFETTI, HELPERS, canBuy, canBuyHelper } from '../game/economy.js';
 import { Zap } from '../components/game/Zap.jsx';
 import { CoinChip } from '../components/game/CoinChip.jsx';
-import { back } from '../hooks/useRoute.js';
+import { go } from '../hooks/useRoute.js';
 import { useFeedback } from '../components/Feedback.jsx';
 import { useReducedMotion } from '../hooks/useMotionPrefs.js';
 import { totalLessons } from '../state/selectors.js';
@@ -33,7 +33,7 @@ export function Shop() {
   return (
     <main className="screen" id="main">
       <div className="topbar">
-        <button className="icon-btn" onClick={() => back('/')} aria-label="Back">←</button>
+        <button className="icon-btn" onClick={() => go('/')} aria-label="Back">←</button>
         <h1 className="grow">🛍️ Shop</h1>
         <CoinChip link={false} />
       </div>

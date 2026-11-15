@@ -15,9 +15,14 @@ import { useFeedback } from '../components/Feedback.jsx';
 import { useReducedMotion } from '../hooks/useMotionPrefs.js';
 import { totalLessons } from '../state/selectors.js';
 import { sfx } from '../audio/sfx.js';
+import { useHoldCelebrations } from '../hooks/useFocusMode.js';
 
+/** Same 5 for everyone today: 2 warm-ups from the first worlds, then 3 from anywhere, easiest first. */
 export function boltQuestions(day) {
-  return shuffle(allQuestions, seeded('bolt-' + day)).slice(0, 5);
+  const rand = seeded('bolt-' + day);
+  const warm = shuffle(allQuestions.filter((q) => ['fund', 'auto'].includes(q.section) && (q.difficulty ?? 2) <= 2), rand).slice(0, 2);
+  const rest = shuffle(allQuestions.filter((q) => !warm.includes(q)), rand).slice(0, 3);
+  return [...warm, ...rest.sort((a, b) => (a.difficulty ?? 2) - (b.difficulty ?? 2))];
 }
 
 export function Bolt() {
@@ -29,6 +34,7 @@ export function Bolt() {
   const [result, setResult] = useState(playedToday ? { right: bolt.score, coins: 0, replay: true } : null);
   const { celebrate } = useFeedback();
   const reduced = useReducedMotion();
+  useHoldCelebrations(phase === 'done' && !!result && !result.replay);
 
   const done = (r) => {
     const first = getState().bolt.day !== today;
@@ -54,12 +60,15 @@ export function Bolt() {
   const stars = result ? (result.right >= 5 ? 3 : result.right >= 4 ? 2 : result.right >= 2 ? 1 : 0) : 0;
   return (
     <main className="screen focus" id="main" style={{ justifyContent: 'center' }}>
+      <div className="topbar" style={{ position: 'absolute', top: 'calc(12px + var(--safe-t))', left: 16 }}>
+        <button className="icon-btn" onClick={() => go('/')} aria-label="Close Daily Bolt">✕</button>
+      </div>
       <motion.div className="celebrate-card bolt-card" style={{ margin: '0 auto' }} initial={reduced ? { opacity: 0 } : { scale: 0.7, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ type: 'spring', stiffness: 380, damping: 20 }}>
         <motion.div className="big-emoji" aria-hidden="true" animate={reduced ? {} : { rotate: [0, -12, 12, 0], scale: [1, 1.2, 1] }} transition={{ duration: 0.8 }}>⚡</motion.div>
         <h1>Daily Bolt</h1>
         {phase === 'intro' ? (
           <>
-            <p>5 surprise questions from all sections. Same for everyone today.</p>
+            <p>5 surprise questions, warm-ups first. Same for everyone today.</p>
             <p className="small muted">🪙 {COINS.dailyBolt} + 4 per right answer · counts toward Bolt Chaser badge</p>
             <Zap mood="cheer" size={70} />
             <button className="btn primary block big" autoFocus onClick={() => { sfx.tap(); setPhase('run'); }}>Strike! ⚡</button>

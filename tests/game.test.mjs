@@ -41,7 +41,8 @@ test('levels unlock in order', () => {
 test('stars', () => {
   assert.equal(starsFor('lesson', { right: 3, total: 3 }), 3);
   assert.equal(starsFor('lesson', { right: 2, total: 3 }), 2);
-  assert.equal(starsFor('lesson', { right: 0, total: 3 }), 1);
+  assert.equal(starsFor('lesson', { right: 0, total: 3 }), 0); // mastery gate
+  assert.equal(starsFor('lesson', { right: 1, total: 3 }), 1);
   assert.equal(starsFor('hard', { right: 5, total: 5 }), 3);
   assert.equal(starsFor('hard', { right: 4, total: 5 }), 2);
   assert.equal(starsFor('hard', { right: 3, total: 5 }), 1);

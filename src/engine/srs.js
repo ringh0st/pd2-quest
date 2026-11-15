@@ -11,8 +11,12 @@ export function newItem() {
   return { box: 0, due: 0, seen: 0, right: 0, wrong: 0, last: 0 };
 }
 
-/** grade: 'again' | 'good' | 'easy' */
-export function review(item = newItem(), grade, now = Date.now()) {
+/**
+ * grade: 'again' | 'good' | 'easy'.
+ * A right answer before the item is due (relearning minutes after a miss, cramming, or answering
+ * with a helper via `noPromote`) counts, but doesn't move the item up a box: spacing is what earns it.
+ */
+export function review(item = newItem(), grade, now = Date.now(), { noPromote = false } = {}) {
   const next = { ...newItem(), ...item };
   next.seen += 1;
   next.last = now;
@@ -23,6 +27,12 @@ export function review(item = newItem(), grade, now = Date.now()) {
     return next;
   }
   next.right += 1;
+  const early = item.seen > 0 && item.due > now;
+  if (early || noPromote) {
+    next.box = Math.max(next.box, 1);
+    next.due = Math.max(item.seen ? item.due : 0, now + DAY);
+    return next;
+  }
   const step = grade === 'easy' ? 2 : 1;
   next.box = Math.min(MAX_BOX, next.box + step);
   const days = INTERVAL_DAYS[next.box];

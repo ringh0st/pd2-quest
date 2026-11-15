@@ -217,13 +217,13 @@ export function bumpDay(patch) {
   setState((s) => bump(s, patch));
 }
 
-export function answerQuestion(id, correct, combo, now = Date.now()) {
+export function answerQuestion(id, correct, combo, now = Date.now(), { helped = false } = {}) {
   setState((prev) => {
     const s = bump(prev, { answered: 1, right: correct ? 1 : 0, bestCombo: combo });
     const r = rollDay(s, now);
     return {
       ...s,
-      items: { ...s.items, [id]: review(s.items[id] || newItem(), correct ? 'good' : 'again', now) },
+      items: { ...s.items, [id]: review(s.items[id] || newItem(), correct ? 'good' : 'again', now, { noPromote: helped }) },
       today: { ...r.today, answered: r.today.answered + 1 },
       bestCombo: Math.max(s.bestCombo, combo),
     };
@@ -341,6 +341,11 @@ export function updateSettings(patch) {
 
 export function shiftEvent() {
   setState((s) => ({ ...s, events: s.events.slice(1) }));
+}
+
+/** Remove the first `n` queued celebrations (the ones just shown together). */
+export function takeEvents(n) {
+  setState((s) => ({ ...s, events: s.events.slice(n) }));
 }
 
 export function pushEvent(ev) {

@@ -12,6 +12,7 @@ import { useReducedMotion } from '../hooks/useMotionPrefs.js';
 import { sfx } from '../audio/sfx.js';
 import { haptic } from '../audio/haptics.js';
 import { isDue } from '../engine/srs.js';
+import { useHoldCelebrations } from '../hooks/useFocusMode.js';
 
 function makeRound(query) {
   const s = getState();
@@ -34,6 +35,7 @@ export function Sprint({ query }) {
   const { showToast, celebrate } = useFeedback();
   const reduced = useReducedMotion();
   const sec = query.section ? sectionById[query.section] : null;
+  useHoldCelebrations(!!result); // read the round result first; rewards show once you move on
 
   useEffect(() => {
     if (paused || result || !minutes) return;

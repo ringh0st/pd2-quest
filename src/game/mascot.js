@@ -13,6 +13,8 @@ const LINES = {
   wrong: ['Oops! That one comes back later. That’s how it sticks.', 'Close! Read the why, it’s gold.', 'Even senior devs miss that one.', 'No worries, mistakes are free XP for the brain.'],
   boss: ['Boss time! Every right answer is a hit. 💥', 'Hearts up, focus on, let’s go!'],
   win: ['WE DID IT! 🎉', 'Legendary!', 'That was beautiful.', 'Ship it! 🚀'],
+  // a pass with misses: warm, honest, points at the review
+  okwin: ['Passed! The misses will come back for a rematch.', 'Good run. Replay for ★★★ when it’s fresh.', 'Progress! Read the whys and it sticks.'],
   lose: ['That boss got lucky. Rematch?', 'Not yet! Each try makes the next one easier.'],
   idle: [
     'Why do Apex devs love triggers? They never miss an event. 🥁',

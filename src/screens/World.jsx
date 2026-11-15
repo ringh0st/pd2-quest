@@ -8,7 +8,7 @@ import { sectionMastery } from '../engine/mastery.js';
 import { Zap } from '../components/game/Zap.jsx';
 import { Stars } from '../components/game/Stars.jsx';
 import { CoinChip } from '../components/game/CoinChip.jsx';
-import { go, back } from '../hooks/useRoute.js';
+import { go } from '../hooks/useRoute.js';
 import { useReducedMotion } from '../hooks/useMotionPrefs.js';
 import { sfx } from '../audio/sfx.js';
 import { haptic } from '../audio/haptics.js';
@@ -41,7 +41,7 @@ export function World({ id }) {
   return (
     <main className="screen world-screen sky" id="main" style={style}>
       <div className="topbar">
-        <button className="icon-btn" onClick={() => back('/map')} aria-label="Back to map">←</button>
+        <button className="icon-btn" onClick={() => go('/map')} aria-label="Back to map">←</button>
         <h1 className="grow">{t.emoji} {t.name}</h1>
         <CoinChip />
       </div>

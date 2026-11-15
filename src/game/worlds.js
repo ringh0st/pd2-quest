@@ -81,5 +81,7 @@ export function starsFor(kind, { right = 0, total = 0, hearts = 0, won = false }
   }
   if (!total) return 3;
   if (right >= total) return 3;
-  return right >= total / 2 ? 2 : 1;
+  if (right >= total / 2) return 2;
+  // Mastery gate: at least one first-try right answer to pass a lesson (its misses were re-asked).
+  return right >= 1 ? 1 : 0;
 }

@@ -13,8 +13,8 @@
       "cards": [
         {
           "type": "text",
-          "title": "System mode by default (classic)",
-          "body": "Classic Apex (API 66.0 and earlier, what most exam questions assume) runs in **system mode**: it ignores the user's permissions. **Sharing keywords** only control **record-level** access (which rows SOQL/DML can touch)."
+          "title": "System mode by default",
+          "body": "Apex runs in **system mode**: it ignores the user's object and field permissions. **Sharing keywords** only control **record-level** access (which rows SOQL/DML can touch). To check the user's permissions too, use **WITH USER_MODE** or **AccessLevel.USER_MODE**."
         },
         {
           "type": "list",
@@ -28,7 +28,7 @@
         {
           "type": "text",
           "title": "No keyword?",
-          "body": "A class with **no keyword** inherits the caller's mode. As an **entry point** it runs **without sharing**, except @AuraEnabled controllers, which run **with sharing**. From **API 67.0**, no keyword means **with sharing + user mode**. Always declare a keyword: **inherited sharing** is the safe default."
+          "body": "A class with **no keyword** inherits the caller's mode when other Apex calls it. As an **entry point** it runs **without sharing**, except @AuraEnabled controllers used by Lightning, which run **with sharing**. Always declare a keyword: **inherited sharing** makes the intent clear."
         },
         {
           "type": "text",
@@ -40,12 +40,13 @@
           "body": "**Inner classes do NOT inherit** the outer class's sharing keyword. And **with sharing does NOT enforce CRUD/FLS** - only rows. Triggers run without sharing."
         },
         {
-          "type": "trap",
-          "body": "Watch the **API version** in a scenario. Newer API 67.0+ classes default to **with sharing** and **user mode**; older classes default to system mode. When the question doesn't say, assume the classic behaviour."
+          "type": "tip",
+          "body": "Mnemonic: **\"Sharing = Rows, Security = Columns.\"** Keywords pick rows; USER_MODE / stripInaccessible guard columns."
         },
         {
           "type": "tip",
-          "body": "Mnemonic: **\"Sharing = Rows, Security = Columns.\"** Keywords pick rows; USER_MODE / stripInaccessible guard columns."
+          "title": "🆕 Newer orgs (API 67.0+)",
+          "body": "The Apex Developer Guide says classes saved at **API 67.0+** with no keyword run **with sharing**, and Apex runs in **user mode** by default (66.0 and earlier: system mode). **Exam questions assume classic behaviour unless they state the API version.**"
         }
       ],
       "check": [
@@ -448,7 +449,7 @@
     {
       "id": "fund-f2",
       "front": "Class with no sharing keyword",
-      "back": "Inherits the caller's mode. As an entry point (e.g. LWC controller), it runs without sharing."
+      "back": "Inherits the caller's mode. As an entry point it runs without sharing, except @AuraEnabled (Lightning) controllers, which run with sharing. Always declare a keyword. (Classic rule; API 67.0+ defaults to with sharing.)"
     },
     {
       "id": "fund-f3",
@@ -601,9 +602,9 @@
       "answer": [
         1
       ],
-      "explain": "A class with no sharing keyword that is called by other Apex runs in the caller's mode (API 66.0 and earlier), so here the query respects sharing. From API 67.0 a class with no keyword always runs with sharing, so the answer is the same.",
+      "explain": "A class with no sharing keyword that is called by other Apex runs in the caller's mode. OrderController is with sharing, so the query in getOpenOrders() respects sharing.",
       "wrong": [
-        "A class with no keyword takes the caller's mode when other Apex calls it, and from API 67.0 it runs with sharing.",
+        "A class with no keyword isn't fixed to without sharing. When other Apex calls it, it takes the caller's mode.",
         "",
         "Sharing keywords decide the mode. Profiles don't.",
         "The keyword is optional. Leaving it out compiles fine."
@@ -614,7 +615,7 @@
       "id": "fund-q2",
       "lesson": "fund-1",
       "difficulty": 3,
-      "q": "A utility class is used two ways: as the Apex controller behind an LWC, and from batch jobs that call it from without sharing classes. When it is the LWC entry point it must respect the user's record access. When called by other Apex it must adopt the caller's mode. Which declaration meets both needs?",
+      "q": "A utility class is used two ways: called from without sharing batch classes, and as the entry point of a REST endpoint (@RestResource) used by a partner app. As the REST entry point it must respect the user's record access. When called by other Apex it must adopt the caller's mode. Which declaration meets both needs?",
       "options": [
         "public without sharing class RecordUtil",
         "public class RecordUtil (no keyword)",
@@ -624,10 +625,10 @@
       "answer": [
         3
       ],
-      "explain": "inherited sharing adopts the caller's mode when called from other Apex. As an entry point (like an LWC @AuraEnabled call), it runs with sharing.",
+      "explain": "inherited sharing adopts the caller's mode when called from other Apex. As an entry point, such as a REST request, it runs with sharing.",
       "wrong": [
-        "This would ignore sharing for the LWC user.",
-        "Leaving out the keyword hides the intent and depends on the API version. From API 67.0 a class with no keyword always runs with sharing and never takes on a without sharing caller's mode.",
+        "This would ignore sharing for the REST user.",
+        "With no keyword, the class takes the caller's mode, but as a REST entry point it runs without sharing.",
         "This always enforces sharing, even when the batch caller needs without sharing.",
         ""
       ],
@@ -1733,7 +1734,7 @@
       "answer": [
         2
       ],
-      "explain": "From API 67.0, Apex database operations run in user mode by default and classes without a keyword run with sharing. A user mode query checks FLS on all clauses, so the missing Rating__c access throws a QueryException. At API 66.0 and earlier, the same query would run in system mode.",
+      "explain": "Per the Apex Developer Guide, from API 67.0 Apex runs in user mode by default and classes without a keyword run with sharing. A user mode query checks FLS on all clauses, so the missing Rating__c access throws a QueryException. At API 66.0 and earlier, the same query would run in system mode.",
       "wrong": [
         "From API 67.0, database operations run in user mode unless system mode is set explicitly.",
         "User mode doesn't blank out fields. It fails the query.",
