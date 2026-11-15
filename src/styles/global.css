@@ -54,13 +54,13 @@ strong { font-weight: 700; }
   overscroll-behavior-y: contain;
   -webkit-overflow-scrolling: touch;
   /* focused or scrolled-to things stay clear of the fixed bottom nav and sticky buttons (WCAG 2.4.11) */
-  scroll-padding-bottom: calc(var(--nav-h) + 24px + var(--safe-b));
+  scroll-padding-bottom: calc(var(--nav-h) + 24px + var(--nav-gap));
 }
 .app > * { flex: 1 0 auto; width: 100%; max-width: 560px; margin-inline: auto; }
 .screen {
   min-width: 0;
   flex: 1;
-  padding: calc(16px + var(--safe-t)) 16px calc(var(--nav-h) + 24px + var(--safe-b));
+  padding: calc(16px + var(--safe-t)) 16px calc(var(--nav-h) + 24px + var(--nav-gap));
   display: flex;
   flex-direction: column;
   gap: 18px;
@@ -1194,7 +1194,7 @@ h1[tabindex='-1']:focus, h2[tabindex='-1']:focus { outline: none; }
 .code.wrap-lines .code-text { padding-left: 2ch; text-indent: -2ch; }
 /* new-version banner, just above the bottom bar */
 .update-banner {
-  position: fixed; left: 50%; translate: -50% 0; bottom: calc(var(--nav-h) + var(--safe-b) + 16px); z-index: 30;
+  position: fixed; left: 50%; translate: -50% 0; bottom: calc(var(--nav-h) + var(--nav-gap) + 16px); z-index: 30;
   width: min(528px, calc(100% - 24px)); display: flex; align-items: center; gap: 10px; padding: 10px 10px 10px 14px;
   border-radius: 16px; background: var(--surface); color: var(--text); box-shadow: var(--shadow-2); border: 1px solid var(--hairline); font-weight: 700;
 }
@@ -1251,11 +1251,17 @@ h1[tabindex='-1']:focus, h2[tabindex='-1']:focus { outline: none; }
 .check-pair { grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr); }
 .check-pair .btn { min-width: 0; padding-inline: 8px; }
 .check-v { flex-wrap: wrap; justify-content: center; text-align: center; }
-/* iPhone home-screen app: iOS can leave a strip below the page that nothing can be drawn in; it only
-   takes the root background. The root takes the bar's colour (the page itself keeps --bg on body),
-   and the bar's colour carries on below it, so the bar always reaches the bottom edge. */
-html { background: var(--surface); }
-.bottom-nav::after {
-  content: ''; position: absolute; left: 0; right: 0; top: 100%; height: 120px;
-  background: var(--surface); pointer-events: none;
+/* Floating dock, as in Lumipals: it sits 12px above the bottom edge (or above the home indicator)
+   on the page's own colour. On iPhone home-screen apps iOS can leave a strip under the page that
+   only takes the root background; with the dock floating on page colour that strip is just more page. */
+:root { --nav-gap: max(12px, var(--safe-b)); }
+html { background: var(--bg); }
+.bottom-nav {
+  bottom: var(--nav-gap);
+  width: min(460px, calc(100% - 24px));
+  height: var(--nav-h);
+  padding: 6px;
+  border: 0;
+  border-radius: 26px;
+  box-shadow: 0 0 0 1px var(--hairline), var(--shadow-2);
 }
