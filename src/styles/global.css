@@ -80,9 +80,7 @@ strong { font-weight: 700; }
   padding: 6px 8px var(--safe-b);
   display: grid;
   grid-template-columns: repeat(5, 1fr);
-  background: color-mix(in srgb, var(--surface) 98%, transparent);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
+  background: var(--surface);
   border-top: 1px solid var(--hairline);
   z-index: 20;
 }
@@ -1014,9 +1012,9 @@ h1[tabindex='-1']:focus, h2[tabindex='-1']:focus { outline: none; }
 :root[data-theme='dark'] .theme-toggle .icon { color: #FFD76A; }
 /* ===== center tab (Play): same size as the others, emphasised by a soft accent tile ===== */
 .nav-center-tile {
-  /* 38px circle in the same 30px slot: 8px taller, lifted 4px above the other icons; the label stays on the shared baseline */
+  /* 38px circle in the 30px icon slot: same bottom as the other icons, the extra 8px grows upward only; label on the shared line */
   display: grid; place-items: center; width: calc(38px * var(--text-scale)); height: calc(38px * var(--text-scale));
-  margin-top: calc(-10px * var(--text-scale));
+  margin-top: calc(-8px * var(--text-scale));
   border-radius: 50%; font-size: calc(19px * var(--text-scale));
   box-shadow: 0 2px 6px color-mix(in srgb, var(--primary) 18%, transparent);
   background: color-mix(in srgb, var(--primary) 16%, transparent); color: var(--primary);
