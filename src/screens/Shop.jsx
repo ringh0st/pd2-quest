@@ -182,9 +182,9 @@ function TryOn({ entry, s, titleId, onBuy, onUse, onTakeOff, onCancel }) {
       </p>
 
       {needsBuying && (
-        <p className="center small tryon-price">
-          Price <strong>🪙 {entry.price}</strong> · You have <strong>🪙 {s.coins}</strong>
-          {short === 0 && <> · After: 🪙 {s.coins - entry.price}</>}
+        <p className="center tryon-price">
+          <span>Price: <strong>🪙 {entry.price}</strong></span>
+          <span className="small muted">You have 🪙 {s.coins}{short === 0 && <> · 🪙 {s.coins - entry.price} left after</>}</span>
         </p>
       )}
 

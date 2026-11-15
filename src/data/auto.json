@@ -798,6 +798,16 @@
       "id": "auto-f40",
       "front": "Stop SOQL injection",
       "back": "Bind variables, Database.queryWithBinds, String.escapeSingleQuotes, and whitelisting field names against Schema."
+    },
+    {
+      "id": "auto-f41",
+      "front": "Unchanged fields in an Apex change event",
+      "back": "They are null. Check changedFields (and nulledFields for real nulls). recordIds can hold many Ids."
+    },
+    {
+      "id": "auto-f42",
+      "front": "transient fields in a Finalizer",
+      "back": "Ignored by serialization, so they don't persist into the finalizer. Other state is used as it is at the end of the Queueable."
     }
   ],
   "questions": [
@@ -1992,6 +2002,98 @@
         "This deletes the invoice even on success."
       ],
       "source": "Apex Developer Guide: Transaction Control"
+    },
+    {
+      "id": "auto-q51",
+      "lesson": "auto-4",
+      "difficulty": 2,
+      "q": "A finalizer writes a log when its Queueable fails. Support wants to open the matching AsyncApexJob record from the log. Which value should the finalizer store?",
+      "options": [
+        "ctx.getRequestId(), which is the AsyncApexJob record's Id",
+        "ctx.getAsyncApexJobId(), the Id of the Queueable job",
+        "UserInfo.getSessionId() of the user who enqueued the job",
+        "ctx.getException().getStackTraceString() for the failed job"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "getAsyncApexJobId() returns the Id of the Queueable job the finalizer is attached to, which matches AsyncApexJob. getRequestId() is for correlating with Event Monitoring logs.",
+      "wrong": [
+        "getRequestId() identifies the request for Event Monitoring; it isn't the AsyncApexJob Id.",
+        "",
+        "A session Id isn't a job Id, and async jobs don't run in the enqueuing user's session.",
+        "A stack trace explains the failure but doesn't identify the job record."
+      ],
+      "source": "Apex Developer Guide: Transaction Finalizers"
+    },
+    {
+      "id": "auto-q52",
+      "lesson": "auto-6",
+      "difficulty": 2,
+      "q": "When an Opportunity is Closed Won, a Slack notifier and an ERP sync (owned by two other teams and changed often) must both react. The Opportunity code shouldn't change when a team adds or removes a reaction. What should the developer use?",
+      "options": [
+        "A Schedulable class that polls each hour for Opportunities that were recently Closed Won",
+        "One Queueable, enqueued by the trigger, that calls each team's class one after another",
+        "An @future method for each team, each one called directly from the Opportunity trigger",
+        "Publish a Deal_Won__e platform event; each team subscribes with its own trigger or flow"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "Platform events decouple the publisher from its subscribers. The Opportunity code publishes one event, and each team adds or removes its own subscriber without touching it.",
+      "wrong": [
+        "Polling isn't near real time, and the job still has to know about every team.",
+        "The trigger code would still change whenever a team adds or removes a reaction.",
+        "The trigger still has to know about every team's method.",
+        ""
+      ],
+      "source": "Platform Events Developer Guide"
+    },
+    {
+      "id": "auto-q53",
+      "lesson": "auto-8",
+      "difficulty": 1,
+      "q": "Change Data Capture is enabled for the custom object Invoice__c. What is the name of its change event?",
+      "options": [
+        "InvoiceChangeEvent__e",
+        "Invoice__c_ChangeEvent",
+        "Invoice__ChangeEvent",
+        "Invoice__e"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "For a custom object, the change event name replaces __c with __ChangeEvent: Invoice__ChangeEvent. Standard objects add ChangeEvent, for example AccountChangeEvent.",
+      "wrong": [
+        "Change events don't use the __e suffix of custom platform events.",
+        "The __c suffix is replaced, not kept: the name is Invoice__ChangeEvent.",
+        "",
+        "__e is the suffix for custom platform events, not change events."
+      ],
+      "source": "Change Data Capture Developer Guide: Change Event Object Name"
+    },
+    {
+      "id": "auto-q54",
+      "lesson": "auto-11",
+      "difficulty": 2,
+      "q": "A flow calls a weather service and must keep the result (city, temperature, forecast date) in one structured variable it can pass between elements. What should the developer write?",
+      "options": [
+        "A class with public @AuraEnabled fields, used as an Apex-defined variable in the flow",
+        "A class whose public fields are marked @InvocableMethod so the flow can read them",
+        "A Map<String, Object> returned by an invocable method and stored in a flow variable",
+        "A single Text variable holding JSON, read by flow formulas that parse out each value"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "An Apex-defined data type is an Apex class whose fields use @AuraEnabled. Flow can create variables of that type and read or set each field.",
+      "wrong": [
+        "",
+        "@InvocableMethod marks one method per class, not fields.",
+        "Flow can't store a Map<String, Object> in a variable.",
+        "Flow formulas can't parse JSON, so the values couldn't be read."
+      ],
+      "source": "Salesforce Help: Apex-Defined Data Type in Flow; LWC Developer Guide: Supported Data Types in Flows"
     },
     {
       "id": "auto-x1",
@@ -3419,6 +3521,209 @@
         ""
       ],
       "source": "Apex Developer Guide: InvocableMethod Annotation"
+    },
+    {
+      "id": "auto-x55",
+      "lesson": "auto-4",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "The team wants at most 3 attempts while the ERP is down for a day. What actually happens?",
+      "code": "public class SyncJob implements Queueable, Database.AllowsCallouts {\n    public static Integer attempts = 0;\n    public void execute(QueueableContext ctx) {\n        System.attachFinalizer(new SyncFinalizer());\n        attempts++;\n        ErpClient.push();   // throws while the ERP is down\n    }\n}\n\npublic class SyncFinalizer implements Finalizer {\n    public void execute(FinalizerContext ctx) {\n        if (ctx.getResult() == ParentJobResult.UNHANDLED_EXCEPTION\n                && SyncJob.attempts < 3) {\n            System.enqueueJob(new SyncJob());\n        }\n    }\n}",
+      "lang": "apex",
+      "options": [
+        "It stops after exactly 3 attempts, because attempts counts every run of SyncJob in the org",
+        "The static resets in each new transaction, so it retries until the platform's 5-retry limit",
+        "It never retries at all, because a finalizer isn't allowed to enqueue the class it's attached to",
+        "It retries forever, since the finalizer's own transaction resets the retry counter too"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "The finalizer runs in its own transaction, so SyncJob.attempts is 0 there every time. Pass the attempt count through constructors instead; as written, the platform stops the chain after 5 consecutive failed re-enqueues.",
+      "wrong": [
+        "Statics reset in every transaction, so the finalizer always sees attempts = 0.",
+        "",
+        "A finalizer can enqueue one async job, including a new instance of its own Queueable.",
+        "Re-enqueuing after consecutive failures is capped at 5, so it doesn't retry forever."
+      ],
+      "source": "Apex Developer Guide: Transaction Finalizers"
+    },
+    {
+      "id": "auto-x56",
+      "lesson": "auto-4",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "Inside the Queueable, the code attaches this finalizer as f, then adds 4 messages to f.errors and sets f.processed to 50 before the job ends. What does the log show?",
+      "code": "public class ImportFinalizer implements Finalizer {\n    public transient List<String> errors = new List<String>();\n    public Integer processed = 0;\n    public void execute(FinalizerContext ctx) {\n        insert new Job_Log__c(\n            Count__c = processed,\n            Errors__c = errors == null ? '' : String.join(errors, '\\n'));\n    }\n}",
+      "lang": "apex",
+      "options": [
+        "Count__c is 0 and Errors__c is blank, because the finalizer's state is captured when it's attached",
+        "Count__c is 50 and Errors__c lists all 4 errors, because the whole finalizer object is kept",
+        "Count__c is 50 and Errors__c is blank, because transient fields don't persist into the finalizer",
+        "No Job_Log__c is created at all, because a finalizer isn't allowed to run DML of its own"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "The finalizer uses its state as it is at the end of the Queueable, but transient variables are ignored by serialization and don't persist. processed arrives as 50; the error messages are lost.",
+      "wrong": [
+        "The finalizer uses its state at the end of the Queueable, so processed is 50.",
+        "Transient variables are skipped by serialization, so the errors don't reach the finalizer.",
+        "",
+        "Finalizers run in their own transaction and can run DML."
+      ],
+      "source": "Apex Developer Guide: Transaction Finalizers"
+    },
+    {
+      "id": "auto-x57",
+      "lesson": "auto-6",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "Every night about 400,000 Product price updates must go to an ERP, and each record needs its own HTTP callout. Which design fits the limits?",
+      "options": [
+        "A scheduled Batch Apex class with Database.AllowsCallouts and a scope of 100 or less",
+        "A Schedulable class that calls an @future(callout=true) method once for every Product",
+        "A single Queueable that loops over all 400,000 Products and makes every callout in one run",
+        "A record-triggered flow on Product that calls the ERP whenever a price changes"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "Each execute() is a new transaction with its own limit of 100 callouts, so a scope of up to 100 with Database.AllowsCallouts fits. A Schedulable class starts the batch each night.",
+      "wrong": [
+        "",
+        "One transaction can make only 50 future calls, far short of 400,000.",
+        "One transaction allows only 100 callouts, and it can't process 400,000 rows.",
+        "That sends prices during the day as they change, not as a nightly sync of all records."
+      ],
+      "source": "Apex Developer Guide: Using Batch Apex; Execution Governors and Limits"
+    },
+    {
+      "id": "auto-x58",
+      "lesson": "auto-6",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A developer's first design uses @future. Which two requirements mean they should switch to Queueable Apex instead? (Choose 2)",
+      "options": [
+        "The job must make an HTTP callout to an external REST service using a Named Credential",
+        "The job must receive a List<Order__c> holding unsaved, in-memory changes",
+        "The job must run only after the triggering transaction has committed to the database",
+        "The job must start a second job when it finishes, in a chain",
+        "The job must be started from inside an Apex trigger"
+      ],
+      "answer": [
+        1,
+        3
+      ],
+      "explain": "Future methods take only primitives (or collections of them) and can't call another future method. Queueable accepts sObjects and can enqueue a follow-up job.",
+      "wrong": [
+        "@future(callout=true) supports callouts.",
+        "",
+        "Both future and Queueable jobs run after the transaction commits.",
+        "",
+        "Both can be started from a trigger."
+      ],
+      "source": "Apex Developer Guide: Future Methods; Queueable Apex"
+    },
+    {
+      "id": "auto-x59",
+      "lesson": "auto-8",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A mass update sets Priority to High on 50 Cases in one transaction, but only one Case gets an escalation. Why?",
+      "code": "trigger CaseCDC on CaseChangeEvent (after insert) {\n    Set<Id> escalated = new Set<Id>();\n    for (CaseChangeEvent e : Trigger.new) {\n        EventBus.ChangeEventHeader h = e.ChangeEventHeader;\n        if (h.changeType == 'UPDATE' && e.Priority == 'High') {\n            escalated.add(h.recordIds[0]);\n        }\n    }\n    EscalationService.notify(escalated);\n}",
+      "lang": "apex",
+      "options": [
+        "Mass updates don't publish change events; only the one Case edited in the UI produced one",
+        "A CDC trigger gets at most one event per transaction, so the other 49 events are dropped",
+        "Priority is null in the other events because it's an unchanged field, so only one matches",
+        "The changes were merged into one event whose recordIds holds all 50 Ids; loop over them"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "When the same change hits several records of one object in a transaction, Salesforce can merge them into one change event whose recordIds lists every affected Id. Loop over recordIds instead of reading only the first.",
+      "wrong": [
+        "Change events are published for every committed change, including bulk updates.",
+        "Change event triggers receive batches of up to 2,000 events; nothing is limited to one per transaction.",
+        "Priority changed on all 50 Cases, so it is populated in the event.",
+        ""
+      ],
+      "source": "Change Data Capture Developer Guide: ChangeEventHeader Fields"
+    },
+    {
+      "id": "auto-x60",
+      "lesson": "auto-8",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A user changes only the Phone of an Account. The sync receives the new phone but a null Name, and the ERP blanks the account name. What should the developer know?",
+      "code": "trigger AcctCDC on AccountChangeEvent (after insert) {\n    for (AccountChangeEvent e : Trigger.new) {\n        if (e.ChangeEventHeader.changeType == 'UPDATE') {\n            Sync.send(e.ChangeEventHeader.recordIds, e.Name, e.Phone);\n        }\n    }\n}",
+      "lang": "apex",
+      "options": [
+        "Name is null because the user who changed the Phone isn't allowed to read the Account Name",
+        "Unchanged fields are null in Apex change events; send only the fields in changedFields",
+        "Change events never include the Name field; it must always be queried separately",
+        "The trigger needs Trigger.oldMap to fill in fields that didn't change in this update"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "In Apex change events, unchanged fields are null. Use changedFields (and nulledFields to tell a real null from an unchanged field) to decide what to sync.",
+      "wrong": [
+        "The field is null because it didn't change, not because of user access.",
+        "",
+        "Name is included whenever it changes, for example on create or a rename.",
+        "Change event triggers have no Trigger.old or oldMap."
+      ],
+      "source": "Change Data Capture Developer Guide: Change Event Triggers"
+    },
+    {
+      "id": "auto-x61",
+      "lesson": "auto-11",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "When a Case is closed, the team must email the customer a survey, create a follow-up Task, and stamp Last_Case_Closed__c on the parent Account. Admins will maintain it, and the logic is simple. What is the optimal solution?",
+      "options": [
+        "A before-save record-triggered flow on Case that sends the email, creates the Task and updates the Account",
+        "An after insert and after update Apex trigger on Case that calls a handler class",
+        "An after-save record-triggered flow on Case with an entry condition on closed Cases",
+        "A new workflow rule on Case with an email alert, a task action and a cross-object field update"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "An after-save record-triggered flow can send email, create related records and update other records, and admins can maintain it. Apex adds nothing for this simple logic.",
+      "wrong": [
+        "Before-save flows can update only the triggering record; they can't send email or create or update other records.",
+        "It works, but Apex isn't needed for simple logic that admins should maintain.",
+        "",
+        "New workflow rules can't be created any more; Salesforce points automation to Flow."
+      ],
+      "source": "Salesforce Help: Record-Triggered Flows; Workflow Rules Retirement"
+    },
+    {
+      "id": "auto-x62",
+      "lesson": "auto-11",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "An after-save record-triggered flow on Opportunity calls an invocable Apex action that posts to an ERP REST API when a deal is Closed Won. On the run-immediately path the callout is blocked. What should the developer do?",
+      "options": [
+        "Put the action on a Run Asynchronously path, which runs after the record is committed",
+        "Set callout=true on the @InvocableMethod; the flow then runs the call in the background",
+        "Change it to a before-save flow, which runs before any DML, so the callout is allowed",
+        "Wrap the HTTP call in a try/catch inside the action so the flow can carry on to the end"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "The run-immediately path runs inside the save transaction, where callouts aren't allowed. The Run Asynchronously path runs after the transaction commits, so the action can make the callout.",
+      "wrong": [
+        "",
+        "callout=true only tells Flow the action makes callouts; it doesn't move the call out of the transaction.",
+        "Before-save flows can't call Apex actions at all.",
+        "Catching the error doesn't let the callout go through."
+      ],
+      "source": "Salesforce Help: Run Parts of a Record-Triggered Flow Asynchronously; Apex Developer Guide: InvocableMethod Annotation"
     }
   ]
 }

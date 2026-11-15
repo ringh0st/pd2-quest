@@ -23,13 +23,13 @@ const ANCHORS = { head: [57, 4], eyes: [49.5, 48.5] };
 // Per-item fit on the anchor: shift, scale and tilt. Each drawing below is made around (0, 0),
 // with y = 0 being where the hat meets the bolt (or the eye line for glasses).
 const FIT = {
-  cap: { dx: -1, dy: 1, scale: 1, rotate: -4 },
+  cap: { dx: -1, dy: 1, scale: 1.15, rotate: -4 },
   shades: { dx: 0, dy: 0, scale: 1, rotate: -3.4 },
-  top: { dx: 0, dy: 1, scale: 0.9, rotate: -5 },
-  grad: { dx: 0, dy: 2, scale: 0.95, rotate: -4 },
-  cowboy: { dx: 0, dy: 2, scale: 0.95, rotate: -3 },
-  party: { dx: 2, dy: 1, scale: 0.95, rotate: 8 },
-  crown: { dx: 0, dy: 1, scale: 0.9, rotate: -3 },
+  top: { dx: 0, dy: 1, scale: 1.05, rotate: -5 },
+  grad: { dx: 0, dy: 2, scale: 1.1, rotate: -4 },
+  cowboy: { dx: 0, dy: 2, scale: 1.1, rotate: -3 },
+  party: { dx: 2, dy: 1, scale: 1.05, rotate: 8 },
+  crown: { dx: 0, dy: 1, scale: 1.05, rotate: -3 },
 };
 
 const line = { stroke: INK, strokeWidth: 2.5, strokeLinejoin: 'round', strokeLinecap: 'round' };
@@ -126,11 +126,11 @@ function OutfitPart({ outfit, still }) {
 }
 
 /** A shop icon: just the outfit drawing, framed on its own. */
-export function OutfitIcon({ id, size = 56 }) {
+export function OutfitIcon({ id, size = 72 }) {
   const art = ART[id];
   if (!art) return null;
   return (
-    <svg viewBox="-34 -40 68 52" width={size} height={size * (52 / 68)} aria-hidden="true" focusable="false">{art}</svg>
+    <svg viewBox="-32 -39 64 48" width={size} height={size * 0.75} aria-hidden="true" focusable="false">{art}</svg>
   );
 }
 

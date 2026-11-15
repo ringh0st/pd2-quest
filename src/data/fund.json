@@ -585,6 +585,16 @@
       "id": "fund-f29",
       "front": "Org vs Session cache",
       "back": "Org: shared by all users, max TTL 48h. Session: per user session, max 8h. Always handle misses."
+    },
+    {
+      "id": "fund-f30",
+      "front": "Object type from a record Id",
+      "back": "recordId.getSObjectType() returns the token, e.g. Account.SObjectType. No SOQL, no global describe."
+    },
+    {
+      "id": "fund-f31",
+      "front": "Unqualified cache key, no default partition",
+      "back": "Throws Cache.Org.OrgCacheException. Use local.Partition.key or getPartition()."
     }
   ],
   "questions": [
@@ -1429,6 +1439,169 @@
       "source": "Apex Developer Guide: Static and Instance Methods, Variables / Platform Cache"
     },
     {
+      "id": "fund-q36",
+      "lesson": "fund-1",
+      "difficulty": 1,
+      "q": "A developer is writing a utility class that is called from many places. It should run in the caller's sharing mode, and with sharing when it is the entry point of a transaction. Which declaration fits?",
+      "options": [
+        "public without sharing class RecordUtil",
+        "public inherited sharing class RecordUtil",
+        "public class RecordUtil (no sharing keyword at all)",
+        "public with sharing class RecordUtil"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "inherited sharing runs in the calling class's sharing mode, and with sharing when the class is the entry point (for example an LWC controller). It also makes the intent explicit.",
+      "wrong": [
+        "This always ignores sharing rules, whoever calls it.",
+        "",
+        "In classic behaviour a class with no keyword runs without sharing when it is the entry point, so it isn't safe there.",
+        "This always enforces sharing, even when called from a without sharing class."
+      ],
+      "source": "Apex Developer Guide: Using the with sharing, without sharing, and inherited sharing Keywords"
+    },
+    {
+      "id": "fund-q37",
+      "lesson": "fund-5",
+      "difficulty": 1,
+      "q": "A multi-currency org stores opportunities in several currencies. Which field tells Apex which currency an Opportunity's Amount is in?",
+      "options": [
+        "DefaultCurrencyIsoCode on the Opportunity record",
+        "CurrencyType, a lookup on each record to the currency",
+        "CurrencyIsoCode on the Opportunity record",
+        "UserInfo.getDefaultCurrency() for the record owner"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "When multi-currency is enabled, every record with currency fields gets a CurrencyIsoCode field naming that record's currency.",
+      "wrong": [
+        "DefaultCurrencyIsoCode is the personal currency on the User record, not a record's currency.",
+        "CurrencyType is the object that lists the org's currencies and rates; records don't look it up.",
+        "",
+        "That returns the running user's currency, which can differ from the record's currency."
+      ],
+      "source": "Salesforce Help: Manage Multiple Currencies; Object Reference: CurrencyType"
+    },
+    {
+      "id": "fund-q38",
+      "lesson": "fund-6",
+      "difficulty": 2,
+      "q": "A logging utility receives record Ids from many objects (Accounts, Cases, custom objects) and must branch on the object type. It is called in loops, so it must be cheap. What should the developer use?",
+      "options": [
+        "recordId.getSObjectType(), then compare it with tokens like Account.SObjectType",
+        "Query each candidate object with WHERE Id = :recordId until one of the queries returns a row",
+        "Loop over Schema.getGlobalDescribe() and compare each object's getKeyPrefix() with the Id's prefix",
+        "Compare String.valueOf(recordId).left(3) with key prefixes hard-coded for each object"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "Id.getSObjectType() returns the token for the Id's object without a query or a global describe. Comparing tokens is fast and safe.",
+      "wrong": [
+        "",
+        "This wastes SOQL queries and fails on objects you didn't list.",
+        "It works, but a global describe is expensive, especially inside a loop.",
+        "Custom object key prefixes differ between orgs, so hard-coded prefixes break."
+      ],
+      "source": "Apex Reference Guide: Id Class (getSObjectType)"
+    },
+    {
+      "id": "fund-q39",
+      "lesson": "fund-7",
+      "difficulty": 2,
+      "q": "A developer adds a payment provider that implements an existing interface. What happens when CardPay is saved?",
+      "code": "public interface Payable {\n    Decimal charge(Decimal amount);\n}\n\npublic class CardPay implements Payable {\n    Decimal charge(Decimal amount) {\n        return amount * 1.02;\n    }\n}",
+      "lang": "apex",
+      "options": [
+        "It compiles, because interface methods take the class's default access",
+        "It compiles, and charge() stays private to CardPay as declared",
+        "Compile error: CardPay must also be declared virtual to implement an interface",
+        "Compile error: the implementation of charge() must be public or global"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "Interface methods have the interface's access level, so the implementing class must declare them public or global. With no modifier an Apex method is private, so CardPay doesn't compile.",
+      "wrong": [
+        "The default (private) access doesn't match the interface, so it is rejected.",
+        "An interface method can't be implemented as private; the class doesn't compile.",
+        "Implementing an interface doesn't need virtual; virtual is about being extended.",
+        ""
+      ],
+      "source": "Apex Developer Guide: Interfaces; Access Modifiers"
+    },
+    {
+      "id": "fund-q40",
+      "lesson": "fund-8",
+      "difficulty": 2,
+      "q": "A service catches a DmlException and must throw its own OrderException, keeping the original error as the cause for logging. Which line does this?",
+      "options": [
+        "throw (OrderException) e;",
+        "throw new OrderException(e.getMessage() + e.getCause());",
+        "throw new OrderException('Order save failed', e);",
+        "throw new OrderException('Order save failed').setCause(e);"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "Custom exceptions get a (String message, Exception cause) constructor for free. The caller can then read the original error with getCause().",
+      "wrong": [
+        "A DmlException is never an OrderException, so this cast fails.",
+        "This only copies text into the message; no cause is kept.",
+        "",
+        "Exceptions have no setCause() method. Use the (message, cause) constructor or initCause()."
+      ],
+      "source": "Apex Developer Guide: Create Custom Exceptions; Exception Class and Built-In Exceptions"
+    },
+    {
+      "id": "fund-q41",
+      "lesson": "fund-9",
+      "difficulty": 1,
+      "q": "In Cache.Org.getPartition('local.Rates'), what does the prefix 'local' mean?",
+      "options": [
+        "The partition is stored only on the local app server",
+        "The org's own namespace, used for partitions you created",
+        "The partition is visible only to the current user's session",
+        "A partition that is cleared when the transaction ends"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "'local' stands for the org's default namespace, so you can name a partition without hard-coding a namespace. In an installed managed package it refers to the subscriber org's namespace.",
+      "wrong": [
+        "Platform Cache is a shared service; 'local' is about namespaces, not servers.",
+        "",
+        "Per-user visibility is what session cache gives you, not the 'local' prefix.",
+        "Cached values outlive the transaction until their TTL ends or they are evicted."
+      ],
+      "source": "Apex Reference Guide: Org Class (Cache Key Format)"
+    },
+    {
+      "id": "fund-q42",
+      "lesson": "fund-9",
+      "difficulty": 2,
+      "q": "A multi-page wizard must remember one user's in-progress choices for an hour or two, and other users must never see them. Where should the developer cache the data?",
+      "options": [
+        "A hierarchy custom setting record for each user, written by DML on every wizard step",
+        "Org cache with the user's Id in each key, so the values can live for up to 48 hours",
+        "A static variable in the wizard's Apex controller, which lasts for the whole user session",
+        "Session cache, which is tied to that user's session and holds values for up to 8 hours"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "Session cache stores data for one user's session, for up to 8 hours. Org cache is shared by every user, and statics don't survive between requests.",
+      "wrong": [
+        "That adds DML on every step and stores temporary data permanently.",
+        "Org cache is shared by all users, so any code could read these values; session cache is built for per-user data.",
+        "Statics last only one transaction, not a whole session.",
+        ""
+      ],
+      "source": "Apex Developer Guide: Platform Cache"
+    },
+    {
       "id": "fund-x1",
       "lesson": "fund-3",
       "difficulty": 3,
@@ -2217,6 +2390,216 @@
         "CurrencyIsoCode defaults, so the insert succeeds, just with the wrong currency."
       ],
       "source": "Salesforce Help: Multiple Currencies; Apex Reference Guide: UserInfo Class"
+    },
+    {
+      "id": "fund-x31",
+      "lesson": "fund-6",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A generic selector returns rows for any object. The caller casts the result and fails at run time. What is happening?",
+      "code": "public static List<SObject> rowsFor(String objName, Set<Id> ids) {\n    List<SObject> out = new List<SObject>();\n    for (SObject s : Database.query(\n            'SELECT Id, Name FROM ' + objName + ' WHERE Id IN :ids')) {\n        out.add(s);\n    }\n    return out;\n}\n\n// caller\nList<Account> accts = (List<Account>) Selector.rowsFor('Account', ids);",
+      "lang": "apex",
+      "options": [
+        "Rows from Database.query are typed as Account, so out.add(s) throws when it adds them to a List<SObject>",
+        "The bind :ids isn't visible to Database.query inside a static method, so the query throws a QueryException",
+        "The cast throws a TypeException because out's runtime type is List<SObject>, not List<Account>",
+        "Name isn't on every object, so the class fails to compile when the dynamic query string is saved"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "A list's runtime type is fixed when it is created. A list built with new List<SObject>() can't be cast to List<Account>, so the cast throws System.TypeException. Cast each element instead (Account a = (Account) s).",
+      "wrong": [
+        "Any concrete sObject can be added to a List<SObject>.",
+        "Dynamic SOQL can bind local variables that are in scope, including method parameters.",
+        "",
+        "Dynamic queries are checked only at run time, and Account has Name, so this query runs."
+      ],
+      "source": "Apex Developer Guide: Dynamic SOQL; Lists of sObjects"
+    },
+    {
+      "id": "fund-x32",
+      "lesson": "fund-6",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A 'quick create' service gets an object API name and a Map<String, Object> of field values from a Lightning page, and must insert one record of that type. Which two lines belong in a working solution? (Choose 2)",
+      "options": [
+        "SObject rec = new SObject(); rec.put('SObjectType', objName);",
+        "rec.put(fieldName, values.get(fieldName));",
+        "SObject rec = Schema.getGlobalDescribe().get(objName).newSObject();",
+        "SObject.setField(rec, fieldName, values.get(fieldName));",
+        "Database.insert(objName, new List<SObject>{ rec }, true);"
+      ],
+      "answer": [
+        1,
+        2
+      ],
+      "explain": "SObjectType.newSObject() creates a record of a type known only at run time, and put() sets fields by name. Call getGlobalDescribe() once, not inside a loop, because it is expensive.",
+      "wrong": [
+        "You can't create a generic SObject with new, and the object type isn't a field you can put.",
+        "",
+        "",
+        "That method doesn't exist. Use rec.put() to set a field by name.",
+        "No insert overload takes an object name; the record already knows its type."
+      ],
+      "source": "Apex Developer Guide: Dynamic DML; Apex Reference Guide: SObjectType and SObject Classes"
+    },
+    {
+      "id": "fund-x33",
+      "lesson": "fund-7",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A team uses this template pattern for notifications. What does the last line log?",
+      "code": "public abstract class Notifier {\n    public void send(String msg) { deliver(format(msg)); }\n    public virtual String format(String msg) { return msg; }\n    public abstract void deliver(String msg);\n}\n\npublic class SmsNotifier extends Notifier {\n    public override String format(String msg) {\n        return super.format(msg).left(10);\n    }\n    public override void deliver(String msg) { System.debug(msg); }\n}\n\n// run\nNotifier n = new SmsNotifier();\nn.send('Your order has shipped');",
+      "lang": "apex",
+      "options": [
+        "Your order has shipped, because send() is defined in Notifier and calls its own format()",
+        "Your order, because the override of format() runs and trims the text to 10 characters",
+        "Nothing: Notifier n = new SmsNotifier() fails, because a variable can't have an abstract type",
+        "Nothing: the class doesn't compile, because an abstract class can't contain a concrete send()"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "send() lives in the base class but calls format() and deliver() polymorphically, so SmsNotifier's override runs and trims the text to 'Your order'. super.format() reuses the parent's logic first.",
+      "wrong": [
+        "Calls made in the parent still go to the child's override at run time.",
+        "",
+        "A variable can use an abstract type; only new Notifier() is forbidden.",
+        "Abstract classes can mix abstract and concrete methods."
+      ],
+      "source": "Apex Developer Guide: Extending a Class; Using the super Keyword"
+    },
+    {
+      "id": "fund-x34",
+      "lesson": "fund-7",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "ConfigService is a singleton. A Database.Stateful batch runs 5 execute() chunks, and each chunk calls ConfigService.getInstance() 200 times. How many times does the constructor's query run for the whole job?",
+      "code": "public class ConfigService {\n    private static ConfigService instance;\n    public Map<String, String> values = new Map<String, String>();\n    private ConfigService() {\n        for (Config__c c : [SELECT Name, Value__c FROM Config__c]) {\n            values.put(c.Name, c.Value__c);\n        }\n    }\n    public static ConfigService getInstance() {\n        if (instance == null) instance = new ConfigService();\n        return instance;\n    }\n}",
+      "lang": "apex",
+      "options": [
+        "1,000, because the private constructor runs again on every single getInstance() call",
+        "1, because Database.Stateful keeps the static instance alive from one chunk to the next",
+        "5, once per chunk: statics reset in every transaction, even in a Stateful batch",
+        "0 after the first run, because static variables stay cached in the org between jobs"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "Each execute() runs in its own transaction, so the static instance is rebuilt once per chunk. Database.Stateful keeps only instance member variables, not statics.",
+      "wrong": [
+        "getInstance() builds the instance only when it is null, so it is reused within a transaction.",
+        "With Database.Stateful only instance member variables keep their values; statics reset between transactions.",
+        "",
+        "Statics never outlive a transaction. Use Platform Cache to share data across transactions."
+      ],
+      "source": "Apex Developer Guide: Using Batch Apex (Using State in Batch Apex); Static and Instance Methods, Variables"
+    },
+    {
+      "id": "fund-x35",
+      "lesson": "fund-8",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A developer nests savepoints in an order service. What happens when this code runs?",
+      "code": "Savepoint sp1 = Database.setSavepoint();\ninsert new Account(Name = 'A');\nSavepoint sp2 = Database.setSavepoint();\ninsert new Account(Name = 'B');\nDatabase.rollback(sp1);\nDatabase.rollback(sp2);",
+      "lang": "apex",
+      "options": [
+        "It doesn't compile, because a single transaction can hold only one savepoint at a time",
+        "Both rollbacks succeed quietly, and neither Account A nor Account B is left in the database",
+        "rollback(sp1) undoes only Account A, and rollback(sp2) then undoes Account B as expected",
+        "Both inserts are undone, then rollback(sp2) throws: sp2 became invalid when sp1 was used"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "Rolling back to sp1 undoes everything after it, including Account B. Savepoints created after sp1 become invalid, and using one causes a runtime error.",
+      "wrong": [
+        "Apex allows several savepoints; only rolling back to an invalid one fails.",
+        "Rolling back to sp1 makes the later savepoint sp2 invalid, so using it throws.",
+        "A rollback undoes all DML after its savepoint, so rolling back to sp1 also undoes B.",
+        ""
+      ],
+      "source": "Apex Developer Guide: Transaction Control"
+    },
+    {
+      "id": "fund-x36",
+      "lesson": "fund-8",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "Support says failed orders never leave an Error_Log__c record, even though users see the friendly message. Why, and what is the fix?",
+      "code": "@AuraEnabled\npublic static void placeOrder(Order__c ord, List<Order_Line__c> lines) {\n    Savepoint sp = Database.setSavepoint();\n    try {\n        insert ord;\n        for (Order_Line__c l : lines) l.Order__c = ord.Id;\n        insert lines;\n    } catch (DmlException e) {\n        Database.rollback(sp);\n        insert new Error_Log__c(Message__c = e.getMessage());\n        throw new AuraHandledException('Could not save the order.');\n    }\n}",
+      "lang": "apex",
+      "options": [
+        "AuraHandledException hides the DmlException, so getMessage() is blank; log e.getDmlMessage(0) instead",
+        "rollback(sp) also undoes inserts made after it in the catch block; move the log insert above the rollback",
+        "Throwing rolls back the whole transaction, log too; log with a Publish Immediately platform event",
+        "DML isn't allowed in a catch block after a rollback; move the log insert into a finally block"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "An uncaught exception rolls back all DML in the transaction, including the log written in the catch block. A platform event set to Publish Immediately is published even when the transaction rolls back.",
+      "wrong": [
+        "e is still the DmlException in the catch block, so its message is there; the log row is what gets rolled back.",
+        "A rollback undoes only DML made before it. The log is lost to the uncaught exception, wherever the insert sits.",
+        "",
+        "DML is allowed after a rollback; the problem is the uncaught exception that follows."
+      ],
+      "source": "Apex Developer Guide: Transaction Control; Platform Events Developer Guide: Platform Event Publish Behavior"
+    },
+    {
+      "id": "fund-x37",
+      "lesson": "fund-9",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "An org has a Platform Cache partition named Rates, but no partition is marked as the default. What happens when this code runs?",
+      "code": "Decimal rate = (Decimal) Cache.Org.get('usdEur');\nif (rate == null) {\n    rate = RateService.load('EUR');\n    Cache.Org.put('usdEur', rate);\n}",
+      "lang": "apex",
+      "options": [
+        "The first call returns null, the value loads, and put() stores it in the Rates partition",
+        "Cache.Org.OrgCacheException is thrown, because the key isn't qualified with a partition",
+        "put() silently stores nothing, so every request falls through to RateService.load()",
+        "It compiles only if the class is saved in a managed package that defines a namespace"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "With no default partition, calling a cache method with a key that isn't fully qualified throws Cache.Org.OrgCacheException. Use 'local.Rates.usdEur', or get the partition with Cache.Org.getPartition('local.Rates').",
+      "wrong": [
+        "Without a default partition an unqualified key can't be resolved to Rates.",
+        "",
+        "It throws; it doesn't fail silently.",
+        "Cache keys are strings checked at run time, and the 'local' prefix covers orgs without a namespace."
+      ],
+      "source": "Apex Reference Guide: Org Class (Cache Key Format)"
+    },
+    {
+      "id": "fund-x38",
+      "lesson": "fund-9",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A team wants to cache customers' loyalty balances and payment tokens in org cache to speed up checkout. A reviewer checks the plan. Which two statements are true? (Choose 2)",
+      "options": [
+        "Data in Platform Cache isn't encrypted, so sensitive values such as payment tokens shouldn't be cached",
+        "If two transactions put the same key at the same moment, the second put() throws an exception",
+        "Modifying an Apex class in the org can invalidate some or all of the cache",
+        "Org cache entries are private to the user who stored them, so balances can't leak",
+        "Values stay cached for their full TTL, so the balances never need to be reloaded"
+      ],
+      "answer": [
+        0,
+        2
+      ],
+      "explain": "Cached data isn't encrypted, so keep secrets out of it. Cache isn't persisted and can be invalidated (for example when an Apex class changes), so always reload on a miss.",
+      "wrong": [
+        "",
+        "Both writes succeed; one value is chosen as the winner for that key.",
+        "",
+        "Org cache is shared by all users; session cache is the per-user one.",
+        "Cache isn't persisted and entries can be evicted early, so code must handle misses."
+      ],
+      "source": "Apex Developer Guide: Platform Cache Considerations"
     }
   ]
 }
