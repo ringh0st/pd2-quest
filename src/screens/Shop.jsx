@@ -52,7 +52,7 @@ function chipFor(entry, st) {
 const HELPER_TONE = { fifty: '', hint: 'gold', heart: 'flame' };
 
 function ItemArt({ entry, size = 56 }) {
-  if (entry.kind === 'outfit') return <OutfitIcon id={entry.id} size={size} />;
+  if (entry.kind === 'outfit') return <span className="outfit-plate"><OutfitIcon id={entry.id} size={size} /></span>;
   if (entry.kind === 'theme') {
     const th = entry.data;
     return <span className="shop-swatch" aria-hidden="true" style={{ background: `linear-gradient(135deg, ${th.light[0]} 50%, ${th.dark[0]} 50%)` }} />;

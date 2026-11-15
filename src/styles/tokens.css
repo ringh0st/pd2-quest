@@ -1,3 +1,7 @@
+/* Digits only, from Lexend: Atkinson Hyperlegible's slashed zero reads like a strike-through on scores and coins */
+@font-face { font-family: 'PD2 Digits'; font-weight: 400; font-display: swap; unicode-range: U+0030-0039; src: url('@fontsource/lexend/files/lexend-latin-400-normal.woff2') format('woff2'); }
+@font-face { font-family: 'PD2 Digits'; font-weight: 700; font-display: swap; unicode-range: U+0030-0039; src: url('@fontsource/lexend/files/lexend-latin-700-normal.woff2') format('woff2'); }
+
 /* Design tokens. Every text/background pair is checked for WCAG 2.2 AA (see research/COLOR_AUDIT.md). */
 :root {
   color-scheme: light;
@@ -44,7 +48,7 @@
   --radius-m: 18px;
   --radius-l: 26px;
 
-  --font-body: 'Atkinson Hyperlegible', system-ui, sans-serif;
+  --font-body: 'PD2 Digits', 'Atkinson Hyperlegible', system-ui, sans-serif;
   --font-code: 'JetBrains Mono', ui-monospace, monospace;
   --text-scale: 1;
   --fs-body: calc(17px * var(--text-scale));

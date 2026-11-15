@@ -231,7 +231,7 @@ a.card:not(.section-card):not(.stat):not(.row):not(.stack-s) { display: block; }
 .path-node:nth-child(4n) { margin-left: 28px; }
 
 /* ---------- lesson cards ---------- */
-.lesson-stage { position: relative; flex: 1; display: grid; min-height: 340px; }
+.lesson-stage { position: relative; flex: 1; display: grid; grid-template-columns: minmax(0, 1fr); min-height: 340px; }
 .lesson-card {
   grid-area: 1 / 1;
   min-width: 0;
@@ -242,7 +242,7 @@ a.card:not(.section-card):not(.stat):not(.row):not(.stack-s) { display: block; }
   border-radius: var(--radius-l);
   padding: 22px 20px;
   box-shadow: var(--shadow-2);
-  display: grid; gap: 14px;
+  display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px;
   max-width: 62ch;
   touch-action: pan-y;
 }
@@ -1011,3 +1011,9 @@ h1[tabindex='-1']:focus, h2[tabindex='-1']:focus { outline: none; }
 .disclosure-chev { transition: transform var(--dur-quick) var(--ease); }
 .disclosure[open] .disclosure-chev { transform: rotate(180deg); }
 .disclosure > ul { margin: 10px 0 0; padding-left: 1.2em; display: grid; gap: 6px; }
+/* focus rings only when navigating by keyboard */
+:root[data-input='touch'] :focus-visible, :root[data-input='mouse'] :focus-visible { outline: none; }
+/* outfit drawings sit on a soft light plate so dark items (shades, top hat) read in dark mode too */
+.outfit-plate { display: inline-grid; place-items: center; width: calc(64px * var(--text-scale)); aspect-ratio: 1; border-radius: 50%; background: color-mix(in srgb, var(--gold) 14%, var(--surface-2)); }
+:root[data-theme='dark'] .outfit-plate { background: color-mix(in srgb, #FFF6E8 78%, var(--surface)); }
+/* ===== end lead polish ===== */

@@ -22,7 +22,8 @@ import { sfx } from '../audio/sfx.js';
 import { haptic } from '../audio/haptics.js';
 
 const ROW = 112;
-const TOP = 64;    // room above the summit (the Boss node is bigger)
+const TOP = 76;    // room above the summit (the Boss node is bigger)
+const BOSS_GAP = 44; // extra climb between the last level and the Boss, so the big Boss node never crowds it
 const BOTTOM = 70; // room below Level 1 for its label
 const xFor = (i) => 50 + Math.sin(i * 1.1) * 24; // % across
 
@@ -70,8 +71,8 @@ export function World({ id }) {
   const inProgress = savedRunIds();
   const current = levels.findIndex((l, k) => !(s.stars[l.id] > 0) && isLevelOpen(levels, k, s.stars));
   const ws = worldStars(sec, s.stars);
-  const height = TOP + (n - 1) * ROW + BOTTOM;
-  const yFor = (i) => TOP + (n - 1 - i) * ROW; // Level 1 at the bottom, the Boss at the top
+  const height = TOP + (n - 1) * ROW + BOSS_GAP + BOTTOM;
+  const yFor = (i) => TOP + (n - 1 - i) * ROW + (i < n - 1 ? BOSS_GAP : 0); // Level 1 at the bottom, the Boss at the top
   const pts = levels.map((_, i) => [xFor(i), yFor(i)]);
   const d = pts.map(([x, y], i) => {
     if (!i) return `M ${x} ${y}`;

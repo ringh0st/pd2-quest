@@ -76,7 +76,7 @@ export function Me() {
       </section>
 
       <section className="card stack" aria-label="Mastery by section">
-        <div className="spread"><strong className="ic-label"><span className="ic-gold"><Icon name="exam" /></span>Exam readiness</strong><strong>{ready}%</strong></div>
+        <div className="spread"><strong className="ic-label"><span className="ic-gold"><Icon name="brain" /></span>Memory strength</strong><strong>{ready}%</strong></div>
         {sections.map((sec) => {
           const m = Math.round(sectionMastery(sec, s.items) * 100);
           return (
