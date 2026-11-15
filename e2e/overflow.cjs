@@ -28,7 +28,8 @@ const seed = (scale, font) => ({
             await page.reload();
             await page.waitForTimeout(450);
             const m = await page.evaluate(() => {
-              const sw = document.documentElement.scrollWidth, cw = document.documentElement.clientWidth;
+              // the app scrolls inside .app, so measure its content width too (the page itself never scrolls)
+              const app = document.querySelector('.app'); const cw = document.documentElement.clientWidth; const sw = Math.max(document.documentElement.scrollWidth, app?.scrollWidth ?? 0);
               let widest = null;
               if (sw > cw + 1) {
                 for (const el of document.querySelectorAll('body *')) {
@@ -48,7 +49,7 @@ const seed = (scale, font) => ({
         await page.getByRole('button', { name: /Start/ }).click();
         for (let k = 0; k < 5; k++) {
           await page.waitForTimeout(150);
-          const m = await page.evaluate(() => [document.documentElement.scrollWidth, document.documentElement.clientWidth]);
+          const m = await page.evaluate(() => [Math.max(document.documentElement.scrollWidth, document.querySelector('.app')?.scrollWidth ?? 0), document.documentElement.clientWidth]);
           if (m[0] > m[1] + 1) bad.push(`${w}px A×${scale} ${font} exam q${k + 1}: ${m[0]}>${m[1]}`);
           await page.getByRole('button', { name: 'Next', exact: true }).click();
         }

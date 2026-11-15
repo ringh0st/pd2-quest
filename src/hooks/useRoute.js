@@ -1,5 +1,6 @@
 // Hash router: #/path/param?x=1. Works on GitHub Pages without server rewrites.
 import { useSyncExternalStore } from 'react';
+import { scrollToTop } from '../lib/scroller.js';
 
 function parse() {
   const raw = window.location.hash.replace(/^#/, '') || '/';
@@ -14,7 +15,7 @@ if (typeof window !== 'undefined') {
   window.addEventListener('hashchange', () => {
     current = parse();
     subs.forEach((f) => f());
-    window.scrollTo({ top: 0 });
+    scrollToTop();
   });
 }
 

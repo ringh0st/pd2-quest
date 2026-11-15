@@ -20,6 +20,7 @@ import { go } from '../hooks/useRoute.js';
 import { useReducedMotion } from '../hooks/useMotionPrefs.js';
 import { sfx } from '../audio/sfx.js';
 import { haptic } from '../audio/haptics.js';
+import { scrollToCenter } from '../lib/scroller.js';
 
 const ROW = 112;
 const TOP = 76;    // room above the summit (the Boss node is bigger)
@@ -50,9 +51,7 @@ export function World({ id }) {
     const timer = setTimeout(() => {
       const node = mapRef.current?.querySelector('.level-node.current') ?? mapRef.current?.querySelector('.level-node.boss');
       if (!node) return;
-      const r = node.getBoundingClientRect();
-      const top = Math.max(0, window.scrollY + r.top + r.height / 2 - window.innerHeight / 2);
-      window.scrollTo({ top, behavior: reduced ? 'auto' : 'smooth' });
+      scrollToCenter(node, reduced ? 'auto' : 'smooth');
     }, 140);
     return () => clearTimeout(timer);
   }, [id, open]); // eslint-disable-line react-hooks/exhaustive-deps

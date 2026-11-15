@@ -29,6 +29,7 @@ import { Resources } from './screens/Resources.jsx';
 import { Onboarding } from './screens/Onboarding.jsx';
 import { Placement } from './screens/Placement.jsx';
 import { Plan } from './screens/Plan.jsx';
+import { scrollToTop } from './lib/scroller.js';
 
 const FOCUS_ROUTES = /^\/(lesson|sprint|welcome|play|bolt|placement)/;
 
@@ -101,7 +102,7 @@ function useRouteFocus(path) {
       const h = main.querySelector('h1') || main;
       if (!h.hasAttribute('tabindex')) h.setAttribute('tabindex', '-1');
       h.focus({ preventScroll: true });
-      window.scrollTo(0, 0);
+      scrollToTop();
     }, 60);
     return () => clearTimeout(t);
   }, [path]);

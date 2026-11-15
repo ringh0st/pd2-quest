@@ -79,7 +79,7 @@ const ok = (name, pass, info = '') => results.push(`${pass ? 'PASS' : 'FAIL'}  $
   ok('submit with blanks asks first', confirmShown > 0);
   await page.getByRole('button', { name: 'Yes, submit now' }).click();
   await page.waitForTimeout(800);
-  const atTop = await page.evaluate(() => scrollY < 10 && !!document.querySelector('h1')?.textContent);
+  const atTop = await page.evaluate(() => (document.querySelector('.app')?.scrollTop ?? scrollY) < 10 && !!document.querySelector('h1')?.textContent);
   ok('result opens at the top', atTop);
   const overlay = await page.locator('.overlay').count();
   ok('no celebration dialog over the result', overlay === 0);

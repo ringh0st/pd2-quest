@@ -21,6 +21,7 @@ import { Segmented } from '../components/Controls.jsx';
 import { Icon } from '../components/icons/Icon.jsx';
 import { HeroArt } from '../components/art/HeroArt.jsx';
 import { saveExamSession, loadExamSession, clearExamSession } from '../state/examSession.js';
+import { scrollToTop } from '../lib/scroller.js';
 
 const LETTERS = 'ABCDEF';
 const MODES = [
@@ -143,7 +144,7 @@ export function Exam() {
 function ExamStart({ mode, onBack, onStart }) {
   const [time, setTime] = useState('standard');
   const heading = useRef(null);
-  useEffect(() => { window.scrollTo(0, 0); heading.current?.focus(); }, []);
+  useEffect(() => { scrollToTop(); heading.current?.focus(); }, []);
   return (
     <main className="screen focus" id="main">
       <div className="topbar"><button className="icon-btn" onClick={onBack} aria-label="Back to exam menu"><Icon name="back" /></button></div>
@@ -213,7 +214,7 @@ function ExamRun({ run, onSubmit, onLeave, onDiscard }) {
 
   // New question: back to the top, focus the question so screen readers read it.
   useEffect(() => {
-    window.scrollTo(0, 0);
+    scrollToTop();
     heading.current?.focus({ preventScroll: true });
   }, [i]);
 
@@ -363,7 +364,7 @@ function ExamResult({ result, onClose }) {
   const seenBefore = result.review.filter(({ q }) => (getState().items[q.id]?.seen ?? 0) > 1).length;
 
   useEffect(() => {
-    window.scrollTo(0, 0);
+    scrollToTop();
     heading.current?.focus({ preventScroll: true });
     if (pass && result.answered) { celebrate(60); sfx.levelUp(); haptic('celebrate'); } else { sfx.done(); }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps

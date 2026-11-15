@@ -1,9 +1,8 @@
 *, *::before, *::after { box-sizing: border-box; }
-html {
-  -webkit-text-size-adjust: 100%;
-  /* focused or scrolled-to things stay clear of the fixed bottom nav and sticky buttons (WCAG 2.4.11) */
-  scroll-padding-bottom: calc(var(--nav-h) + 24px + var(--safe-b));
-}
+html { -webkit-text-size-adjust: 100%; }
+/* The page never scrolls; .app does. On iPhone Safari a scrolling page resizes the browser toolbar,
+   which pushed the fixed bottom nav up and down between short and long screens. */
+html, body { overflow: hidden; overscroll-behavior: none; }
 html, body, #root { height: 100%; }
 body {
   margin: 0;
@@ -44,14 +43,18 @@ strong { font-weight: 700; }
 
 /* ---------- app shell ---------- */
 .app {
-  max-width: 560px;
-  margin: 0 auto;
-  min-height: 100%;
+  height: 100%;
   display: flex;
   flex-direction: column;
   position: relative;
-  overflow-x: clip;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  -webkit-overflow-scrolling: touch;
+  /* focused or scrolled-to things stay clear of the fixed bottom nav and sticky buttons (WCAG 2.4.11) */
+  scroll-padding-bottom: calc(var(--nav-h) + 24px + var(--safe-b));
 }
+.app > * { flex: 1 0 auto; width: 100%; max-width: 560px; margin-inline: auto; }
 .screen {
   min-width: 0;
   flex: 1;
@@ -1020,3 +1023,20 @@ h1[tabindex='-1']:focus, h2[tabindex='-1']:focus { outline: none; }
 /* light/dark switch in the top bar */
 .theme-toggle .icon { color: var(--gold-text, var(--text)); }
 :root[data-theme='dark'] .theme-toggle .icon { color: #FFD76A; }
+/* ===== raised center tab (Play) ===== */
+.bottom-nav { overflow: visible; }
+.nav-center { align-content: end; padding-bottom: 8px; }
+.nav-center-btn {
+  position: absolute; left: 50%; top: -30px; translate: -50% 0;
+  width: calc(60px * var(--text-scale)); max-width: 72px; aspect-ratio: 1; border-radius: 50%;
+  display: grid; place-items: center; font-size: calc(26px * var(--text-scale));
+  background: var(--primary); color: var(--on-primary);
+  box-shadow: 0 5px 0 var(--primary-ledge), 0 10px 22px color-mix(in srgb, var(--primary) 35%, transparent);
+  border: 4px solid var(--bg);
+}
+.nav-center-btn .icon { translate: 2px 0; }
+.nav-center .nav-center-label { font-weight: 800; color: var(--primary); }
+.nav-center.on .nav-center-btn { box-shadow: 0 5px 0 var(--primary-ledge), 0 0 0 4px color-mix(in srgb, var(--primary) 28%, transparent), 0 10px 22px color-mix(in srgb, var(--primary) 35%, transparent); }
+.nav-center:focus-visible { outline: none; }
+.nav-center:focus-visible .nav-center-btn { outline: 3px solid var(--focus); outline-offset: 3px; }
+/* ===== end raised center tab ===== */
