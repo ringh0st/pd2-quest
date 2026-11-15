@@ -658,8 +658,8 @@
       "difficulty": 1,
       "q": "A component shows {count} in its template. The class declares count = 0; with no decorator, and a button handler runs this.count++. What happens when the button is clicked?",
       "options": [
-        "The template re-renders and shows the new value, because every field is reactive when it is reassigned",
-        "Nothing changes on screen until count is decorated with @track",
+        "It re-renders and shows the new value, since reassigned fields are reactive",
+        "Nothing changes on screen until count is decorated with @track, because primitive fields are not observed",
         "Nothing changes on screen until count is decorated with @api",
         "The template only updates if count is exposed through a getter"
       ],
@@ -709,7 +709,7 @@
       "difficulty": 1,
       "q": "A component must show a contact's full name built from its firstName and lastName fields. What is the correct way to show it in the template?",
       "options": [
-        "Use {firstName + ' ' + lastName} in the template",
+        "Use {firstName + ' ' + lastName} directly in the template, like an Aura expression",
         "Set a fullName field inside renderedCallback()",
         "Define get fullName() in the class and reference {fullName}",
         "Use an @wire decorator to combine the two fields"
@@ -732,10 +732,10 @@
       "difficulty": 3,
       "q": "A parent passes an Account object to a child through <c-acct-editor record={acct}>. The child declares @api record and runs this.record.Name = this.newName when the user types, which throws an error. What should the developer do?",
       "options": [
-        "Decorate record with @track in addition to @api",
+        "Decorate record with @track in addition to @api so the child gets its own writable, deep-tracked copy",
         "Move the assignment into the child's constructor",
         "Use JSON.stringify(this.record) before assigning",
-        "Have the child copy the object into a private field and edit the copy, or dispatch an event so the parent updates acct"
+        "Copy the object into a private field and edit the copy, or fire an event so the parent updates acct"
       ],
       "answer": [
         3
@@ -755,7 +755,7 @@
       "difficulty": 1,
       "q": "On an Account record page, a component must show Name, Industry and Phone as read-only values and respect each user's field-level security. The requirement is the least code possible. What should the developer use?",
       "options": [
-        "An Apex controller that queries the fields, with a custom HTML template",
+        "An @AuraEnabled Apex method that queries Name, Industry and Phone, shown in a custom HTML template",
         "lightning-record-form with object-api-name, record-id, fields and mode=\"readonly\"",
         "A Visualforce page embedded in an iframe",
         "getRecord with a custom template of lightning-formatted-text elements"
@@ -802,9 +802,9 @@
       "q": "A developer needs a two-column custom form to create Case records. Before saving, the component must set Origin to \"Web\" without showing that field to the user. Which approach meets this?",
       "options": [
         "lightning-record-form with mode=\"edit\" and an onsuccess handler that sets Origin",
-        "lightning-record-view-form with lightning-output-field",
+        "lightning-record-view-form with a lightning-output-field for each field, plus a hidden lightning-output-field for Origin set to Web",
         "A getRecord wire adapter with a lightning-input for each field",
-        "lightning-record-edit-form with lightning-input-field elements and an onsubmit handler that calls event.preventDefault(), adds Origin to event.detail.fields, and calls submit(fields)"
+        "lightning-record-edit-form with onsubmit: call preventDefault(), add Origin to event.detail.fields, then submit(fields)"
       ],
       "answer": [
         3
@@ -812,7 +812,7 @@
       "explain": "lightning-record-edit-form allows a custom layout, and its submit event lets you change the field values before calling submit(fields).",
       "wrong": [
         "onsuccess fires after the save, which is too late, and record-form gives little control over the layout.",
-        "The view form is read-only.",
+        "The view form is read-only. It cannot create records, and output fields cannot set values.",
         "getRecord only reads data. Saving would still need createRecord and hand-built field handling.",
         ""
       ],
@@ -873,8 +873,8 @@
       "difficulty": 2,
       "q": "An @AuraEnabled(cacheable=true) method creates a Task record and returns the new Id. The LWC calls it imperatively when a button is clicked. What is the result, and what is the fix?",
       "options": [
-        "It fails at runtime because cacheable methods cannot perform DML. Remove cacheable=true and keep the imperative call",
-        "It works, but the result is cached. Add @track to the result to avoid stale values",
+        "It fails at runtime: cacheable methods cannot do DML. Remove cacheable=true and keep the imperative call",
+        "It works, but later clicks return the cached Id instead of creating a Task. Add @track to the result to avoid stale values",
         "It fails because imperative calls must use @wire. Switch to @wire",
         "It works only when the class is declared without sharing"
       ],
@@ -898,10 +898,10 @@
       "code": "contacts;\n\n@wire(getContacts, { accountId: '$recordId' })\nwiredContacts({ data, error }) {\n  if (data) { this.contacts = data; }\n}\n\nasync handleSave() {\n  await saveContact({ c: this.draft });\n  await refreshApex(this.contacts);\n}",
       "lang": "js",
       "options": [
-        "Mark saveContact as cacheable=true so it shares the wire cache",
+        "Mark saveContact as cacheable=true so it shares the wire cache with getContacts and refreshes it on save",
         "Call getContacts imperatively inside renderedCallback()",
         "Decorate contacts with @track so refreshApex can see changes",
-        "Store the whole provisioned result in the wired function (e.g. this.wiredResult = result) and pass that to refreshApex"
+        "Keep the whole provisioned result (this.wiredResult = result) and pass that to refreshApex"
       ],
       "answer": [
         3
@@ -925,7 +925,7 @@
         "Mark the Apex method cacheable=true",
         "Use updateRecord from lightning/uiRecordApi instead of Apex for this single-record update",
         "Call refreshApex(this.recordId)",
-        "Reload the page with window.location.reload()"
+        "Reload the page with window.location.reload() after the Apex promise resolves to show the new Rating"
       ],
       "answer": [
         0,
@@ -970,7 +970,7 @@
       "difficulty": 2,
       "q": "A developer loads a charting library with loadScript and draws a chart into a <div lwc:dom=\"manual\"> inside renderedCallback(). The chart is drawn again every time any property changes. What is the best fix?",
       "options": [
-        "Move the code into the constructor",
+        "Move the code into the constructor, which runs once per component instance, before any property changes",
         "Add a boolean guard such as chartInitialized so the setup only runs once",
         "Call loadScript from disconnectedCallback()",
         "Decorate the chart field with @api"
@@ -993,9 +993,9 @@
       "difficulty": 2,
       "q": "When a DML error occurs in an @AuraEnabled method, users see a generic \"Script-thrown exception\" message. The business wants a clear, custom message in the LWC toast. What should the developer do?",
       "options": [
-        "Catch the exception in Apex and throw new AuraHandledException('clear message'), then read error.body.message in the JS catch block",
+        "In Apex, catch it and throw new AuraHandledException('clear message'); in JS, read error.body.message",
         "Return null from the method and check for null in JS",
-        "Use System.debug to log the error message to the browser console",
+        "Use System.debug(LoggingLevel.ERROR, message) so the message shows in the browser console and the toast",
         "Wrap the imperative call in errorCallback()"
       ],
       "answer": [
@@ -1018,7 +1018,7 @@
       "options": [
         "A try/catch block in each child's connectedCallback()",
         "errorCallback() in each child component",
-        "A window.onerror handler in the dashboard's renderedCallback()",
+        "A window.onerror handler in the dashboard's renderedCallback() that swaps in the fallback panel and logs the stack",
         "errorCallback(error, stack) in the parent dashboard, which sets a flag to render the fallback"
       ],
       "answer": [
@@ -1039,8 +1039,8 @@
       "difficulty": 1,
       "q": "A child component shows a list of products. When the user clicks one, its parent must receive the product Id. What should the developer do?",
       "options": [
-        "Publish the Id on a Lightning Message Service channel",
-        "Dispatch a CustomEvent with the Id in detail, and handle it with an on<eventname> attribute on the child tag in the parent",
+        "Publish the Id on a Lightning Message Service channel that the parent subscribes to in connectedCallback()",
+        "Dispatch a CustomEvent with the Id in detail, and listen with an on<eventname> attribute in the parent",
         "Set an @api property on the parent from the child",
         "Store the Id in sessionStorage and poll it from the parent"
       ],
@@ -1111,9 +1111,9 @@
       "lang": "js",
       "options": [
         "The event name is invalid. Rename it to onNotify",
-        "The event bubbles inside c-child's shadow tree but stops at its boundary because composed is false. c-child should handle the event and dispatch its own event to the grandparent",
+        "composed is false, so the event stops at c-child's shadow boundary; c-child should re-fire its own event",
         "bubbles must be false for parents to listen",
-        "The grandparent must call addEventListener in its constructor"
+        "The grandparent must call this.template.addEventListener('notify', ...) in its constructor to catch deeper events"
       ],
       "answer": [
         1
@@ -1134,8 +1134,8 @@
       "q": "An LWC must be available in Lightning App Builder only on Account record pages. What is the correct configuration in its js-meta.xml?",
       "options": [
         "isExposed true, target lightning__AppPage",
-        "isExposed false, target lightning__RecordPage with objects Account",
-        "isExposed true, target lightning__RecordPage, and a targetConfig for lightning__RecordPage listing <object>Account</object>",
+        "isExposed false, target lightning__RecordPage, and a targetConfig for lightning__RecordPage listing <object>Account</object>",
+        "isExposed true, target lightning__RecordPage, and a targetConfig for it with <object>Account</object>",
         "isExposed true, target lightningCommunity__Page with objects Account"
       ],
       "answer": [
@@ -1160,7 +1160,7 @@
         "Create a .design file for the LWC",
         "Add <property> elements for heading and maxRows in a targetConfig in js-meta.xml",
         "Decorate the fields with @track",
-        "Store the values in a custom metadata type"
+        "Store heading and maxRows in a custom metadata type that App Builder reads at design time"
       ],
       "answer": [
         0,
@@ -1183,9 +1183,9 @@
       "q": "A button in an LWC must open the standard \"New Contact\" form. The solution must work in Lightning Experience and the Salesforce mobile app. What should the developer do?",
       "options": [
         "Set window.location to '/003/e'",
-        "Use an <a href=\"/lightning/o/Contact/new\"> link",
+        "Use an <a href=\"/lightning/o/Contact/new\"> link, the Lightning Experience URL that opens the standard New Contact form",
         "Dispatch a CustomEvent named navigate",
-        "Extend NavigationMixin(LightningElement) and call this[NavigationMixin.Navigate] with type standard__objectPage, objectApiName Contact and actionName new"
+        "Use NavigationMixin and this[NavigationMixin.Navigate] with type standard__objectPage, Contact and actionName new"
       ],
       "answer": [
         3
@@ -1205,11 +1205,11 @@
       "difficulty": 3,
       "q": "A custom LWC on a Flow screen lets the user pick a warehouse. The flow must use the picked warehouse Id in later elements. Which two steps are required? (Choose 2)",
       "options": [
-        "Publish the Id on a Lightning Message Service channel",
+        "Publish the Id on a Lightning Message Service channel, and read it in later flow elements as a screen output",
         "Declare an @api warehouseId property and list it as a <property> in the lightning__FlowScreen targetConfig",
         "Dispatch FlowNavigationFinishEvent with the Id",
         "Return the Id from connectedCallback()",
-        "Dispatch new FlowAttributeChangeEvent('warehouseId', id) from lightning/flowSupport when the user picks a warehouse"
+        "Dispatch FlowAttributeChangeEvent('warehouseId', id) from lightning/flowSupport when a warehouse is picked"
       ],
       "answer": [
         1,
@@ -1233,7 +1233,7 @@
       "options": [
         "A component event registered with aura:registerEvent and fired with cmp.getEvent()",
         "An application event fired with $A.get()",
-        "Lightning Message Service with APPLICATION_SCOPE",
+        "Lightning Message Service with APPLICATION_SCOPE, using lightning:messageChannel in the parent",
         "A platform event"
       ],
       "answer": [
@@ -1302,10 +1302,10 @@
       "code": "<!-- child.cmp -->\n<aura:registerEvent name=\"selectEvt\" type=\"c:SelectEvent\"/>\n<!-- childController.js -->\nvar evt = cmp.getEvent(\"selectEvt\");\nevt.setParams({ rowId: id });\nevt.fire();\n\n<!-- parent.cmp -->\n<aura:handler event=\"c:SelectEvent\" action=\"{!c.handleSelect}\"/>\n<c:child/>",
       "lang": "html",
       "options": [
-        "The child must use $A.get() to fire the event",
+        "The child must use $A.get('e.c:selectEvt') to fire the event, since cmp.getEvent() only reaches the child",
         "setParams must be called after fire()",
         "The parent must register the event as well",
-        "The parent handler is missing name=\"selectEvt\". Without a name, the aura:handler only handles application events"
+        "The aura:handler lacks name=\"selectEvt\", so it only handles application events"
       ],
       "answer": [
         3
@@ -1325,9 +1325,9 @@
       "difficulty": 1,
       "q": "A Visualforce page for Opportunity must keep the standard Save and Cancel behavior and add one custom \"Calculate Discount\" action. What is the most efficient approach?",
       "options": [
-        "A custom controller that rebuilds save and cancel",
+        "A custom controller that rebuilds save() and cancel() with DML and PageReference logic",
         "A StandardSetController",
-        "The Opportunity standard controller with a controller extension that adds the method",
+        "The Opportunity standard controller plus an extension that adds the method",
         "A JavaScript remoting class only"
       ],
       "answer": [
@@ -1348,8 +1348,8 @@
       "difficulty": 2,
       "q": "Sales managers want to select several Accounts in a list view and click a button that sets Rating to \"Hot\" on the selected records. How should the Visualforce page be built?",
       "options": [
-        "standardController=\"Account\" with recordSetVar, and an extension whose constructor takes ApexPages.StandardSetController and uses getSelected()",
-        "standardController=\"Account\" and an extension that takes ApexPages.StandardController",
+        "standardController plus recordSetVar, and an extension that takes StandardSetController and uses getSelected()",
+        "standardController=\"Account\" and an extension that takes ApexPages.StandardController and calls getRecord() on it",
         "A custom controller that queries every Account",
         "An apex:actionPoller that updates the records"
       ],
@@ -1448,9 +1448,9 @@
       "lang": "html",
       "options": [
         "Add immediate=\"true\" to the commandButton",
-        "Wrap the panel in an always-rendered apex:outputPanel with its own Id and rerender that wrapper",
+        "Wrap the panel in an always-rendered apex:outputPanel with an Id, and rerender that",
         "Mark showDetails as transient",
-        "Replace rerender with reRender=\"{!showDetails}\""
+        "Replace rerender with reRender=\"{!showDetails}\" so the panel redraws whenever the flag changes"
       ],
       "answer": [
         1
@@ -1493,10 +1493,10 @@
       "difficulty": 3,
       "q": "A custom JavaScript date-picker on a Visualforce page must, when a date is picked, set a controller property, run a recalculate() action that updates other controller properties, and redraw only the totals section. Which approach fits best?",
       "options": [
-        "A @RemoteAction method that returns the totals",
+        "A @RemoteAction method called with Visualforce.remoting.Manager.invokeAction that recalculates and returns the totals",
         "apex:actionPoller with interval=\"1\"",
         "An apex:commandLink with no rerender attribute",
-        "An apex:actionFunction with an apex:param assigned to the property, action=\"{!recalculate}\" and rerender=\"totals\", called from the picker's JS callback"
+        "apex:actionFunction with action=\"{!recalculate}\", rerender=\"totals\" and an apex:param, called from the picker's JS"
       ],
       "answer": [
         3
@@ -1517,9 +1517,9 @@
       "q": "A Visualforce page shows a comment field with <apex:outputText value=\"{!comment}\" escape=\"false\"/>. A security review flags it. What is the risk?",
       "options": [
         "SOQL injection",
-        "Cross-site scripting (XSS), because user-entered HTML or script is rendered without escaping",
+        "Cross-site scripting (XSS): user-entered HTML or script is rendered unescaped",
         "View state tampering",
-        "Cross-site request forgery"
+        "Cross-site request forgery, because escape=\"false\" also removes the page's anti-CSRF token"
       ],
       "answer": [
         1
@@ -1529,7 +1529,7 @@
         "No query is built from this value.",
         "",
         "View state is encrypted. This issue is about output encoding.",
-        "CSRF is about forged state-changing requests, not about unescaped output."
+        "CSRF is about forged state-changing requests. The escape attribute only affects output encoding, not CSRF protection."
       ],
       "source": "Secure Coding Guide: Cross-Site Scripting / Visualforce Developer Guide"
     },
@@ -1617,8 +1617,8 @@
       "pack": "hard",
       "q": "The finance team at a wholesale distributor wants a \"Generate Invoice\" button on Opportunity. It must produce a printable invoice that matches their paper letterhead and save the file to the record, with no third-party JavaScript library. Most users work in Lightning Experience; a few still use the desktop Outlook integration. Which solution should the developer build?",
       "options": [
-        "An LWC with a headless quick action that calls window.print() and uploads the result with lightning-file-upload",
-        "A Visualforce page with renderAs=\"pdf\" for the layout, and an Apex action that calls getContentAsPDF() on it and saves the Blob as a ContentVersion linked to the Opportunity",
+        "An LWC headless quick action that calls window.print() and saves the printed output with lightning-file-upload on the Opportunity record",
+        "A Visualforce page with renderAs=\"pdf\", and Apex that calls getContentAsPDF() and saves the Blob as a ContentVersion on the record",
         "An Aura component that sets renderAs=\"pdf\" on its aura:component tag and is added as a quick action",
         "An LWC that sets renderMode=\"pdf\" in its js-meta.xml and is placed on the Opportunity record page"
       ],
@@ -1644,8 +1644,8 @@
       "lang": "xml",
       "options": [
         "Add lightning__UrlAddressable to targets so the override can open the component by URL",
-        "Add an actionType=\"Override\" targetConfig to the lightning__RecordAction target",
-        "Create an Aura component that implements lightning:actionOverride and contains the LWC, then pick the Aura component as the override",
+        "Add a targetConfig for lightning__RecordAction with actionType=\"Override\" and <object>Case</object>, then redeploy",
+        "Wrap the LWC in an Aura component that implements lightning:actionOverride, and pick that as the override",
         "Set isExposed to true on the Case object's page layout and redeploy"
       ],
       "answer": [
@@ -2169,9 +2169,9 @@
       "pack": "hard",
       "q": "A Lightning record page has an older Aura component that loads a charting library with ltng:require, and a new LWC that loads the same file with loadScript. Both use the same static resource URL. After the LWC renders, the Aura chart loses the plugins it had registered on the library's global object. What explains this?",
       "options": [
-        "ltng:require loads its scripts again each time the Aura component rerenders",
+        "ltng:require loads its scripts again each time the Aura component rerenders, which wipes the plugins it registered",
         "Archive static resources are unpacked again on every request, which resets the global object",
-        "ltng:require and loadScript do not detect each other, so the library is loaded twice; the script should check whether its global already exists, or only one component should load it",
+        "ltng:require and loadScript don't detect each other, so the file runs twice; load it once or check its global",
         "Static resources with Private cache control are downloaded again for each component on the page"
       ],
       "answer": [
@@ -2222,7 +2222,7 @@
       "lang": "apex",
       "options": [
         "Wrap the JavaScript call in try/catch so the stack trace is not sent to the browser",
-        "Catch the exception in Apex and throw new AuraHandledException('We could not apply this payment. Please try again.')",
+        "Catch it in Apex and throw new AuraHandledException('We could not apply this payment.')",
         "Define PaymentException extends Exception and throw it with the same message from a catch block",
         "Mark the method cacheable=true so errors are served from the client cache without server details"
       ],
@@ -2304,8 +2304,8 @@
       "options": [
         "Add mode: 'sticky' so the toast stays visible until it is closed",
         "Create the event with bubbles: true and composed: true so the site shell receives it",
-        "Import Toast from 'lightning/toast' and call Toast.show({ label: 'Registration failed', message, variant: 'error' }, this)",
-        "Add a lightning/toastContainer instance, because ShowToastEvent needs a container in LWR sites"
+        "Import Toast from 'lightning/toast' and call Toast.show({ label, message, variant: 'error' }, this)",
+        "Add a lightning/toastContainer instance to the page, because ShowToastEvent needs a container in LWR sites"
       ],
       "answer": [
         2
@@ -2409,10 +2409,10 @@
       "code": "@api recordId;\n\n@wire(getOpenCases, { accountId: '$recordId' })\ncases;\n\nget isLoading() {\n  return !this.cases.data && !this.cases.error;\n}",
       "lang": "js",
       "options": [
-        "The Home page has no record, so recordId is undefined, and the wire service does not call the Apex method when a parameter is undefined",
+        "The Home page has no record, so recordId is undefined, and the wire won't call Apex while a parameter is undefined",
         "Apex throws a NullPointerException for the null Id, and cacheable methods hide server errors from the client",
         "@wire only runs on record pages, so the component must call getOpenCases imperatively on other pages",
-        "The cached result from the record page is locked to that page, so the Home page waits for the cache to expire"
+        "The cached result from the record page is locked to that page, so the Home page waits until the cache entry expires"
       ],
       "answer": [
         0
@@ -2436,7 +2436,7 @@
       "lang": "js",
       "options": [
         "Call refreshApex(this.totals) after addLine() resolves",
-        "Mark addLine as cacheable=true so both methods share one cache entry",
+        "Mark addLine as cacheable=true so both methods share one cache entry and refresh each other",
         "Decorate totals with @track so the template sees the new values",
         "Remove cacheable=true from getTotals so every imperative call goes to the server",
         "Wire getTotals with { quoteId: '$recordId' }, keep the provisioned value, and pass it to refreshApex() after addLine() resolves"
@@ -2465,8 +2465,8 @@
       "lang": "js",
       "options": [
         "Decorate products with @track so its nested properties can be changed",
-        "Copy the records when they arrive, for example this.products = data.map((p) => ({ ...p, selected: false }))",
-        "Call refreshApex() before changing the record so the cache is unlocked",
+        "Copy the records as they arrive: this.products = data.map((p) => ({ ...p, selected: false }))",
+        "Call refreshApex() before changing the record so the wire cache is unlocked and the objects become writable",
         "Move the assignment of this.products into renderedCallback()"
       ],
       "answer": [
@@ -2516,9 +2516,9 @@
       "code": "@AuraEnabled(cacheable=true)\npublic static List<Price__c> getPrices(Id productId) {\n  insert new View_Log__c(Product__c = productId, Viewed_By__c = UserInfo.getUserId());\n  return [SELECT Id, Tier__c, Amount__c FROM Price__c\n          WHERE Product__c = :productId WITH USER_MODE];\n}",
       "lang": "apex",
       "options": [
-        "Use Database.insert(log, false) so a failed insert does not stop the query",
+        "Use Database.insert(log, false) so a failed insert does not stop the query or the wire from returning",
         "Declare the class without sharing so the insert is allowed in a cacheable method",
-        "Keep getPrices read-only, and log the view with a separate non-cacheable @AuraEnabled method that the component calls imperatively",
+        "Keep getPrices read-only and log the view in a separate non-cacheable method called imperatively",
         "Pass { cacheable: false } in the @wire configuration object for this call"
       ],
       "answer": [
@@ -2543,9 +2543,9 @@
       "lang": "apex",
       "options": [
         "It works, but the response is not cached on the client",
-        "It fails to compile, because continuation=true and cacheable=true must be separated by a comma",
+        "It fails to compile, because continuation=true and cacheable=true must be separated by a comma in @AuraEnabled",
         "It works only for imperative calls, and the wire silently provisions nothing",
-        "It throws an exception, because when the method returning the Continuation is cacheable, the callback must also be cacheable=true"
+        "It throws an exception: if the Continuation method is cacheable, the callback must be cacheable=true too"
       ],
       "answer": [
         3
@@ -2595,8 +2595,8 @@
       "lang": "html",
       "options": [
         "total has a private setter, so the page cannot show the new value",
-        "immediate=\"true\" runs the action without updating the page's data model, so the quantity setter never runs with the new value",
-        "rerender only works on apex:outputPanel elements that also have layout=\"block\"",
+        "immediate=\"true\" skips updating the data model, so the quantity setter never gets the new value",
+        "rerender only works on apex:outputPanel elements that also have layout=\"block\", so the panel keeps old values",
         "inputText cannot bind to an Integer property; it must use apex:inputField"
       ],
       "answer": [
@@ -2622,7 +2622,7 @@
       "options": [
         "Replace the actionFunction with a @RemoteAction method, which can rerender the lines panel",
         "Add immediate=\"true\" to the actionFunction so the parameter is assigned first",
-        "Move the apex:actionFunction after the apex:repeat (still inside the apex:form) and keep calling removeLine() from each row",
+        "Move the apex:actionFunction after the apex:repeat, still inside the apex:form",
         "Move the apex:actionFunction outside the apex:form so it is defined only once"
       ],
       "answer": [
@@ -2646,10 +2646,10 @@
       "code": "public PageReference checkWarranty() {\n  HttpRequest req = new HttpRequest();\n  req.setEndpoint('callout:Warranty/check?serial=' + serial);\n  req.setMethod('GET');\n  req.setTimeout(60000);\n  HttpResponse res = new Http().send(req);\n  warrantyStatus = res.getBody();\n  return null;\n}",
       "lang": "apex",
       "options": [
-        "Make the action return a Continuation that holds the request, set continuationMethod to a callback that reads the response, and use a timeout of up to 120 seconds",
+        "Return a Continuation from the action, with continuationMethod set to a callback that reads the response",
         "Move the callout into an @future(callout=true) method and set warrantyStatus from it",
         "Lower req.setTimeout() to 5000 so each request finishes faster",
-        "Call the method with JavaScript remoting and { timeout: 120000 } so it runs outside the page request"
+        "Call the method with JavaScript remoting and { timeout: 120000 } so the wait runs outside the page request"
       ],
       "answer": [
         0

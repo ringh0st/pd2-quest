@@ -598,8 +598,8 @@
       "difficulty": 1,
       "q": "A new test method queries Accounts and gets zero rows, even though the sandbox has thousands of Accounts. The class has a plain @isTest annotation. What explains this?",
       "options": [
-        "Sharing rules hide Accounts from the running test user",
-        "Tests can't see existing org data by default; the test must create its own records",
+        "Sharing rules hide the Accounts, because test methods run as an automated user with no record access",
+        "By default, tests can't see existing org data; they must create their own",
         "SOQL is blocked in test methods unless wrapped in Test.startTest()",
         "The query must use ALL ROWS to see records in tests"
       ],
@@ -608,7 +608,7 @@
       ],
       "explain": "Since API 24.0, test methods are isolated from org data unless SeeAllData=true. Tests should create their own data.",
       "wrong": [
-        "Tests run in system mode and the issue is isolation, not sharing.",
+        "Tests run as the user who started them, in system mode. The issue is data isolation, not sharing.",
         "",
         "SOQL works anywhere in a test method.",
         "ALL ROWS returns deleted/archived rows; it doesn't reveal org data to tests."
@@ -695,7 +695,7 @@
       "options": [
         "Call Test.setFixedSearchResults with the IDs the search should return",
         "Add SeeAllData=true so SOSL can use the search index",
-        "Wait for indexing by calling Test.stopTest() before the search",
+        "Call Test.stopTest() before the search so the inserted Contacts get added to the search index",
         "Replace the SOSL in production code with a SOQL LIKE query"
       ],
       "answer": [
@@ -720,7 +720,7 @@
         "Records inserted between them are committed to the org",
         "Asynchronous work queued between them runs when stopTest() is called",
         "Validation rules are skipped between them",
-        "Callouts between them are allowed without a mock"
+        "Callouts made between them are allowed without registering a mock with Test.setMock"
       ],
       "answer": [
         0,
@@ -767,7 +767,7 @@
       "options": [
         "A call to System.enqueueJob for the trigger",
         "SeeAllData=true on the test class",
-        "A Thread-style wait loop until the Task appears",
+        "A loop that re-queries Tasks until one appears or the CPU time limit is close",
         "Test.getEventBus().deliver() or Test.stopTest()"
       ],
       "answer": [
@@ -777,7 +777,7 @@
       "wrong": [
         "Event triggers aren't queueables.",
         "Data visibility isn't the issue.",
-        "Apex has no sleep; delivery must be forced.",
+        "Apex has no sleep, and polling never delivers the event; delivery must be forced.",
         ""
       ],
       "source": "Platform Events Developer Guide: Testing Your Platform Event in Apex"
@@ -834,10 +834,10 @@
       "difficulty": 2,
       "q": "A class saved at API version 66.0 is tested to prove that a user without access to the Salary__c field can't read it. Inside System.runAs(limitedUser), a SOQL query in a \"with sharing\" class returns Salary__c values. Why?",
       "options": [
-        "runAs only works with users inserted in @TestSetup",
-        "runAs enforces record sharing, not field-level security, so the query must run in user mode (e.g. WITH USER_MODE)",
+        "runAs only applies to users inserted in @TestSetup, so a user inserted in the test method is ignored",
+        "runAs enforces record sharing, not field-level security; the query needs user mode (WITH USER_MODE)",
         "Field-level security is never enforced in tests",
-        "The class must be declared \"inherited sharing\" for runAs to apply"
+        "The class must be declared inherited sharing, because with sharing ignores the runAs user's access"
       ],
       "answer": [
         1
@@ -847,7 +847,7 @@
         "runAs works with any user, inserted or not.",
         "",
         "FLS is enforced in tests when the code enforces it, such as user mode queries.",
-        "Sharing keywords control record access, not FLS."
+        "Sharing keywords control record access, not FLS, and with sharing already respects the runAs user."
       ],
       "source": "Apex Developer Guide: Using the runAs Method"
     },
@@ -884,9 +884,9 @@
       "q": "A test must prove that OrderService.submit(null) throws OrderService.OrderException. Which pattern makes the test fail if no exception is thrown?",
       "options": [
         "Call the method and then Assert.isNull(result)",
-        "Wrap the call in try/catch and leave the catch block empty",
+        "Wrap the call in try/catch and assert on the exception in catch, with nothing after the call in try",
         "Use Assert.areEqual(OrderException.class, OrderService.submit(null))",
-        "Call the method in try, follow it with Assert.fail(), and assert on the exception in the catch block"
+        "Call it in try, then Assert.fail(); in the catch block, assert on the exception"
       ],
       "answer": [
         3
@@ -894,7 +894,7 @@
       "explain": "Assert.fail() right after the call only runs when no exception happens, so the test fails as it should. The catch block then checks the exception.",
       "wrong": [
         "If an exception is thrown, the assert never runs, and the check proves nothing.",
-        "An empty catch passes whether or not an exception occurs.",
+        "If no exception is thrown, the catch block never runs and nothing fails, so the test still passes.",
         "This doesn't compile into a meaningful exception check.",
         ""
       ],
@@ -956,8 +956,8 @@
       "q": "A test inserts an Account and then calls a method that makes an HTTP callout. Test.setMock is set, but the test fails with \"You have uncommitted work pending\". What should the developer change?",
       "options": [
         "Use SeeAllData=true so no DML is needed",
-        "Replace the HttpCalloutMock with a WebServiceMock",
-        "Insert the Account before Test.startTest() and make the callout between Test.startTest() and Test.stopTest()",
+        "Replace the HttpCalloutMock with a WebServiceMock, which allows DML before a callout in one transaction",
+        "Do the DML before Test.startTest() and make the callout between startTest() and stopTest()",
         "Make the callout from a trigger on Account"
       ],
       "answer": [
@@ -966,7 +966,7 @@
       "explain": "Putting the DML before startTest and the callout inside the startTest/stopTest block avoids the uncommitted-work error in tests.",
       "wrong": [
         "Relying on org data breaks isolation and isn't the fix.",
-        "The mock type depends on REST vs SOAP, not on DML.",
+        "WebServiceMock is for SOAP callouts and doesn't lift the uncommitted work rule.",
         "",
         "Triggers can't make synchronous callouts."
       ],
@@ -1001,7 +1001,7 @@
       "difficulty": 2,
       "q": "A developer used WSDL2Apex to generate a SOAP client. How should the test supply a fake response?",
       "options": [
-        "Implement HttpCalloutMock and return XML in the body",
+        "Implement HttpCalloutMock and return the SOAP envelope XML as the response body from respond()",
         "Use Test.createStub on the generated port class",
         "Set the endpoint to a Remote Site of localhost",
         "Implement WebServiceMock and put the response element into the map with key 'response_x'"
@@ -1011,7 +1011,7 @@
       ],
       "explain": "SOAP callouts made through WSDL2Apex classes are mocked with WebServiceMock and Test.setMock(WebServiceMock.class, ...).",
       "wrong": [
-        "HttpCalloutMock covers HTTP callouts made with the Http class.",
+        "HttpCalloutMock covers HTTP callouts made with the Http class, not WSDL2Apex SOAP callouts.",
         "The Stub API isn't the documented approach for WSDL2Apex callouts.",
         "Tests can't make real callouts at all.",
         ""
@@ -1027,9 +1027,9 @@
       "lang": "apex",
       "options": [
         "Callout tests require @isTest(SeeAllData=true)",
-        "Test.setMock(HttpCalloutMock.class, new WeatherMock()) is never called, so the test tries a real callout",
+        "Test.setMock(HttpCalloutMock.class, new WeatherMock()) is never called, so a real callout is tried",
         "A Remote Site Setting for the endpoint is missing",
-        "Assert.areEqual parameters are in the wrong order, which always fails"
+        "Assert.areEqual has expected and actual in the wrong order, which makes it fail even on equal values"
       ],
       "answer": [
         1
@@ -1146,9 +1146,9 @@
       "lang": "js",
       "options": [
         "Use document.querySelector instead of shadowRoot.querySelector",
-        "Make the test async and await Promise.resolve() after setting el.name, then query the DOM",
+        "Make the test async and await Promise.resolve() after setting el.name, then query",
         "Set el.name before calling createElement",
-        "Call el.connectedCallback() manually after setting the property"
+        "Call el.connectedCallback() manually after setting the property, so the template renders again"
       ],
       "answer": [
         1
@@ -1171,7 +1171,7 @@
         "Import getRecord in the test and call getRecord.emit(mockData)",
         "Call Test.setMock(getRecord, mockData)",
         "Assign the data to el.record directly from the test",
-        "Deploy sample records to an org and run the test there"
+        "Deploy sample records to a scratch org and run the test with --target-org so the wire gets data"
       ],
       "answer": [
         0
@@ -1194,7 +1194,7 @@
         "Deploy the Apex class and run the Jest test against the org",
         "Call Test.setMock inside the Jest test file",
         "Use jest.mock on '@salesforce/apex/AccountController.getAccounts' with { virtual: true }, returning { default: jest.fn() }",
-        "Register the method as a wire adapter with createLdsTestWireAdapter",
+        "Register the method as a wire adapter with createLdsTestWireAdapter, then call emit() with the mock data",
         "Use mockResolvedValue or mockRejectedValue on the mocked function to simulate success or an error"
       ],
       "answer": [
@@ -1217,10 +1217,10 @@
       "difficulty": 2,
       "q": "A Visualforce page uses an extension of the Account standard controller and reads the id URL parameter. How should the test set up the controller?",
       "options": [
-        "Construct the extension with a null controller and set the id with a static variable",
-        "Use SeeAllData=true and open the page URL with PageReference.getContent()",
+        "Construct the extension with a null StandardController and pass the record id in a public static variable",
+        "Use SeeAllData=true, load the page with PageReference.getContent(), then read the extension from it",
         "Call the extension's constructor from an @future method",
-        "Call Test.setCurrentPage, put the id into ApexPages.currentPage().getParameters(), then pass a new ApexPages.StandardController(acc) to the extension"
+        "Call Test.setCurrentPage, add the id to its parameters, then pass new ApexPages.StandardController(acc)"
       ],
       "answer": [
         3
@@ -1242,7 +1242,7 @@
       "options": [
         "FINE is more verbose than DEBUG, so Apex Code must be set to FINE, FINER or FINEST",
         "System.debug only logs messages at ERROR level by default",
-        "FINE messages are only shown in the Apex Replay Debugger",
+        "FINE messages are written only while the Apex Replay Debugger is attached, so they never show in normal logs",
         "The Profiling category must be set to FINE"
       ],
       "answer": [
@@ -1252,7 +1252,7 @@
       "wrong": [
         "",
         "Without a level argument, System.debug uses DEBUG.",
-        "Replay Debugger reads the same log; it can't show missing lines.",
+        "Replay Debugger reads logs that already exist; it doesn't change what gets written.",
         "Apex Code controls System.debug output."
       ],
       "source": "Salesforce Help: Debug Log Levels"
@@ -1264,8 +1264,8 @@
       "q": "Debug logs for a transaction hit the size limit because a utility class writes thousands of FINEST lines. The developer still needs full detail from OrderService. What should they do?",
       "options": [
         "Delete the System.debug statements from the utility class in production",
-        "Set the user trace flag to NONE for all categories",
-        "Add a class-level trace flag on the utility class with a debug level that sets Apex Code to ERROR",
+        "Set the user trace flag to NONE for all categories, so the log only keeps the OrderService output",
+        "Add a class trace flag on the utility class with a debug level that sets Apex Code to ERROR",
         "Enable Event Monitoring for Apex execution"
       ],
       "answer": [
@@ -1289,7 +1289,7 @@
         "Developer Console Query Editor",
         "Apex Replay Debugger in VS Code, using a debug log captured with Apex Code at FINEST",
         "Test.startTest() in Anonymous Apex",
-        "A change set with extra System.debug statements"
+        "Deploy extra System.debug statements with a change set, then step through them in the Developer Console"
       ],
       "answer": [
         1
@@ -1299,7 +1299,7 @@
         "The Query Editor runs SOQL; it doesn't step through code.",
         "",
         "startTest is only for test methods.",
-        "This changes production code and still gives no stepping."
+        "This changes production code, and the Developer Console can't step through code line by line."
       ],
       "source": "Salesforce Extensions for VS Code: Apex Replay Debugger"
     },
@@ -1310,7 +1310,7 @@
       "q": "A developer needs to see the heap contents and variable values at a specific line in a deployed class without changing its code. Which two options work? (Choose 2)",
       "options": [
         "Set a checkpoint on the line in the Developer Console, run the code, and inspect it in the Checkpoints tab",
-        "Add System.debug statements and deploy them to production",
+        "Add System.debug statements for each variable, deploy them to production, and read the values in the log",
         "Use the Apex Replay Debugger with checkpoints and breakpoints on a captured log",
         "Re-run the test with @isTest(SeeAllData=true)",
         "Call Limits.getHeapSize() from Anonymous Apex"
@@ -1361,7 +1361,7 @@
         "An outbound change set that excludes the class",
         "A Metadata API deployment with destructiveChanges.xml (e.g. via sf CLI)",
         "Delete the class in Setup in production",
-        "Rename the class in a sandbox and deploy the renamed class"
+        "Rename the class in a sandbox and deploy it with a change set, which replaces the old class"
       ],
       "answer": [
         1
@@ -1371,7 +1371,7 @@
         "Leaving a class out of a change set doesn't delete it.",
         "",
         "Production doesn't allow Apex edits or deletes in Setup.",
-        "That just adds a second class."
+        "That just adds a second class; the old one stays in production."
       ],
       "source": "Metadata API Developer Guide: Deleting Components from an Organization"
     },
@@ -1552,8 +1552,8 @@
       "lang": "apex",
       "options": [
         "The Tier__c record is rolled back before appliesGoldDiscount runs, so the tier no longer exists",
-        "@TestSetup records can only be read by test methods annotated @IsTest(SeeAllData=true)",
-        "goldTierId is null in the test method. Each test method runs in its own transaction, so static values set in @TestSetup are reset. Query the tier instead",
+        "@TestSetup records can only be read by test methods annotated @IsTest(SeeAllData=true) at method level",
+        "goldTierId is null: statics set in @TestSetup reset for each test method. Query the tier instead",
         "Test.startTest() resets all static variables, so goldTierId must be assigned after it"
       ],
       "answer": [
@@ -1657,9 +1657,9 @@
       "lang": "apex",
       "options": [
         "Queueable jobs started from a test need @IsTest(SeeAllData=true)",
-        "Tests annotated IsParallel=true can't call System.enqueueJob(). Remove IsParallel or move this test to a non-parallel class",
+        "Parallel tests (IsParallel=true) can't call System.enqueueJob(). Remove IsParallel or move the test",
         "Test.startTest() and Test.stopTest() aren't allowed in parallel test classes",
-        "System.enqueueJob() must be called before Test.startTest() so the job is queued in time"
+        "System.enqueueJob() must be called before Test.startTest() in a parallel class so the job is queued in time"
       ],
       "answer": [
         1
@@ -1713,7 +1713,7 @@
       "options": [
         "Replace EventBus.publish with Database.insert, because tests can't publish platform events",
         "Annotate the test with SeeAllData=true so the second trigger is subscribed",
-        "Call Test.getEventBus().deliver() again before the Notification__c assertion, to deliver the event the first trigger published",
+        "Call Test.getEventBus().deliver() again before the Notification__c assertion",
         "Call Test.stopTest() a second time right after the first deliver()"
       ],
       "answer": [
@@ -1741,7 +1741,7 @@
         "Annotate the test with @IsTest(SeeAllData=true) so BatchApexErrorEvent triggers run",
         "Call Test.getEventBus().deliver() before Database.executeBatch()",
         "After that block, call Test.getEventBus().deliver() to deliver the BatchApexErrorEvent, then assert",
-        "Replace Test.stopTest() with Test.getEventBus().deliver(), which also runs the batch"
+        "Replace Test.stopTest() with Test.getEventBus().deliver(), which also runs the queued batch and its error event"
       ],
       "answer": [
         0,
@@ -1898,9 +1898,9 @@
       "lang": "apex",
       "options": [
         "Put both JSON bodies in the RatesResponse static resource",
-        "Register a second StaticResourceCalloutMock with LabelResponse just before calling buyLabel()",
-        "Use MultiStaticResourceCalloutMock, map each endpoint to its resource with setStaticResource(endpoint, resourceName), and register it with Test.setMock(HttpCalloutMock.class, multi)",
-        "Replace setStaticResource with setBody, because static resources can't be read in tests"
+        "Register a second StaticResourceCalloutMock with the LabelResponse resource right before calling buyLabel()",
+        "Use MultiStaticResourceCalloutMock, map each endpoint to its resource, and register it with Test.setMock",
+        "Replace setStaticResource with setBody on the mock, because static resources can't be read from test methods"
       ],
       "answer": [
         2
@@ -1923,10 +1923,10 @@
       "code": "@IsTest\npublic class RoutingMock implements HttpCalloutMock {\n  private Map<String, String> bodiesByPath;\n\n  public RoutingMock(Map<String, String> bodiesByPath) {\n    this.bodiesByPath = bodiesByPath;\n  }\n\n  public HttpResponse respond(HttpRequest req, String path) {\n    HttpResponse res = new HttpResponse();\n    res.setStatusCode(200);\n    res.setBody(bodiesByPath.get(path));\n    return res;\n  }\n}",
       "lang": "apex",
       "options": [
-        "HttpCalloutMock requires respond(HttpRequest req) with exactly one parameter. Read the path from req.getEndpoint() instead",
+        "respond() must take exactly one HttpRequest parameter. Read the path from req.getEndpoint() instead",
         "A mock class can't be annotated @IsTest",
         "Mock classes can't have constructors that take parameters",
-        "respond() must be global, so the class must be declared global"
+        "respond() must be declared global, so the mock class itself must be global rather than public to save"
       ],
       "answer": [
         0
@@ -1950,7 +1950,7 @@
         "doInvoke returns the generated response element, which the runtime passes to the client",
         "doInvoke puts the generated response element into the response map under the key 'response_x'",
         "The mock is registered with Test.setMock(HttpCalloutMock.class, new MySoapMock())",
-        "The class must implement both WebServiceMock and HttpCalloutMock to cover SOAP calls",
+        "The mock class must implement both WebServiceMock and HttpCalloutMock, because SOAP calls are sent over HTTP",
         "The mock class can be public and annotated @IsTest so it doesn't count toward the code size limit"
       ],
       "answer": [
@@ -1976,10 +1976,10 @@
       "code": "@IsTest\nstatic void sendsInvoice() {\n  Invoice__c inv = new Invoice__c(Amount__c = 120);\n  insert inv;\n  Test.startTest();\n  System.enqueueJob(new ErpSyncJob(inv.Id));\n  Test.stopTest();\n  Test.setMock(HttpCalloutMock.class, new ErpMock(201));\n  Assert.areEqual('Sent',\n      [SELECT Status__c FROM Invoice__c WHERE Id = :inv.Id].Status__c);\n}",
       "lang": "apex",
       "options": [
-        "Move the insert after Test.startTest() to avoid uncommitted work",
-        "Add Database.AllowsCallouts to the test class",
+        "Move the insert after Test.startTest(), so uncommitted work doesn't block the callout when the job runs",
+        "Add Database.AllowsCallouts to the test class as well, so its test methods are allowed to make callouts",
         "Call Test.setMock inside the Queueable's execute() method",
-        "Call Test.setMock before Test.stopTest(), ideally before enqueuing the job, because the job runs at stopTest"
+        "Call Test.setMock before Test.stopTest(), ideally before enqueuing, because the job runs at stopTest"
       ],
       "answer": [
         3
@@ -2054,8 +2054,8 @@
       "q": "An ISV team writes its tests in its own namespace, acme. They want Test.createStub() to stub a service class from a partner's managed package (namespace ptnr), and they keep their StubProvider in a shared utility package with a third namespace. What is true?",
       "options": [
         "It works, as long as the partner's class is global and virtual",
-        "It fails: the stubbed class must be in the same namespace as the Test.createStub() call, though the StubProvider can be in another namespace",
-        "It fails: the StubProvider must be in the same namespace as the stubbed class",
+        "It fails: the stubbed class must be in the test's namespace; the StubProvider can be in any namespace",
+        "It fails: the StubProvider must be in the same namespace as the stubbed class; the test can be anywhere",
         "It works only if the test is annotated @IsTest(SeeAllData=true)"
       ],
       "answer": [
@@ -2065,7 +2065,7 @@
       "wrong": [
         "Being global doesn't lift the namespace rule.",
         "",
-        "It's the other way around: the provider can be in any namespace.",
+        "It's the other way around: the stubbed class must match the test's namespace, and the provider can be anywhere.",
         "Data access has nothing to do with stubbing."
       ],
       "source": "Apex Developer Guide: Build a Mocking Framework with the Stub API"
@@ -2079,9 +2079,9 @@
       "code": "import { createElement } from 'lwc';\nimport ProductCard from 'c/productCard';\nimport { getRecord } from 'lightning/uiRecordApi';\nconst mockRecord = require('./data/getRecord.json');\n\nit('shows the product name', async () => {\n  const element = createElement('c-product-card', { is: ProductCard });\n  getRecord.emit(mockRecord);\n  document.body.appendChild(element);\n  await Promise.resolve();\n  const nameEl = element.shadowRoot.querySelector('.name');\n  expect(nameEl.textContent).toBe(mockRecord.fields.Name.value);\n});",
       "lang": "js",
       "options": [
-        "Append the element to the DOM first, then call getRecord.emit(), because a component only receives wire data once it is connected",
+        "Append the element to the DOM before calling getRecord.emit(); wire data only reaches a connected component",
         "Replace await Promise.resolve() with jest.runAllTimers()",
-        "Register the adapter with registerLdsTestWireAdapter() before emitting",
+        "Register the adapter with registerLdsTestWireAdapter(getRecord) before emitting, so emit() reaches the component",
         "Query document.querySelector('.name') instead of using the shadowRoot"
       ],
       "answer": [
@@ -2091,7 +2091,7 @@
       "wrong": [
         "",
         "The re-render is a microtask, not a timer, so awaiting a resolved promise is correct.",
-        "Registering adapters was needed in Spring '21 and earlier and is no longer recommended.",
+        "Registering adapters isn't needed in current sfdx-lwc-jest, and it doesn't fix this: the element must be connected before emit().",
         "Elements inside the component are only reachable through element.shadowRoot."
       ],
       "source": "LWC Developer Guide: Write Jest Tests for Lightning Web Components That Use the Wire Service"
@@ -2131,8 +2131,8 @@
       "code": "it('shows a message after refresh', async () => {\n  const element = createElement('c-order-list', { is: OrderList });\n  document.body.appendChild(element);\n\n  const button = document.querySelector('lightning-button');\n  button.click();\n  await Promise.resolve();\n\n  const msg = element.shadowRoot.querySelector('p.status');\n  expect(msg.textContent).toBe('Refreshed');\n});",
       "lang": "js",
       "options": [
-        "Base components such as lightning-button aren't rendered in Jest, so they can't be clicked",
-        "The button is inside the component's shadow tree, so it must be found with element.shadowRoot.querySelector()",
+        "Base components like lightning-button aren't rendered in Jest, so the test must click a native button instead",
+        "The button is in the component's shadow tree, so find it with element.shadowRoot.querySelector()",
         "The test must await a promise before appendChild() so the template renders",
         "document.querySelector only works after jest.useFakeTimers() is called"
       ],
@@ -2158,8 +2158,8 @@
       "lang": "js",
       "options": [
         "{ default: jest.fn().mockResolvedValue(mockContacts) }",
-        "Keep the factory and call getContactList.mockResolvedValue(mockContacts) instead of emit()",
-        "{ default: createApexTestWireAdapter(jest.fn()) }, requiring createApexTestWireAdapter from '@salesforce/sfdx-lwc-jest' inside the factory",
+        "Keep the factory as it is and call getContactList.mockResolvedValue(mockContacts) in the test instead of emit()",
+        "{ default: createApexTestWireAdapter(jest.fn()) }, with the helper required from '@salesforce/sfdx-lwc-jest'",
         "{ emit: jest.fn() }, so the test can spy on emit"
       ],
       "answer": [
@@ -2262,9 +2262,9 @@
       "code": "public static void importRows(List<Row__c> rows) {\n  try {\n    for (Row__c r : rows) {\n      Account a = [SELECT Id FROM Account\n                   WHERE External_Id__c = :r.Ext__c];\n      // ... map fields\n    }\n  } catch (Exception e) {\n    insert new Import_Log__c(Message__c = e.getMessage());\n  } finally {\n    System.debug('Import finished');\n  }\n}",
       "lang": "apex",
       "options": [
-        "The catch block runs, but its insert is rolled back because it is inside a try statement",
+        "The catch block runs, but its insert is rolled back because DML inside a try statement only commits on success",
         "A QueryException is thrown first, and catch (Exception e) can't catch it",
-        "The 101st query throws System.LimitException, which can't be caught, so neither catch nor finally runs and the transaction rolls back",
+        "The 101st query throws System.LimitException, which can't be caught, so the whole transaction rolls back",
         "The finally block runs first and ends the transaction before catch can log"
       ],
       "answer": [
@@ -2287,7 +2287,7 @@
       "q": "A support engineer chasing an intermittent bug leaves FINEST logging on for an integration user that runs all day. Which two statements about debug log limits are correct? (Choose 2)",
       "options": [
         "A log larger than 20 MB is reduced by removing older log lines, which can come from anywhere in the log",
-        "A log larger than 20 MB is discarded and replaced by a single error entry",
+        "A log larger than 20 MB is discarded completely and replaced by a single entry saying the log was too large",
         "While the Developer Console is open, debug logs are generated for every user in the org",
         "If more than 1,000 MB of debug logs is generated in 15 minutes, trace flags are disabled",
         "System debug logs are kept for 30 days"
@@ -2315,8 +2315,8 @@
       "options": [
         "Add System = FINEST to the class trace flag's debug level",
         "Add a trigger trace flag on every trigger that OrderService fires",
-        "Keep the Developer Console open, because it records logs for all users while it's open",
-        "Add a user trace flag for the integration user. Class trace flags override log levels but don't start logging on their own"
+        "Keep the Developer Console open while the calls run, because it records logs for every user while it's open",
+        "Add a user trace flag for the integration user; class trace flags don't start logging on their own"
       ],
       "answer": [
         3
@@ -2340,8 +2340,8 @@
       "lang": "text",
       "options": [
         "Data Loader sends 1,000 records per trigger call, which lowers the query limit",
-        "Line 14 of OpportunityTrigger runs an Account query for each Opportunity inside a loop. Query the Accounts once with a set of Ids before the loop",
-        "The Account query isn't selective, so it times out and is retried until the limit is reached",
+        "Line 14 runs an Account query per Opportunity inside a loop. Query once with a set of Ids before it",
+        "The Account query isn't selective, so it times out and is retried automatically until the SOQL limit is hit",
         "The trigger should catch the LimitException and retry the remaining records in a Queueable"
       ],
       "answer": [
@@ -2365,9 +2365,9 @@
       "code": "public void execute(Database.BatchableContext bc, List<Opportunity> scope) {\n  List<Task> tasks = new List<Task>();\n  for (Opportunity o : scope) {\n    tasks.add(new Task(WhatId = o.Id, Subject = 'Follow up',\n        OwnerId = o.Partner_Owner__c));\n  }\n  Database.insert(tasks, false);\n}",
       "lang": "apex",
       "options": [
-        "With allOrNone set to false, failed records are reported in SaveResult objects instead of throwing, and the code never checks them",
-        "Tasks inserted in batch Apex only become visible after finish() runs",
-        "DML in execute() is deferred to the next execute() call, so the last chunk is lost",
+        "With allOrNone false, failed records are returned in SaveResults instead of throwing, and nobody checks them",
+        "Tasks inserted in execute() are held until finish() runs, and they're dropped if finish() doesn't commit them",
+        "DML in execute() is deferred to the next execute() call, so records from the last chunk are never saved",
         "WhatId can't be set from Apex, so those Tasks are skipped"
       ],
       "answer": [
@@ -2391,8 +2391,8 @@
       "code": "sf package version create \\\n  --package \"Billing Core\" \\\n  --installation-key-bypass \\\n  --skip-validation \\\n  --code-coverage \\\n  --wait 30",
       "lang": "bash",
       "options": [
-        "--installation-key-bypass can't be used with unlocked packages",
-        "--skip-validation and --code-coverage can't be combined, because coverage is calculated during validation. A version created with --skip-validation can't be promoted anyway",
+        "--installation-key-bypass can't be used with unlocked packages, so the version needs an --installation-key",
+        "--skip-validation can't be combined with --code-coverage, and skip-validation versions can't be promoted",
         "--wait must be at least 60 minutes when --code-coverage is set",
         "Unlocked packages compute coverage at promote time, so --code-coverage isn't a valid flag"
       ],
@@ -2468,9 +2468,9 @@
       "pack": "hard",
       "q": "A team that relies heavily on admins is moving from change sets to DevOps Center. Which statement describes how DevOps Center manages changes?",
       "options": [
-        "It packages changes into outbound change sets and uploads them between connected orgs",
+        "It packages each work item into an outbound change set and uploads it to the next connected org in the pipeline",
         "It requires every developer to work in scratch orgs created from a Dev Hub",
-        "Changes are grouped into work items, committed to a source control repository, and promoted through pipeline stages, with source control as the source of truth",
+        "Work items are committed to a source control repository and promoted through pipeline stages",
         "It lets work items skip Apex tests when they are promoted to production"
       ],
       "answer": [
@@ -2494,7 +2494,7 @@
       "code": "sf project deploy validate --source-dir force-app --target-org uat",
       "lang": "bash",
       "options": [
-        "sf project deploy start --source-dir force-app --target-org uat --test-level NoTestRun",
+        "sf project deploy start --source-dir force-app --target-org uat --test-level RunLocalTests --ignore-conflicts",
         "sf project deploy quick --source-dir force-app --target-org uat",
         "sf project deploy preview --source-dir force-app --target-org uat",
         "sf project deploy start --source-dir force-app --target-org uat --dry-run --test-level RunLocalTests"
@@ -2504,7 +2504,7 @@
       ],
       "explain": "deploy validate is meant for production orgs. For a sandbox, the CLI reference recommends deploy start with --dry-run and an explicit test level: it validates and runs the tests without saving anything.",
       "wrong": [
-        "Without --dry-run this really deploys, and NoTestRun skips the tests.",
+        "Without --dry-run this really deploys to UAT and changes it.",
         "quick deploys an earlier validation by job ID. It doesn't validate source.",
         "preview only lists what would deploy and possible conflicts. It runs no tests.",
         ""
@@ -2521,9 +2521,9 @@
       "lang": "bash",
       "options": [
         "Validate again, because a validated job ID expires after 3 days",
-        "Pass the validation's job ID with --job-id. The ID stays valid for 10 days, but --use-most-recent only looks back 3 days",
+        "Pass the job ID with --job-id. It stays valid for 10 days, but --use-most-recent only looks back 3 days",
         "Add --test-level RunLocalTests so quick deploy can run the tests again",
-        "Run sf project deploy resume, which turns a validation into a deployment"
+        "Run sf project deploy resume --use-most-recent, which turns the most recent validation into a deployment"
       ],
       "answer": [
         1

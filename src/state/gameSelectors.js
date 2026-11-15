@@ -2,8 +2,10 @@
 import { sections } from '../data/index.js';
 import { levelsFor, isLevelOpen, isWorldOpen } from '../game/worlds.js';
 
-export const worldLevels = Object.fromEntries(sections.map((s) => [s.id, levelsFor(s)]));
-export const levelById = Object.fromEntries(
+// No prototype: a URL id like "constructor" must not resolve to anything.
+const table = (entries) => Object.assign(Object.create(null), Object.fromEntries(entries));
+export const worldLevels = table(sections.map((s) => [s.id, levelsFor(s)]));
+export const levelById = table(
   sections.flatMap((s) => worldLevels[s.id].map((l, i) => [l.id, { ...l, index: i }])),
 );
 

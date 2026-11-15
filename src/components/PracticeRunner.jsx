@@ -1,5 +1,5 @@
 // Practice loop: answer → instant feedback → XP pop → continue. Misses come back 3 questions later.
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { QuestionView } from './QuestionView.jsx';
 import { Rich } from '../lib/rich.jsx';
@@ -51,6 +51,18 @@ export function PracticeRunner({ questions, onDone, onExit, topRight, requeue = 
   useHoldCelebrations(true);
   const { announce, celebrate } = useFeedback();
   const reduced = useReducedMotion();
+
+  const feedbackRef = useRef(null);
+  const topRef = useRef(null);
+
+  // After Check, bring the explanation above the sticky Continue button; on a new question, go back to the top.
+  useEffect(() => {
+    if (revealed) {
+      const t = setTimeout(() => feedbackRef.current?.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'nearest' }), reduced ? 0 : 120);
+      return () => clearTimeout(t);
+    }
+    topRef.current?.scrollIntoView({ block: 'start' });
+  }, [revealed, idx, reduced]);
 
   const q = byId[queue[idx]];
   const need = q.answer.length;
@@ -124,7 +136,7 @@ export function PracticeRunner({ questions, onDone, onExit, topRight, requeue = 
   const sec = sectionById[q.section];
 
   return (
-    <div className="stack" style={{ flex: 1 }}>
+    <div className="stack" style={{ flex: 1 }} ref={topRef}>
       <div className="quiz-top">
         <button className="icon-btn" onClick={onExit} aria-label="Leave session">✕</button>
         <div className="bar" role="progressbar" aria-label="Session progress" aria-valuemin={0} aria-valuemax={queue.length} aria-valuenow={idx + (revealed ? 1 : 0)}>
@@ -135,12 +147,12 @@ export function PracticeRunner({ questions, onDone, onExit, topRight, requeue = 
       </div>
       {header?.({ combo, heartsLeft, lastRight, revealed, stats: stats.current })}
       {topRight && <div className="row" style={{ justifyContent: 'space-between' }}>
-        <span className="chip">{sec?.emoji} {sec?.title}</span>
+        <span className="chip trunc" title={sec?.title}>{sec?.emoji} {sec?.short ?? sec?.title}</span>
         <ComboChip combo={combo} reduced={reduced} />
       </div>}
       {!topRight && !header && (
         <div className="row" style={{ justifyContent: 'space-between' }}>
-          <span className="chip">{sec?.emoji} {sec?.title}</span>
+          <span className="chip trunc" title={sec?.title}>{sec?.emoji} {sec?.short ?? sec?.title}</span>
           {heartsLeft != null && <ComboChip combo={combo} reduced={reduced} />}
         </div>
       )}
@@ -194,6 +206,7 @@ export function PracticeRunner({ questions, onDone, onExit, topRight, requeue = 
       <AnimatePresence>
         {revealed && (
           <motion.div
+            ref={feedbackRef}
             className={`feedback ${lastRight ? 'right' : 'wrong'}`}
             initial={reduced ? { opacity: 0 } : { opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
@@ -203,7 +216,12 @@ export function PracticeRunner({ questions, onDone, onExit, topRight, requeue = 
               <Zap mood={lastRight ? 'cheer' : 'sad'} size={38} bounce={false} label="" />
               <span><span aria-hidden="true">{lastRight ? '✓' : '✗'}</span> {verdict}<br /><span className="small muted" style={{ fontWeight: 400 }}>{zapLine}</span></span>
             </div>
-            <p><Rich text={q.explain} /></p>
+            {!lastRight && (
+              <p className="right-answer"><strong>Answer{need > 1 ? 's' : ''}:</strong>{' '}
+                {q.answer.map((i) => <span key={i} className="answer-pill">{'ABCDEF'[i]}. <Rich text={q.options[i]} autoCode /></span>)}
+              </p>
+            )}
+            <p><Rich text={q.explain} autoCode /></p>
             {q.wrong?.some(Boolean) && (
               <>
                 <button className="btn ghost small" onClick={() => setShowWhy((v) => !v)} aria-expanded={showWhy}>

@@ -593,7 +593,7 @@
       "difficulty": 2,
       "q": "A with sharing class OrderController calls OrderUtil.getOpenOrders(). OrderUtil has no sharing keyword. Under which sharing mode does the query in getOpenOrders() run?",
       "options": [
-        "Without sharing, because Apex runs in system mode",
+        "Without sharing, because a class with no keyword always runs in system mode",
         "With sharing, because OrderUtil inherits the calling class's mode",
         "It depends on the user's profile permissions",
         "Compile error: the called class must declare a sharing keyword"
@@ -603,7 +603,7 @@
       ],
       "explain": "A class with no sharing keyword that is called by other Apex runs in the caller's mode (API 66.0 and earlier), so here the query respects sharing. From API 67.0 a class with no keyword always runs with sharing, so the answer is the same.",
       "wrong": [
-        "No-keyword classes only default to without sharing when they are the entry point.",
+        "A class with no keyword takes the caller's mode when other Apex calls it, and from API 67.0 it runs with sharing.",
         "",
         "Sharing keywords decide the mode. Profiles don't.",
         "The keyword is optional. Leaving it out compiles fine."
@@ -740,7 +740,7 @@
       "q": "Before setting Contact.Email in Apex, a developer wants to manually confirm that the running user is allowed to edit that field. Which check is correct?",
       "options": [
         "Schema.sObjectType.Contact.fields.Email.isAccessible()",
-        "Schema.sObjectType.Contact.isQueryable()",
+        "Schema.sObjectType.Contact.fields.Email.isPermissionable()",
         "Schema.sObjectType.Contact.fields.Email.isUpdateable()",
         "UserInfo.canEdit(Contact.Email)"
       ],
@@ -750,7 +750,7 @@
       "explain": "isUpdateable() on the field describe confirms the user can edit that field (FLS). isAccessible() only confirms read access.",
       "wrong": [
         "isAccessible() checks read access, not edit access.",
-        "This checks object query access, not field edit permission.",
+        "isPermissionable() only says whether field permissions can be set on the field, not whether this user can edit it.",
         "",
         "UserInfo has no such method."
       ],
@@ -786,9 +786,9 @@
       "q": "Apex creates share records so that the users listed on child Team_Member__c records can edit their Project__c. When a project's owner changes, the team members lose access. How should the developer fix this?",
       "options": [
         "Insert the shares with AccessLevel = 'All'",
-        "Run the sharing code in a without sharing class",
+        "Run the sharing code in a without sharing class so the shares can't be removed",
         "Set the Project__c OWD to Public Read Only",
-        "Create an Apex sharing reason and use it as the RowCause on the shares"
+        "Use a custom Apex sharing reason as the RowCause"
       ],
       "answer": [
         3
@@ -835,8 +835,8 @@
       "options": [
         "The share inserts and gives the user full access",
         "The share inserts but RowCause defaults to Manual",
-        "The insert fails because AccessLevel 'All' can't be granted through Apex managed sharing",
-        "The insert fails because triggers can't insert share records"
+        "The insert fails: Apex managed sharing can't grant 'All'",
+        "The insert fails because after insert triggers can't create share records"
       ],
       "answer": [
         2
@@ -904,8 +904,8 @@
       "options": [
         "Custom settings can't be read in test context at all",
         "getOrgDefaults() only works for List custom settings",
-        "The test needs @IsTest(SeeAllData=false) to see custom settings",
-        "Custom setting data isn't visible to tests by default, so the test must insert the setting"
+        "The test needs @IsTest(SeeAllData=false) to see the org's custom setting records",
+        "Tests can't see org custom setting data, so the test must insert the setting"
       ],
       "answer": [
         3
@@ -928,7 +928,7 @@
         "Records can be created with standard insert DML in a trigger",
         "Records can be read with getAll() and getInstance() without consuming SOQL queries",
         "Apex can create or update records with Metadata.Operations.enqueueDeployment(), which runs asynchronously",
-        "Values resolve automatically by profile and user, like a hierarchy",
+        "Values resolve automatically by profile and then by user, like a hierarchy custom setting",
         "Record data is excluded from change sets"
       ],
       "answer": [
@@ -951,7 +951,7 @@
       "difficulty": 1,
       "q": "An Apex error message shown to users must appear in each user's language. What should the developer use?",
       "options": [
-        "A custom label translated with the Translation Workbench and referenced as System.Label.Name",
+        "A custom label translated in Translation Workbench, read as System.Label.Name",
         "A hard-coded string in each language selected with if/else on UserInfo.getLanguage()",
         "A List custom setting with one record per language",
         "A static final String constant"
@@ -1002,7 +1002,7 @@
         "Reference opp.CurrencyIsoCode directly and mark the package as requiring multi-currency",
         "Use convertCurrency() in a static SOQL query in all orgs",
         "Wrap the static reference in a try/catch for TypeException",
-        "Check UserInfo.isMultiCurrencyOrganization(), then use dynamic SOQL and sObject.get/put('CurrencyIsoCode')"
+        "Check UserInfo.isMultiCurrencyOrganization() and use dynamic SOQL with get/put"
       ],
       "answer": [
         3
@@ -1050,10 +1050,10 @@
       "code": "SELECT CALENDAR_MONTH(CreatedDate) m, COUNT(Id) c\nFROM Case\nGROUP BY CALENDAR_MONTH(CreatedDate)",
       "lang": "soql",
       "options": [
-        "Call Datetime.format() on each AggregateResult",
+        "Call Datetime.format() on each AggregateResult to shift it to the user's time zone",
         "Run the query in a with sharing class",
-        "Replace CreatedDate with DAY_ONLY(CreatedDate)",
-        "Use GROUP BY CALENDAR_MONTH(convertTimezone(CreatedDate)) in both SELECT and GROUP BY"
+        "Replace CreatedDate with DAY_ONLY(CreatedDate) in both SELECT and GROUP BY",
+        "Use CALENDAR_MONTH(convertTimezone(CreatedDate)) in SELECT and GROUP BY"
       ],
       "answer": [
         3
@@ -1191,8 +1191,8 @@
       "q": "An org has three triggers on Opportunity written by different teams, and their order of execution is unpredictable. What best practice addresses this?",
       "options": [
         "Add a static Boolean to each trigger",
-        "Consolidate into one trigger per object that delegates to a handler class",
-        "Move all the logic into a single @future method",
+        "One trigger per object that delegates to a handler class",
+        "Move all the logic into a single @future method called from each trigger",
         "Use the Trigger Order field to number the triggers"
       ],
       "answer": [
@@ -1340,7 +1340,7 @@
       "options": [
         "insert leads; inside try/catch",
         "insert as user leads;",
-        "Database.setSavepoint() before insert leads;",
+        "Database.setSavepoint() before insert leads; then roll back only the failed rows",
         "Database.insert(leads, false) and check each SaveResult"
       ],
       "answer": [
@@ -1350,7 +1350,7 @@
       "wrong": [
         "A plain insert is all-or-nothing. One failure rolls back the whole batch.",
         "User mode enforces permissions but is still all-or-nothing.",
-        "A savepoint helps you undo work. It doesn't allow partial success.",
+        "A savepoint rolls back everything after it. It can't keep the valid rows or report per-record errors.",
         ""
       ],
       "source": "Apex Developer Guide: Database Class Methods / SaveResult"
@@ -1387,10 +1387,10 @@
       "difficulty": 3,
       "q": "Currency conversion rates are read thousands of times a day by all users and change once a day. A developer wants a single call that returns the cached rate, or loads it with SOQL and caches it on a miss. What should they build?",
       "options": [
-        "A class implementing Cache.CacheBuilder with doLoad(), read via Cache.Org.get(RateLoader.class, key)",
+        "A Cache.CacheBuilder class with doLoad(), read via Cache.Org.get(RateLoader.class, key)",
         "A Session cache entry populated by each user's first query",
         "A static Map in a singleton class populated on first use",
-        "A hierarchy custom setting updated by a trigger on CurrencyType"
+        "A hierarchy custom setting kept current by a trigger on CurrencyType, read with getOrgDefaults()"
       ],
       "answer": [
         0
@@ -1400,7 +1400,7 @@
         "",
         "Session cache isn't shared, so every user would reload the data.",
         "Statics last only one transaction.",
-        "A custom setting kept in sync by extra automation is more fragile than a cache that loads itself."
+        "CurrencyType doesn't support Apex triggers, and a setting synced by extra automation is more fragile than a cache that loads itself."
       ],
       "source": "Apex Developer Guide: CacheBuilder Interface"
     },
@@ -1410,9 +1410,9 @@
       "difficulty": 1,
       "q": "A singleton class caches a configuration map in a private static variable. Does the cached map carry over to the next, separate request from the same user?",
       "options": [
-        "Yes, static variables persist for the user's session",
+        "Yes, a private static in a singleton persists for the rest of the user's session",
         "Yes, for up to 24 hours",
-        "No, static variables last only for one transaction. Use Platform Cache to share across requests",
+        "No, statics last one transaction. Use Platform Cache to share across requests",
         "No, unless the class is declared with sharing"
       ],
       "answer": [
@@ -1437,7 +1437,7 @@
       "lang": "apex",
       "options": [
         "The share is created and the recruiter keeps Read access even after an owner change",
-        "The job saves, but each share fails with FIELD_FILTER_VALIDATION_EXCEPTION because Read is not higher than the OWD",
+        "Each share fails with FIELD_FILTER_VALIDATION_EXCEPTION, but the jobs still save",
         "The whole transaction rolls back with a DmlException, so the job is not saved",
         "The share is inserted and silently upgraded to Edit so it grants more than the OWD"
       ],
@@ -1464,8 +1464,8 @@
       "options": [
         "RowCause must be set again on every update, or it resets to Manual",
         "Share records can only be changed by a user with Modify All Data, even from Apex",
-        "UserOrGroupId can't be changed on an existing share, so the code must delete the old share and insert a new one",
-        "update isn't supported on share objects; only insert and delete are"
+        "UserOrGroupId can't be updated on a share. Delete the old share and insert a new one",
+        "update isn't supported on share objects; only insert and delete are, even for AccessLevel"
       ],
       "answer": [
         2
@@ -1487,10 +1487,10 @@
       "q": "A recruiting app grants access to Job__c records with Apex sharing reasons. Sometimes record locking stops shares from being written, so the architect wants an Apex managed sharing recalculation class. Which two statements about that class are true? (Choose 2)",
       "options": [
         "It must implement Schedulable, and Salesforce runs it nightly",
-        "It implements Database.Batchable and is added in the Apex Sharing Recalculation related list of Job__c",
+        "It implements Database.Batchable and is added on Job__c's Apex Sharing Recalculation list",
         "It runs automatically every time a Job__c record changes owner",
         "It runs automatically when the organization-wide default of Job__c changes, and an admin can also start it",
-        "It can only be started from Setup, never with Database.executeBatch"
+        "It can only be started from Setup or by an OWD change, never from Apex with Database.executeBatch"
       ],
       "answer": [
         1,
@@ -1516,9 +1516,9 @@
       "lang": "apex",
       "options": [
         "New shares must be inserted in finish(), not in execute()",
-        "A recalculation class can't run DML. It must return the share rows to the platform",
+        "A recalculation class can't run DML itself. It must return the new share rows to the platform in finish()",
         "AccessLevel 'Edit' isn't allowed during a recalculation, only 'Read'",
-        "The delete isn't filtered by RowCause, so it targets every share on the jobs instead of only the Recruiter__c rows this class owns"
+        "The delete has no RowCause filter, so it removes every share on the jobs, not just Recruiter__c ones"
       ],
       "answer": [
         3
@@ -1541,9 +1541,9 @@
       "code": "insert new AccountShare(\n  ParentId      = acc.Id,\n  UserOrGroupId = acc.Customer_Success_Manager__c,\n  AccessLevel   = 'Edit'\n);",
       "lang": "apex",
       "options": [
-        "It doesn't compile: AccountShare uses AccountId and AccountAccessLevel (plus related access fields like OpportunityAccessLevel), not ParentId and AccessLevel",
+        "It doesn't compile: AccountShare uses AccountId and AccountAccessLevel, not ParentId and AccessLevel",
         "It inserts a Manual share that gives the manager Edit access",
-        "It compiles, but fails at runtime because standard objects can't be shared from Apex",
+        "It compiles, but fails at runtime because standard objects like Account can't be shared from Apex code",
         "It compiles, but the share is removed by the next sharing recalculation"
       ],
       "answer": [
@@ -1569,8 +1569,8 @@
       "options": [
         "Invoice_Line__c's OWD must first be changed to Private",
         "An Apex sharing reason must be created on Invoice_Line__c first",
-        "The class must be declared without sharing to reference share objects",
-        "Detail objects have no share object. Access comes from the master, so share the Invoice__c record"
+        "The class must be declared without sharing to reference share objects like Invoice_Line__Share",
+        "Detail objects have no share object. Share the master Invoice__c record instead"
       ],
       "answer": [
         3
@@ -1618,7 +1618,7 @@
       "pack": "hard",
       "q": "Each Grant__c (OWD Private) must be editable by the reviewers listed in its child Grant_Reviewer__c junction records. Reviewers come from many roles and change weekly. Access must survive when a grant moves to a new owner and must go away when a reviewer row is deleted. Which two parts should the solution include? (Choose 2)",
       "options": [
-        "A criteria-based sharing rule on Grant__c that matches the reviewer users",
+        "A criteria-based sharing rule on Grant__c that matches the reviewer users listed in the junction rows",
         "A flow that sends the owner a reminder to click Sharing for each new reviewer",
         "An Apex sharing reason on Grant__c, used as the RowCause of every Grant__Share the code writes",
         "A Grant_Reviewer__c trigger that inserts a Grant__Share on insert and deletes the matching share on delete",
@@ -1648,8 +1648,8 @@
       "lang": "apex",
       "options": [
         "40, because the entry-point class is with sharing",
-        "40, because inherited sharing passes with sharing down to every class it calls",
-        "500, because the query is defined in a without sharing class and SYSTEM_MODE leaves sharing to that class's keyword",
+        "40, because inherited sharing passes the with sharing mode down to every class it calls, CaseRepo included",
+        "500, because the query is in a without sharing class, and SYSTEM_MODE leaves sharing to it",
         "A QueryException, because COUNT() can't be combined with WITH SYSTEM_MODE"
       ],
       "answer": [
@@ -1674,7 +1674,7 @@
       "lang": "apex",
       "options": [
         "ArchiveJob sees every stale opportunity, because it inherits without sharing from the class that enqueued it",
-        "ArchiveJob runs with sharing, because each async job is a new entry point. Declare it without sharing to process every record",
+        "It runs with sharing: each async job is a new entry point. Declare it without sharing",
         "Queueable classes always run in system mode and ignore sharing keywords",
         "The class doesn't compile, because inherited sharing isn't allowed on a Queueable"
       ],
@@ -1699,10 +1699,10 @@
       "code": "public without sharing class PortalCases {\n  public static List<Case> mine() {\n    return [SELECT Id, Subject, Internal_Notes__c FROM Case WITH USER_MODE];\n  }\n  public static List<Case> all() {\n    return [SELECT Id, Subject, Internal_Notes__c FROM Case WITH SYSTEM_MODE];\n  }\n}",
       "lang": "apex",
       "options": [
-        "mine() applies the user's sharing, object permissions and FLS. all() skips object permissions and FLS, and the without sharing keyword means it skips sharing too",
+        "mine() enforces the user's sharing, CRUD and FLS. all() skips CRUD and FLS, and sharing too",
         "Both methods return every case, because the class is without sharing",
         "mine() enforces FLS only. Its record access still follows the without sharing keyword",
-        "all() still enforces sharing, because SYSTEM_MODE bypasses only FLS and object permissions"
+        "all() still enforces sharing, because SYSTEM_MODE bypasses only FLS and object permissions, not sharing"
       ],
       "answer": [
         0
@@ -1727,7 +1727,7 @@
       "options": [
         "It returns every hot account and ignores FLS and sharing, because Apex runs in system mode",
         "It returns the hot accounts the user can see, with Rating__c set to null",
-        "It throws a QueryException, because from API 67.0 the query runs in user mode and checks FLS on every clause",
+        "It throws a QueryException: from API 67.0 the query runs in user mode and checks FLS",
         "It doesn't compile, because API 67.0 classes must declare a sharing keyword"
       ],
       "answer": [
@@ -1751,10 +1751,10 @@
       "code": "List<Contact> a = [SELECT Id, Name FROM Contact\n  WHERE SSN_Last4__c = :input WITH SECURITY_ENFORCED];\n\nList<Contact> b = [SELECT Id, Name FROM Contact\n  WHERE SSN_Last4__c = :input WITH USER_MODE];",
       "lang": "apex",
       "options": [
-        "Query a returns the matching contacts, because SECURITY_ENFORCED doesn't check WHERE fields. Query b throws a QueryException",
+        "Query a returns the contacts (SECURITY_ENFORCED skips WHERE fields). Query b throws a QueryException",
         "Both queries throw a QueryException, because the user can't read SSN_Last4__c",
         "Both queries return the matching contacts, because SSN_Last4__c isn't in either SELECT list",
-        "Query a throws a QueryException and query b returns the contacts with the filter silently removed"
+        "Query a throws a QueryException, and query b returns the contacts with the hidden filter silently removed"
       ],
       "answer": [
         0
@@ -1779,8 +1779,8 @@
       "options": [
         "AccessType.CREATABLE should be AccessType.UPDATABLE for an insert",
         "stripInaccessible must be called after the insert",
-        "stripInaccessible only works on records returned by SOQL",
-        "The code inserts the original list. It must insert d.getRecords(), which holds the stripped copies"
+        "stripInaccessible only works on records returned by SOQL, not on new records built in Apex",
+        "It inserts the original list. It must insert d.getRecords(), the stripped copies"
       ],
       "answer": [
         3
@@ -1804,9 +1804,9 @@
       "lang": "apex",
       "options": [
         "The total alias is removed for users who can't read Amount",
-        "An exception is thrown, because stripInaccessible doesn't support AggregateResult. Add WITH USER_MODE to the aggregate query instead",
+        "It throws an exception: stripInaccessible doesn't support AggregateResult. Use WITH USER_MODE",
         "The results come back unchanged, because aggregates aren't subject to FLS",
-        "It doesn't compile, because stripInaccessible only accepts List<SObject>"
+        "It doesn't compile, because stripInaccessible only accepts a List<SObject> and AggregateResult isn't one"
       ],
       "answer": [
         1
@@ -1829,7 +1829,7 @@
       "options": [
         "Catch the DmlException from insert as user records; and call e.getDmlFieldNames(0)",
         "Call Database.insert(records, false, AccessLevel.USER_MODE) and read getFields() on each failed SaveResult's errors",
-        "Catch a QueryException after the insert and call getInaccessibleFields()",
+        "Catch the QueryException after the insert and read e.getInaccessibleFields() for the blocked names",
         "Add WITH SECURITY_ENFORCED to the insert and read the exception message",
         "Read getId() on each failed SaveResult"
       ],
@@ -1883,9 +1883,9 @@
       "lang": "apex",
       "options": [
         "The second insert replaces the first, and getOrgDefaults() returns the b endpoint",
-        "The insert in the test method is ignored, because @TestSetup data is read-only",
+        "The insert in the test method is ignored, because records created in @TestSetup are read-only",
         "Both records exist, and getOrgDefaults() returns the newest one",
-        "It throws a DUPLICATE_VALUE DmlException. The test should get the record with getOrgDefaults() and update it"
+        "It throws a DUPLICATE_VALUE DmlException. Update the record from getOrgDefaults() instead"
       ],
       "answer": [
         3
@@ -1936,8 +1936,8 @@
       "lang": "apex",
       "options": [
         "Custom metadata records are cached, so the email uses an old version of the record",
-        "getInstance() matches on the label, so it returns a different, shorter record",
-        "getInstance() and getAll() return only the first 255 characters of each field. Use a SOQL query to read the full Body__c",
+        "getInstance() matches on the label, not DeveloperName, so it returns a different, shorter record",
+        "getInstance() returns only the first 255 characters of each field. Query Body__c with SOQL",
         "Long Text Area fields aren't supported on custom metadata types"
       ],
       "answer": [
@@ -1989,8 +1989,8 @@
       "lang": "apex",
       "options": [
         "Add @IsTest(SeeAllData=false) so the test no longer sees org records",
-        "Read tiers through a selector with a @TestVisible override, and fill it in the test with records built by JSON.deserialize",
-        "Insert a Discount_Tier__mdt record with Percent__c = 15 in @TestSetup",
+        "Read tiers through a @TestVisible selector and give it test records built with JSON.deserialize",
+        "Insert a Discount_Tier__mdt record with Percent__c = 15 in @TestSetup so the test owns its own data",
         "Wrap the assertions in Test.startTest() and Test.stopTest()"
       ],
       "answer": [
@@ -2040,7 +2040,7 @@
       "code": "for (Case c : closedCases) {\n  Date day = c.ClosedDate.dateGmt();\n  Integer m = day.month();\n  totals.put(m, (totals.containsKey(m) ? totals.get(m) : 0) + 1);\n}",
       "lang": "apex",
       "options": [
-        "Use c.ClosedDate.date(), which returns the date in the running user's time zone",
+        "Use c.ClosedDate.date(), the date in the user's time zone",
         "Select DAY_ONLY(ClosedDate) in the query that loads closedCases",
         "Use c.ClosedDate.monthGmt() instead of day.month()",
         "Use c.ClosedDate.format() and read the month from the string"
@@ -2121,7 +2121,7 @@
         "Move the filter to HAVING convertCurrency(Amount) > 100000",
         "Wrap Amount in FORMAT() in the WHERE clause",
         "Filter with WHERE Amount > USD100000, which compares each record against the USD equivalent",
-        "Add GROUP BY CurrencyIsoCode so convertCurrency is allowed in WHERE",
+        "Add GROUP BY CurrencyIsoCode so that convertCurrency(Amount) becomes allowed in the WHERE clause",
         "Use ORDER BY Amount DESC, because sorting on currency fields already uses converted values"
       ],
       "answer": [
@@ -2148,7 +2148,7 @@
       "lang": "apex",
       "options": [
         "EUR, because aggregates are converted to the running user's currency",
-        "USD, the org's corporate currency. Aggregate functions return currency in the org default",
+        "USD, the corporate currency: aggregate functions return the org default currency",
         "No single currency: raw JPY and GBP numbers are simply added together",
         "The query fails, because multi-currency orgs require SUM(convertCurrency(Amount))"
       ],
@@ -2202,8 +2202,8 @@
       "options": [
         "Amount__c is auto-converted from JPY to EUR on insert, at the wrong rate",
         "The commission is saved in the corporate currency. Use convertCurrency() in the trigger",
-        "The new record takes the running user's currency (EUR) but holds a JPY number. Set CurrencyIsoCode = o.CurrencyIsoCode",
-        "The insert fails because CurrencyIsoCode is required in multi-currency orgs"
+        "It takes the user's currency (EUR) but holds a JPY amount. Set CurrencyIsoCode = o.CurrencyIsoCode",
+        "The insert fails, because CurrencyIsoCode is a required field on every new record in multi-currency orgs"
       ],
       "answer": [
         2

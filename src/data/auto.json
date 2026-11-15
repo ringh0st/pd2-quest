@@ -833,8 +833,8 @@
       "lang": "apex",
       "options": [
         "Reset hasRun to false at the end of the before update trigger",
-        "Set the Data Loader batch size to 600 so all records arrive in one chunk",
-        "Replace the Boolean with a static Set<Id> and skip only records whose Ids are already in the set",
+        "Set the Data Loader batch size to 600 (Bulk API) so all Accounts reach the trigger in a single chunk",
+        "Swap the Boolean for a static Set<Id> and skip only records already in the set",
         "Move the logic to a before update trigger, which only fires once per transaction"
       ],
       "answer": [
@@ -904,8 +904,8 @@
       "difficulty": 2,
       "q": "A team has three before update triggers on Opportunity written by different developers. Behaviour changes unpredictably between releases. What should the architect recommend?",
       "options": [
-        "Merge into one trigger per object that delegates to a handler class controlling the order of logic",
-        "Add a Trigger Order setting in Setup to rank the triggers",
+        "One trigger per object that delegates to a handler class controlling the order",
+        "Set the trigger execution order in Setup > Apex Triggers so each trigger runs in a fixed rank",
         "Convert all three triggers to after update triggers",
         "Put each trigger's logic in a separate @future method"
       ],
@@ -929,7 +929,7 @@
       "options": [
         "All 1,000 records are rolled back and a DmlException is thrown",
         "The 3 records are saved but flagged with a warning",
-        "997 records are saved; the 3 records fail and their errors appear in the SaveResults",
+        "997 records save; the 3 fail and their errors are in the SaveResults",
         "The trigger skips the 3 records and saves them without the email field"
       ],
       "answer": [
@@ -953,8 +953,8 @@
       "lang": "apex",
       "options": [
         "Wrap the query in a try/catch so the LimitException is handled",
-        "Collect the AccountIds into a Set, query once into a Map<Id, Account>, then loop and look up each Account",
-        "Move the query into an @future method called once per Case",
+        "Collect AccountIds in a Set, query once into a Map<Id, Account>, then look up each one",
+        "Move the query into an @future method called once per Case so each call gets its own SOQL limit",
         "Add LIMIT 1 to the query so each query costs less"
       ],
       "answer": [
@@ -1021,10 +1021,10 @@
       "difficulty": 2,
       "q": "Inside an executing Queueable job, a developer calls System.enqueueJob() in a loop to start 3 follow-up jobs. What happens?",
       "options": [
-        "The first call succeeds and the second throws a LimitException, because an executing Queueable can only enqueue one child job",
+        "The second call throws a LimitException: an executing Queueable can enqueue only one child job",
         "All three jobs run in parallel",
         "All three jobs run in order, one after another",
-        "The calls are ignored until the parent job commits, then only the last one runs"
+        "The calls are ignored until the parent job commits, and then only the last enqueued job actually runs"
       ],
       "answer": [
         0
@@ -1071,9 +1071,9 @@
       "q": "An Account trigger calls an @future method to sync data. A new Batch Apex job updates Accounts and fails with 'Future method cannot be called from a future or batch method'. What is the best fix?",
       "options": [
         "Add Database.Stateful to the batch class",
-        "Lower the batch scope to 1 record",
+        "Call Database.executeBatch(job, 1) so each execute() handles one Account and the trigger makes only one future call",
         "Add @future to the batch execute method",
-        "In the trigger handler, check System.isBatch() and System.isFuture(), and enqueue a Queueable or skip the call in those contexts"
+        "In the handler, skip the @future call when System.isBatch() or System.isFuture() is true (or use a Queueable)"
       ],
       "answer": [
         3
@@ -1081,7 +1081,7 @@
       "explain": "Future methods can't be called from batch or future contexts. Detect the context and use another path, such as a Queueable.",
       "wrong": [
         "State has nothing to do with this error.",
-        "The context is still batch, whatever the scope.",
+        "The context is still batch, whatever the scope, so the future call is still blocked.",
         "Batch interface methods can't be future methods.",
         ""
       ],
@@ -1210,7 +1210,7 @@
       "difficulty": 3,
       "q": "Every night at 1 AM an org must send updated prices to an ERP REST API. Which two designs work? (Choose 2)",
       "options": [
-        "A Schedulable class whose execute() makes the HTTP callout directly",
+        "A Schedulable class whose execute() builds the HttpRequest and makes the ERP callout directly with Http.send()",
         "A Schedulable class that starts a Batch Apex job implementing Database.AllowsCallouts",
         "A Schedulable class that enqueues a Queueable implementing Database.AllowsCallouts",
         "Set callout=true on the Schedulable class's execute method",
@@ -1398,8 +1398,8 @@
       "q": "A platform event trigger gets batches of up to 2,000 events. Sometimes it hits CPU limits partway through, and events already processed are processed again on retry. How should the developer resume from the last good event?",
       "options": [
         "Use a static variable to remember the last processed event",
-        "Query the events already processed with SOQL and skip them",
-        "Call EventBus.TriggerContext.currentContext().setResumeCheckpoint(event.ReplayId) after each event is handled",
+        "Query the Platform Event object with SOQL for events already processed in this batch and skip them",
+        "Call setResumeCheckpoint(event.ReplayId) on EventBus.TriggerContext after each event",
         "Throw a DmlException so the platform skips the batch"
       ],
       "answer": [
@@ -1471,8 +1471,8 @@
       "options": [
         "An Account trigger that publishes a custom platform event",
         "Outbound messages from a workflow rule",
-        "Enable Change Data Capture for Account and have the warehouse subscribe to /data/AccountChangeEvent",
-        "A scheduled batch job that exports changed Accounts every hour"
+        "Enable Change Data Capture for Account; the warehouse subscribes to /data/AccountChangeEvent",
+        "A scheduled Batch Apex job that exports Accounts changed since its last run to the warehouse every hour"
       ],
       "answer": [
         2
@@ -1492,8 +1492,8 @@
       "difficulty": 3,
       "q": "A CDC Apex trigger on AccountChangeEvent should act only when BillingCountry changed on an update. How does the developer check this?",
       "options": [
-        "Compare Trigger.old and Trigger.new for BillingCountry",
-        "Read ChangeEventHeader.changeType and check whether ChangeEventHeader.changedFields contains 'BillingCountry'",
+        "Compare Trigger.oldMap.get(recordId).BillingCountry against the value in Trigger.new for each event",
+        "Check ChangeEventHeader.changeType and whether its changedFields contains 'BillingCountry'",
         "Query AccountHistory for the record in the trigger",
         "Use the ISCHANGED() function in Apex"
       ],
@@ -1565,10 +1565,10 @@
       "q": "A developer must call an OAuth-protected partner API without storing the endpoint or secrets in code, and only users in the Partner Sync permission set may use it. Which two steps are needed? (Choose 2)",
       "options": [
         "Store the client secret in a Custom Label and read it in Apex",
-        "Create an External Credential with the OAuth protocol and a principal, and grant the principal through the permission set",
+        "Create an External Credential (OAuth) with a principal, and grant the principal via the permission set",
         "Create a Named Credential that references the External Credential and use 'callout:Partner_API/...' as the endpoint",
         "Add the user's password to the endpoint URL in a Remote Site Setting",
-        "Hard-code the token in a protected custom metadata type field read by every callout"
+        "Store the OAuth token in a protected custom metadata type field and add it as an Authorization header in Apex"
       ],
       "answer": [
         1,
@@ -1613,8 +1613,8 @@
       "difficulty": 3,
       "q": "An LWC calls Apex that makes a callout taking 40-60 seconds. With many users, the org hits the concurrent long-running request limit. What should the developer do?",
       "options": [
-        "Make the Apex method @future(callout=true) and return its result to the component",
-        "Return a Continuation from an @AuraEnabled(continuation=true cacheable=true) method and handle the response in a callback method",
+        "Make the Apex method @future(callout=true) and return its result to the component when the callout finishes",
+        "Return a Continuation from an @AuraEnabled(continuation=true) method and handle the response in a callback",
         "Set the callout timeout to 5 seconds and retry in a loop",
         "Move the callout into the component's JavaScript with fetch()"
       ],
@@ -1636,9 +1636,9 @@
       "difficulty": 2,
       "q": "A test class covers code that calls a REST endpoint with Http.send(). How should the developer give the test a fake response?",
       "options": [
-        "Implement HttpCalloutMock and call Test.setMock(HttpCalloutMock.class, new MyMock()) before the callout",
+        "Implement HttpCalloutMock and call Test.setMock(HttpCalloutMock.class, new MyMock())",
         "Use @isTest(SeeAllData=true) so the real endpoint is reachable",
-        "Implement WebServiceMock and call Test.setMock(WebServiceMock.class, ...)",
+        "Implement WebServiceMock and call Test.setMock(WebServiceMock.class, new MyMock()) before the callout",
         "Wrap the callout in if (!Test.isRunningTest())"
       ],
       "answer": [
@@ -1733,9 +1733,9 @@
       "difficulty": 3,
       "q": "An @HttpPost method declared as 'global static String create(String name, Integer qty)' needs to log the raw JSON body. RestContext.request.requestBody is always null. Why, and what is the fix?",
       "options": [
-        "Because the method has parameters, the body is deserialized into them and requestBody isn't populated. Remove the parameters and parse requestBody yourself.",
+        "With parameters, the body is deserialized into them and requestBody stays empty. Remove them and parse requestBody.",
         "requestBody only works with @HttpPut. Change the annotation.",
-        "The client must send the body as XML for requestBody to be set.",
+        "The client must send Content-Type: application/xml; requestBody is only filled for XML bodies. Ask the client to switch.",
         "requestBody is only available in test context. Use RestContext.response instead."
       ],
       "answer": [
@@ -1757,8 +1757,8 @@
       "q": "A legacy partner can only consume SOAP. It must call custom Salesforce logic that creates a Case and related records in one transaction. What should the developer build?",
       "options": [
         "An @RestResource class with @HttpPost",
-        "A global class with a webservice static method, then give the partner the generated WSDL",
-        "An @InvocableMethod called through the Actions API",
+        "A global class with a webservice static method; share the generated WSDL",
+        "An @InvocableMethod in an Apex class, which the partner calls through the REST Actions API",
         "An outbound message sent from a flow"
       ],
       "answer": [
@@ -1805,9 +1805,9 @@
       "lang": "apex",
       "options": [
         "Invocable methods have a lower SOQL limit of 20",
-        "Flow calls the method 200 separate times in parallel",
+        "Flow calls the invocable method 200 separate times, each in its own parallel transaction",
         "Order needs a before-save flow instead",
-        "Flow batches the interviews and passes all 200 Ids in one call, so the query inside the loop runs 200 times"
+        "Flow passes all 200 Ids in one call, so the query in the loop runs 200 times"
       ],
       "answer": [
         3
@@ -1827,10 +1827,10 @@
       "difficulty": 1,
       "q": "An invocable action needs three inputs from a flow: an Account Id, a discount and a reason. How should the developer define them?",
       "options": [
-        "Create an inner class with three @InvocableVariable fields and use List<ThatClass> as the method parameter",
+        "An inner class with three @InvocableVariable fields, and List<ThatClass> as the parameter",
         "Add three parameters to the @InvocableMethod",
         "Pass a Map<String, Object> parameter",
-        "Use three separate @InvocableMethod methods in one class"
+        "Add three @InvocableMethod methods to one class, one per input, and Flow calls them in order"
       ],
       "answer": [
         0
@@ -1904,7 +1904,7 @@
       "options": [
         "Use Database.insert with allOrNone = false for the PermissionSetAssignment",
         "Wrap both operations in System.runAs() in production code",
-        "Move the PermissionSetAssignment insert to an @future method that takes the user and permission set Ids",
+        "Move the PermissionSetAssignment insert to an @future method that takes the Ids",
         "Insert the PermissionSetAssignment before the custom object update in the same transaction"
       ],
       "answer": [
@@ -1953,10 +1953,10 @@
       "difficulty": 2,
       "q": "An ERP sends Accounts with an ERP_Number__c external Id field. The developer must create new Accounts or update existing ones, and report which rows were new. Which code fits?",
       "options": [
-        "Database.insert(accts, false) and check SaveResult.isCreated()",
+        "Database.insert(accts, false), then check each SaveResult's isCreated() and update the rows that failed",
         "upsert accts; then query CreatedDate",
         "Database.merge(accts, ERP_Number__c)",
-        "Database.UpsertResult[] r = Database.upsert(accts, Account.ERP_Number__c, false); then check r[i].isCreated()"
+        "Database.upsert(accts, Account.ERP_Number__c, false), then check each UpsertResult's isCreated()"
       ],
       "answer": [
         3
@@ -2055,10 +2055,10 @@
       "code": "for (Account acct : [SELECT Id, Name,\n                         (SELECT Id, Email FROM Contacts)\n                     FROM Account WHERE Type = 'Partner']) {\n    List<Contact> cons = acct.Contacts;\n    if (cons.size() > 0) {\n        PartnerMailer.queue(acct, cons);\n    }\n}",
       "lang": "apex",
       "options": [
-        "Reading the whole child list (acct.Contacts or its size()) can throw 'Aggregate query has too many rows for direct assignment'; iterate the children with an inner for loop instead",
+        "Reading acct.Contacts whole (or its size()) can throw 'Aggregate query has too many rows'; use an inner for loop",
         "Subqueries silently return only the first 200 children; add LIMIT 500 to the subquery",
         "The query exceeds the 50,000 query-row limit; move the logic to Batch Apex",
-        "SOQL for loops can't contain parent-child subqueries; split it into two queries joined with a Map"
+        "SOQL for loops can't contain parent-child subqueries; split it into two queries and join them with a Map<Id, List<Contact>>"
       ],
       "answer": [
         0
@@ -2135,7 +2135,7 @@
       "options": [
         "FOR UPDATE must come before the WHERE clause",
         "FOR UPDATE can only be used in classes declared without sharing",
-        "ORDER BY can't be used in a query that uses FOR UPDATE; remove it and sort in Apex if needed",
+        "ORDER BY isn't allowed with FOR UPDATE; remove it and sort in Apex",
         "FOR UPDATE needs a LIMIT clause so the platform knows how many rows to lock"
       ],
       "answer": [
@@ -2159,7 +2159,7 @@
       "code": "Inventory__c inv = [SELECT Id, On_Hand__c FROM Inventory__c\n                    WHERE Id = :invId FOR UPDATE];\nDecimal price = PricingClient.getPrice(inv.Id); // HTTP callout\ninv.On_Hand__c -= qty;\nupdate inv;",
       "lang": "apex",
       "options": [
-        "FOR UPDATE locks are released automatically when a callout is made, so another transaction can change the rows before the update",
+        "A callout releases the FOR UPDATE locks, so another transaction can change the rows before the update",
         "FOR UPDATE locks expire after 10 seconds, and the pricing API takes longer than that",
         "FOR UPDATE only blocks edits from the user interface, not from other Apex transactions",
         "The callout throws 'uncommitted work pending' because a lock counts as pending DML, so the update is skipped"
@@ -2266,8 +2266,8 @@
       "lang": "apex",
       "options": [
         "Cases from the 7 full days before today; today's Cases are excluded",
-        "Cases created from 12:00 AM seven days before today up to now, so today is included (8 calendar days)",
-        "Cases created in the last 168 hours, counted from the current time",
+        "From midnight 7 days ago until now, so today is included (8 calendar days)",
+        "Cases created in the last 168 hours (7 × 24), counted back from the current date and time",
         "None: date literals can't be compared to DateTime fields with ="
       ],
       "answer": [
@@ -2426,7 +2426,7 @@
       "options": [
         "The save succeeds, because validation rules run before before triggers and only see the rep's input",
         "The save succeeds, because validation rules don't evaluate field values set by Apex",
-        "The save is blocked by the validation rule, because custom validation rules run after before triggers and see the trigger's value",
+        "It's blocked: custom validation rules run after before triggers, so they see Discount__c = 35",
         "The save succeeds, and the validation rule blocks the record later when a workflow rule re-runs validation"
       ],
       "answer": [
@@ -2506,7 +2506,7 @@
         "Record-triggered flows always run in a separate transaction, so the trigger fires once in each; make the flow run asynchronously",
         "The platform always fires after update triggers twice when any flow exists on the object; use a static Boolean to stop the second run",
         "Duplicate rules re-run after the flow and copy the Task; turn off the duplicate rule on Task",
-        "The flow's update sends the record through the save procedure again, so the trigger runs twice; create the Task only when StageName changed compared to Trigger.oldMap"
+        "The flow's update re-runs the save, so the trigger fires twice; create the Task only if StageName changed vs Trigger.oldMap"
       ],
       "answer": [
         3
@@ -2606,9 +2606,9 @@
       "code": "trigger OppStage on Opportunity (before insert, before update) {\n    for (Opportunity o : Trigger.new) {\n        Opportunity old = Trigger.oldMap.get(o.Id);\n        if (o.StageName != old.StageName) {\n            o.Stage_Changed_On__c = Date.today();\n        }\n    }\n}",
       "lang": "apex",
       "options": [
-        "Trigger.oldMap is null in insert context, so Trigger.oldMap.get() throws a NullPointerException; check Trigger.isUpdate first",
+        "Trigger.oldMap is null on insert, so oldMap.get() throws a NullPointerException; check Trigger.isUpdate",
         "A null old record makes the comparison true, so the stamp is set on every insert",
-        "The trigger doesn't compile, because oldMap can't be used in a trigger that includes before insert",
+        "The trigger doesn't compile, because Trigger.oldMap can't be used in a trigger that also handles before insert",
         "o.Id is null in before insert, so the loop skips the record and a required field stays blank"
       ],
       "answer": [
@@ -2688,8 +2688,8 @@
       "lang": "apex",
       "options": [
         "It inserts the Account named 'Globex (retry)'",
-        "It fails, because a still holds the Id from the rolled-back insert; create a new Account (or clone it without the Id)",
-        "Database.rollback(sp) throws, because the savepoint was set before the Account insert",
+        "It fails: a still holds the Id from the rolled-back insert; clone it without the Id first",
+        "Database.rollback(sp) throws an exception, because the savepoint was set before the Account insert",
         "It creates a second Account, so the org ends with two Globex records"
       ],
       "answer": [
@@ -2768,7 +2768,7 @@
         "getErrors() is empty for failed records; call getMessage() on the SaveResult directly",
         "SaveResults come back in random order; sort them by Id before logging",
         "Database.insert(rows, false) throws on the first failure, so the loop only logs successes",
-        "getId() returns null when an insert fails; loop by index and use rows[i] (for example its external key) to identify the row"
+        "getId() is null for failed rows; loop by index and use rows[i] (e.g. its external key)"
       ],
       "answer": [
         3
@@ -2792,8 +2792,8 @@
       "lang": "apex",
       "options": [
         "It sends the names that were cached when the job was enqueued",
-        "It throws a NullPointerException, because transient member variables are null when a Queueable runs",
-        "It doesn't compile, because transient isn't allowed in classes that implement Queueable",
+        "It throws a NullPointerException: transient members aren't serialized, so cache is null",
+        "It doesn't compile, because the transient keyword isn't allowed in classes that implement Queueable",
         "It sends the names, but they may be stale because the cache isn't refreshed"
       ],
       "answer": [
@@ -2819,8 +2819,8 @@
       "options": [
         "200 Queueable jobs are queued and run in parallel",
         "Up to 50 jobs are queued, then a LimitException is thrown",
-        "The second System.enqueueJob call throws a LimitException, because an asynchronous context can add only one Queueable job",
-        "The jobs are queued but held until the batch's finish() method completes"
+        "The second enqueueJob call throws a LimitException; async code can add only one Queueable",
+        "All 200 jobs are queued but held in the flex queue until the batch's finish() method completes"
       ],
       "answer": [
         2
@@ -3030,7 +3030,7 @@
       "pack": "hard",
       "q": "A nightly batch sometimes fails a chunk with an uncatchable limit exception. Operations needs the Ids of the records in each failed chunk saved, so they can be retried the next night. What should the developer do?",
       "options": [
-        "Implement Database.RaisesPlatformEvents on the batch, and subscribe a trigger to BatchApexErrorEvent that saves the JobScope Ids",
+        "Implement Database.RaisesPlatformEvents and save JobScope Ids from a BatchApexErrorEvent trigger",
         "Wrap the execute() body in try/catch for LimitException and save the scope Ids in the catch block",
         "Implement Database.Stateful, add failed Ids to a list in execute(), and save them in finish()",
         "Attach a Transaction Finalizer in execute() to save the Ids of the chunk if it fails"
@@ -3083,9 +3083,9 @@
       "lang": "apex",
       "options": [
         "All subscribers received and processed the event; no further check is needed",
-        "The publish request was queued (OPERATION_ENQUEUED); pass a publish callback (EventBus.EventPublishFailureCallback or EventPublishSuccessCallback) to EventBus.publish",
+        "Only that the publish was queued; pass an EventPublishFailureCallback or SuccessCallback to learn the result",
         "The subscriber trigger finished without errors; query EventBusSubscriber to confirm",
-        "The event was committed with the transaction; check Limits.getDMLStatements() for the final result"
+        "The event was committed with the transaction; check Limits.getDMLStatements() afterwards to confirm the final result"
       ],
       "answer": [
         1
@@ -3110,7 +3110,7 @@
       "options": [
         "All logs are rolled back, and the whole batch is retried automatically up to 9 times",
         "The logs for the first 300 events stay committed, and the trigger fires again starting at event 301",
-        "The logs for the first 300 events stay committed, and the remaining events in that batch aren't processed by this trigger",
+        "Logs for the first 300 stay committed; the rest of the batch isn't processed by this trigger",
         "All logs are rolled back, and the trigger moves straight to the error state"
       ],
       "answer": [
@@ -3187,10 +3187,10 @@
       "code": "try {\n    HttpResponse res = new Http().send(req);\n    Map<String, Object> body =\n        (Map<String, Object>) JSON.deserializeUntyped(res.getBody());\n    shipment.Tracking__c = (String) body.get('tracking');\n} catch (CalloutException e) {\n    shipment.Sync_Status__c = 'Failed';\n}",
       "lang": "apex",
       "options": [
-        "Http.send() throws a CalloutException for the 503, so the catch block sets the status to Failed",
+        "Http.send() throws a CalloutException for the 503 status, so the catch block sets Sync_Status__c to Failed",
         "Http.send() returns null for a 503, so res.getBody() throws a NullPointerException",
         "The platform retries the callout up to 3 times before returning the 503",
-        "Http.send() returns normally, then parsing the HTML throws a JSONException that isn't caught; check res.getStatusCode() before parsing"
+        "send() returns normally, then parsing HTML throws an uncaught JSONException; check getStatusCode() first"
       ],
       "answer": [
         3
@@ -3214,7 +3214,7 @@
       "lang": "apex",
       "options": [
         "Future methods run before the rest of the method, so the audit DML is pending when the callout runs",
-        "Queuing a future method counts as pending work, so the callout fails with 'You have uncommitted work pending'; make the callout first",
+        "Queuing a future method is pending work, so the callout fails ('uncommitted work pending'); call out first",
         "A controller can't make a callout and queue async work in the same request; split them into two Lightning calls",
         "A future method and a callout in one transaction exceed the callout limit"
       ],
@@ -3242,7 +3242,7 @@
         "Call Test.setMock twice, once for each endpoint",
         "Use MultiStaticResourceCalloutMock and map each endpoint to its own static resource",
         "Use Test.setMock(WebServiceMock.class, ...) for the second endpoint",
-        "Add @IsTest(SeeAllData=true) so the second callout reaches the real service",
+        "Add @IsTest(SeeAllData=true) so the second callout, to the quotes service, reaches the real endpoint",
         "Write an HttpCalloutMock class whose respond() method returns a different response based on req.getEndpoint()"
       ],
       "answer": [
@@ -3268,8 +3268,8 @@
       "options": [
         "A global static String @HttpPost method that returns '201' or '422' as its result",
         "An @HttpPost method that throws a custom exception for validation failures, so the platform answers with 422",
-        "A global static void @HttpPost method that parses RestContext.request.requestBody, sets RestContext.response.statusCode to 201 or 422, and writes RestContext.response.responseBody",
-        "A global static Id @HttpPost method that inserts the order and returns its Id, so the platform answers with 201"
+        "A global static void @HttpPost method that parses requestBody and sets RestContext.response statusCode and responseBody",
+        "A global static Id @HttpPost method that inserts the order and returns its new Id, so the platform answers with 201 Created"
       ],
       "answer": [
         2
@@ -3292,7 +3292,7 @@
       "code": "@RestResource(urlMapping='/accounts/*')\nglobal with sharing class AccountApi {\n    @HttpGet\n    global static Account getById() {\n        String recId = RestContext.request.requestURI.substringAfterLast('/');\n        return [SELECT Id, Name FROM Account WHERE Id = :recId];\n    }\n    @HttpGet\n    global static List<Account> search(String name) {\n        return [SELECT Id, Name FROM Account WHERE Name = :name];\n    }\n}",
       "lang": "apex",
       "options": [
-        "urlMapping must start with /services/apexrest",
+        "urlMapping must include the full path, starting with /services/apexrest, for example '/services/apexrest/accounts/*'",
         "Apex REST methods can't return List<Account>",
         "A class can't have two methods annotated with the same HTTP method (@HttpGet)",
         "A @RestResource class can't be declared with sharing",
@@ -3325,7 +3325,7 @@
         "CustomerDto must implement Serializable to be used as a parameter",
         "Even with the wrapper, source is null, because transient members aren't deserialized",
         "The keys in the JSON must appear in the same order as the class's members",
-        "Only global members are deserialized, so a private member would always stay null"
+        "Only global members are deserialized from JSON, so a public or private member would always stay null"
       ],
       "answer": [
         0,
@@ -3377,9 +3377,9 @@
       "pack": "hard",
       "q": "Client__c must show a live count of its Completed Project__c records. Project__c has a lookup (not master-detail) to Client__c, and it can't be converted because some Projects have no Client. Integrations mass-update Projects, and the count must stay right when a Project is deleted or restored from the Recycle Bin. What is the best solution?",
       "options": [
-        "An Apex trigger on Project__c (after insert, update, delete and undelete) that recalculates the counts with one aggregate query per transaction",
+        "An after insert, update, delete and undelete trigger on Project__c that recounts with one aggregate query",
         "A roll-up summary field on Client__c that counts Completed Projects",
-        "A record-triggered flow on Project__c that runs when a record is created, updated or deleted",
+        "A record-triggered flow on Project__c that runs when a record is created, updated or deleted and recounts the Client",
         "A formula field on Client__c that counts the related Projects"
       ],
       "answer": [
@@ -3405,8 +3405,8 @@
       "options": [
         "Invocable methods can't run SOQL; pass the scores in from the flow instead",
         "The method must be global to run in bulk",
-        "The flow calls the action once per record, so the List always holds one Id and the bug is elsewhere",
-        "The outputs must match the inputs in size and order; build the result by looping over accountIds and looking each one up in a Map"
+        "The flow calls the action once per record, so the List always holds one Id and the bug must be elsewhere",
+        "Outputs must match the inputs in size and order; loop over accountIds and look each one up in a Map"
       ],
       "answer": [
         3

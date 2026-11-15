@@ -1,7 +1,7 @@
 // One question: options are radio buttons (single answer) or checkboxes ("Choose N"), built on <button> for the big tap targets.
 import { motion } from 'motion/react';
 import { CodeBlock } from './CodeBlock.jsx';
-import { Rich } from '../lib/rich.jsx';
+import { Rich, isCodeOnly } from '../lib/rich.jsx';
 import { sfx } from '../audio/sfx.js';
 import { haptic } from '../audio/haptics.js';
 import { useReducedMotion } from '../hooks/useMotionPrefs.js';
@@ -31,7 +31,7 @@ export function QuestionView({ question, chosen, onToggle, revealed, nudge, hidd
   return (
     <div className="stack">
       {multi && <div className="choose-n">Choose {question.answer.length} answers</div>}
-      <h2 className="question" id={`q-${question.id}`}><Rich text={cleanQuestion(question.q)} /></h2>
+      <h2 className="question" id={`q-${question.id}`}><Rich text={cleanQuestion(question.q)} autoCode /></h2>
       {question.code && <CodeBlock code={question.code} lang={question.lang} />}
       <motion.div
         className="options"
@@ -66,7 +66,7 @@ export function QuestionView({ question, chosen, onToggle, revealed, nudge, hidd
               transition={{ delay: reduced ? 0 : 0.04 * i, duration: 0.25, ease: [0.2, 0, 0, 1] }}
             >
               <span className="letter" aria-hidden="true">{LETTERS[i]}</span>
-              <span><Rich text={opt} /><span className="sr-only">{srState}</span></span>
+              <span>{isCodeOnly(opt) ? <code className="opt-code">{opt}</code> : <Rich text={opt} autoCode />}<span className="sr-only">{srState}</span></span>
               <span className="mark" aria-hidden="true">{mark}</span>
             </motion.button>
           );

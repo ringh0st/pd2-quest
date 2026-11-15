@@ -116,7 +116,7 @@ export function Sprint({ query }) {
   return (
     <main className="screen focus" id="main">
       <h1 className="sr-only">Practice sprint, round {round.n}</h1>
-      {(sec || query.hard) && <p className="small muted center" style={{ fontWeight: 700 }}>{query.hard ? '🔥 Exam-hard ' : ''}{sec ? `${sec.emoji} ${sec.title} ` : ''}practice</p>}
+      {(sec || query.hard) && <p className="small muted center" style={{ fontWeight: 700 }}>{query.hard ? '🔥 Exam-hard ' : ''}{sec ? `${sec.emoji} ${sec.short} ` : ''}practice</p>}
       <PracticeRunner key={round.n} questions={round.questions} onExit={() => go('/')} onDone={done} topRight={timer} />
     </main>
   );
