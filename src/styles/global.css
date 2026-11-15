@@ -1010,17 +1010,29 @@ h1[tabindex='-1']:focus, h2[tabindex='-1']:focus { outline: none; }
 /* light/dark switch in the top bar */
 .theme-toggle .icon { color: var(--gold-text, var(--text)); }
 :root[data-theme='dark'] .theme-toggle .icon { color: #FFD76A; }
-/* ===== center tab (Play): same size as the others, emphasised by a soft accent tile ===== */
+/* ===== center tab (Play) =====
+   Sizing idea: the middle tab is a taller panel that rises above the bar, with a bigger icon.
+   Bottoms and the label line match the other tabs; the extra size only grows upward.
+   Colours stay the app's own (soft accent tint, solid accent when current). */
+.nav-center { isolation: isolate; }
+.nav-center::before {
+  content: ''; position: absolute; z-index: -1;
+  left: 3px; right: 3px; top: calc(-14px * var(--text-scale)); bottom: 2px;
+  border-radius: 18px 18px 14px 14px;
+  background: color-mix(in srgb, var(--primary) 9%, var(--surface));
+  box-shadow: 0 -1px 0 var(--hairline), 0 -6px 14px color-mix(in srgb, var(--primary) 10%, transparent);
+}
+.nav-center.on::before { background: color-mix(in srgb, var(--primary) 16%, var(--surface)); }
 .nav-center-tile {
-  /* 38px circle in the 30px icon slot: same bottom as the other icons, the extra 8px grows upward only; label on the shared line */
-  display: grid; place-items: center; width: calc(38px * var(--text-scale)); height: calc(38px * var(--text-scale));
-  margin-top: calc(-8px * var(--text-scale));
-  border-radius: 50%; font-size: calc(19px * var(--text-scale));
+  /* 46px circle in the 30px icon slot: same bottom as the other icons, the extra 16px grows upward only */
+  display: grid; place-items: center; width: calc(46px * var(--text-scale)); height: calc(46px * var(--text-scale));
+  margin-top: calc(-16px * var(--text-scale));
+  border-radius: 50%; font-size: calc(22px * var(--text-scale));
+  background: color-mix(in srgb, var(--primary) 18%, var(--surface)); color: var(--primary);
   box-shadow: 0 2px 6px color-mix(in srgb, var(--primary) 18%, transparent);
-  background: color-mix(in srgb, var(--primary) 16%, transparent); color: var(--primary);
   transition: background var(--dur-quick), color var(--dur-quick);
 }
-.nav-center-tile .icon { translate: 1px 0; }
+.nav-center-tile .icon { translate: 2px 0; }
 .nav-center-label { font-weight: 800; color: var(--primary); }
 .nav-center.on .nav-center-tile { background: var(--primary); color: var(--on-primary); }
 /* ===== end center tab ===== */
