@@ -1251,3 +1251,10 @@ h1[tabindex='-1']:focus, h2[tabindex='-1']:focus { outline: none; }
 .check-pair { grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr); }
 .check-pair .btn { min-width: 0; padding-inline: 8px; }
 .check-v { flex-wrap: wrap; justify-content: center; text-align: center; }
+/* The bar's own colour carries on below the screen edge. On iPhones where the browser parks the
+   bar a little above the bottom (Safari's floating toolbar, home-screen app), nothing shows through
+   underneath it, so it never looks like it is floating. */
+.bottom-nav::after {
+  content: ''; position: absolute; left: 0; right: 0; top: 100%; height: 120px;
+  background: var(--surface); pointer-events: none;
+}
