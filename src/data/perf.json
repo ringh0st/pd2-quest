@@ -591,6 +591,21 @@
       "id": "perf-f29",
       "front": "What does TYPEOF do?",
       "back": "Selects different fields depending on the object type of a polymorphic relationship like Task.What."
+    },
+    {
+      "id": "perf-f30",
+      "front": "Which formula fields can be indexed?",
+      "back": "Only deterministic ones. No TODAY()/NOW(), no fields from other objects, no TEXT() on a picklist."
+    },
+    {
+      "id": "perf-f31",
+      "front": "Why are mass deletes slow afterwards?",
+      "back": "Soft-deleted rows stay in the Recycle Bin for 15 days and queries must skip them. For 1M+ deletes use Bulk API hard delete."
+    },
+    {
+      "id": "perf-f32",
+      "front": "Continuation: parallel callouts and timeout",
+      "back": "Up to 3 callouts per continuation, run in parallel; the callback runs once after all return. Max timeout 120 seconds."
     }
   ],
   "questions": [
@@ -2402,6 +2417,157 @@
         "Only fields marked transient are excluded; pageNo is kept in view state."
       ],
       "source": "Visualforce Developer Guide: Best Practices for Improving Visualforce Performance; Apex Developer Guide: Using the transient Keyword"
+    },
+    {
+      "id": "perf-x37",
+      "lesson": "perf-9",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A freight LWC asks three carriers for rates through one continuation, using the Apex below. How does it behave?",
+      "code": "@AuraEnabled(continuation=true)\npublic static Object startQuotes(String zip) {\n    Continuation con = new Continuation(120);\n    con.continuationMethod = 'processQuotes';\n    Map<String, String> carrierByLabel = new Map<String, String>();\n    for (String c : new List<String>{ 'Ace', 'Bolt', 'Crest' }) {\n        HttpRequest req = new HttpRequest();\n        req.setMethod('GET');\n        req.setEndpoint('callout:' + c + '/rates?zip=' + zip);\n        carrierByLabel.put(con.addHttpRequest(req), c);\n    }\n    con.state = carrierByLabel;\n    return con;\n}\n\n@AuraEnabled\npublic static Object processQuotes(List<String> labels, Object state) {\n    Map<String, String> carrierByLabel = (Map<String, String>) state;\n    Map<String, String> quotes = new Map<String, String>();\n    for (String label : labels) {\n        quotes.put(carrierByLabel.get(label),\n                   Continuation.getResponse(label).getBody());\n    }\n    return quotes;\n}",
+      "lang": "apex",
+      "options": [
+        "The three callouts run one after another, and each can wait up to 120 seconds, so a worst case takes about 6 minutes",
+        "The callouts run in parallel; processQuotes runs once, after all three respond, and gets the label map from state",
+        "processQuotes runs three times, once as each carrier responds, and labels holds only that carrier's label each time",
+        "The map is gone when the callback runs, because state holds only a String; keep carriers in a static Map instead"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "A continuation can hold up to three callouts, which run in parallel; the callback runs only after all responses return. The timeout (max 120 seconds) applies to the whole continuation, and state carries any Object to the callback.",
+      "wrong": [
+        "Callouts in one continuation run in parallel, and the 120-second timeout is for the continuation, not per request.",
+        "",
+        "The callback is invoked once, after all callout responses are returned, with all the labels.",
+        "state is of type Object, so a Map works, and statics don't survive to the callback's new transaction."
+      ],
+      "source": "Apex Developer Guide: Making Multiple Asynchronous Callouts; Continuation Class; Asynchronous Callout Limits"
+    },
+    {
+      "id": "perf-x38",
+      "lesson": "perf-3",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "Lead has 5,000,000 records. A trigger's query filters only on CreatedDate, and the filter matches 850,000 records. How will the optimizer treat the CreatedDate index?",
+      "options": [
+        "Not used: 850,000 is more than 10% of 5,000,000, which is the selectivity threshold for every index",
+        "Not used: standard indexes are dropped once a filter matches more than 333,333 records on any large object",
+        "Used: the standard-index threshold is 30% of the first million plus 15% of the other 4 million",
+        "Used, but only because CreatedDate is an audit date, and audit date filters skip selectivity thresholds"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "A standard index is used if the filter matches less than 30% of the first million records and less than 15% of the rest. For 5 million rows that is 300,000 + 600,000 = 900,000, so 850,000 is under the threshold.",
+      "wrong": [
+        "10% of the first million plus 5% of the rest is the custom-index threshold; CreatedDate has a standard index.",
+        "333,333 is the cap for custom indexes, not standard ones.",
+        "",
+        "CreatedDate follows the normal standard-index thresholds like any other standard index."
+      ],
+      "source": "Best Practices for Deployments with Large Data Volumes: Indexes"
+    },
+    {
+      "id": "perf-x39",
+      "lesson": "perf-3",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "Policy__c has 3 million rows, and a team asks Salesforce Support to index some formula fields. Which two formulas can get a custom index? (Choose 2)",
+      "options": [
+        "Region_Code__c = LEFT(Postal_Code__c, 3), built only from a text field on the same record",
+        "Days_Open__c = TODAY() - Start_Date__c, so that the renewal queries can filter on age",
+        "Agency_Tier__c = Agency__r.Tier__c, which copies the tier from the parent Agency record",
+        "Premium_Band__c = IF(Annual_Premium__c > 10000, 'High', 'Standard') on a Number field",
+        "Status_Text__c = TEXT(Status__c), which turns the Status picklist value into plain text"
+      ],
+      "answer": [
+        0,
+        3
+      ],
+      "explain": "Only deterministic formula fields can be indexed. Formulas that use TODAY() or NOW(), reference other objects, or call TEXT() on a picklist can't be indexed.",
+      "wrong": [
+        "",
+        "TODAY() makes the formula non-deterministic.",
+        "Referencing a field through a lookup makes the formula non-deterministic.",
+        "",
+        "Custom indexes can't be created on formulas that call TEXT() on a picklist field."
+      ],
+      "source": "Best Practices for Deployments with Large Data Volumes: Indexes; Apex Developer Guide: Working with Very Large SOQL Queries"
+    },
+    {
+      "id": "perf-x40",
+      "lesson": "perf-4",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "Ticket__c has 3 million rows; about 97% are Closed. Status__c has a custom index, and the open values (New, Working, Escalated) match about 60,000 rows. The query below fails as non-selective in a trigger. What is the best fix?",
+      "code": "List<Ticket__c> open = [\n    SELECT Id, Subject__c\n    FROM Ticket__c\n    WHERE Status__c != 'Closed'\n];",
+      "lang": "apex",
+      "options": [
+        "Rewrite the filter as Status__c IN ('New', 'Working', 'Escalated') so the index can be used",
+        "Add ORDER BY Status__c, so the optimizer reads the index in order and skips the closed rows quickly",
+        "Keep != and add LIMIT 200, because a LIMIT under the threshold makes any filter count as selective",
+        "Ask Support for a second index on Status__c that includes null values, to serve the negative filter"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "Negative operators such as != typically prevent a custom index from being used. Filtering on the open values with IN lets the optimizer use the index, and 60,000 rows is well under the custom-index threshold for 3 million rows (200,000).",
+      "wrong": [
+        "",
+        "Sorting doesn't make a negative filter selective.",
+        "LIMIT doesn't make a non-selective filter use an index.",
+        "Including nulls doesn't help; the problem is the negative operator."
+      ],
+      "source": "Apex Developer Guide: Working with Very Large SOQL Queries"
+    },
+    {
+      "id": "perf-x41",
+      "lesson": "perf-5",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "Each month a batch job deletes about 2 million expired Event_Log__c records. Afterwards, queries and reports on the object stay slow for days, although far fewer live records remain. What is the best change?",
+      "options": [
+        "Add WHERE IsDeleted = false to every query, so the optimizer skips the deleted rows by using an index",
+        "Lower the batch scope to 200, so each delete commits faster and leaves fewer rows locked afterwards",
+        "Delete them with the Bulk API 2.0 hard delete option, so they skip the Recycle Bin entirely",
+        "Run the deletes in a chained Queueable instead, because async DML doesn't use the Recycle Bin"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "Soft-deleted records stay in the Recycle Bin for 15 days and still affect performance, because queries must exclude them. For deleting a million or more records, the LDV guide recommends the Bulk API hard delete option.",
+      "wrong": [
+        "Queries already exclude deleted rows; the cost is that the rows are still there to exclude.",
+        "Scope size doesn't change where the deleted rows end up.",
+        "",
+        "Asynchronous DML still soft-deletes records into the Recycle Bin."
+      ],
+      "source": "Best Practices for Deployments with Large Data Volumes: Deleting Data"
+    },
+    {
+      "id": "perf-x42",
+      "lesson": "perf-5",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A web-to-contact integration links every unmatched Contact to one \"Unassigned\" Account, which now has 400,000 Contacts. Loads fail with UNABLE_TO_LOCK_ROW, and sharing changes on that Account are very slow. What should the architect recommend?",
+      "options": [
+        "Make the Account private and owned by an inactive user, so record locks and sharing no longer apply to it",
+        "Turn on Defer Sharing Calculations permanently, so locks are released as soon as each insert commits",
+        "Change the Contact lookup to master-detail, so inserting children no longer has to lock the parent Account",
+        "Spread unmatched Contacts across many placeholder Accounts, keeping each under about 10,000 children"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "This is account data skew: too many child records under one Account cause lock contention and slow sharing recalculation. Keeping each Account under about 10,000 children spreads the locks and the sharing work.",
+      "wrong": [
+        "Inserting or updating children still locks the parent, whatever its owner or sharing setting.",
+        "Defer Sharing Calculations is a temporary tool for big changes; it doesn't remove parent row locks.",
+        "Master-detail children lock the parent too, and add sharing that depends on it.",
+        ""
+      ],
+      "source": "Designing Record Access for Enterprise Scale: Account Data Skew; Trailhead: Large Data Volumes"
     }
   ]
 }

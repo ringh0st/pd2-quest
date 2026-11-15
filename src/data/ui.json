@@ -649,6 +649,21 @@
       "id": "ui-f30",
       "front": "How do you load a third-party JS library in LWC?",
       "back": "Upload it as a static resource and call loadScript(this, resourceUrl) from lightning/platformResourceLoader. CDN script tags are blocked by CSP."
+    },
+    {
+      "id": "ui-f31",
+      "front": "Does @track see changes inside a Set, Map or Date?",
+      "back": "No. LWC observes plain objects and arrays only. For Set, Map, Date or class instances, assign a new object to rerender."
+    },
+    {
+      "id": "ui-f32",
+      "front": "StandardSetController record limit",
+      "back": "10,000 records. A query locator returning more throws a LimitException; a List with more is truncated."
+    },
+    {
+      "id": "ui-f33",
+      "front": "Stop updateRecord from overwriting someone else's save",
+      "back": "Pass clientOptions { ifUnmodifiedSince: lastModifiedDate } (LastModifiedDate read through a wire adapter)."
     }
   ],
   "questions": [
@@ -2662,6 +2677,258 @@
         "The server still holds the request open while it waits for the slow service, so it still counts as a long-running request."
       ],
       "source": "Apex Developer Guide: Make Long-Running Callouts with Continuations"
+    },
+    {
+      "id": "ui-x41",
+      "lesson": "ui-1",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A tag picker shows \"{count} selected\". Users tick tags, but the count stays at 0. What should the developer change?",
+      "code": "import { LightningElement, track } from 'lwc';\n\nexport default class TagPicker extends LightningElement {\n  @track selected = new Set();\n\n  get count() { return this.selected.size; }\n\n  handleToggle(event) {\n    const id = event.target.dataset.id;\n    if (this.selected.has(id)) this.selected.delete(id);\n    else this.selected.add(id);\n  }\n}",
+      "lang": "js",
+      "options": [
+        "Replace @track with @api so the parent component can observe the Set and push its new size back down to the child",
+        "After each change, assign a new Set, e.g. this.selected = new Set(this.selected), as Set mutations aren't observed",
+        "Move the add() and delete() calls into renderedCallback() so that every change happens inside the render cycle",
+        "Keep @track and add this.selected = this.selected after each change so the engine sees an assignment to the field"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "LWC observes mutations inside plain objects and arrays, but not inside complex objects such as Set, Map, Date or class instances, even with @track. Assigning a new Set gives the field a new reference, so the component rerenders.",
+      "wrong": [
+        "@api makes the property public and read-only to the child; it doesn't make Set mutations observable.",
+        "",
+        "Changing state in renderedCallback() is an anti-pattern and still mutates the same Set, which isn't observed.",
+        "Assigning the same reference is === to the old value, so the engine doesn't rerender."
+      ],
+      "source": "LWC Developer Guide: Field Reactivity"
+    },
+    {
+      "id": "ui-q41",
+      "lesson": "ui-1",
+      "difficulty": 2,
+      "q": "A reviewer flags the list template below. Contacts can be added and removed, and the first and last rows get special styling. What should change?",
+      "code": "<ul>\n  <template iterator:it={contacts}>\n    <li key={it.index}>\n      {it.value.Name}\n      <template lwc:if={it.last}>\n        <span> (newest)</span>\n      </template>\n    </li>\n  </template>\n</ul>",
+      "lang": "html",
+      "options": [
+        "Use a unique value from the data as the key, such as key={it.value.Id}, since the index can't be a key",
+        "Move key={it.index} from the li element onto the template tag that holds the iterator directive",
+        "Replace iterator with for:each, because the iterator directive doesn't support lwc:if on its items",
+        "Replace it.last with a check of it.index against contacts.length - 1, because the iterator has no last property"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "Every list item needs a key that is a unique string or number from the data, and the docs say you can't use the index as the key. The iterator directive does provide value, index, first and last.",
+      "wrong": [
+        "",
+        "The key goes on the first element inside the nested template, not on the template tag, and an index is still not allowed.",
+        "lwc:if works inside an iterator; first and last are exactly why you choose iterator.",
+        "The iterator directive exposes first and last as booleans."
+      ],
+      "source": "LWC Developer Guide: Render Lists"
+    },
+    {
+      "id": "ui-x43",
+      "lesson": "ui-1",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A child LWC must round the amount its parent passes in, every time the parent changes it. The developer writes the code below, and the component fails to save. What is the fix?",
+      "code": "import { LightningElement, api } from 'lwc';\n\nexport default class AmountBadge extends LightningElement {\n  _amount;\n\n  @api\n  get amount() { return this._amount; }\n\n  @api\n  set amount(value) { this._amount = Math.round(value); }\n}",
+      "lang": "js",
+      "options": [
+        "Remove the getter, because a public property only needs a setter when the parent is the one that writes it",
+        "Rename _amount to amount, so the getter and the setter share the public property as their own backing field",
+        "Replace both with @track amount and do the rounding once in connectedCallback() when the component loads",
+        "Keep @api on only one of the two, by convention the getter, because a getter and setter can't both have it"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "A public property with a custom setter must also have a getter, and only one of them is annotated with @api. The docs annotate the getter and keep the value in a private field such as _amount.",
+      "wrong": [
+        "A setter for a public property must have a matching getter.",
+        "Using the property's own name as its backing field would recurse into the getter and setter.",
+        "connectedCallback runs once, so later changes from the parent wouldn't be rounded, and @track doesn't make it public.",
+        ""
+      ],
+      "source": "LWC Developer Guide: Use Getters and Setters to Modify Data"
+    },
+    {
+      "id": "ui-x44",
+      "lesson": "ui-2",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "Two agents often edit the same Case in this custom LWC. The business wants a save to fail, instead of silently overwriting, if someone else saved the Case after the component loaded it. What should the developer do?",
+      "code": "import { updateRecord } from 'lightning/uiRecordApi';\n\nasync handleSave() {\n  const fields = { Id: this.recordId, Status: this.status };\n  await updateRecord({ fields });\n}",
+      "lang": "js",
+      "options": [
+        "Call notifyRecordUpdateAvailable([this.recordId]) just before updateRecord, so LDS loads the latest copy of the Case first",
+        "Add apiName: 'Case' to the recordInput, so the UI API compares record versions before it applies the update",
+        "Wire LastModifiedDate with getRecord and pass { ifUnmodifiedSince: lastModifiedDate } as updateRecord's clientOptions",
+        "Call refreshApex on the wired record before saving, then compare the old and new Status values in JavaScript"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "updateRecord takes clientOptions with ifUnmodifiedSince set to the LastModifiedDate read through a wire adapter. If the record changed since then, the update is rejected instead of overwriting the other agent's work.",
+      "wrong": [
+        "This refreshes cached data but still overwrites whatever the other agent saved.",
+        "apiName is only for creating records; for an update you pass null or leave it out.",
+        "",
+        "refreshApex is for wired Apex results, not getRecord, and a client-side comparison still leaves a race window."
+      ],
+      "source": "LWC Developer Guide: updateRecord(recordInput, clientOptions)"
+    },
+    {
+      "id": "ui-x45",
+      "lesson": "ui-2",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A deal summary LWC wires getRecord for Opportunity Amount and CloseDate and shows them with getFieldValue. Users see 125000 and 2026-12-31 instead of formatted currency and dates. The team wants formatted, localized values with no formatting code. What should the developer do?",
+      "options": [
+        "Move both fields into optionalFields, because optional fields are returned already formatted for display to the user",
+        "Show the values with getFieldDisplayValue(this.deal.data, AMOUNT_FIELD), which returns the formatted display value",
+        "Switch the wire to layoutTypes: ['Full'], which returns every field on the layout as a formatted string",
+        "Pass { formatted: true } as a third argument to getFieldValue, so it returns the display value instead"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "getFieldDisplayValue returns the field's display value, which is formatted and localized, while getFieldValue returns the raw value. The same data is available as record.data.fields.Amount.displayValue.",
+      "wrong": [
+        "optionalFields only changes what happens when the user can't see a field; values aren't formatted differently.",
+        "",
+        "layoutTypes chooses which fields come back, not whether they are formatted.",
+        "getFieldValue has no formatting option; getFieldDisplayValue is the separate function for this."
+      ],
+      "source": "LWC Developer Guide: getFieldDisplayValue(record, field)"
+    },
+    {
+      "id": "ui-q42",
+      "lesson": "ui-2",
+      "difficulty": 2,
+      "q": "A Quick Note button in an LWC on an Account page must create a Task related to the Account with Lightning Data Service and no Apex. Which call is correct?",
+      "options": [
+        "createRecord(TASK_OBJECT, { Subject: 'Call back', WhatId: this.recordId })",
+        "updateRecord({ apiName: 'Task', fields: { Subject: 'Call back', WhatId: this.recordId } })",
+        "createRecord({ fields: { attributes: { type: 'Task' }, Subject: 'Call back', WhatId: this.recordId } })",
+        "createRecord({ apiName: 'Task', fields: { Subject: 'Call back', WhatId: this.recordId } })"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "createRecord takes one recordInput object with the object's apiName and a fields map. updateRecord only updates existing records, identified by the Id in fields.",
+      "wrong": [
+        "createRecord takes a single recordInput object, not the object and fields as separate arguments.",
+        "updateRecord doesn't create records; for an update, apiName is left out and fields must contain the Id.",
+        "The object is named with apiName, not with an attributes block inside fields.",
+        ""
+      ],
+      "source": "LWC Developer Guide: createRecord(recordInput); updateRecord(recordInput, clientOptions)"
+    },
+    {
+      "id": "ui-x46",
+      "lesson": "ui-8",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A Visualforce page shows only {!opportunity.Name} and {!maxDiscount}. It fails with \"SObject row was retrieved via SOQL without querying the requested field: Opportunity.Amount\". Which two changes fix it? (Choose 2)",
+      "code": "public with sharing class OppDiscountExt {\n    private final Opportunity opp;\n\n    public OppDiscountExt(ApexPages.StandardController std) {\n        opp = (Opportunity) std.getRecord();\n    }\n\n    public Decimal getMaxDiscount() {\n        return opp.Amount * opp.Discount_Cap__c / 100;\n    }\n}",
+      "lang": "apex",
+      "options": [
+        "Call std.addFields(new List<String>{ 'Amount', 'Discount_Cap__c' }) in the constructor before getRecord()",
+        "Declare the extension without sharing, so the standard controller is allowed to load every field on the record",
+        "Reference both fields on the page in a hidden component, such as an apex:outputText with rendered=\"false\"",
+        "Call std.reset() inside getMaxDiscount() just before reading the fields, so the record is queried again in full",
+        "Read the record with std.getRecord().clone(true, true), because a deep clone copies every field from the database"
+      ],
+      "answer": [
+        0,
+        2
+      ],
+      "explain": "A standard controller loads only the fields referenced in the page markup. addFields() in the constructor adds more, and a hidden component that references the fields (rendered=\"false\") is the documented workaround.",
+      "wrong": [
+        "",
+        "Sharing keywords control record access, not which fields the standard controller loads.",
+        "",
+        "reset() is only needed before calling addFields outside the constructor; on its own it adds no fields.",
+        "clone() copies the fields already in memory; it doesn't query new ones."
+      ],
+      "source": "Apex Reference Guide: StandardController Class (addFields, getRecord)"
+    },
+    {
+      "id": "ui-x47",
+      "lesson": "ui-8",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A Visualforce mass-update page builds its StandardSetController from Database.getQueryLocator over open Cases. In a large org the query matches 14,000 Cases, and the page fails with a LimitException. What explains it?",
+      "options": [
+        "A set controller pages at most 500 records at a time, and calling setPageSize() above 500 throws a LimitException",
+        "Query locators are capped at 50,000 rows in Visualforce, and every row also counts toward the view state",
+        "Iteration components show 1,000 rows unless readOnly=\"true\", and the overflow surfaces as a LimitException",
+        "The set controller handles 10,000 records; a query locator returning more throws, while a List is truncated"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "StandardSetController has a 10,000 record limit. Built from a query locator that returns more, it throws a LimitException; built from a list of more than 10,000 records, it silently truncates to the limit.",
+      "wrong": [
+        "There is no 500-record page size limit; the problem is the total size of the set.",
+        "The 10,000 cap applies to the set controller regardless of the query locator's own limits, and the error is not about view state.",
+        "The 1,000-row iteration limit is real, but it raises a collection size error at render time, not this LimitException from the set controller.",
+        ""
+      ],
+      "source": "Apex Reference Guide: StandardSetController Class"
+    },
+    {
+      "id": "ui-x48",
+      "lesson": "ui-10",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A security review flags the Visualforce page and controller below. Which risk did it find, and what is the fix?",
+      "code": "<apex:page controller=\"CleanupController\" action=\"{!removeContact}\"/>\n\npublic with sharing class CleanupController {\n    public PageReference removeContact() {\n        Id cid = ApexPages.currentPage().getParameters().get('cid');\n        delete [SELECT Id FROM Contact WHERE Id = :cid];\n        return Page.CleanupDone;\n    }\n}",
+      "lang": "apex",
+      "options": [
+        "SOQL injection through the cid parameter; wrap it in String.escapeSingleQuotes() before using it in the query",
+        "CSRF: another site can send users here and the delete runs on load; delete only from a confirmed button click",
+        "XSS through cid; call HTMLENCODE on the parameter in the controller before using it in the query",
+        "Clickjacking: turn on clickjack protection for Visualforce pages, which stops the delete when the page is framed"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "The action attribute runs on page load, so the anti-CSRF token is never checked, and a link on any site can make a logged-in user delete records. Don't perform DML in a page action; require a user action such as a confirmation page with a button.",
+      "wrong": [
+        "The parameter is a bind variable, which is already safe from SOQL injection.",
+        "",
+        "HTMLENCODE is a Visualforce formula function for output, and the problem is the unprompted delete, not rendering.",
+        "Clickjack protection stops framing, but a plain link or redirect still runs the delete."
+      ],
+      "source": "Apex Developer Guide: Cross-Site Request Forgery (CSRF); Secure Coding Guide"
+    },
+    {
+      "id": "ui-q43",
+      "lesson": "ui-10",
+      "difficulty": 2,
+      "q": "Agents type notes with bold text and links in a rich text field. An LWC must show the formatted notes without opening an XSS hole. What should the developer use?",
+      "options": [
+        "A div with lwc:dom=\"manual\" whose innerHTML is set to the notes in renderedCallback()",
+        "<lightning-formatted-rich-text value={notes}>, which keeps allowed tags and strips the rest",
+        "A triple-brace binding such as {{{notes}}} in the template, so the HTML renders as markup",
+        "<lightning-formatted-text value={notes} linkify>, so that the HTML tags render as formatting"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "lightning-formatted-rich-text sanitizes the HTML it receives, keeping only allowed tags and attributes, which prevents XSS. Writing user data to innerHTML bypasses that protection.",
+      "wrong": [
+        "innerHTML with user content is exactly how script injection happens.",
+        "",
+        "LWC templates have no raw-HTML binding syntax.",
+        "lightning-formatted-text shows plain text and links; it doesn't render HTML formatting."
+      ],
+      "source": "Lightning Component Reference: lightning-formatted-rich-text"
     }
   ]
 }

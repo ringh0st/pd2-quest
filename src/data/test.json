@@ -589,6 +589,16 @@
       "id": "test-f32",
       "front": "Quick deploy window",
       "back": "A successful validation (tests passed, coverage met) can be quick-deployed within 10 days."
+    },
+    {
+      "id": "test-f33",
+      "front": "How do you check a stubbed method was called?",
+      "back": "The Stub API has no verify(). Record stubbedMethodName and listOfArgs inside handleMethodCall, then assert on what was recorded."
+    },
+    {
+      "id": "test-f34",
+      "front": "LWC console shows Proxy objects",
+      "back": "Enable custom formatters in Chrome DevTools (Console settings). The LWC formatter shows the real values inside proxies."
     }
   ],
   "questions": [
@@ -2589,6 +2599,151 @@
         "deploy validate requires tests and defaults to RunLocalTests."
       ],
       "source": "Salesforce CLI Command Reference: project deploy start; project deploy validate"
+    },
+    {
+      "id": "test-x41",
+      "lesson": "test-5",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "QuoteService gets a Notifier through its constructor. A test must prove that submit() calls Notifier.send exactly once with the quote's Id, without sending anything. What should the test do?",
+      "code": "public class QuoteService {\n    private Notifier notifier;\n    public QuoteService(Notifier notifier) { this.notifier = notifier; }\n\n    public void submit(Quote__c quote) {\n        quote.Status__c = 'Submitted';\n        notifier.send(quote.Id, 'SUBMITTED');\n    }\n}",
+      "lang": "apex",
+      "options": [
+        "Call Test.createStub, then use Test.verify(stub, 'send', 1) after submit() to check the calls the stub received",
+        "Stub Notifier with Test.createStub; in handleMethodCall, record each method name and args, then assert",
+        "Call Test.setMock(Notifier.class, new NotifierMock()) and read Limits.getCallouts() afterwards to count sends",
+        "Subclass Notifier in the test class, redeclare send() as static, and check a static counter after submit()"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "Every call on a stub goes through handleMethodCall with the method name and listOfArgs, so the provider can record them for the test to assert on. The Stub API has no built-in verify method.",
+      "wrong": [
+        "There is no Test.verify method; the provider has to record the calls itself.",
+        "",
+        "Test.setMock is only for HTTP and SOAP callout mocks, and send() makes no callout to count.",
+        "A subclass can't override an instance method with a static one, and static methods can't be stubbed anyway."
+      ],
+      "source": "Apex Developer Guide: Build a Mocking Framework with the Stub API; StubProvider Interface"
+    },
+    {
+      "id": "test-q41",
+      "lesson": "test-5",
+      "difficulty": 2,
+      "q": "A developer wrote a StubProvider for TaxService but can't make InvoiceBuilder use it in a test. What change makes the stub usable?",
+      "code": "public class InvoiceBuilder {\n    public Decimal total(Id orderId) {\n        TaxService tax = new TaxService();\n        return tax.calculate(orderId);\n    }\n}",
+      "lang": "apex",
+      "options": [
+        "Make TaxService.calculate static, so that Test.createStub can replace it for the whole transaction",
+        "Annotate TaxService with @TestVisible, so Test.createStub swaps every new TaxService() in tests",
+        "Call Test.setMock(TaxService.class, stub) first, so new TaxService() returns the stub instead",
+        "Have InvoiceBuilder accept a TaxService in its constructor, defaulting to new TaxService()"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "The Stub API returns a stub object; it doesn't intercept the new keyword. The class under test needs a seam, such as constructor injection, so the test can pass the stub in.",
+      "wrong": [
+        "Static methods can't be stubbed with the Stub API.",
+        "@TestVisible only exposes private members to tests; it doesn't redirect object creation.",
+        "Test.setMock works only for callout mock interfaces, not for replacing Apex classes.",
+        ""
+      ],
+      "source": "Apex Developer Guide: Build a Mocking Framework with the Stub API"
+    },
+    {
+      "id": "test-x42",
+      "lesson": "test-6",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "With Debug Mode on, a developer logs this.order (an @api object) from an LWC. Chrome's console shows a Proxy instead of the order's fields. How can they see the real values without changing how the component behaves?",
+      "options": [
+        "Turn off Lightning Web Security in Session Settings, because LWS wraps every @api object in its own Proxy",
+        "Remove @api from order while debugging, because the engine wraps only public properties in proxies",
+        "Turn on Enable custom formatters in the DevTools Console settings to see the values inside LWC proxies",
+        "Turn off secure and persistent browser caching, so the console receives the unwrapped objects instead"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "The LWC custom formatter for Chrome DevTools shows the real values held in proxy objects while leaving the proxies in place. With LWS enabled, it also adds extra messages and a filtered call stack.",
+      "wrong": [
+        "The proxies come from the LWC engine, not from LWS, and turning off a security feature changes behavior.",
+        "Changing the decorator changes the component, and tracked objects are proxied too.",
+        "",
+        "Browser caching affects which code version loads, not how objects show in the console."
+      ],
+      "source": "LWC Developer Guide: Debug Using Chrome DevTools"
+    },
+    {
+      "id": "test-x43",
+      "lesson": "test-6",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "In a sandbox, a developer deploys LWC fixes several times a day. After each deploy, reloading the record page often runs the old JavaScript until they empty the browser cache. What does Salesforce recommend?",
+      "options": [
+        "Enable Debug Mode for every user in the sandbox, because debug mode turns off all caching of component code",
+        "Add a version query string to the component's import statements, so that each deploy produces a brand-new module URL",
+        "Set cacheable=false on the component's Apex methods, because cacheable responses keep the old component code",
+        "Clear Enable secure and persistent browser caching in Session Settings while debugging, then turn it back on"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "Turning off secure and persistent browser caching in a sandbox or Developer Edition org lets a reload pick up code changes without emptying the cache. It hurts performance badly, so it stays on in production and is re-enabled after debugging.",
+      "wrong": [
+        "Debug Mode serves unminified code; it's not the documented fix for stale cached components.",
+        "LWC module imports don't take query strings; the platform serves component code.",
+        "Apex caching affects data responses, not the component's JavaScript.",
+        ""
+      ],
+      "source": "LWC Developer Guide: Disable Caching During Development"
+    },
+    {
+      "id": "test-q42",
+      "lesson": "test-6",
+      "difficulty": 2,
+      "q": "An LWC error is caught by framework code, so the console shows only a generic message and the stack points into framework files. How can the developer find the line in their own code that throws?",
+      "options": [
+        "In the Chrome DevTools Sources panel, turn on pause on exceptions and then reproduce the error",
+        "Set the Apex Code and Visualforce log levels to FINEST and read the JavaScript stack in the log",
+        "Wrap the LWC in an Aura component, because Aura prints the full JavaScript stack for children",
+        "Run the component's Jest tests with --coverage, which records the line where the browser failed"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "With pause on exceptions enabled, the browser stops where the exception is thrown, even if framework code later catches it. That shows the failing line in the component's source.",
+      "wrong": [
+        "",
+        "Debug logs record server-side activity, not browser JavaScript stacks.",
+        "Wrapping in Aura changes nothing about where the exception is caught.",
+        "Jest coverage measures local test runs; it doesn't record errors from the browser."
+      ],
+      "source": "LWC Developer Guide: Debug Using Chrome DevTools"
+    },
+    {
+      "id": "test-q43",
+      "lesson": "test-6",
+      "difficulty": 2,
+      "q": "A Jest test for an LWC fails. The developer wants to step through the test and the component's event handler with breakpoints in Chrome DevTools. What should they do?",
+      "options": [
+        "Deploy the component with its __tests__ folder to a sandbox and run it from the Developer Console",
+        "Run npm run test:unit:debug (sfdx-lwc-jest --debug), then open chrome://inspect and pick the Jest process",
+        "Enable Debug Mode for the user, then open the Lightning page in Chrome so that the Jest test runs in its console",
+        "Add console.log calls to the test and run sf apex run test --synchronous to read them in the debug log"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "sfdx-lwc-jest --debug runs Jest under node --inspect-brk in band. Chrome's chrome://inspect page then lists the Jest process so DevTools can attach and stop at breakpoints. VS Code's Debug Test link does the same.",
+      "wrong": [
+        "Jest tests run locally in Node.js, not in an org.",
+        "",
+        "Debug Mode affects code served in the org; Jest tests never run there.",
+        "sf apex run test runs Apex tests, not Jest tests."
+      ],
+      "source": "LWC Developer Guide: Debug Jest Tests for Lightning Web Components"
     }
   ]
 }
