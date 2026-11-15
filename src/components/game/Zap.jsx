@@ -1,5 +1,5 @@
-// Zap, the mascot: a little lightning bolt with a face. Moods change the face; outfits from the shop
-// are vector parts drawn inside Zap's own viewBox, so they stay put at every size.
+// Zap, the mascot: a chubby spark spirit with a lightning crest. Moods change the face, arms and crest;
+// outfits from the shop are vector parts drawn inside Zap's own viewBox, so they stay put at every size.
 import { motion } from 'motion/react';
 import { useReducedMotion, useCalm } from '../../hooks/useMotionPrefs.js';
 import { useStore } from '../../state/store.js';
@@ -17,19 +17,19 @@ const MOUTHS = {
 const INK = '#2B1D00';
 
 // Where each slot is anchored in Zap's viewBox (0 0 100 115):
-// head = middle of the bolt's flat top edge (x 36 to 78 at y 4), eyes = midway between the two eyes.
-const ANCHORS = { head: [57, 4], eyes: [49.5, 48.5] };
+// head = top of the round head (y 34, the crest hides under a hat), eyes = midway between the two eyes.
+const ANCHORS = { head: [50, 37], eyes: [50, 62] };
 
 // Per-item fit on the anchor: shift, scale and tilt. Each drawing below is made around (0, 0),
 // with y = 0 being where the hat meets the bolt (or the eye line for glasses).
 const FIT = {
-  cap: { dx: -1, dy: 1, scale: 1.15, rotate: -4 },
-  shades: { dx: 0, dy: 0, scale: 1, rotate: -3.4 },
-  top: { dx: 0, dy: 1, scale: 1.05, rotate: -5 },
-  grad: { dx: 0, dy: 2, scale: 1.1, rotate: -4 },
-  cowboy: { dx: 0, dy: 2, scale: 1.1, rotate: -3 },
-  party: { dx: 2, dy: 1, scale: 1.05, rotate: 8 },
-  crown: { dx: 0, dy: 1, scale: 1.05, rotate: -3 },
+  cap: { dx: -2, dy: 0, scale: 1.25, rotate: -6 },
+  shades: { dx: 0, dy: 0, scale: 1.3, rotate: 0 },
+  top: { dx: 0, dy: 0, scale: 1.05, rotate: -6 },
+  grad: { dx: 0, dy: 1, scale: 1.15, rotate: -5 },
+  cowboy: { dx: 0, dy: 1, scale: 1.2, rotate: -4 },
+  party: { dx: 3, dy: 0, scale: 1.05, rotate: 10 },
+  crown: { dx: 0, dy: 0, scale: 1.05, rotate: -4 },
 };
 
 const line = { stroke: INK, strokeWidth: 2.5, strokeLinejoin: 'round', strokeLinecap: 'round' };
@@ -134,55 +134,175 @@ export function OutfitIcon({ id, size = 72 }) {
   );
 }
 
+// ---- Zap's body: a chubby spark spirit with a lightning crest ----
+const GOLD = { light: '#FFE58A', mid: '#FFC93D', deep: '#F59E0B', rim: '#C27A06' };
+
+const MOUTH = {
+  happy: <path d="M44 74 Q50 79.5 56 74" fill="none" stroke={INK} strokeWidth="2.6" strokeLinecap="round" />,
+  cheer: (
+    <g>
+      <path d="M42 72 Q50 85 58 72 Z" fill="#8A2A12" stroke={INK} strokeWidth="2.4" strokeLinejoin="round" />
+      <path d="M45.5 78.5 Q50 81.5 54.5 78.5" fill="#FF8A8A" />
+    </g>
+  ),
+  sad: <path d="M45 78 Q50 73.5 55 78" fill="none" stroke={INK} strokeWidth="2.6" strokeLinecap="round" />,
+  think: <path d="M46 76 Q50 75 55 77" fill="none" stroke={INK} strokeWidth="2.6" strokeLinecap="round" />,
+  sleepy: <ellipse cx="50" cy="76" rx="2.6" ry="2" fill="#8A2A12" stroke={INK} strokeWidth="1.8" />,
+  wow: <ellipse cx="50" cy="76.5" rx="3.6" ry="4.6" fill="#8A2A12" stroke={INK} strokeWidth="2.2" />,
+};
+
+/** Eyes: big glossy ovals that blink; mood changes their shape. */
+function Eyes({ mood, still }) {
+  if (mood === 'sleepy') {
+    return (
+      <g stroke={INK} strokeWidth="2.8" strokeLinecap="round" fill="none">
+        <path d="M34 63 Q39 66.5 44 63" /><path d="M56 63 Q61 66.5 66 63" />
+      </g>
+    );
+  }
+  if (mood === 'cheer') {
+    return (
+      <g stroke={INK} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" fill="none">
+        <path d="M34 64 Q39 57 44 64" /><path d="M56 64 Q61 57 66 64" />
+      </g>
+    );
+  }
+  const big = mood === 'wow';
+  const look = mood === 'think' ? -2.5 : 0; // glance up while thinking
+  const ry = big ? 8.2 : 7;
+  return (
+    <motion.g
+      style={{ originY: '62px' }}
+      animate={still ? {} : { scaleY: [1, 1, 0.08, 1, 1] }}
+      transition={{ duration: 4.2, repeat: Infinity, times: [0, 0.9, 0.93, 0.96, 1] }}
+    >
+      {[39, 61].map((cx) => (
+        <g key={cx}>
+          <ellipse cx={cx} cy={62} rx={big ? 6.4 : 5.6} ry={ry} fill={INK} />
+          <circle cx={cx + 1.8} cy={62 + look - 3} r={big ? 2.6 : 2.2} fill="#fff" />
+          <circle cx={cx - 1.6} cy={62 + look + 2.6} r="1.1" fill="#fff" opacity="0.8" />
+        </g>
+      ))}
+      {mood === 'sad' && <path d="M33 55.5 Q38 54.5 43 51.5 M67 55.5 Q62 54.5 57 51.5" fill="none" stroke={INK} strokeWidth="2.4" strokeLinecap="round" />}
+    </motion.g>
+  );
+}
+
+/** Arms: little nubs that wave, rise in a cheer, droop when sad, and rub the chin when thinking. */
+function Arms({ mood, still }) {
+  const armL = { happy: 'M22 78 Q14 80 13 88', cheer: 'M22 72 Q12 62 12 52', sad: 'M22 80 Q17 88 18 95', think: 'M22 78 Q15 84 17 92', sleepy: 'M22 80 Q16 86 17 93', wow: 'M22 74 Q11 70 9 62' };
+  const armR = { happy: 'M78 78 Q86 80 87 88', cheer: 'M78 72 Q88 62 88 52', sad: 'M78 80 Q83 88 82 95', think: 'M76 80 Q70 86 60 84', sleepy: 'M78 80 Q84 86 83 93', wow: 'M78 74 Q89 70 91 62' };
+  const waving = mood === 'happy' && !still;
+  return (
+    <g fill="none" strokeLinecap="round">
+      <path d={armL[mood] ?? armL.happy} stroke={GOLD.rim} strokeWidth="8.5" />
+      <path d={armL[mood] ?? armL.happy} stroke={GOLD.mid} strokeWidth="5" />
+      <motion.g
+        style={{ originX: '78px', originY: '78px' }}
+        animate={waving ? { rotate: [0, -14, 6, -10, 0] } : {}}
+        transition={{ duration: 1.6, delay: 0.6, repeat: 2, repeatDelay: 3 }}
+      >
+        <path d={armR[mood] ?? armR.happy} stroke={GOLD.rim} strokeWidth="8.5" />
+        <path d={armR[mood] ?? armR.happy} stroke={GOLD.mid} strokeWidth="5" />
+      </motion.g>
+    </g>
+  );
+}
+
+/** The lightning crest on top of the head. Hidden under a hat except for a little tuft. */
+function Crest({ mood, hatted, still }) {
+  if (hatted) return <path d="M70 34 L76 26 L74 32 L80 29" fill="none" stroke={GOLD.rim} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />;
+  const droop = mood === 'sad' || mood === 'sleepy';
+  return (
+    <motion.g
+      style={{ originX: '50px', originY: '36px' }}
+      animate={still ? {} : mood === 'cheer' ? { scale: [1, 1.12, 1], rotate: [0, -6, 6, 0] } : { rotate: [0, 3, 0, -3, 0] }}
+      transition={mood === 'cheer' ? { duration: 0.7, repeat: 2 } : { duration: 3.4, repeat: 2, ease: 'easeInOut' }}
+    >
+      <path
+        d={droop ? 'M44 37 L36 21 L48 24 L42 9 L66 30 L54 27 L60 37 Z' : 'M42 37 L45 17 L54 21 L52 0 L71 27 L59 24 L62 37 Z'}
+        fill={GOLD.mid} stroke={GOLD.rim} strokeWidth="3.4" strokeLinejoin="round"
+      />
+      <path d={droop ? 'M46 30 L42 23' : 'M48.5 31 L50 21 M55.5 13 L54.5 8'} stroke="#FFF6CC" strokeWidth="2.6" strokeLinecap="round" opacity="0.9" />
+    </motion.g>
+  );
+}
+
+/** Little sparks that orbit when Zap is excited. */
+function Sparks({ show, still }) {
+  if (!show) return null;
+  const pts = [[14, 40], [86, 38], [10, 66], [92, 64]];
+  return pts.map(([x, y], i) => (
+    <motion.path
+      key={i}
+      d={`M${x} ${y - 5} L${x + 2} ${y} L${x} ${y + 5} L${x - 2} ${y} Z`}
+      fill={i % 2 ? GOLD.light : '#FF9EC4'}
+      stroke={GOLD.rim} strokeWidth="1"
+      initial={still ? false : { opacity: 0, scale: 0.2 }}
+      animate={still ? { opacity: 1 } : { opacity: [0, 1, 0], scale: [0.2, 1.1, 0.6] }}
+      transition={{ duration: 1.1, delay: i * 0.12, repeat: 2, repeatDelay: 0.4 }}
+      style={{ originX: `${x}px`, originY: `${y}px` }}
+    />
+  ));
+}
+
 export function Zap({ mood = 'happy', size = 96, hat, bounce = true, label = 'Zap, your study buddy' }) {
   const reduced = useReducedMotion();
   const calm = useCalm();
   const equipped = useStore((s) => s.equipped.hat);
   const outfit = outfitById(hat === undefined ? equipped : hat);
   const still = reduced || calm;
-  const eyesClosed = mood === 'sleepy';
   const cheering = mood === 'cheer';
   const fullLabel = label && outfit ? `${label}, wearing ${outfit.look}` : label;
+  const hatted = outfit?.slot === 'head';
+  const gid = `zap${mood}${size}`.replace(/\W/g, '');
 
   return (
     <motion.div
       {...(fullLabel ? { role: 'img', 'aria-label': fullLabel } : { 'aria-hidden': true })}
       style={{ position: 'relative', width: size, height: size * 1.15, flex: 'none' }}
-      animate={still || !bounce ? {} : cheering ? { y: [0, -14, 0, -8, 0], rotate: [0, -6, 6, 0] } : { y: [0, -4, 0] }}
-      transition={cheering ? { duration: 0.9 } : { duration: 2.6, repeat: Infinity, ease: 'easeInOut' }}
+      animate={still || !bounce ? {} : cheering ? { y: [0, -14, 0, -8, 0] } : mood === 'sad' ? { y: [0, 1.5, 0] } : { y: [0, -3.5, 0] }}
+      transition={cheering ? { duration: 0.9 } : { duration: 2.8, repeat: Infinity, ease: 'easeInOut' }}
     >
       <svg viewBox="0 0 100 115" width={size} height={size * 1.15} aria-hidden="true" focusable="false" style={{ overflow: 'visible' }}>
         <defs>
-          <linearGradient id="zapBody" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0" stopColor="#FFE07A" />
-            <stop offset="1" stopColor="#FFB020" />
-          </linearGradient>
+          <radialGradient id={`${gid}b`} cx="0.38" cy="0.32" r="0.75">
+            <stop offset="0" stopColor={GOLD.light} />
+            <stop offset="0.6" stopColor={GOLD.mid} />
+            <stop offset="1" stopColor={GOLD.deep} />
+          </radialGradient>
+          <radialGradient id={`${gid}g`} cx="0.5" cy="0.5" r="0.5">
+            <stop offset="0.55" stopColor="#FFD54A" stopOpacity="0.38" />
+            <stop offset="1" stopColor="#FFD54A" stopOpacity="0" />
+          </radialGradient>
         </defs>
-        <ellipse cx="50" cy="110" rx="26" ry="4" fill="rgb(0 0 0 / 0.18)" />
-        <path d="M36 4 L78 4 L60 40 L84 40 L30 108 L42 60 L18 60 Z" fill="url(#zapBody)" stroke="#B87400" strokeWidth="4" strokeLinejoin="round" />
-        <path d="M40 10 L66 10 L54 34" fill="none" stroke="#FFF6CC" strokeWidth="4" strokeLinecap="round" opacity="0.8" />
+        {/* glow + ground shadow */}
+        <circle cx="50" cy="70" r="48" fill={`url(#${gid}g)`} />
+        <ellipse cx="50" cy="110" rx="24" ry="3.6" fill="rgb(0 0 0 / 0.16)" />
+        <Sparks show={cheering || mood === 'wow'} still={still} />
+        <Crest mood={mood} hatted={hatted} still={still} />
+        {/* feet */}
+        <ellipse cx="39" cy="104" rx="8" ry="5" fill={GOLD.deep} stroke={GOLD.rim} strokeWidth="3" />
+        <ellipse cx="61" cy="104" rx="8" ry="5" fill={GOLD.deep} stroke={GOLD.rim} strokeWidth="3" />
+        <Arms mood={mood} still={still} />
+        {/* body: a soft, slightly pear-shaped blob */}
+        <path
+          d="M50 34 C71 34 82 50 82 70 C82 91 68 104 50 104 C32 104 18 91 18 70 C18 50 29 34 50 34 Z"
+          fill={`url(#${gid}b)`} stroke={GOLD.rim} strokeWidth="3.6"
+        />
+        {/* shine + belly bolt */}
+        <path d="M30 52 Q33 42 43 39" fill="none" stroke="#FFF8D6" strokeWidth="4" strokeLinecap="round" opacity="0.85" />
+        <path d="M52 84 L47 92 L52 92 L48 100" fill="none" stroke={GOLD.rim} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" opacity="0.45" />
         {/* cheeks */}
-        <circle cx="34" cy="60" r="5" fill="#FF8FA3" opacity="0.7" />
-        <circle cx="64" cy="58" r="5" fill="#FF8FA3" opacity="0.7" />
-        {/* eyes */}
-        {eyesClosed ? (
-          <g stroke={INK} strokeWidth="3" strokeLinecap="round" fill="none">
-            <path d="M37 50 Q41 53 45 50" /><path d="M54 49 Q58 52 62 49" />
-          </g>
-        ) : (
-          <motion.g
-            style={{ originY: '50px' }}
-            animate={still ? {} : { scaleY: [1, 1, 0.1, 1, 1] }}
-            transition={{ duration: 4, repeat: Infinity, times: [0, 0.9, 0.93, 0.96, 1] }}
-          >
-            <ellipse cx="41" cy="49" rx="4.5" ry={mood === 'wow' ? 6.5 : 5.5} fill={INK} />
-            <ellipse cx="58" cy="48" rx="4.5" ry={mood === 'wow' ? 6.5 : 5.5} fill={INK} />
-            <circle cx="42.5" cy="47" r="1.6" fill="#fff" />
-            <circle cx="59.5" cy="46" r="1.6" fill="#fff" />
-          </motion.g>
+        <ellipse cx="30" cy="72" rx="5.5" ry="3.6" fill="#FF8FA3" opacity="0.65" />
+        <ellipse cx="70" cy="72" rx="5.5" ry="3.6" fill="#FF8FA3" opacity="0.65" />
+        <Eyes mood={mood} still={still} />
+        {MOUTH[mood] ?? MOUTH.happy}
+        {mood === 'sleepy' && (
+          <motion.text x="74" y="38" fontSize="13" fontWeight="700" fill={GOLD.rim} fontFamily="system-ui, sans-serif"
+            animate={still ? {} : { y: [38, 32, 38], opacity: [0.4, 1, 0.4] }} transition={{ duration: 2.4, repeat: 2 }}>z</motion.text>
         )}
-        {mood === 'think' && <path d="M35 40 L46 42 M53 41 L64 38" stroke={INK} strokeWidth="2.5" strokeLinecap="round" />}
-        <path d={MOUTHS[mood] || MOUTHS.happy} fill={mood === 'cheer' || mood === 'wow' ? '#7A2E00' : 'none'} stroke={INK} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+        {mood === 'sad' && <path d="M66 68 Q68 73 66 75 Q64 73 66 68 Z" fill="#8FD3FF" stroke="#4A9BC7" strokeWidth="1" />}
         {outfit && <OutfitPart outfit={outfit} still={still} />}
       </svg>
     </motion.div>
