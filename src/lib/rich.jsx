@@ -1,3 +1,4 @@
+import { InlineCode } from '../components/InlineCode.jsx';
 // Renders short text with **bold** and `code` marks. Keeps content safe (no HTML injection).
 // With `autoCode`, Apex-looking tokens (method calls, __c fields, @annotations, Dotted.Names)
 // are set in the code font too, so they are easy to tell apart and never break mid-word.
@@ -18,23 +19,23 @@ function isCodeToken(t) {
   return /[A-Z_]/.test(t) && t.length > 3;
 }
 
-/** Long API names get soft break points (after . ( , and between camelCase words) instead of breaking mid-word. */
-function softBreaks(token, key) {
-  const parts = token.split(/(?<=[.(,])|(?<=[a-z])(?=[A-Z])/);
-  return parts.flatMap((p, i) => (i ? [<wbr key={`${key}-w${i}`} />, p] : [p]));
-}
-
 function autoMark(text, keyBase) {
   const out = [];
   let last = 0;
   for (const m of text.matchAll(CODE_TOKEN)) {
     if (!isCodeToken(m[0])) continue;
     if (m.index > last) out.push(text.slice(last, m.index));
-    out.push(<code key={`${keyBase}-${m.index}`} className="inline-code">{softBreaks(m[0], `${keyBase}-${m.index}`)}</code>);
+    out.push(<InlineCode key={`${keyBase}-${m.index}`} text={m[0]} />);
     last = m.index + m[0].length;
   }
   if (last < text.length) out.push(text.slice(last));
   return out;
+}
+
+/** The text is exactly one `code` span (e.g. an answer option that is a line of code). */
+export function singleCodeSpan(text = '') {
+  const m = /^\s*`([^`]+)`\s*$/.exec(String(text));
+  return m ? m[1] : null;
 }
 
 /** True when the whole text is code (a class or method body), not prose with a token in it. */
@@ -46,7 +47,7 @@ export function Rich({ text = '', autoCode = false }) {
   const parts = String(text).split(/(\*\*[^*]+\*\*|`[^`]+`)/g);
   return parts.map((p, i) => {
     if (p.startsWith('**') && p.endsWith('**')) return <strong key={i}>{p.slice(2, -2)}</strong>;
-    if (p.startsWith('`') && p.endsWith('`')) return <code key={i} className="inline-code">{softBreaks(p.slice(1, -1), i)}</code>;
+    if (p.startsWith('`') && p.endsWith('`')) return <InlineCode key={i} text={p.slice(1, -1)} />;
     return autoCode ? autoMark(p, i) : p;
   });
 }

@@ -5,12 +5,14 @@ import fs from 'node:fs';
 
 const SECTIONS = ['fund', 'auto', 'ui', 'test', 'perf'];
 const load = (id) => JSON.parse(fs.readFileSync(new URL(`../src/data/${id}.json`, import.meta.url)));
+// Length as displayed: `code` and **bold** marks are not shown, so they don't count.
+const shown = (o) => o.replace(/`|\*\*/g, '').length;
 
 test('the correct option is the longest no more often than chance allows (≤ 32% per section)', () => {
   for (const id of SECTIONS) {
     const single = load(id).questions.filter((q) => q.answer.length === 1);
     const keyedLongest = single.filter((q) => {
-      const len = q.options.map((o) => o.length);
+      const len = q.options.map(shown);
       return len[q.answer[0]] === Math.max(...len);
     });
     const rate = keyedLongest.length / single.length;
@@ -22,7 +24,7 @@ test('in choose-N questions the keyed options are rarely just the N longest (≤
   for (const id of SECTIONS) {
     const multi = load(id).questions.filter((q) => q.answer.length > 1);
     const tell = multi.filter((q) => {
-      const top = q.options.map((o, i) => [o.length, i]).sort((a, b) => b[0] - a[0]).slice(0, q.answer.length).map((x) => x[1]);
+      const top = q.options.map((o, i) => [shown(o), i]).sort((a, b) => b[0] - a[0]).slice(0, q.answer.length).map((x) => x[1]);
       return [...top].sort().join() === [...q.answer].sort().join();
     });
     assert.ok(tell.length / multi.length <= 0.3, `${id}: ${tell.length}/${multi.length} choose-N keys are the longest options`);
@@ -40,7 +42,7 @@ test('every wrong-reason list lines up with its options', () => {
 });
 
 const ALL = SECTIONS.flatMap((id) => load(id).questions);
-const longestGuess = (q) => q.options.map((o, i) => [o.length, i]).sort((a, b) => b[0] - a[0]).slice(0, q.answer.length).map((x) => x[1]).sort().join();
+const longestGuess = (q) => q.options.map((o, i) => [shown(o), i]).sort((a, b) => b[0] - a[0]).slice(0, q.answer.length).map((x) => x[1]).sort().join();
 const blindScore = (list) => list.filter((q) => longestGuess(q) === [...q.answer].sort().join()).length / list.length;
 
 test('a "pick the longest" strategy with zero knowledge scores at most 35%', () => {
@@ -52,8 +54,8 @@ test('a "pick the longest" strategy with zero knowledge scores at most 35%', () 
 test('few keys are far longer than every distractor (≤ 10%)', () => {
   const single = ALL.filter((q) => q.answer.length === 1);
   const far = single.filter((q) => {
-    const key = q.options[q.answer[0]].length;
-    return key > 1.3 * Math.max(...q.options.filter((_, i) => i !== q.answer[0]).map((o) => o.length));
+    const key = shown(q.options[q.answer[0]]);
+    return key > 1.3 * Math.max(...q.options.filter((_, i) => i !== q.answer[0]).map(shown));
   });
   assert.ok(far.length / single.length <= 0.1, `${far.length}/${single.length}: ${far.map((q) => q.id).join(' ')}`);
 });

@@ -1,5 +1,6 @@
-// Bottom tab bar. The middle tab is the big raised "Play" button (the adventure map): the one thing
-// to tap when you don't know what to do.
+// Bottom tab bar. All five tabs are the same size (Apple HIG / Material 3); the middle "Play" tab
+// (the adventure map) is emphasised only by a soft accent tile, solid when it is the current tab.
+// Icons never move on selection: the active tab is shown by the pill, a bolder icon and the colour.
 import { motion } from 'motion/react';
 import { sfx } from '../audio/sfx.js';
 import { haptic } from '../audio/haptics.js';
@@ -14,7 +15,6 @@ const ITEMS = [
   ['/me', 'me', 'Me'],
 ];
 
-const SPRING = { type: 'spring', stiffness: 520, damping: 22 };
 const STILL = { duration: 0 };
 
 export function BottomNav({ path, dueCards }) {
@@ -30,16 +30,9 @@ export function BottomNav({ path, dueCards }) {
           return (
             <a
               key={to} href={`#${to}`} className={`nav-item nav-center${on ? ' on' : ''}`} aria-current={on ? 'page' : undefined}
-              onClick={() => { sfx.tap(); haptic('medium'); }}
+              onClick={() => { sfx.tap(); haptic('light'); }}
             >
-              <motion.span
-                className="nav-center-btn" aria-hidden="true"
-                whileTap={still ? undefined : { scale: 0.9, y: 2 }}
-                animate={still || on ? {} : { scale: [1, 1.06, 1] }}
-                transition={still || on ? STILL : { duration: 1.4, repeat: 2, repeatDelay: 2.5 }}
-              >
-                <Icon name={icon} size="1em" fill strokeWidth={2} />
-              </motion.span>
+              <span className="nav-center-tile" aria-hidden="true"><Icon name={icon} size="1em" fill strokeWidth={2} /></span>
               <span className="nav-center-label">{label}</span>
             </a>
           );
@@ -50,14 +43,9 @@ export function BottomNav({ path, dueCards }) {
             onClick={() => { sfx.tap(); haptic('light'); }}
           >
             {on && <motion.span layoutId="nav-pill" className="nav-pill" transition={still ? STILL : { type: 'spring', stiffness: 500, damping: 35 }} />}
-            <motion.span
-              className="nav-icon" aria-hidden="true"
-              initial={false}
-              animate={on ? { y: -2, scale: 1.12 } : { y: 0, scale: 1 }}
-              transition={still ? STILL : SPRING}
-            >
+            <span className="nav-icon" aria-hidden="true">
               <Icon name={icon} size="1em" strokeWidth={on ? 2.75 : 2} fill={false} />
-            </motion.span>
+            </span>
             <span>{label}</span>
             {to === '/cards' && dueCards > 0 && <span className="nav-badge"><span aria-hidden="true">{dueCards > 99 ? '99+' : dueCards}</span><span className="sr-only">, {dueCards} due</span></span>}
           </a>
