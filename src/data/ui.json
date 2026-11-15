@@ -881,7 +881,7 @@
       "difficulty": 1,
       "q": "A component shows `{count}` in its template. The class declares `count = 0;` with no decorator, and a button handler runs `this.count++`. What happens when the button is clicked?",
       "options": [
-        "It re-renders and shows the new value, since reassigned fields are reactive",
+        "It re-renders and shows the new value of `count`, since reassigned fields are reactive",
         "Nothing changes on screen until `count` is decorated with `@track`, because primitive fields are not observed",
         "Nothing changes on screen until `count` is decorated with `@api`",
         "The template only updates if `count` is exposed through a getter"
@@ -2239,7 +2239,7 @@
         "The channel must be referenced as `$MessageChannel.Account_Selected` instead of with the `__c` suffix on mobile",
         "The `scope` option must be removed, because `APPLICATION` scope is not allowed on mobile",
         "The LWC must publish with `sforce.one.publish()` so that the Visualforce page can receive it",
-        "Lightning Message Service supports Aura and LWC in the Salesforce mobile app, but not Visualforce pages"
+        "Lightning Message Service supports Aura and LWC in the mobile app, but not Visualforce (`sforce.one`)"
       ],
       "answer": [
         3
@@ -2315,7 +2315,7 @@
         "An LWC can load the library by adding `<script src={libUrl}></script>` to its template once the URL is imported",
         "A single static resource can be up to 5 MB, and an org can hold up to 250 MB of static resources",
         "In a Salesforce DX project, assets can be grouped into subfolders of the `staticresources` folder, one per library",
-        "With Cache Control set to Public, the cached resource can be reached by all internet traffic, including unauthenticated users",
+        "With Cache Control set to `Public`, the cached resource can be reached by all internet traffic, including unauthenticated users",
         "A static resource name such as `map-lib-v2` is valid as long as it is unique in the org"
       ],
       "answer": [

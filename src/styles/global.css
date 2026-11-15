@@ -636,7 +636,7 @@ a.card:not(.section-card):not(.stat):not(.row):not(.stack-s) { display: block; }
 .code.wrap-lines { white-space: pre-wrap; overflow-wrap: anywhere; }
 .opt-code {
   display: block; font-family: var(--font-code); font-size: var(--fs-code); line-height: 1.5;
-  white-space: pre-wrap; overflow-wrap: anywhere;
+  white-space: pre-wrap; overflow-wrap: break-word;
 }
 .right-answer { display: flex; flex-wrap: wrap; gap: 6px; align-items: baseline; }
 .answer-pill { display: block; width: 100%; padding: 2px 10px; border-radius: 10px; background: var(--surface); border: 2px solid var(--correct); font-weight: 700; overflow-wrap: anywhere; min-width: 0; }
@@ -1087,3 +1087,6 @@ h1[tabindex='-1']:focus, h2[tabindex='-1']:focus { outline: none; }
 
 /* every tab's icon sits in the same 30px box, so all five labels share one baseline */
 .nav-item .nav-icon { height: calc(30px * var(--text-scale)); }
+
+/* a single name longer than the line may still break, but only as a last resort */
+.inline-code { overflow-wrap: break-word; word-break: normal; }

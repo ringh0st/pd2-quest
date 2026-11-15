@@ -1473,7 +1473,7 @@
       "options": [
         "Set a checkpoint on the line in the Developer Console, run the code, and inspect it in the Checkpoints tab",
         "Add `System.debug` statements for each variable, deploy them to production, and read the values in the log",
-        "Use the Apex Replay Debugger with checkpoints and breakpoints on a captured log",
+        "Use the Apex Replay Debugger with checkpoints and breakpoints on a log captured at `FINEST`",
         "Re-run the test with `@isTest(SeeAllData=true)`",
         "Call `Limits.getHeapSize()` from Anonymous Apex"
       ],
@@ -1523,7 +1523,7 @@
         "An outbound change set that excludes the class",
         "A Metadata API deployment with `destructiveChanges.xml` (e.g. via sf CLI)",
         "Delete the class in Setup in production",
-        "Rename the class in a sandbox and deploy it with a change set, which replaces the old class"
+        "Rename the class in a sandbox (for example to `OrderService_Old`) and deploy it with a change set, which replaces the old class"
       ],
       "answer": [
         1
@@ -1616,7 +1616,7 @@
       "q": "A CI job creates an unlocked package version and then runs `sf package version promote`, which fails. Tests pass locally. What is the most likely cause?",
       "options": [
         "Unlocked packages can't contain Apex",
-        "The package has no namespace",
+        "The package has no namespace in `sfdx-project.json`",
         "The Dev Hub must be a sandbox",
         "The version was created without `--code-coverage`, or its coverage is below 75%"
       ],

@@ -734,8 +734,8 @@
       "difficulty": 2,
       "q": "A `with sharing` class `OrderController` calls `OrderUtil.getOpenOrders()`. `OrderUtil` has no sharing keyword. Under which sharing mode does the query in `getOpenOrders()` run?",
       "options": [
-        "Without sharing, because a class with no keyword always runs in system mode",
-        "With sharing, because `OrderUtil` inherits the calling class's mode",
+        "`without sharing`, because a class with no keyword always runs in system mode",
+        "`with sharing`, because `OrderUtil` inherits the calling class's mode",
         "It depends on the user's profile permissions",
         "Compile error: the called class must declare a sharing keyword"
       ],
@@ -780,7 +780,7 @@
       "difficulty": 2,
       "q": "Which two statements about Apex sharing keywords are true? (Choose 2)",
       "options": [
-        "An inner class does not inherit the sharing setting of its outer class",
+        "An inner class does not inherit the `with sharing` setting of its outer class",
         "A `with sharing` class automatically enforces field-level security on its SOQL queries",
         "The sharing mode of the class where a method is defined applies when that method runs",
         "Triggers run `with sharing` by default",
@@ -1021,7 +1021,7 @@
       "q": "A max-discount value must have an org-wide default. Sales Managers (a profile) get a higher value, and two specific users get personal overrides. Apex must read the right value for the running user without SOQL. What is the best solution?",
       "options": [
         "A Hierarchy custom setting read with `Max_Discount__c.getInstance()`",
-        "A List custom setting keyed by profile name",
+        "A List custom setting keyed by profile name, read with `getValues()`",
         "A custom metadata type with a Profile text field queried in SOQL",
         "A custom label per profile"
       ],
@@ -1066,7 +1066,7 @@
       "difficulty": 2,
       "q": "Which two statements about custom metadata types are true? (Choose 2)",
       "options": [
-        "Records can be created with standard insert DML in a trigger",
+        "Records can be created with standard `insert` DML in a trigger",
         "Records can be read with `getAll()` and `getInstance()` without consuming SOQL queries",
         "Apex can create or update records with `Metadata.Operations.enqueueDeployment()`, which runs asynchronously",
         "Values resolve automatically by profile and then by user, like a hierarchy custom setting",
@@ -1456,7 +1456,7 @@
       "difficulty": 1,
       "q": "A batch method sometimes hits \"Too many SOQL queries: 101\". A developer wraps the logic in `try/catch(Exception e)` to log the error and continue. What happens?",
       "options": [
-        "The catch block logs the error and processing continues",
+        "The `catch` block logs the error and processing continues",
         "The `LimitException` can't be caught, and the transaction stops",
         "Only the last query is rolled back",
         "The platform retries the transaction automatically"
@@ -1846,8 +1846,8 @@
       "lang": "apex",
       "options": [
         "It doesn't compile: `AccountShare` uses `AccountId` and `AccountAccessLevel`, not `ParentId` and `AccessLevel`",
-        "It inserts a Manual share that gives the manager Edit access",
-        "It compiles, but fails at runtime because standard objects like Account can't be shared from Apex code",
+        "It inserts a `Manual` share that gives the manager Edit access",
+        "It compiles, but fails at runtime because standard objects like `Account` can't be shared from Apex code",
         "It compiles, but the share is removed by the next sharing recalculation"
       ],
       "answer": [

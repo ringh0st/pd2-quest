@@ -12,9 +12,12 @@ function guessLang(text) {
   return 'apex';
 }
 
-/** Long API names get soft break points (after . ( , and between camelCase words), never mid-word. */
+/** Long API names may wrap only after . ( or , (where a developer would break a line), never inside a name. */
 function softBreaks(text, key) {
-  return text.split(/(?<=[.(,])|(?<=[a-z])(?=[A-Z])/).flatMap((p, i) => (i ? [<wbr key={`${key}-${i}`} />, p] : [p]));
+  // split after each . ( , and also allow a break right after a token that ends with one
+  // (Prism often makes the dot its own token)
+  const parts = text.split(/(?<=[.(,])/);
+  return parts.flatMap((p, i) => (/[.(,]$/.test(p) ? [p, <wbr key={`${key}-${i}`} />] : [p]));
 }
 
 export function InlineCode({ text, block = false }) {

@@ -59,3 +59,17 @@ test('few keys are far longer than every distractor (≤ 10%)', () => {
   });
   assert.ok(far.length / single.length <= 0.1, `${far.length}/${single.length}: ${far.map((q) => q.id).join(' ')}`);
 });
+
+test('the code font does not single out the answer', () => {
+  let lone = 0, loneKey = 0;
+  for (const q of ALL.filter((x) => x.answer.length === 1)) {
+    const code = q.options.map((o) => o.includes('`'));
+    if (code.filter(Boolean).length === 1) { lone++; if (code[q.answer[0]]) loneKey++; }
+  }
+  assert.ok(loneKey / Math.max(1, lone) <= 0.34, `a lone code-font option is the answer in ${loneKey}/${lone}`);
+  const giveaways = ALL.filter((q) => {
+    const code = new Set(q.options.flatMap((o, i) => (o.includes('`') ? [i] : [])));
+    return code.size > 0 && code.size < q.options.length && code.size === q.answer.length && q.answer.every((a) => code.has(a));
+  });
+  assert.ok(giveaways.length / ALL.length <= 0.02, `${giveaways.length} questions where exactly the answers are in code font: ${giveaways.map((q) => q.id).join(' ')}`);
+});
