@@ -25,6 +25,15 @@ const KIND_LABEL = {
   trap: <span className="ic-label"><Icon name="warn" />Exam trap</span>,
 };
 
+/** One clear label per card. Titled teaching cards get their own label instead of a doubled one. */
+function cardLabel(card) {
+  const t = card.title ?? '';
+  if (t === 'In plain words') return { label: <span className="ic-label"><Icon name="chat" />In plain words</span>, title: null };
+  if (t.startsWith('Think of it like')) return { label: <span className="ic-label"><Icon name="sparkles" />Picture it</span>, title: t };
+  if (t === 'Remember it') return { label: KIND_LABEL.tip, title: null };
+  return { label: KIND_LABEL[card.type] || '', title: t || null };
+}
+
 export function Lesson({ id }) {
   const lesson = lessonById[id];
   // Pick up where you left off: the card you were on, or the quick check mid-way.
@@ -131,8 +140,8 @@ export function Lesson({ id }) {
             dragElastic={0.6}
             onDragEnd={(_, info) => { if (info.offset.x < -70) move(1); else if (info.offset.x > 70) move(-1); }}
           >
-            {(KIND_LABEL[card.type] || card.title) && <div className="kind">{KIND_LABEL[card.type] || ''}</div>}
-            {card.title && <h2>{card.title}</h2>}
+            {cardLabel(card).label && <div className="kind">{cardLabel(card).label}</div>}
+            {cardLabel(card).title && <h2>{cardLabel(card).title}</h2>}
             {card.body && card.type !== 'code' && <p><Rich text={card.body} /></p>}
             {card.type === 'list' && <ul>{card.items.map((it, k) => <li key={k}><Rich text={it} /></li>)}</ul>}
             {card.type === 'code' && <><CodeBlock code={card.code} lang={card.lang} />{card.body && <p className="small"><Rich text={card.body} /></p>}</>}

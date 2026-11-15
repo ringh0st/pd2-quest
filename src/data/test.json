@@ -12,37 +12,53 @@
       "cards": [
         {
           "type": "text",
+          "title": "In plain words",
+          "body": "A test needs data to work on. Real records change from org to org, so tests shouldn't lean on them. Salesforce gives every test an **empty database**, and you build exactly what it needs. Same data every run means the same result every run."
+        },
+        {
+          "type": "tip",
+          "title": "Think of it like…",
+          "body": "A cooking show. The chef doesn't raid your fridge. Every ingredient is measured out on the counter before the cameras roll. Where it stops: a few kitchen basics are always there, like `User`, `Profile`, `RecordType` and `Organization`."
+        },
+        {
+          "type": "text",
           "title": "Empty org by default",
-          "body": "Since API **24.0**, tests **can't see org data**. Every test starts with an empty database (except setup-ish objects like **User, Profile, RecordType, Organization**). You build the data you need."
+          "body": "Since API **24.0**, tests **can't see org data**. Only setup-type objects show up: `User`, `Profile`, `RecordType`, `Organization`. Business records and custom setting records stay hidden. `@isTest(SeeAllData=true)` opens everything, and you almost never want it."
         },
         {
           "type": "code",
           "title": "Test data factory",
           "lang": "apex",
           "code": "@isTest\npublic class TestDataFactory {\n  public static List<Account> createAccounts(Integer n, Boolean doInsert) {\n    List<Account> accts = new List<Account>();\n    for (Integer i = 0; i < n; i++) {\n      accts.add(new Account(Name = 'Test ' + i));\n    }\n    if (doInsert) insert accts;\n    return accts;\n  }\n}",
-          "body": "One place to build records. A new required field? Fix it once, every test is green again."
+          "body": "A **test data factory** (one shared class that builds records) makes Accounts for any test. A new required field? Fix it here once."
         },
         {
           "type": "code",
           "title": "@TestSetup",
           "lang": "apex",
           "code": "@isTest\nprivate class InvoiceTest {\n  @TestSetup\n  static void makeData() {\n    TestDataFactory.createAccounts(5, true);\n  }\n  @isTest\n  static void closesInvoices() {\n    List<Account> accts = [SELECT Id FROM Account];\n    // ...act + assert\n  }\n}",
-          "body": "Runs **once per class**. Each test method gets a **fresh copy**: changes in one method are rolled back before the next."
+          "body": "**@TestSetup** runs once per class. Each test method gets a fresh copy, and its changes roll back before the next. Statics set there don't carry over, so query the records."
         },
         {
           "type": "code",
           "title": "Data from a CSV",
           "lang": "apex",
           "code": "List<sObject> accts = Test.loadData(Account.sObjectType, 'TestAccounts');",
-          "body": "**Test.loadData** reads a CSV **static resource** and inserts the rows. Good when admins own the sample data."
+          "body": "`Test.loadData` reads a CSV **static resource** (a file stored in Salesforce) and inserts its rows. Handy when admins own the sample data."
+        },
+        {
+          "type": "text",
+          "title": "SOSL in tests",
+          "body": "**SOSL** (Salesforce's text search) returns **nothing** in a test, even for records the test inserted. Call `Test.setFixedSearchResults(ids)` to tell it which Ids to return."
         },
         {
           "type": "trap",
-          "body": "**SeeAllData=true** makes tests depend on whatever is in the org, so they break between sandboxes. Also: **@TestSetup is not supported** in a class annotated @isTest(SeeAllData=true)."
+          "body": "**SeeAllData=true** ties tests to whatever is in the org, so they break in the next sandbox. And **@TestSetup is not supported** in a class marked `@isTest(SeeAllData=true)`."
         },
         {
           "type": "tip",
-          "body": "SOSL returns **nothing** in tests until you call **Test.setFixedSearchResults(ids)**. Think: \"SOSL is shy in tests - give it a script.\""
+          "title": "Remember it",
+          "body": "\"**Bring your own lunch.**\" Tests eat only the data they pack: a factory, `@TestSetup` or `Test.loadData`. And SOSL is shy in tests, so give it a script."
         }
       ],
       "check": [
@@ -58,11 +74,22 @@
       "objective": "Given a scenario, determine how to test Apex classes and triggers, including the use of mocks and stubs (HttpCalloutMock, Stub API, Test.startTest/stopTest, test data).",
       "cards": [
         {
+          "type": "text",
+          "title": "In plain words",
+          "body": "Tests have two problems. Setup code eats into **governor limits** (hard caps per transaction, like 100 SOQL queries). And **async code** (code that runs later, in the background) won't finish before your test checks it. `Test.startTest()` and `Test.stopTest()` fix both."
+        },
+        {
+          "type": "tip",
+          "title": "Think of it like…",
+          "body": "A race with a stopwatch. `startTest()` resets the clock, so the runner gets fresh limits. `stopTest()` is the finish line: every job still running must cross it right then. Where it stops: you get only **one** race per test method."
+        },
+        {
           "type": "list",
-          "title": "Test.startTest() / stopTest() do 2 things",
+          "title": "What startTest/stopTest do",
           "items": [
             "Code between them gets a **fresh set of governor limits**",
             "Async work queued between them (future, queueable, batch, scheduled) **runs synchronously at stopTest()**",
+            "After stopTest(), the limits from before startTest() come back",
             "Only **one** startTest/stopTest pair per test method"
           ]
         },
@@ -71,27 +98,33 @@
           "title": "Testing Batch Apex",
           "lang": "apex",
           "code": "@isTest\nstatic void runsBatch() {\n  insert TestDataFactory.createAccounts(50, false);\n  Test.startTest();\n  Database.executeBatch(new CleanupBatch(), 200);\n  Test.stopTest(); // batch finishes here\n  Assert.areEqual(0, [SELECT COUNT() FROM Account WHERE Needs_Cleanup__c = true]);\n}",
-          "body": "Assert **after** stopTest. A test can only run **one execute()** chunk, so keep records within the scope size."
+          "body": "The batch runs at `stopTest()`, so assert **after** it. A test can run only **one `execute()` chunk**, so keep records within the scope size (default 200)."
         },
         {
           "type": "text",
           "title": "Scheduled Apex",
-          "body": "Call **System.schedule** between start/stop. The job's execute() runs at **stopTest()**, no matter what the cron says. You can also query **CronTrigger** to check the cron expression and next fire time."
+          "body": "Call `System.schedule` between start and stop. The job's `execute()` runs at **stopTest()**, whatever the cron says. To check the schedule itself, query **CronTrigger** (the record that holds the cron expression and next fire time)."
         },
         {
           "type": "code",
           "title": "Platform events",
           "lang": "apex",
           "code": "Test.startTest();\nEventBus.publish(new Order_Event__e(Order_Id__c = 'A1'));\nTest.getEventBus().deliver(); // deliver now\nTest.stopTest(); // also delivers\n// assert what the subscriber trigger did",
-          "body": "Events published in a test are held in a **test event bus** until stopTest() or **Test.getEventBus().deliver()**."
+          "body": "Published events wait on a **test event bus** until `stopTest()` or `Test.getEventBus().deliver()`. Each `deliver()` sends only what is waiting right now."
+        },
+        {
+          "type": "text",
+          "title": "Parallel tests have rules",
+          "body": "`@IsTest(IsParallel=true)` lets tests run side by side for speed. But those tests **can't call** `System.schedule()`, `System.enqueueJob()` or `Test.getStandardPricebookId()`."
         },
         {
           "type": "trap",
-          "body": "Queueable **chaining isn't allowed in tests** (enqueueing a job from a queueable throws an error). Docs suggest guarding the chain call with **Test.isRunningTest()**."
+          "body": "**Chaining a queueable** (enqueueing a job from inside a queueable) can throw an error in a test. The docs suggest guarding the chain call with `Test.isRunningTest()` and testing one link."
         },
         {
           "type": "tip",
-          "body": "\"**Stop** means **Go**\": async code doesn't run until you hit **stopTest()**. Assertions before it see the world before the job ran."
+          "title": "Remember it",
+          "body": "\"**Stop means Go.**\" Async code doesn't run until you hit `stopTest()`. Asserts before it see the world before the job ran."
         }
       ],
       "check": [
@@ -108,28 +141,49 @@
       "cards": [
         {
           "type": "text",
-          "title": "System.runAs(user)",
-          "body": "Runs a block as another user. It enforces **record sharing** only. It does **not** enforce **object or field permissions** for code running in system mode."
+          "title": "In plain words",
+          "body": "Some code acts differently for different users. **System.runAs** lets a test pretend to be another user for a block of code. You also need **asserts** (checks that fail the test when a result is wrong). A test without asserts proves nothing."
         },
         {
           "type": "tip",
-          "body": "runAs = \"**R**ecords, not **R**ights\". To test permissions, the code itself must check them (e.g., **WITH USER_MODE**, **AccessLevel.USER_MODE**, stripInaccessible) - then runAs makes those checks use the test user."
+          "title": "Think of it like…",
+          "body": "Borrowing a friend's library card. You can only open the shelves their card unlocks: that's record sharing. Nobody checks which pages you may read: that's field and object permissions. Your code must check those itself."
+        },
+        {
+          "type": "text",
+          "title": "System.runAs(user)",
+          "body": "`System.runAs` enforces **record sharing** only. It does **not** enforce **object or field permissions** for code in system mode (code that ignores the user's permissions). To test permissions, the code must check them: `WITH USER_MODE`, `AccessLevel.USER_MODE` or `stripInaccessible`."
+        },
+        {
+          "type": "list",
+          "title": "More runAs facts",
+          "items": [
+            "Works only in test methods",
+            "Inserts a User you built but didn't insert yet",
+            "Ignores user license limits",
+            "**Each call counts** against the 150 DML statement limit"
+          ]
         },
         {
           "type": "text",
           "title": "Mixed DML fix",
-          "body": "Inserting a **User** (setup object) and an **Account** in one test throws **MIXED_DML_OPERATION**. Wrap the setup-object DML in **System.runAs()**, or move it to an **@future** method."
+          "body": "**Setup objects** (like `User`, `Group`, `PermissionSetAssignment`) can't be saved in the same transaction as normal records. That throws **MIXED_DML_OPERATION**. Wrap the setup DML in `System.runAs()`, or move it to an **@future** method. A User with no `UserRoleId` is exempt."
         },
         {
           "type": "code",
           "title": "Assert class + expected exceptions",
           "lang": "apex",
           "code": "try {\n  OrderService.submit(null);\n  Assert.fail('Expected an exception');\n} catch (OrderService.OrderException e) {\n  Assert.isTrue(e.getMessage().contains('required'));\n}",
-          "body": "**Assert.fail** guarantees the test fails if no exception is thrown. Also: areEqual(expected, actual), isNull, isInstanceOfType."
+          "body": "**Assert.fail** fails the test when no exception is thrown. A failed assert **can't be caught**, even by `catch (Exception e)`. Others: `areEqual(expected, actual)`, `isNull`, `isInstanceOfType`."
         },
         {
           "type": "trap",
-          "body": "**if (Test.isRunningTest())** branches mean tests run **different code than production**. Coverage looks fine, real bugs hide. Prefer mocks and dependency injection."
+          "body": "`if (Test.isRunningTest())` branches make tests run **different code than production**. Coverage looks fine while real bugs hide. Use mocks and dependency injection instead."
+        },
+        {
+          "type": "tip",
+          "title": "Remember it",
+          "body": "runAs = \"**Records, not Rights.**\" It changes whose records you can see, not what you're allowed to do."
         }
       ],
       "check": [
@@ -146,33 +200,43 @@
       "cards": [
         {
           "type": "text",
-          "title": "No real callouts in tests",
-          "body": "Test methods **can't make real callouts**. Without a mock, the test fails. You register a fake with **Test.setMock()**."
+          "title": "In plain words",
+          "body": "A **callout** is your code calling another system over the internet. Tests **can't make real callouts**, because the outside world is slow and unpredictable. So you give the test a **mock**: a fake that returns a ready-made answer. Register it with `Test.setMock()`, or the test fails."
+        },
+        {
+          "type": "tip",
+          "title": "Think of it like…",
+          "body": "A fire drill. Nobody lights a real fire. A bell rings and everyone acts as if. The mock is the bell: your code runs its real steps, but the fire is fake. Where it stops: you must ring the bell (`Test.setMock`) before the code needs it."
         },
         {
           "type": "code",
           "title": "HttpCalloutMock",
           "lang": "apex",
           "code": "@isTest\npublic class WeatherMock implements HttpCalloutMock {\n  public HttpResponse respond(HttpRequest req) {\n    HttpResponse res = new HttpResponse();\n    res.setHeader('Content-Type', 'application/json');\n    res.setBody('{\"temp\":21.5}');\n    res.setStatusCode(200);\n    return res;\n  }\n}\n// in the test method:\nTest.setMock(HttpCalloutMock.class, new WeatherMock());",
-          "body": "One method: **respond(HttpRequest)** returns an **HttpResponse**."
+          "body": "One method: `respond(HttpRequest)` returns a fake **HttpResponse**. Read `req.getEndpoint()` to answer different URLs."
         },
         {
           "type": "code",
           "title": "Many endpoints, static resources",
           "lang": "apex",
           "code": "MultiStaticResourceCalloutMock multi = new MultiStaticResourceCalloutMock();\nmulti.setStaticResource('https://api.example.com/rates', 'RatesJson');\nmulti.setStaticResource('https://api.example.com/fees', 'FeesJson');\nmulti.setStatusCode(200);\nmulti.setHeader('Content-Type', 'application/json');\nTest.setMock(HttpCalloutMock.class, multi);",
-          "body": "One endpoint? Use **StaticResourceCalloutMock**. Several? **MultiStaticResourceCalloutMock**."
+          "body": "One endpoint? **StaticResourceCalloutMock** (the same body for every call). Several? **MultiStaticResourceCalloutMock** maps each URL to its own static resource."
         },
         {
           "type": "code",
           "title": "SOAP (WSDL2Apex)",
           "lang": "apex",
           "code": "global class CalcMock implements WebServiceMock {\n  global void doInvoke(Object stub, Object request,\n      Map<String, Object> response, String endpoint,\n      String soapAction, String requestName, String responseNS,\n      String responseName, String responseType) {\n    CalcService.AddResponse_element r = new CalcService.AddResponse_element();\n    r.AddResult = 42;\n    response.put('response_x', r);\n  }\n}\n// Test.setMock(WebServiceMock.class, new CalcMock());",
-          "body": "SOAP mocks put the fake response into the map under **response_x**."
+          "body": "**WSDL2Apex** (a tool that turns a WSDL file into Apex) makes SOAP classes. Mock them with **WebServiceMock**: `doInvoke` returns nothing and puts the reply in the map under **response_x**."
         },
         {
           "type": "trap",
-          "body": "\"**You have uncommitted work pending**\": do your test **DML before Test.startTest()**, then make the callout **inside** startTest/stopTest."
+          "body": "\"**You have uncommitted work pending**\" means DML came before a callout. Do the test **DML before `Test.startTest()`**, then make the callout **inside** startTest/stopTest. For async callouts, register the mock **before `stopTest()`**."
+        },
+        {
+          "type": "tip",
+          "title": "Remember it",
+          "body": "**H**TTP gets **H**ttpCalloutMock and `respond`. **S**OAP gets WebServiceMock, `doInvoke` and **response_x**. Either way: **set the mock first**."
         }
       ],
       "check": [
@@ -189,22 +253,27 @@
       "cards": [
         {
           "type": "text",
-          "title": "Why stub?",
-          "body": "Unit test class A without running real class B (slow queries, callouts, complex setup). The **Stub API** builds a fake B at runtime."
+          "title": "In plain words",
+          "body": "You want to test class A, but A uses class B. B is slow, makes callouts or needs lots of setup. The **Stub API** builds a fake B while the test runs. A talks to the fake, so you test A on its own."
+        },
+        {
+          "type": "tip",
+          "title": "Think of it like…",
+          "body": "A stunt double in a movie. The director swaps the star for a double, and the scene still works. Where it stops: the script needs a spot for the swap. If A builds its own B with `new`, there's no way in."
         },
         {
           "type": "code",
           "title": "StubProvider",
           "lang": "apex",
           "code": "@isTest\npublic class PricingStub implements System.StubProvider {\n  public Object handleMethodCall(Object stubbedObject,\n      String stubbedMethodName, Type returnType,\n      List<Type> listOfParamTypes, List<String> listOfParamNames,\n      List<Object> listOfArgs) {\n    if (stubbedMethodName == 'getDiscount') return 0.25;\n    return null;\n  }\n}",
-          "body": "Every call on the stub lands in **handleMethodCall**. You decide the return value by method name/args."
+          "body": "Every call on the stub lands in **handleMethodCall**. You pick the return value by method name, return type or arguments. Unmatched calls can return `null`."
         },
         {
           "type": "code",
           "title": "Create and inject",
           "lang": "apex",
           "code": "PricingService svc = (PricingService) Test.createStub(\n    PricingService.class, new PricingStub());\nQuoteBuilder qb = new QuoteBuilder(svc); // dependency injection\n",
-          "body": "**Test.createStub(Type, StubProvider)** returns an Object - cast it. Then inject it into the class under test."
+          "body": "`Test.createStub(Type, StubProvider)` returns an Object, so **cast it**. Then **inject** it (pass it in) to the class under test."
         },
         {
           "type": "list",
@@ -214,12 +283,23 @@
             "**Private** methods",
             "Properties (getters/setters)",
             "Triggers, inner classes, system types",
-            "Batchable classes, classes with only private constructors"
+            "Batchable classes, classes with only private constructors",
+            "Classes outside the namespace of the `createStub()` call"
           ]
         },
         {
+          "type": "text",
+          "title": "No built-in verify",
+          "body": "The Stub API has **no `verify()`** and no `when()`. To prove a call happened, record `stubbedMethodName` and `listOfArgs` inside `handleMethodCall`. Then assert on what you recorded."
+        },
+        {
+          "type": "trap",
+          "body": "The Stub API **doesn't intercept `new`**. If `InvoiceBuilder` calls `new TaxService()` itself, the stub never gets used. Add a **seam**: a constructor or setter that accepts the dependency. Making the method static won't help."
+        },
+        {
           "type": "tip",
-          "body": "Stub API needs a **seam**: the class under test must accept the dependency (constructor/setter). No injection point = nothing to swap."
+          "title": "Remember it",
+          "body": "\"**No seam, no swap.**\" The class must accept its helper from outside, or there's nothing to replace."
         }
       ],
       "check": [
@@ -236,33 +316,59 @@
       "cards": [
         {
           "type": "text",
+          "title": "In plain words",
+          "body": "Lightning web components (**LWC**, Salesforce's JavaScript UI pieces) get their own tests. They use **Jest**, a JavaScript test tool. Jest checks what a component shows and does, right on your computer. Visualforce pages are tested with Apex instead."
+        },
+        {
+          "type": "tip",
+          "title": "Think of it like…",
+          "body": "A flight simulator. Pilots practice on the ground while fake weather is fed in. Jest is the simulator: no org, no browser, and you feed in fake data. Where it stops: simulator hours **don't count** toward Apex code coverage."
+        },
+        {
+          "type": "text",
           "title": "Jest = local unit tests",
-          "body": "LWC tests run in **Node.js with Jest** via **@salesforce/sfdx-lwc-jest**. No org, no browser. Files live in a **__tests__** folder as ***.test.js**. They **don't count** toward Apex coverage."
+          "body": "Jest runs in **Node.js** via **@salesforce/sfdx-lwc-jest**. Tests live in a **__tests__** folder, named `*.test.js`. **Append the element to the DOM** first: a component gets wire data only once connected. Reach inner elements through `element.shadowRoot`."
         },
         {
           "type": "code",
           "title": "Mock a wire adapter",
           "lang": "js",
           "code": "import { createElement } from 'lwc';\nimport AccountCard from 'c/accountCard';\nimport { getRecord } from 'lightning/uiRecordApi';\nconst mockRecord = require('./data/getRecord.json');\n\nit('renders name', async () => {\n  const el = createElement('c-account-card', { is: AccountCard });\n  document.body.appendChild(el);\n  getRecord.emit(mockRecord);\n  await Promise.resolve();\n  expect(el.shadowRoot.querySelector('h2').textContent).toBe('Acme');\n});",
-          "body": "Wire adapters are test adapters: **.emit(data)** pushes data, **.error()** pushes an error."
+          "body": "Wire adapters become **test adapters**: `.emit(data)` pushes data, `.error()` pushes an error, `getLastConfig()` shows what the component asked for. Wired Apex uses `createApexTestWireAdapter`."
         },
         {
           "type": "code",
           "title": "Mock imperative Apex",
           "lang": "js",
           "code": "import getAccounts from '@salesforce/apex/AccountController.getAccounts';\njest.mock(\n  '@salesforce/apex/AccountController.getAccounts',\n  () => ({ default: jest.fn() }),\n  { virtual: true }\n);\n// in a test:\ngetAccounts.mockResolvedValue([{ Id: '001', Name: 'Acme' }]);",
-          "body": "**virtual: true** because the Apex module doesn't exist on disk."
+          "body": "Mocks an Apex method that is called imperatively. **virtual: true** is needed because the Apex module isn't on disk. Then set results with `mockResolvedValue` or `mockRejectedValue`."
         },
         {
           "type": "trap",
-          "body": "DOM updates are **async**. After setting a property or emitting data, **await Promise.resolve()** (or a flushPromises helper) before asserting."
+          "body": "DOM updates are **async**. After you set a property or emit data, **`await Promise.resolve()`** (or a flushPromises helper) before you assert."
+        },
+        {
+          "type": "list",
+          "title": "Debugging LWC in the browser",
+          "items": [
+            "**Debug Mode** (per user, in Setup): JavaScript is not minified",
+            "**Pause on exceptions** (DevTools Sources): stops at the line that throws",
+            "**Enable custom formatters**: shows real values inside LWC proxies",
+            "Sandbox only: clear **secure and persistent browser caching** to load new code",
+            "`sfdx-lwc-jest --debug` plus **chrome://inspect**: breakpoints in Jest tests"
+          ]
         },
         {
           "type": "code",
           "title": "Visualforce extension test",
           "lang": "apex",
           "code": "Account acc = new Account(Name = 'Acme');\ninsert acc;\nTest.setCurrentPage(Page.AccountSummary);\nApexPages.currentPage().getParameters().put('id', acc.Id);\nAccountSummaryExt ext =\n    new AccountSummaryExt(new ApexPages.StandardController(acc));",
-          "body": "Set the page and URL params, build the **StandardController**, then call action methods and check **ApexPages.getMessages()**."
+          "body": "Sets the page and its URL params, then wraps the record in a **StandardController**. Call action methods, then check `ApexPages.hasMessages()` or `ApexPages.getMessages()`."
+        },
+        {
+          "type": "tip",
+          "title": "Remember it",
+          "body": "The Jest recipe: \"**Append, emit, await, assert.**\" Put the element on the page, push the data, wait one tick, then check."
         }
       ],
       "check": [
@@ -278,6 +384,16 @@
       "objective": "Given a scenario, determine why Apex code is not behaving as expected and how to debug it (debug logs, checkpoints, Apex Replay Debugger).",
       "cards": [
         {
+          "type": "text",
+          "title": "In plain words",
+          "body": "When code misbehaves, you need to see what it did. A **debug log** (a record of what happened in a transaction) shows you. **Trace flags** decide whose logs get written and how much detail they hold. Debuggers then let you step through it."
+        },
+        {
+          "type": "tip",
+          "title": "Think of it like…",
+          "body": "A security camera. The **trace flag** says which door to watch and for how long. The **debug level** is the zoom. The **log** is the footage you review later. Where it stops: a class trace flag only changes the zoom; it doesn't switch the camera on."
+        },
+        {
           "type": "list",
           "title": "Log levels (quiet to loud)",
           "items": [
@@ -292,34 +408,35 @@
           ]
         },
         {
-          "type": "tip",
-          "body": "\"**Every Wise Investigator Digs For Finer Facts**\" = Error, Warn, Info, Debug, Fine, Finer, Finest. A System.debug at level X shows only if the **Apex Code** category is X or louder."
-        },
-        {
           "type": "text",
           "title": "Trace flags",
-          "body": "A **trace flag** = who/what to log + a **debug level** + a time window (max **24 hours**). Set on a **user**, **Apex class/trigger**, or Automated Process. **Class/trigger flags override** the levels for that code - great for muting a chatty class."
+          "body": "A **trace flag** = who to log + a **debug level** + a time window (max **24 hours**). Set it on a **user**, an **Apex class/trigger** or the Automated Process. **Class/trigger flags override** levels for that code, so you can mute a chatty class. They don't start logging on their own."
         },
         {
           "type": "text",
           "title": "Apex Replay Debugger",
-          "body": "Free, in **VS Code**. Capture a debug log (Apex Code **FINEST**), then \"replay\" it: **breakpoints**, variables, call stack. Add **checkpoints** to capture heap dumps. Works on any org, even production, because it only reads logs."
+          "body": "Free, in **VS Code**. Capture a log with Apex Code at **FINEST**, then replay it: **breakpoints**, variables, call stack. **Checkpoints** add heap dumps. It works on any org, even production, because it only reads logs."
         },
         {
           "type": "text",
           "title": "Developer Console",
-          "body": "Logs, **checkpoints** (up to **5**, heap snapshot at a line, no code changes), Query Editor, **Execution Overview** / Timeline for slow spots."
+          "body": "**Checkpoints** (up to **5**) take a heap snapshot at a line, with no code changes. The **Query Editor** runs SOQL. **Execution Overview** and the Timeline show slow spots."
         },
         {
           "type": "code",
           "title": "Limits class",
           "lang": "apex",
           "code": "System.debug(Limits.getQueries() + ' of ' + Limits.getLimitQueries() + ' SOQL used');\nSystem.debug('CPU ms: ' + Limits.getCpuTime());",
-          "body": "getX() = used so far; getLimitX() = the max."
+          "body": "`getX()` is what you've used so far; `getLimitX()` is the max. Check before you hit it: a **LimitException** can't be caught."
         },
         {
           "type": "trap",
-          "body": "Unhandled exception emails go to the **last developer who modified** the class/trigger, plus anyone added in Setup > **Apex Exception Email**."
+          "body": "Unhandled exception emails go to the **last developer who modified** the class or trigger. Anyone added in Setup > **Apex Exception Email** gets them too."
+        },
+        {
+          "type": "tip",
+          "title": "Remember it",
+          "body": "\"**Every Wise Investigator Digs For Finer Facts**\" = Error, Warn, Info, Debug, Fine, Finer, Finest. A message shows only if **Apex Code** is at its level or louder."
         }
       ],
       "check": [
@@ -335,6 +452,16 @@
       "objective": "Given a scenario, formulate the deployment process, supporting tools, and mechanisms for source-driven development (Salesforce CLI, scratch orgs, packages, metadata/destructive changes).",
       "cards": [
         {
+          "type": "text",
+          "title": "In plain words",
+          "body": "Code is built in one org and shipped to another. You need safe places to build and test, and a way to move changes. **Sandboxes** and **scratch orgs** are the workshops. **Change sets**, the **CLI** and **packages** are the delivery trucks."
+        },
+        {
+          "type": "tip",
+          "title": "Think of it like…",
+          "body": "Building a house. A **sandbox** is a practice copy of the real house. A **scratch org** is a pop-up tent built from blueprints (your Git repo), then thrown away. A **package** is a flat-pack kit you can ship and upgrade. Where it stops: only Partial Copy and Full sandboxes copy real data."
+        },
+        {
           "type": "list",
           "title": "Sandbox cheat sheet",
           "items": [
@@ -349,27 +476,33 @@
           "title": "Scratch org loop (sf CLI)",
           "lang": "bash",
           "code": "sf org create scratch --definition-file config/project-scratch-def.json \\\n  --alias feature1 --duration-days 7 --target-dev-hub DevHub\nsf project deploy start --target-org feature1\nsf project retrieve start --target-org feature1",
-          "body": "Scratch orgs: disposable (1-30 days), built from source, **source tracking** on. Created from a **Dev Hub**."
+          "body": "Creates a scratch org and moves source in and out. Scratch orgs are throwaway (1-30 days), built from source, with **source tracking** (it notes what changed locally and in the org). They come from a **Dev Hub**."
         },
         {
           "type": "text",
           "title": "Packages",
-          "body": "**Unlocked packages** (2GP) = versioned, upgradeable bundles of your metadata built from source with a Dev Hub. To **promote** a version to released, it needs **75% Apex code coverage** (create it with **--code-coverage**)."
+          "body": "**Unlocked packages** (2GP) are versioned, upgradeable bundles of your metadata, built from source with a Dev Hub. To **promote** a version to released, it needs **75% Apex code coverage**. So create it with `--code-coverage`, never with `--skip-validation`."
         },
         {
           "type": "trap",
-          "body": "**Change sets**: only between orgs tied to the **same production org**, need a **deployment connection**, and **can't delete** components. To delete, use **destructiveChanges.xml** with the Metadata API / CLI."
+          "body": "**Change sets** only work between orgs tied to the **same production org**. They need a **deployment connection** and **can't delete** components. To delete, deploy **destructiveChanges.xml** with the Metadata API or CLI."
         },
         {
           "type": "code",
           "title": "Deleting metadata",
           "lang": "xml",
           "code": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<Package xmlns=\"http://soap.sforce.com/2006/04/metadata\">\n  <types>\n    <members>LegacyHelper</members>\n    <name>ApexClass</name>\n  </types>\n</Package>",
-          "body": "destructiveChanges(Pre/Post).xml + a package.xml. CLI: **--pre-destructive-changes / --post-destructive-changes**."
+          "body": "Deletes the `LegacyHelper` class. Pair a destructive manifest with a `package.xml`. **Post** (`--post-destructive-changes`) deletes after the rest deploys; **pre** deletes first."
+        },
+        {
+          "type": "text",
+          "title": "DevOps Center",
+          "body": "**DevOps Center** is a click-based pipeline backed by Git. Each **work item**'s changes are committed to source control and promoted through **pipeline stages**. It's the modern replacement for change sets."
         },
         {
           "type": "tip",
-          "body": "**DevOps Center** = click-based, Git-backed pipeline (work items, stages) - the modern replacement for change sets."
+          "title": "Remember it",
+          "body": "Sandbox refresh days: \"**1, 1, 5, 29**\" = Developer, Developer Pro, Partial Copy, Full. And change sets **add, never subtract**."
         }
       ],
       "check": [
@@ -384,6 +517,16 @@
       "minutes": 3,
       "objective": "Given a scenario, formulate the deployment process, supporting tools, and mechanisms for source-driven development (Salesforce CLI, scratch orgs, packages, metadata/destructive changes).",
       "cards": [
+        {
+          "type": "text",
+          "title": "In plain words",
+          "body": "Before Apex reaches production, Salesforce runs tests to prove it works. **Code coverage** is the share of your code lines that tests actually ran. A **test level** picks which tests run. Break these rules and the deploy fails."
+        },
+        {
+          "type": "tip",
+          "title": "Think of it like…",
+          "body": "Airport security. Production is the plane. Your code can't board without passing the scanner (tests) and having 75% of its ticket stamped (coverage). **Quick deploy** is a pass from a check you already cleared, good for 10 days."
+        },
         {
           "type": "list",
           "title": "Production deploy rules",
@@ -400,7 +543,7 @@
           "items": [
             "**NoTestRun** - default for non-production (not allowed in prod for Apex)",
             "**RunSpecifiedTests** - only listed tests; **each** class/trigger deployed needs **75%** from them",
-            "**RunLocalTests** - all except managed-package tests; prod default when deploying Apex",
+            "**RunLocalTests** - all except tests from installed managed and unlocked packages; prod default when deploying Apex",
             "**RunAllTestsInOrg** - everything, including managed packages"
           ]
         },
@@ -409,16 +552,26 @@
           "title": "Validate now, deploy later",
           "lang": "bash",
           "code": "sf project deploy validate --source-dir force-app \\\n  --test-level RunLocalTests --target-org prod\nsf project deploy quick --job-id 0AfXXXXXXXXXXXXXXX --target-org prod",
-          "body": "**Quick deploy** skips re-running tests if validation passed within the last **10 days**."
+          "body": "Validates against production, then deploys that job later without re-running tests. **Quick deploy** works within **10 days** of a passing validation. `--use-most-recent` only looks back 3 days."
+        },
+        {
+          "type": "text",
+          "title": "Checking a sandbox",
+          "body": "`sf project deploy validate` is for **production**. To check a sandbox without changing it, run `sf project deploy start --dry-run` with a `--test-level`. `deploy preview` only lists changes and runs no tests."
         },
         {
           "type": "trap",
-          "body": "RunSpecifiedTests checks coverage **per component**, not org-wide. 85% org-wide does not save a class sitting at 60%."
+          "body": "RunSpecifiedTests checks coverage **per component**, not org-wide. 85% org-wide doesn't save a class sitting at 60%."
         },
         {
           "type": "text",
           "title": "Flows too",
-          "body": "If \"**Deploy processes and flows as active**\" is on, production needs enough flow test coverage (75% of active autolaunched flows/processes) from tests that fire them."
+          "body": "If \"**Deploy processes and flows as active**\" is on, production also checks flows. Tests must cover **75%** of active autolaunched flows and processes."
+        },
+        {
+          "type": "tip",
+          "title": "Remember it",
+          "body": "\"**75 everywhere**\": 75% org-wide, 75% per class with RunSpecifiedTests, 75% to promote a package, 75% of active flows. And every trigger needs **some** coverage."
         }
       ],
       "check": [
@@ -431,173 +584,173 @@
   "flashcards": [
     {
       "id": "test-f1",
-      "front": "Default data visibility in Apex tests?",
-      "back": "Since API 24.0 tests see no org data, except setup-type objects like User, Profile, RecordType, Organization. Use SeeAllData=true only when unavoidable."
+      "front": "Can an Apex test see the records already in the org?",
+      "back": "No. Since API 24.0, tests start with an empty database. Setup-type objects like User, Profile, RecordType and Organization still show. Use SeeAllData=true only when you truly must."
     },
     {
       "id": "test-f2",
-      "front": "@TestSetup runs how often?",
-      "back": "Once per test class. Each test method gets the records fresh; changes made in one method are rolled back before the next."
+      "front": "How often does an @TestSetup method run?",
+      "back": "Once per test class. Each test method gets a fresh copy of its records, and one method's changes roll back before the next."
     },
     {
       "id": "test-f3",
-      "front": "Can @TestSetup be used with SeeAllData=true?",
-      "back": "No. Test setup methods are not supported in classes annotated @isTest(SeeAllData=true)."
+      "front": "Can you use @TestSetup in a class with SeeAllData=true?",
+      "back": "No. Test setup methods aren't supported in a class annotated @isTest(SeeAllData=true)."
     },
     {
       "id": "test-f4",
-      "front": "Test.loadData(...)",
-      "back": "Inserts records from a CSV static resource: Test.loadData(Account.sObjectType, 'ResourceName'). Returns List<sObject>."
+      "front": "What does Test.loadData do?",
+      "back": "It inserts the rows of a CSV static resource and returns them: Test.loadData(Account.sObjectType, 'ResourceName') returns a List<sObject>."
     },
     {
       "id": "test-f5",
-      "front": "Why does SOSL return nothing in a test?",
-      "back": "SOSL returns empty results in tests. Call Test.setFixedSearchResults(List<Id>) to define what it returns."
+      "front": "Why does SOSL find nothing in a test?",
+      "back": "SOSL always returns empty results in tests. Call Test.setFixedSearchResults(List<Id>) to choose what it returns."
     },
     {
       "id": "test-f6",
-      "front": "Two jobs of Test.startTest()/stopTest()",
-      "back": "1) Fresh governor limits for the code between them. 2) Async work queued inside runs synchronously when stopTest() is called."
+      "front": "What are the two jobs of Test.startTest() and stopTest()?",
+      "back": "1) The code between them gets fresh governor limits. 2) Async work queued between them runs synchronously when stopTest() is called."
     },
     {
       "id": "test-f7",
-      "front": "How many startTest/stopTest per test method?",
-      "back": "One pair per test method."
+      "front": "How many startTest/stopTest pairs can one test method have?",
+      "back": "Just one pair per test method."
     },
     {
       "id": "test-f8",
-      "front": "Batch Apex in tests: key limit",
-      "back": "Only one execute() chunk can run, so insert no more records than the batch scope. Assert after Test.stopTest()."
+      "front": "What's the key limit when testing Batch Apex?",
+      "back": "Only one execute() chunk can run in a test. Insert no more records than the batch scope, and assert after Test.stopTest()."
     },
     {
       "id": "test-f9",
-      "front": "Delivering platform events in a test",
-      "back": "Test.stopTest() or Test.getEventBus().deliver(). Test.getEventBus().fail() simulates a failed publish."
+      "front": "How do you deliver platform events in a test?",
+      "back": "Call Test.stopTest() or Test.getEventBus().deliver(). Until then, events wait on the test event bus. Test.getEventBus().fail() fakes a failed publish."
     },
     {
       "id": "test-f10",
-      "front": "Scheduled Apex in a test",
-      "back": "System.schedule inside start/stop; the job runs at stopTest() regardless of cron. Query CronTrigger to verify the schedule."
+      "front": "How does scheduled Apex run in a test?",
+      "back": "Call System.schedule between start and stop. The job runs at stopTest(), whatever the cron says. Query CronTrigger to check the schedule."
     },
     {
       "id": "test-f11",
       "front": "What does System.runAs enforce?",
-      "back": "Record sharing of the given user. Not object or field permissions for system-mode code."
+      "back": "Only the user's record sharing. It doesn't enforce object or field permissions for code running in system mode."
     },
     {
       "id": "test-f12",
-      "front": "Fix MIXED_DML_OPERATION in tests",
-      "back": "Wrap setup-object DML (User, Group, PermissionSetAssignment) in System.runAs(), or do it in an @future method."
+      "front": "How do you fix MIXED_DML_OPERATION in a test?",
+      "back": "Keep setup-object DML (User, Group, PermissionSetAssignment) apart: wrap it in System.runAs(), or do it in an @future method."
     },
     {
       "id": "test-f13",
-      "front": "Assert class: expected first or actual?",
-      "back": "Assert.areEqual(expected, actual, optionalMessage). Also isTrue, isFalse, isNull, isNotNull, isInstanceOfType, fail."
+      "front": "Which comes first in Assert.areEqual: expected or actual?",
+      "back": "Expected first: Assert.areEqual(expected, actual, optionalMessage). Others: isTrue, isFalse, isNull, isNotNull, isInstanceOfType, fail."
     },
     {
       "id": "test-f14",
-      "front": "Why avoid Test.isRunningTest() branches?",
-      "back": "Tests then run different code than production, so real paths go untested. Prefer mocks or dependency injection."
+      "front": "Why avoid if (Test.isRunningTest()) branches?",
+      "back": "Tests then run different code than production, so the real path goes untested. Use mocks or dependency injection instead."
     },
     {
       "id": "test-f15",
-      "front": "HttpCalloutMock method",
-      "back": "HttpResponse respond(HttpRequest req). Register: Test.setMock(HttpCalloutMock.class, new MyMock())."
+      "front": "What method does HttpCalloutMock need, and how do you register it?",
+      "back": "HttpResponse respond(HttpRequest req). Register it with Test.setMock(HttpCalloutMock.class, new MyMock())."
     },
     {
       "id": "test-f16",
-      "front": "WebServiceMock method",
-      "back": "doInvoke(stub, request, response map, endpoint, soapAction, requestName, responseNS, responseName, responseType). Put the result in response with key 'response_x'."
+      "front": "What method does WebServiceMock need?",
+      "back": "doInvoke(stub, request, response map, endpoint, soapAction, requestName, responseNS, responseName, responseType). It returns nothing: put the result in the response map under 'response_x'."
     },
     {
       "id": "test-f17",
-      "front": "StaticResourceCalloutMock vs Multi...",
-      "back": "Static: one canned response from a static resource. Multi: map different endpoints to different static resources."
+      "front": "When do you use StaticResourceCalloutMock or MultiStaticResourceCalloutMock?",
+      "back": "Static: one canned response from one static resource, for every call. Multi: each endpoint gets its own static resource."
     },
     {
       "id": "test-f18",
-      "front": "\"You have uncommitted work pending\" in a test",
-      "back": "Do DML before Test.startTest(); perform the mocked callout between startTest and stopTest."
+      "front": "How do you fix \"You have uncommitted work pending\" in a test?",
+      "back": "Do the DML before Test.startTest(). Make the mocked callout between startTest() and stopTest()."
     },
     {
       "id": "test-f19",
-      "front": "Create a stub",
-      "back": "(MyType) Test.createStub(MyType.class, new MyStubProvider()); the provider implements System.StubProvider.handleMethodCall."
+      "front": "How do you create a stub with the Stub API?",
+      "back": "(MyType) Test.createStub(MyType.class, new MyStubProvider()). The provider implements System.StubProvider and its handleMethodCall method."
     },
     {
       "id": "test-f20",
       "front": "What can't the Stub API mock?",
-      "back": "Static and private methods, properties, constructors-only-private classes, triggers, inner classes, system types, Batchable classes."
+      "back": "Static and private methods, properties, classes with only private constructors, triggers, inner classes, system types and Batchable classes."
     },
     {
       "id": "test-f21",
       "front": "Where do LWC Jest tests run?",
-      "back": "Locally in Node.js using @salesforce/sfdx-lwc-jest. Files in __tests__ named *.test.js. No org needed."
+      "back": "On your own computer, in Node.js, using @salesforce/sfdx-lwc-jest. Files go in __tests__ and are named *.test.js. No org needed."
     },
     {
       "id": "test-f22",
-      "front": "Push mock data through a wire adapter in Jest",
-      "back": "Call adapter.emit(data) (e.g. getRecord.emit(mock)); adapter.error() for errors. Then await Promise.resolve()."
+      "front": "How do you push mock data through a wire adapter in Jest?",
+      "back": "Call emit on the adapter, like getRecord.emit(mock), or error() for an error. Then await Promise.resolve() before you assert."
     },
     {
       "id": "test-f23",
-      "front": "Why jest.mock(..., { virtual: true }) for Apex?",
-      "back": "@salesforce/apex/... modules don't exist on disk; virtual lets Jest mock a module that can't be resolved."
+      "front": "Why does jest.mock need { virtual: true } for Apex imports?",
+      "back": "@salesforce/apex/... modules don't exist on disk. virtual: true lets Jest mock a module it can't find."
     },
     {
       "id": "test-f24",
-      "front": "Debug log levels in order",
+      "front": "What are the debug log levels, from quietest to loudest?",
       "back": "NONE, ERROR, WARN, INFO, DEBUG, FINE, FINER, FINEST."
     },
     {
       "id": "test-f25",
-      "front": "Max trace flag duration",
-      "back": "24 hours."
+      "front": "How long can a trace flag last?",
+      "back": "At most 24 hours."
     },
     {
       "id": "test-f26",
-      "front": "Class-level trace flag use",
-      "back": "Overrides log levels for that class/trigger - e.g. set Apex Code to ERROR to mute a noisy utility class."
+      "front": "What is a class-level trace flag for?",
+      "back": "It overrides log levels for one class or trigger. Example: set Apex Code to ERROR to mute a noisy utility class. It doesn't start logging by itself."
     },
     {
       "id": "test-f27",
-      "front": "Apex Replay Debugger needs...",
-      "back": "A debug log captured with Apex Code at FINEST, replayed in VS Code. Breakpoints, variables, checkpoints (heap dumps)."
+      "front": "What does the Apex Replay Debugger need?",
+      "back": "A debug log captured with Apex Code at FINEST, replayed in VS Code. You get breakpoints, variables and checkpoints (heap dumps)."
     },
     {
       "id": "test-f28",
-      "front": "Developer Console checkpoints",
-      "back": "Up to 5; capture heap and variable state at a line without changing code."
+      "front": "How many Developer Console checkpoints can you set, and what do they do?",
+      "back": "Up to 5. Each captures the heap and variable values at a line, without changing code."
     },
     {
       "id": "test-f29",
-      "front": "Sandbox refresh intervals",
-      "back": "Developer & Developer Pro: 1 day. Partial Copy: 5 days. Full: 29 days."
+      "front": "How often can each sandbox type be refreshed?",
+      "back": "Developer and Developer Pro: every 1 day. Partial Copy: every 5 days. Full: every 29 days."
     },
     {
       "id": "test-f30",
-      "front": "Delete metadata from production",
-      "back": "Metadata API deploy with destructiveChanges.xml (or Pre/Post) plus package.xml. Change sets can't delete."
+      "front": "How do you delete metadata from production?",
+      "back": "Deploy a destructiveChanges.xml (or its Pre/Post version) plus a package.xml through the Metadata API. Change sets can't delete."
     },
     {
       "id": "test-f31",
-      "front": "RunSpecifiedTests coverage rule",
-      "back": "Each Apex class and trigger in the deployment needs at least 75% coverage from the specified tests."
+      "front": "What coverage does RunSpecifiedTests require?",
+      "back": "Each Apex class and trigger in the deployment needs at least 75% coverage from the tests you list."
     },
     {
       "id": "test-f32",
-      "front": "Quick deploy window",
-      "back": "A successful validation (tests passed, coverage met) can be quick-deployed within 10 days."
+      "front": "How long can you wait to quick deploy a validation?",
+      "back": "Up to 10 days after a successful validation (tests passed, coverage met)."
     },
     {
       "id": "test-f33",
-      "front": "How do you check a stubbed method was called?",
-      "back": "The Stub API has no verify(). Record stubbedMethodName and listOfArgs inside handleMethodCall, then assert on what was recorded."
+      "front": "How do you check that a stubbed method was called?",
+      "back": "The Stub API has no verify(). Record stubbedMethodName and listOfArgs inside handleMethodCall, then assert on what you recorded."
     },
     {
       "id": "test-f34",
-      "front": "LWC console shows Proxy objects",
-      "back": "Enable custom formatters in Chrome DevTools (Console settings). The LWC formatter shows the real values inside proxies."
+      "front": "How do you see real values when the LWC console shows Proxy objects?",
+      "back": "Turn on custom formatters in Chrome DevTools (Console settings). The LWC formatter shows the real values inside the proxies."
     }
   ],
   "questions": [
@@ -615,12 +768,12 @@
       "answer": [
         1
       ],
-      "explain": "Since API 24.0, test methods are isolated from org data unless SeeAllData=true. Tests should create their own data.",
+      "explain": "Tests start with an empty database, so they only see the records they make. Since API 24.0, test methods can't see org data unless the class uses `SeeAllData=true`. Think: a fresh, empty notebook.",
       "wrong": [
-        "Tests run as the user who started them, in system mode. The issue is data isolation, not sharing.",
+        "Tests run as the user who started them, in system mode, so sharing isn't the cause.",
         "",
-        "SOQL works anywhere in a test method.",
-        "ALL ROWS returns deleted/archived rows; it doesn't reveal org data to tests."
+        "SOQL works anywhere in a test method, not only inside startTest/stopTest.",
+        "`ALL ROWS` adds deleted and archived rows; it doesn't open org data to tests."
       ],
       "source": "Apex Developer Guide: Testing Apex - Isolation of Test Data from Organization Data"
     },
@@ -638,12 +791,12 @@
       "answer": [
         2
       ],
-      "explain": "Records from @TestSetup are rolled back after each test method, so every method starts with the original values.",
+      "explain": "Every test method gets its own clean copy of the setup data. Method A's change to 'Hot' rolls back when A ends, so B still sees 'Warm'.",
       "wrong": [
-        "Changes in one method are rolled back before the next.",
-        "No locking error happens; each method is isolated.",
+        "Setup data isn't shared that way: one method's changes roll back before the next.",
+        "No error happens, because each method works on its own copy.",
         "",
-        "Results don't depend on order because each method gets a clean copy."
+        "Order doesn't matter, because each method starts from the same clean copy."
       ],
       "source": "Apex Developer Guide: Testing Apex - Using Test Setup Methods"
     },
@@ -663,13 +816,13 @@
         0,
         3
       ],
-      "explain": "Setup-type objects such as User, Profile, RecordType and Organization are visible to tests without SeeAllData. Business data and custom setting data are not.",
+      "explain": "A few setup-type objects are always visible, even in an isolated test. `Profile` and `RecordType` are among them, with `User` and `Organization`. Business data and custom setting data stay hidden.",
       "wrong": [
         "",
-        "Business data like Accounts is hidden from tests by default.",
-        "Custom setting data must be inserted by the test.",
+        "Accounts are business data, so tests can't see them by default.",
+        "Custom setting records count as org data, so the test must insert them.",
         "",
-        "Cases are org data and are hidden by default."
+        "Cases are business data, so tests can't see them by default."
       ],
       "source": "Apex Developer Guide: Testing Apex - Isolation of Test Data from Organization Data"
     },
@@ -687,11 +840,11 @@
       "answer": [
         3
       ],
-      "explain": "Test.loadData inserts rows from a CSV static resource inside the test, so the data stays isolated and is easy for admins to update.",
+      "explain": "Keep the sample data in a file, and let each test load its own copy. `Test.loadData` inserts the rows of a CSV static resource inside the test. The test stays isolated, and admins can update the file.",
       "wrong": [
-        "SeeAllData ties tests to org contents that differ between environments.",
-        "Documents are org data and aren't visible to tests without SeeAllData.",
-        "IDs differ between orgs and the records won't be visible.",
+        "SeeAllData ties tests to org contents, which differ between environments.",
+        "Documents are org data, so tests can't see them without SeeAllData.",
+        "Record Ids differ between orgs, and tests can't see those records anyway.",
         ""
       ],
       "source": "Apex Developer Guide: Testing Apex - Loading Test Data"
@@ -710,12 +863,12 @@
       "answer": [
         0
       ],
-      "explain": "SOSL in test context returns empty results unless Test.setFixedSearchResults defines the records to return.",
+      "explain": "SOSL finds nothing in a test unless you tell it what to find. `Test.setFixedSearchResults` sets the Ids the search returns.",
       "wrong": [
         "",
         "SeeAllData doesn't make SOSL return the test's own records.",
-        "stopTest runs async jobs; it doesn't index records.",
-        "Changing production code to fit a test is the wrong fix."
+        "stopTest runs queued async jobs; it doesn't add records to the search index.",
+        "Changing production code to suit a test is the wrong fix."
       ],
       "source": "Apex Developer Guide: Testing Apex - Adding SOSL Queries to Unit Tests"
     },
@@ -735,13 +888,13 @@
         0,
         2
       ],
-      "explain": "startTest/stopTest give the enclosed code its own limits and force queued async Apex to finish at stopTest.",
+      "explain": "startTest and stopTest do two jobs. The code between them gets a fresh set of governor limits. Async work queued between them runs when `stopTest()` is called.",
       "wrong": [
         "",
-        "Test data is never committed.",
+        "Test data is never committed to the org; it all rolls back.",
         "",
-        "Validation rules still run.",
-        "Callouts still need Test.setMock."
+        "Validation rules still run between them.",
+        "Callouts still need a mock registered with Test.setMock."
       ],
       "source": "Apex Developer Guide: Testing Apex - Using Limits, startTest, and stopTest"
     },
@@ -759,12 +912,12 @@
       "answer": [
         1
       ],
-      "explain": "The batch only runs when stopTest() is called, so assertions must come after it.",
+      "explain": "A batch queued in a test only runs when the test reaches stopTest. Asserts placed before `Test.stopTest()` check the data before the job ran, so move them after it. Think: stop means go.",
       "wrong": [
-        "Scope size doesn't change when the job runs.",
+        "Scope size changes the chunk size, not when the job runs.",
         "",
-        "Calling execute manually isn't needed and skips start/finish.",
-        "The job sees the test's own records already."
+        "Calling execute() by hand skips start() and finish() and isn't needed.",
+        "The job can already see the records the test inserted."
       ],
       "source": "Apex Developer Guide: Testing Batch Apex"
     },
@@ -782,11 +935,11 @@
       "answer": [
         3
       ],
-      "explain": "In tests, published events are held on a test event bus until Test.stopTest() or Test.getEventBus().deliver() delivers them to subscribers.",
+      "explain": "Events published in a test wait in line until you deliver them. `Test.getEventBus().deliver()` or `Test.stopTest()` sends them to the subscriber trigger, so the Task exists afterwards.",
       "wrong": [
-        "Event triggers aren't queueables.",
-        "Data visibility isn't the issue.",
-        "Apex has no sleep, and polling never delivers the event; delivery must be forced.",
+        "Event triggers aren't queueable jobs, so enqueueJob doesn't apply.",
+        "Data visibility isn't the problem; the event was never delivered.",
+        "Apex has no sleep, and waiting never delivers the event; you must force delivery.",
         ""
       ],
       "source": "Platform Events Developer Guide: Testing Your Platform Event in Apex"
@@ -805,12 +958,12 @@
       "answer": [
         2
       ],
-      "explain": "Async work scheduled after startTest runs synchronously at stopTest, including scheduled jobs, regardless of the cron time. CronTrigger can also be queried to check the schedule.",
+      "explain": "In a test, scheduled jobs don't wait for their clock time. The job's `execute()` runs at `Test.stopTest()`, whatever the cron says, so you can assert right after. You can also query `CronTrigger` to check the schedule.",
       "wrong": [
-        "The job does run at stopTest.",
-        "Tests don't wait for real time.",
+        "The job does run, at stopTest, so calling execute() yourself isn't needed.",
+        "Tests never wait for real time to pass.",
         "",
-        "Scheduling doesn't depend on SeeAllData."
+        "Scheduling in a test doesn't depend on SeeAllData."
       ],
       "source": "Apex Developer Guide: Testing the Apex Scheduler"
     },
@@ -828,12 +981,12 @@
       "answer": [
         0
       ],
-      "explain": "Older Apex versions threw an error when a test tried to chain queueable jobs, so the Queueable docs suggested checking Test.isRunningTest() before chaining and testing one link. Current docs also allow testing chains with a suitable maximum stack depth (AsyncOptions).",
+      "explain": "Chaining a queueable from a test has thrown an error, so the Queueable docs suggest checking `Test.isRunningTest()` before chaining. The test then covers one link of the chain. Current docs also allow testing chains with a suitable maximum stack depth (`AsyncOptions`).",
       "wrong": [
         "",
         "Only one startTest/stopTest pair is allowed per test method.",
-        "SeeAllData doesn't affect queueable chaining.",
-        "That defeats the reason for chaining (fresh limits per job)."
+        "SeeAllData has nothing to do with queueable chaining.",
+        "One big loop loses the reason to chain: fresh limits for each job."
       ],
       "source": "Apex Developer Guide: Queueable Apex"
     },
@@ -851,12 +1004,12 @@
       "answer": [
         1
       ],
-      "explain": "At API 66.0, Apex runs in system mode by default and runAs only adds the user's record sharing. To have FLS checked, the code must enforce it, for example with WITH USER_MODE or stripInaccessible.",
+      "explain": "runAs changes whose records you see, not which fields you may read. At API 66.0, Apex runs in system mode by default, so runAs only adds the user's record sharing. To check field access, the query needs `WITH USER_MODE` or `stripInaccessible`.",
       "wrong": [
-        "runAs works with any user, inserted or not.",
+        "runAs works with any user, wherever it was inserted.",
         "",
-        "FLS is enforced in tests when the code enforces it, such as user mode queries.",
-        "Sharing keywords control record access, not FLS, and with sharing already respects the runAs user."
+        "FLS is checked in tests whenever the code enforces it, such as with user mode queries.",
+        "Sharing keywords control records, not fields, and with sharing already uses the runAs user."
       ],
       "source": "Apex Developer Guide: Using the runAs Method"
     },
@@ -876,13 +1029,13 @@
         0,
         3
       ],
-      "explain": "Setup and non-setup DML can't mix in one transaction. In tests, putting the setup DML in a runAs block or in a future method separates them.",
+      "explain": "Setup records like Users can't be saved in the same transaction as normal records. In a test, put the User insert inside `System.runAs()` or an `@future` method to split them apart.",
       "wrong": [
         "",
-        "Mixing types in one list still mixes setup and non-setup DML.",
+        "One mixed list still mixes setup and non-setup DML.",
         "Partial success doesn't change the mixed DML rule.",
         "",
-        "Data visibility doesn't affect mixed DML."
+        "Data visibility has nothing to do with mixed DML."
       ],
       "source": "Apex Developer Guide: Setup and Non-Setup Objects in DML"
     },
@@ -900,11 +1053,11 @@
       "answer": [
         3
       ],
-      "explain": "Assert.fail() right after the call only runs when no exception happens, so the test fails as it should. The catch block then checks the exception.",
+      "explain": "The test needs a line that fails when the exception doesn't come. `Assert.fail()` right after the call only runs if nothing was thrown. The catch block then checks the exception.",
       "wrong": [
-        "If an exception is thrown, the assert never runs, and the check proves nothing.",
-        "If no exception is thrown, the catch block never runs and nothing fails, so the test still passes.",
-        "This doesn't compile into a meaningful exception check.",
+        "If the exception is thrown, the assert never runs, so this proves nothing.",
+        "If nothing is thrown, catch never runs and nothing fails, so the test still passes.",
+        "This doesn't compile into a real exception check.",
         ""
       ],
       "source": "Apex Reference Guide: Assert Class"
@@ -925,13 +1078,13 @@
         0,
         3
       ],
-      "explain": "Test-only branches make tests run different code than production. A callout mock lets the real code run in tests with a fake response.",
+      "explain": "A test-only branch means tests run different code than production. The real callout path never runs, so its bugs hide behind good coverage. An `HttpCalloutMock` lets the real code run with a fake response.",
       "wrong": [
         "",
-        "It just returns false in production.",
-        "Docs recommend mocks for callouts, not test-only branches.",
+        "It simply returns false in production; nothing is thrown.",
+        "The docs recommend callout mocks, not test-only branches.",
         "",
-        "Those lines are counted like any other code."
+        "Those lines count toward coverage like any other code."
       ],
       "source": "Apex Developer Guide: Testing HTTP Callouts"
     },
@@ -949,12 +1102,12 @@
       "answer": [
         0
       ],
-      "explain": "HttpCalloutMock has a single method that takes the request and returns a fake HttpResponse.",
+      "explain": "An HTTP mock has one job: take the request and hand back a fake response. So `HttpCalloutMock` has a single method, `HttpResponse respond(HttpRequest req)`.",
       "wrong": [
         "",
-        "doInvoke belongs to WebServiceMock (SOAP).",
-        "handleMethodCall belongs to StubProvider.",
-        "No such method; the signature is reversed."
+        "doInvoke belongs to WebServiceMock, the SOAP mock.",
+        "handleMethodCall belongs to StubProvider, from the Stub API.",
+        "No such method exists, and its types are backwards."
       ],
       "source": "Apex Developer Guide: Testing HTTP Callouts by Implementing the HttpCalloutMock Interface"
     },
@@ -972,12 +1125,12 @@
       "answer": [
         2
       ],
-      "explain": "Putting the DML before startTest and the callout inside the startTest/stopTest block avoids the uncommitted-work error in tests.",
+      "explain": "In one transaction, you can't save records and then make a callout. Do the DML before `Test.startTest()`, then make the callout between `startTest()` and `stopTest()`. That avoids the uncommitted work error.",
       "wrong": [
-        "Relying on org data breaks isolation and isn't the fix.",
-        "WebServiceMock is for SOAP callouts and doesn't lift the uncommitted work rule.",
+        "Relying on org data breaks test isolation and isn't the fix.",
+        "WebServiceMock is for SOAP and doesn't lift the uncommitted work rule.",
         "",
-        "Triggers can't make synchronous callouts."
+        "Triggers can't make synchronous callouts at all."
       ],
       "source": "Apex Developer Guide: Performing DML Operations and Mock Callouts"
     },
@@ -995,7 +1148,7 @@
       "answer": [
         1
       ],
-      "explain": "MultiStaticResourceCalloutMock maps each endpoint to its own static resource, so one mock covers both callouts.",
+      "explain": "Two endpoints need two different fake answers. `MultiStaticResourceCalloutMock` maps each endpoint to its own static resource, so one mock covers both calls.",
       "wrong": [
         "It returns the same single resource for every callout.",
         "",
@@ -1018,11 +1171,11 @@
       "answer": [
         3
       ],
-      "explain": "SOAP callouts made through WSDL2Apex classes are mocked with WebServiceMock and Test.setMock(WebServiceMock.class, ...).",
+      "explain": "WSDL2Apex classes make SOAP callouts, and SOAP callouts need a SOAP mock. Implement `WebServiceMock`, put the reply under `'response_x'`, and register it with `Test.setMock(WebServiceMock.class, ...)`.",
       "wrong": [
-        "HttpCalloutMock covers HTTP callouts made with the Http class, not WSDL2Apex SOAP callouts.",
-        "The Stub API isn't the documented approach for WSDL2Apex callouts.",
-        "Tests can't make real callouts at all.",
+        "HttpCalloutMock covers callouts made with the Http class, not WSDL2Apex SOAP calls.",
+        "The Stub API isn't the documented way to fake WSDL2Apex callouts.",
+        "Tests can't make real callouts, not even to localhost.",
         ""
       ],
       "source": "Apex Developer Guide: Test Web Service Callouts"
@@ -1043,12 +1196,12 @@
       "answer": [
         1
       ],
-      "explain": "A mock only takes effect once registered with Test.setMock. Without it, the callout is not allowed in a test and the test fails.",
+      "explain": "A mock does nothing until you register it. Without `Test.setMock(HttpCalloutMock.class, new WeatherMock())`, the code tries a real callout, which tests don't allow.",
       "wrong": [
-        "Callout mocks don't need org data.",
+        "Callout mocks don't need any org data.",
         "",
-        "Remote site settings don't matter for mocked callouts; the issue is the missing mock.",
-        "Argument order affects the failure message, not the result."
+        "Remote site settings don't matter for mocked callouts; the mock is what's missing.",
+        "Swapped arguments only change the failure message, not the result."
       ],
       "source": "Apex Developer Guide: Testing HTTP Callouts"
     },
@@ -1066,12 +1219,12 @@
       "answer": [
         2
       ],
-      "explain": "The Stub API can intercept public (and protected/global) instance methods. Static methods, private methods and properties can't be stubbed.",
+      "explain": "The Stub API can only swap methods it can reach from outside the object. Public instance methods work, and so do protected and global ones. Static methods, private methods and properties can't be stubbed.",
       "wrong": [
         "Static methods can't be stubbed.",
         "Private methods can't be stubbed.",
         "",
-        "Properties (getters/setters) can't be stubbed."
+        "Properties (getters and setters) can't be stubbed."
       ],
       "source": "Apex Developer Guide: Build a Mocking Framework with the Stub API"
     },
@@ -1089,12 +1242,12 @@
       "answer": [
         0
       ],
-      "explain": "Test.createStub(Type, StubProvider) returns an Object that you cast to the stubbed type.",
+      "explain": "You ask the test system to build the fake, then cast it. `Test.createStub(Type, StubProvider)` returns an Object that you cast to the stubbed type.",
       "wrong": [
         "",
-        "Test.setMock is for callout mocks only.",
-        "That just calls a real constructor.",
-        "No such static method exists on StubProvider."
+        "Test.setMock is only for callout mocks.",
+        "That just calls the real constructor.",
+        "StubProvider has no such static method."
       ],
       "source": "Apex Reference Guide: Test.createStub"
     },
@@ -1114,10 +1267,10 @@
       "answer": [
         3
       ],
-      "explain": "Every call on the stub goes to handleMethodCall. getDiscount matches and returns 0.25; getTierLabel falls through to return null. The real methods never run.",
+      "explain": "Every call on a stub goes to `handleMethodCall`, and the real methods never run. `getDiscount` matches and returns 0.25. `getTierLabel` falls through to `return null`.",
       "wrong": [
         "The real getTierLabel never runs, so nothing returns 'GOLD'.",
-        "Apex has no when() API; the provider decides returns.",
+        "Apex has no when() API; the provider decides every return value.",
         "Returning null is allowed.",
         ""
       ],
@@ -1137,9 +1290,9 @@
       "answer": [
         2
       ],
-      "explain": "LWC Jest tests are local unit tests run with Jest in Node. They don't run in an org and don't count toward Apex code coverage.",
+      "explain": "Jest is a JavaScript tool that runs on your own computer. LWC Jest tests run locally in Node.js with `@salesforce/sfdx-lwc-jest`. They never touch an org and don't count toward Apex code coverage.",
       "wrong": [
-        "Jest tests are separate from Apex tests.",
+        "Jest tests are separate from Apex test runs.",
         "Jest runs in Node with jsdom, not in an org browser session.",
         "",
         "Deployments run Apex tests, not Jest."
@@ -1162,12 +1315,12 @@
       "answer": [
         1
       ],
-      "explain": "LWC re-renders asynchronously. Awaiting a resolved promise lets the re-render finish before the assertion.",
+      "explain": "LWC updates the page a moment later, not right away. After setting `el.name`, `await Promise.resolve()` so the re-render finishes, then check the text.",
       "wrong": [
-        "Component content lives in the shadow tree.",
+        "Component content lives in the shadow tree, so shadowRoot is right.",
         "",
-        "Properties are set on the created element, not before it exists.",
-        "The engine calls lifecycle hooks; the problem is timing."
+        "Properties are set on the created element; it doesn't exist before createElement.",
+        "The engine calls lifecycle hooks itself; the problem is timing."
       ],
       "source": "LWC Developer Guide: Write Jest Tests for Lightning Web Components"
     },
@@ -1185,12 +1338,12 @@
       "answer": [
         0
       ],
-      "explain": "sfdx-lwc-jest supplies test wire adapters. Calling emit() on the imported adapter pushes mock data into the component's wired property or function.",
+      "explain": "In Jest, wire adapters become test adapters you can push data through. Import `getRecord` and call `getRecord.emit(mockData)` to feed the wired property or function.",
       "wrong": [
         "",
-        "Test.setMock is an Apex method.",
-        "Wired properties are private to the component and not settable from outside.",
-        "Jest tests don't use org data."
+        "Test.setMock is an Apex method, not JavaScript.",
+        "Wired properties are private, so the test can't set them from outside.",
+        "Jest tests never use org data."
       ],
       "source": "LWC Developer Guide: Test Wire Service"
     },
@@ -1210,9 +1363,9 @@
         2,
         4
       ],
-      "explain": "Apex imports are mocked as virtual modules whose default export is a jest.fn(); the test then sets its resolved or rejected value.",
+      "explain": "Apex imports are fake modules in Jest, so you mock them yourself. Use `jest.mock` with `{ virtual: true }` and a `jest.fn()` default export. Then set `mockResolvedValue` or `mockRejectedValue` for success or an error.",
       "wrong": [
-        "Jest tests don't call real Apex.",
+        "Jest tests never call real Apex.",
         "Test.setMock is Apex, not JavaScript.",
         "",
         "Imperative calls aren't wire adapters, and that helper is deprecated.",
@@ -1234,11 +1387,11 @@
       "answer": [
         3
       ],
-      "explain": "Test.setCurrentPage plus page parameters recreate the request context, and a StandardController wraps the test record for the extension.",
+      "explain": "The test must rebuild what a real page visit provides. `Test.setCurrentPage` plus page parameters give the URL context. A `StandardController` wraps the test record for the extension.",
       "wrong": [
-        "The extension needs a real StandardController.",
-        "getContent can't be used this way for controller testing, and tests should create their own data.",
-        "Async context is not needed.",
+        "The extension needs a real StandardController, not null.",
+        "getContent can't test a controller this way, and tests should make their own data.",
+        "No async context is needed to build a controller.",
         ""
       ],
       "source": "Visualforce Developer Guide: Testing Custom Controllers and Controller Extensions"
@@ -1257,12 +1410,12 @@
       "answer": [
         0
       ],
-      "explain": "A debug statement appears only when the category level is at least as verbose as the statement level. FINE sits below DEBUG in the order.",
+      "explain": "A debug line shows only if the log level is at least as loud as the line. FINE is louder (more detailed) than DEBUG. So Apex Code must be set to FINE, FINER or FINEST.",
       "wrong": [
         "",
-        "Without a level argument, System.debug uses DEBUG.",
-        "Replay Debugger reads logs that already exist; it doesn't change what gets written.",
-        "Apex Code controls System.debug output."
+        "With no level argument, System.debug uses DEBUG, not ERROR.",
+        "Replay Debugger only reads logs that already exist; it doesn't change what gets written.",
+        "Apex Code, not Profiling, controls System.debug output."
       ],
       "source": "Salesforce Help: Debug Log Levels"
     },
@@ -1280,12 +1433,12 @@
       "answer": [
         2
       ],
-      "explain": "Class and trigger trace flags override the log levels for that code, so the noisy class can be muted while the user's trace flag keeps full detail elsewhere.",
+      "explain": "You can turn the volume down for one class without muting everyone. A class trace flag overrides the log levels for that class only. Set its Apex Code to ERROR, and the user's flag keeps full detail elsewhere.",
       "wrong": [
-        "Editing production code just to fix logging is risky and unnecessary.",
-        "That would hide OrderService output too.",
+        "Changing production code just to fix logging is risky and needless.",
+        "That would silence OrderService too.",
         "",
-        "Event Monitoring doesn't control debug log verbosity."
+        "Event Monitoring doesn't control debug log detail."
       ],
       "source": "Salesforce Help: Set Up Debug Logging (Trace Flags)"
     },
@@ -1303,11 +1456,11 @@
       "answer": [
         1
       ],
-      "explain": "The Apex Replay Debugger replays a captured debug log, offering breakpoints, variables and call stacks without a live debugging session.",
+      "explain": "You can debug production by replaying a log instead of pausing live code. The Apex Replay Debugger in VS Code replays a log captured with Apex Code at FINEST. You get breakpoints, variables and the call stack.",
       "wrong": [
-        "The Query Editor runs SOQL; it doesn't step through code.",
+        "The Query Editor runs SOQL; it can't step through code.",
         "",
-        "startTest is only for test methods.",
+        "startTest only works inside test methods.",
         "This changes production code, and the Developer Console can't step through code line by line."
       ],
       "source": "Salesforce Extensions for VS Code: Apex Replay Debugger"
@@ -1328,13 +1481,13 @@
         0,
         2
       ],
-      "explain": "Developer Console checkpoints (up to 5) and Replay Debugger checkpoints both capture heap state at a line without code changes.",
+      "explain": "A checkpoint takes a snapshot at a line without touching the code. The Developer Console allows up to 5 checkpoints. The Replay Debugger adds checkpoints to a captured log.",
       "wrong": [
         "",
-        "That requires a code change and a deployment.",
+        "That needs a code change and a deployment.",
         "",
-        "Data visibility doesn't reveal variable state.",
-        "It returns a number, not the variable contents at that line."
+        "Data visibility doesn't show variable values.",
+        "It returns one number, not the variables at that line."
       ],
       "source": "Salesforce Help: Set Checkpoints in Apex Code"
     },
@@ -1352,7 +1505,7 @@
       "answer": [
         3
       ],
-      "explain": "Limits.getQueries() returns queries used so far and Limits.getLimitQueries() returns the maximum for the context.",
+      "explain": "The `Limits` class tells your code how close it is to each cap. `Limits.getQueries()` is what you've used so far. `Limits.getLimitQueries()` is the max for the context.",
       "wrong": [
         "Code can't read its own debug log.",
         "That method doesn't exist.",
@@ -1375,12 +1528,12 @@
       "answer": [
         1
       ],
-      "explain": "Change sets can't delete components, and Apex can't be edited directly in production. A destructive changes manifest deployed via the Metadata API removes it.",
+      "explain": "Change sets can only add or update, and production won't let you delete Apex in Setup. A Metadata API deploy with `destructiveChanges.xml`, for example through the sf CLI, removes the class.",
       "wrong": [
         "Leaving a class out of a change set doesn't delete it.",
         "",
-        "Production doesn't allow Apex edits or deletes in Setup.",
-        "That just adds a second class; the old one stays in production."
+        "Production doesn't allow editing or deleting Apex in Setup.",
+        "That adds a second class; the old one stays in production."
       ],
       "source": "Metadata API Developer Guide: Deleting Components from an Organization"
     },
@@ -1398,12 +1551,12 @@
       "answer": [
         0
       ],
-      "explain": "Scratch orgs are disposable, source-driven orgs with source tracking, created from a Dev Hub.",
+      "explain": "Short-lived orgs built from your repo are exactly what scratch orgs are. They're created from a Dev Hub and track source changes automatically.",
       "wrong": [
         "",
-        "A shared Full sandbox is slow to refresh and not per-feature.",
+        "One shared Full sandbox is slow to refresh and not per feature.",
         "Change sets don't track source or use Git.",
-        "Partial Copy sandboxes are for testing with sample data, refresh only every 5 days, and are a poor fit per feature."
+        "Partial Copy is for testing with sample data and refreshes only every 5 days."
       ],
       "source": "Salesforce DX Developer Guide: Scratch Orgs"
     },
@@ -1421,12 +1574,12 @@
       "answer": [
         2
       ],
-      "explain": "Partial Copy sandboxes include metadata plus data selected by a sandbox template and can be refreshed every 5 days.",
+      "explain": "Sample data picked by a template means Partial Copy. It copies all metadata plus template-selected data and can be refreshed every 5 days.",
       "wrong": [
         "Developer sandboxes copy no production data.",
-        "Developer Pro also copies no production data.",
+        "Developer Pro sandboxes copy no production data either.",
         "",
-        "Full copies all data and only refreshes every 29 days."
+        "Full copies all data and refreshes only every 29 days."
       ],
       "source": "Salesforce Help: Sandbox Types and Templates"
     },
@@ -1446,13 +1599,13 @@
         1,
         3
       ],
-      "explain": "Change sets only work between orgs linked to the same production org, need a deployment connection, and only add or update components.",
+      "explain": "Change sets are a simple tool with tight limits. They only move between orgs tied to the same production org, and they need a deployment connection. They only add or update components.",
       "wrong": [
-        "Only orgs affiliated with the same production org.",
+        "They only work between orgs tied to the same production org.",
         "",
-        "Deletion isn't supported.",
+        "Change sets can't delete anything.",
         "",
-        "You must add dependencies yourself (there is a \"View/Add Dependencies\" helper)."
+        "You add dependencies yourself, with help from \"View/Add Dependencies\"."
       ],
       "source": "Salesforce Help: Change Sets"
     },
@@ -1470,11 +1623,11 @@
       "answer": [
         3
       ],
-      "explain": "To promote a package version to released, Apex code coverage must be computed during version creation and be at least 75%.",
+      "explain": "A package version can be promoted only if its coverage was measured and is high enough. That means creating it with `--code-coverage` and reaching at least 75%.",
       "wrong": [
         "Unlocked packages can include Apex.",
         "Unlocked packages can be created without a namespace.",
-        "A Dev Hub is a production or Developer Edition org, not a sandbox.",
+        "A Dev Hub is a production or Developer Edition org, never a sandbox.",
         ""
       ],
       "source": "Salesforce DX Developer Guide: Release an Unlocked Package"
@@ -1493,12 +1646,12 @@
       "answer": [
         0
       ],
-      "explain": "For production deployments that contain Apex, the default is to run all local tests, excluding managed-package tests.",
+      "explain": "Production won't take Apex without running tests. With no test level set, it uses `RunLocalTests`: every test except those from installed managed and unlocked packages.",
       "wrong": [
         "",
-        "NoTestRun is the default for non-production orgs.",
-        "Managed-package tests aren't included by default.",
-        "There is no name-matching test level."
+        "NoTestRun is the default only for non-production orgs.",
+        "Managed package tests aren't included by default.",
+        "No test level matches tests by name."
       ],
       "source": "Metadata API Developer Guide: Running Tests in a Deployment"
     },
@@ -1516,10 +1669,10 @@
       "answer": [
         2
       ],
-      "explain": "With RunSpecifiedTests, every class and trigger in the deployment must individually reach 75% coverage from the tests you list.",
+      "explain": "With RunSpecifiedTests, each piece is graded on its own. Every class and trigger in the deployment needs 75% coverage from the listed tests. ClassB at 60% fails, whatever the org average.",
       "wrong": [
-        "Org-wide coverage isn't the measure for RunSpecifiedTests.",
-        "Coverage is still checked, per component.",
+        "Org-wide coverage isn't what RunSpecifiedTests checks.",
+        "Coverage is still checked, for each component.",
         "",
         "Apex classes have no inactive state."
       ],
@@ -1541,13 +1694,13 @@
         0,
         1
       ],
-      "explain": "Quick deploy reuses a successful validation run against the same target org within 10 days in which tests passed and coverage was met.",
+      "explain": "Quick deploy reuses a passing validation, so that validation must be recent and complete. It must have succeeded against the same org within 10 days, with tests passed and coverage met.",
       "wrong": [
         "",
         "",
-        "Without running tests, there's nothing to reuse for Apex.",
-        "The validation must be against the org you deploy to.",
-        "Authorship doesn't matter."
+        "With no tests run, there's nothing to reuse for Apex.",
+        "The validation must target the org you deploy to.",
+        "Who wrote the classes doesn't matter."
       ],
       "source": "Salesforce Help: Quick Deploy"
     },
@@ -1568,12 +1721,12 @@
       "answer": [
         2
       ],
-      "explain": "Every test method, including the @TestSetup method, runs in its own transaction, and the static context is set up again each time, so goldTierId is null. The Tier__c record still exists, so the test should query it, for example by Name.",
+      "explain": "Each test method starts fresh, and so do static variables. Statics set in `@TestSetup` are null again in every test method. The Tier__c record still exists, so query it, for example by Name.",
       "wrong": [
-        "Setup records stay available to every test method. Only the changes a test method makes are rolled back after that method.",
-        "Setup records are visible with default data isolation. @TestSetup isn't even supported in a class with SeeAllData=true.",
+        "Setup records stay for every test method; only each method's own changes roll back.",
+        "Setup records are visible by default, and @TestSetup isn't even allowed with SeeAllData=true.",
         "",
-        "startTest gives the code a fresh set of governor limits. It doesn't reset variables."
+        "startTest gives fresh governor limits; it doesn't reset variables."
       ],
       "source": "Apex Developer Guide: Using Test Setup Methods"
     },
@@ -1594,13 +1747,13 @@
         1,
         3
       ],
-      "explain": "A fatal error in test setup fails the whole class, and code called from a setup method earns no coverage. Only one @TestSetup method is allowed per class, it isn't supported with SeeAllData=true, and each test method sees the original setup records.",
+      "explain": "Test setup is all or nothing, and it earns no coverage. If `@TestSetup` throws or an assert fails, the whole class fails, and code it calls gets no coverage from that call. Only one setup method is allowed per class.",
       "wrong": [
-        "Test setup methods aren't supported in a class that has access to org data.",
+        "Test setup methods aren't allowed in a class with access to org data.",
         "",
         "Only one test setup method is allowed per test class.",
         "",
-        "Changes made by a test method are rolled back when that method finishes."
+        "Changes made by a test method roll back when that method ends."
       ],
       "source": "Apex Developer Guide: Using Test Setup Methods"
     },
@@ -1621,11 +1774,11 @@
       "answer": [
         0
       ],
-      "explain": "Without SeeAllData, a test can't query the org's standard price book. Test.getStandardPricebookId() returns its Id anyway, so the test can create standard PricebookEntry records.",
+      "explain": "Tests can't see the org's standard price book, but they can get its Id. `Test.getStandardPricebookId()` returns it, so the test can create standard PricebookEntry records.",
       "wrong": [
         "",
-        "IsStandard can't be set. A test can't create a second standard price book.",
-        "IsParallel doesn't open data access, and parallel tests can't even call Test.getStandardPricebookId().",
+        "IsStandard can't be set, so a test can't make a second standard price book.",
+        "IsParallel doesn't open data access, and parallel tests can't call getStandardPricebookId().",
         "@TestSetup methods have the same data isolation as test methods."
       ],
       "source": "Apex Reference Guide: Test Class (getStandardPricebookId)"
@@ -1647,11 +1800,11 @@
       "answer": [
         3
       ],
-      "explain": "When the class is annotated SeeAllData=true, a method-level SeeAllData=false is ignored, so the method sees every org Account plus the one it inserted. To isolate it, move the method to a class without SeeAllData=true.",
+      "explain": "A method can open data access, but it can't close what its class opened. With the class at `SeeAllData=true`, a method's `SeeAllData=false` is ignored. So it sees all 5,000 Accounts plus the one it inserted.",
       "wrong": [
-        "The override only works the other way: a method-level SeeAllData=true overrides a class-level false.",
+        "The override only works one way: a method's true overrides a class's false.",
         "Tests always see the records they create.",
-        "It compiles. The method annotation is simply ignored.",
+        "It compiles; the method annotation is just ignored.",
         ""
       ],
       "source": "Apex Developer Guide: Using the isTest(SeeAllData=True) Annotation"
@@ -1673,12 +1826,12 @@
       "answer": [
         1
       ],
-      "explain": "IsParallel=true comes with restrictions: those tests can't call System.schedule(), System.enqueueJob() or Test.getStandardPricebookId(). This test has to run without IsParallel.",
+      "explain": "Parallel tests trade speed for a few banned calls. `IsParallel=true` tests can't call `System.enqueueJob()`, `System.schedule()` or `Test.getStandardPricebookId()`. This test must run without IsParallel.",
       "wrong": [
         "Queueable jobs don't need org data access.",
         "",
-        "startTest and stopTest work in parallel tests. The restriction is on enqueueJob.",
-        "The job must be enqueued inside the startTest/stopTest block so it runs at stopTest."
+        "startTest and stopTest work in parallel tests; the ban is on enqueueJob.",
+        "The job must be queued inside startTest/stopTest so it runs at stopTest."
       ],
       "source": "Apex Developer Guide: IsTest Annotation"
     },
@@ -1701,12 +1854,12 @@
         2,
         4
       ],
-      "explain": "A test can run only one execution of execute(). With the default scope of 200, 400 records need two chunks. Keep the data within one chunk, or raise the scope so every record fits into one execute() call.",
+      "explain": "A test can run a batch's `execute()` only once. With the default scope of 200, 400 records need two chunks. Use fewer records, or raise the scope so every record fits in one chunk.",
       "wrong": [
         "stopTest can be called only once per test method.",
         "Org data access doesn't change how many execute() calls a test allows.",
         "",
-        "Outside the startTest/stopTest block, the batch doesn't finish before the assertion runs.",
+        "Outside startTest/stopTest, the batch doesn't finish before the assertion.",
         ""
       ],
       "source": "Apex Developer Guide: Using Batch Apex"
@@ -1728,10 +1881,10 @@
       "answer": [
         2
       ],
-      "explain": "Each deliver() call delivers the event messages on the test event bus at that moment. The Shipment_Event__e published by the first trigger needs its own deliver() call before the second subscriber runs.",
+      "explain": "Each `deliver()` sends only the events waiting at that moment. The first trigger publishes Shipment_Event__e during the first delivery. So call `Test.getEventBus().deliver()` again before checking for the Notification__c.",
       "wrong": [
         "EventBus.publish is the supported way to publish events in tests.",
-        "Platform event triggers are subscribed in tests without org data access.",
+        "Event triggers subscribe in tests without org data access.",
         "",
         "stopTest can be called only once per test method."
       ],
@@ -1756,13 +1909,13 @@
         0,
         3
       ],
-      "explain": "Exceptions in a batch job started by a test are passed to the test method, so catch them around the block. The BatchApexErrorEvent is still waiting on the test event bus, so call Test.getEventBus().deliver() before asserting on the log.",
+      "explain": "In a test, a batch job's exception is passed up to the test method. Catch it around the startTest/executeBatch/stopTest block. The BatchApexErrorEvent still waits on the test bus, so call `Test.getEventBus().deliver()` before asserting.",
       "wrong": [
         "",
         "Event triggers don't need org data access.",
-        "Nothing has been published at that point. The event is published when the batch fails.",
+        "Nothing is published yet; the event is published when the batch fails.",
         "",
-        "deliver() delivers event messages. It doesn't run queued batch jobs."
+        "deliver() delivers event messages; it doesn't run queued batch jobs."
       ],
       "source": "Platform Events Developer Guide: Deliver Test Event Messages"
     },
@@ -1783,11 +1936,11 @@
       "answer": [
         0
       ],
-      "explain": "Code between startTest and stopTest gets a fresh set of governor limits, so a counts only the Contact query. After stopTest, the limits that were in effect before startTest apply again, so b is 3.",
+      "explain": "startTest opens a fresh limits counter, and stopTest brings the old one back. Inside the block, only the Contact query counts, so a is 1. After stopTest, the earlier count returns, so b is 3.",
       "wrong": [
         "",
-        "startTest starts a new set of limits, so the first 3 queries don't count in a.",
-        "After stopTest the original limits come back. The query inside the block isn't added to them.",
+        "startTest begins new limits, so the first 3 queries don't count in a.",
+        "After stopTest, the old limits return without the query from inside the block.",
         "The Contact query ran after startTest, so a is 1."
       ],
       "source": "Apex Reference Guide: Test Class (startTest, stopTest)"
@@ -1809,11 +1962,11 @@
       "answer": [
         3
       ],
-      "explain": "System.runAs implicitly inserts a User that has been instantiated but not yet inserted, then runs the block as that user. runAs also ignores user license limits.",
+      "explain": "runAs is forgiving with new users. If the User isn't inserted yet, runAs inserts it and runs the block as that user. It also ignores user license limits.",
       "wrong": [
-        "runAs handles the new User by inserting it.",
-        "The block runs as the User passed in, not as the original user.",
-        "runAs takes a User sObject (or a package Version), not an Id.",
+        "runAs inserts the new User instead of failing.",
+        "The block runs as the User passed in, not the original user.",
+        "runAs takes a User record (or a package Version), not an Id.",
         ""
       ],
       "source": "Apex Reference Guide: System Class (runAs)"
@@ -1835,13 +1988,13 @@
         0,
         2
       ],
-      "explain": "Since API 15.0, a User whose UserRoleId is null can be inserted in the same transaction as other sObjects. When a role is needed, doing the setup DML inside a System.runAs block keeps it apart from the non-setup DML.",
+      "explain": "Users with a role are setup data that can't mix with normal records. Since API 15.0, a User with a null `UserRoleId` is exempt. When a role is needed, put the setup DML in a `System.runAs` block.",
       "wrong": [
         "",
         "A User with a role plus an Account in one transaction is mixed DML.",
         "",
-        "Changing ProfileId on a User together with non-setup DML is mixed DML.",
-        "Partial success doesn't lift the mixed DML restriction."
+        "Changing a User's ProfileId alongside non-setup DML is mixed DML.",
+        "Partial success doesn't lift the mixed DML rule."
       ],
       "source": "Apex Developer Guide: sObjects That Can't Be Used Together in DML Operations"
     },
@@ -1862,7 +2015,7 @@
       "answer": [
         1
       ],
-      "explain": "Exceptions from failed assertions are among the exceptions Apex can't catch, like LimitException. The catch block doesn't run and the test fails with the Assert.fail() message.",
+      "explain": "A failed assertion can't be caught, just like a LimitException. So `catch (Exception e)` never runs, and the test fails with the `Assert.fail()` message.",
       "wrong": [
         "Failed assertions can't be caught, so the catch block never runs.",
         "",
@@ -1888,12 +2041,12 @@
       "answer": [
         0
       ],
-      "explain": "Every call to runAs counts against the total number of DML statements. Two inserts plus 149 runAs calls reach the limit of 150, so the next call fails. Test fewer users per method or split them across test methods.",
+      "explain": "Every `System.runAs` call counts as a DML statement. Two inserts plus 149 runAs calls reach the limit of 150, so the next call fails. Test fewer users per method, or split them across methods.",
       "wrong": [
         "",
-        "runAs only inserts a User that isn't inserted yet. These were already inserted.",
+        "These users were already inserted, so runAs doesn't insert them again.",
         "Describe calls don't count as DML.",
-        "runAs works inside loops. The problem is the DML count."
+        "runAs works inside loops; the problem is the DML count."
       ],
       "source": "Apex Developer Guide: Using the runAs Method"
     },
@@ -1914,12 +2067,12 @@
       "answer": [
         2
       ],
-      "explain": "StaticResourceCalloutMock returns the same response body for every callout, so the labels call gets the rates JSON. MultiStaticResourceCalloutMock returns the static resource mapped to each endpoint.",
+      "explain": "A single-resource mock gives every callout the same answer. `StaticResourceCalloutMock` sends the rates JSON to the labels call too. `MultiStaticResourceCalloutMock` gives each endpoint its own static resource.",
       "wrong": [
-        "The mock still returns one body for both calls, so neither call gets the response it expects.",
-        "Both callouts happen inside buyLabel(), so a single-resource mock still returns one body to both calls.",
+        "The mock still returns one body to both calls, so neither gets what it expects.",
+        "Both calls happen inside buyLabel(), so one single-resource mock answers both.",
         "",
-        "Static resources are readable in tests. That is how these mocks work."
+        "Tests can read static resources; that's how these mocks work."
       ],
       "source": "Apex Developer Guide: Testing HTTP Callouts Using Static Resources"
     },
@@ -1940,12 +2093,12 @@
       "answer": [
         0
       ],
-      "explain": "The interface has a single method, HttpResponse respond(HttpRequest req). With an extra parameter, the interface method isn't implemented. The endpoint is available from req.getEndpoint().",
+      "explain": "An interface method must match its signature exactly. `HttpCalloutMock` needs `HttpResponse respond(HttpRequest req)`, with one parameter. Read the path from `req.getEndpoint()` instead.",
       "wrong": [
         "",
-        "Mock classes are often annotated @IsTest so they don't count toward the code size limit.",
-        "A constructor with parameters is fine. The test passes the values when it creates the mock.",
-        "The class that implements HttpCalloutMock can be public or global."
+        "Mock classes are often @IsTest so they don't count toward the code size limit.",
+        "A constructor with parameters is fine; the test passes the values in.",
+        "The class implementing HttpCalloutMock can be public or global."
       ],
       "source": "Apex Developer Guide: Testing HTTP Callouts by Implementing the HttpCalloutMock Interface"
     },
@@ -1966,9 +2119,9 @@
         1,
         4
       ],
-      "explain": "doInvoke returns nothing: it adds the response element to the response map under 'response_x'. The class can be public or global, and @IsTest keeps it out of the 6 MB code size limit. It is registered with Test.setMock(WebServiceMock.class, ...).",
+      "explain": "A SOAP mock doesn't return its answer; it drops it in a map. `doInvoke` is void and puts the response element under `'response_x'`. The class can be public and `@IsTest`, which keeps it out of the 6 MB code size limit.",
       "wrong": [
-        "doInvoke is void. The response goes into the response map.",
+        "doInvoke is void; the reply goes into the response map.",
         "",
         "SOAP mocks are registered with WebServiceMock.class.",
         "WebServiceMock alone covers WSDL2Apex callouts.",
@@ -1993,11 +2146,11 @@
       "answer": [
         3
       ],
-      "explain": "The queued job runs synchronously at Test.stopTest(). The mock is registered only after that, so the callout runs with no mock. Register it before stopTest.",
+      "explain": "The mock must be in place before the job runs. The queued job runs at `Test.stopTest()`, so register the mock before then, ideally before enqueuing.",
       "wrong": [
-        "DML before startTest is the recommended order. It isn't the cause here.",
-        "AllowsCallouts is a marker for async classes, not for test classes.",
-        "Test setup doesn't belong in production code. The test registers the mock.",
+        "DML before startTest is the recommended order and isn't the cause here.",
+        "AllowsCallouts marks async classes, not test classes.",
+        "Test setup doesn't belong in production code; the test registers the mock.",
         ""
       ],
       "source": "Apex Developer Guide: Queueable Apex; Testing HTTP Callouts by Implementing the HttpCalloutMock Interface"
@@ -2019,13 +2172,13 @@
         0,
         3
       ],
-      "explain": "The Stub API can't mock classes that implement Batchable or classes that have only private constructors. It also can't mock static or private methods, properties, triggers, inner classes or system types.",
+      "explain": "The Stub API needs a class it can build and extend from outside. It can't mock Batchable classes or classes with only private constructors. It also can't mock static or private methods, properties, triggers, inner classes or system types.",
       "wrong": [
         "",
         "A public top-level class with an accessible constructor can be stubbed.",
-        "Map return types are fine. Only iterators can't be used as return or parameter types.",
+        "Map return types are fine; only iterators can't be used as return or parameter types.",
         "",
-        "A top-level class in the same namespace as the createStub call can be stubbed."
+        "A class in the same namespace as the createStub call can be stubbed."
       ],
       "source": "Apex Developer Guide: Build a Mocking Framework with the Stub API"
     },
@@ -2046,10 +2199,10 @@
       "answer": [
         2
       ],
-      "explain": "Every call on the stub goes to handleMethodCall. The two-argument overload matches the first branch (10 × 3 = 30), the one-argument overload falls to the Decimal return-type branch (1.5), and isActive gets null.",
+      "explain": "Every call on the stub goes to `handleMethodCall`, which checks its branches in order. The two-argument overload hits the first branch (10 × 3 = 30). The one-argument call falls to the Decimal branch (1.5), and isActive gets null.",
       "wrong": [
         "The real methods never run, and nothing in the provider returns true.",
-        "The two-argument call matches the first branch first, and a null return isn't turned into false.",
+        "The two-argument call hits the first branch, and null isn't turned into false.",
         "",
         "The one-argument call matches the Decimal return-type branch."
       ],
@@ -2070,11 +2223,11 @@
       "answer": [
         1
       ],
-      "explain": "The Stub API requires the mocked object to be in the same namespace as the Test.createStub() call. The StubProvider implementation can live in another namespace.",
+      "explain": "The stubbed class must live in the same namespace as the `Test.createStub()` call. The StubProvider can live in any namespace. So stubbing the partner's class from acme fails.",
       "wrong": [
         "Being global doesn't lift the namespace rule.",
         "",
-        "It's the other way around: the stubbed class must match the test's namespace, and the provider can be anywhere.",
+        "It's the other way around: the stubbed class must match the test, and the provider can be anywhere.",
         "Data access has nothing to do with stubbing."
       ],
       "source": "Apex Developer Guide: Build a Mocking Framework with the Stub API"
@@ -2096,12 +2249,12 @@
       "answer": [
         0
       ],
-      "explain": "A component receives data from the wire service only after it is connected to the DOM. Emitting before appendChild sends the data to no one. Append first, emit, then await a promise before checking the DOM.",
+      "explain": "A component only gets wire data once it's on the page. Emitting before `appendChild` sends the data to no one. Append first, then emit, then await a promise before checking.",
       "wrong": [
         "",
-        "The re-render is a microtask, not a timer, so awaiting a resolved promise is correct.",
-        "Registering adapters isn't needed in current sfdx-lwc-jest, and it doesn't fix this: the element must be connected before emit().",
-        "Elements inside the component are only reachable through element.shadowRoot."
+        "The re-render is a microtask, not a timer, so awaiting a resolved promise is right.",
+        "Current sfdx-lwc-jest doesn't need registration, and the element must still be connected first.",
+        "Elements inside the component are reachable only through element.shadowRoot."
       ],
       "source": "LWC Developer Guide: Write Jest Tests for Lightning Web Components That Use the Wire Service"
     },
@@ -2122,10 +2275,10 @@
       "answer": [
         3
       ],
-      "explain": "addEventListener needs the event name exactly as it was dispatched: 'select'. The onselect form is only for declaring a handler in a parent component's HTML.",
+      "explain": "A listener must use the event's exact name. The event was dispatched as `'select'`, so listen for `'select'`. The `onselect` form is only for handlers in a parent's HTML.",
       "wrong": [
         "The listener name never matches, so waiting doesn't help.",
-        "The test listens on the component's host element, which receives the event without bubbling.",
+        "The test listens on the host element, which gets the event without bubbling.",
         "click() already fires a click event on the link.",
         ""
       ],
@@ -2148,11 +2301,11 @@
       "answer": [
         1
       ],
-      "explain": "Elements a component renders live in its shadow tree, which document-level queries can't see. Query through element.shadowRoot.",
+      "explain": "What a component renders lives inside its shadow tree. Page-level queries like `document.querySelector` can't see in there. Use `element.shadowRoot.querySelector()`.",
       "wrong": [
-        "sfdx-lwc-jest supplies stubs for base components, so lightning-button is in the shadow tree and can be clicked.",
+        "sfdx-lwc-jest supplies stubs for base components, so lightning-button is there to click.",
         "",
-        "The first render happens when the element is appended. Nothing needs to be awaited before appendChild.",
+        "The first render happens on appendChild; nothing needs awaiting before it.",
         "Timers have nothing to do with DOM queries."
       ],
       "source": "LWC Developer Guide: DOM Inspection Tests Are Subject to Change; Test Lightning Web Components"
@@ -2174,12 +2327,12 @@
       "answer": [
         2
       ],
-      "explain": "A plain jest.fn() suits imperative Apex calls. When the Apex method is used with @wire, the module's default export must be an Apex test wire adapter, which provides emit() and error().",
+      "explain": "Wired Apex needs a wire adapter mock, not a plain function. Make the default export `createApexTestWireAdapter(jest.fn())`, which gives you `emit()` and `error()`. A plain `jest.fn()` only suits imperative calls.",
       "wrong": [
-        "A resolved promise is for imperative calls, and the mock still has no emit().",
-        "The component never calls a wired method as a promise, so a resolved value doesn't reach the wired property.",
+        "A resolved promise is for imperative calls, and this mock still has no emit().",
+        "The component never calls a wired method as a promise, so the value never arrives.",
         "",
-        "The component imports the default export, so the default export itself must be the wire adapter."
+        "The component imports the default export, so that export must be the wire adapter."
       ],
       "source": "LWC Developer Guide: Write Jest Tests for Lightning Web Components That Use the Wire Service (lwc-recipes apexWireMethodToProperty test)"
     },
@@ -2200,12 +2353,12 @@
       "answer": [
         0
       ],
-      "explain": "Test wire adapters record the configuration the component sends. getLastConfig() returns the latest config, with '$recordId' already replaced by the real value.",
+      "explain": "Test wire adapters remember the settings the component sent them. `getLastConfig()` returns the latest config, with `'$recordId'` already replaced by the real Id.",
       "wrong": [
         "",
-        "The component doesn't call the adapter like a function, so call assertions don't apply.",
-        "account isn't a public property, so the test can't read it from the element, and no data was emitted.",
-        "emit() is what the test calls to push data. It doesn't record the config."
+        "The component doesn't call the adapter like a function, so call checks don't apply.",
+        "account isn't public, so the test can't read it, and no data was emitted.",
+        "emit() is what the test calls to push data; it doesn't record the config."
       ],
       "source": "sfdx-lwc-jest test wire adapters (lwc-recipes apexWireMethodWithParams test)"
     },
@@ -2226,11 +2379,11 @@
       "answer": [
         1
       ],
-      "explain": "Messages added to the page during a test can be checked with ApexPages.hasMessages(severity) or read with ApexPages.getMessages(). That verifies what the page would show.",
+      "explain": "Check the messages the page would show, not a side effect. `ApexPages.hasMessages(ApexPages.Severity.ERROR)` proves an error was added. `ApexPages.getMessages()` reads the messages.",
       "wrong": [
-        "A null return just keeps the user on the same page. It doesn't prove a message was added.",
+        "A null return just keeps the user on the page; it doesn't prove a message.",
         "",
-        "Page messages aren't stored as records.",
+        "Page messages aren't saved as records.",
         "That only proves the code runs in a test."
       ],
       "source": "Apex Reference Guide: ApexPages Class"
@@ -2252,12 +2405,12 @@
         1,
         4
       ],
-      "explain": "Debug Mode serves Lightning JavaScript unminified, which makes browser debugging practical. Breakpoints or a debugger statement then pause the code in the browser's developer tools.",
+      "explain": "To debug browser JavaScript, make it readable and then pause it. Debug Mode serves Lightning JavaScript unminified. A breakpoint or `debugger` statement then pauses the code in the browser's developer tools.",
       "wrong": [
         "Debug logs cover server-side code, not JavaScript in the browser.",
         "",
         "Jest tests run locally in Node.js and never connect to an org.",
-        "Replay Debugger replays Apex from debug logs, not browser JavaScript.",
+        "Replay Debugger replays Apex from logs, not browser JavaScript.",
         ""
       ],
       "source": "LWC Developer Guide: Debug Lightning Web Components; Salesforce Help: Enable Debug Mode for Lightning Components"
@@ -2279,9 +2432,9 @@
       "answer": [
         2
       ],
-      "explain": "The query in the loop exceeds the SOQL limit. LimitException can't be caught: catch and finally blocks don't run, and the transaction rolls back. Bulkify the query, or check Limits.getQueries() before reaching the limit.",
+      "explain": "Hitting a governor limit is a crash you can't catch. The 101st query throws `System.LimitException`, so catch and finally don't run and the transaction rolls back. Bulkify the query, or check `Limits.getQueries()` first.",
       "wrong": [
-        "For catchable exceptions, catch (Exception e) runs and its DML commits.",
+        "For catchable exceptions, the catch block runs and its DML commits.",
         "QueryException is catchable with catch (Exception e).",
         "",
         "finally runs after catch, and it doesn't end the transaction."
@@ -2305,11 +2458,11 @@
         0,
         3
       ],
-      "explain": "Logs over 20 MB are trimmed by removing older lines, and generating more than 1,000 MB of logs in a 15-minute window disables trace flags. System debug logs are kept for 24 hours.",
+      "explain": "Debug logs have size and time caps. A log over 20 MB is trimmed by removing older lines, and over 1,000 MB of logs in 15 minutes switches trace flags off. System debug logs are kept for 24 hours.",
       "wrong": [
         "",
-        "The log is trimmed, not discarded.",
-        "The Developer Console records logs for its own user only.",
+        "The log is trimmed, not thrown away.",
+        "The Developer Console records logs only for its own user.",
         "",
         "System debug logs are kept for 24 hours; monitoring debug logs for seven days."
       ],
@@ -2330,11 +2483,11 @@
       "answer": [
         3
       ],
-      "explain": "Class and trigger trace flags override log levels for that code but don't cause logs to be generated. A user trace flag on the integration user turns logging on, and the class flag then sets the detail for OrderService.",
+      "explain": "A class trace flag sets the detail, but it doesn't switch logging on. A user trace flag on the integration user starts the logs. The class flag then sets the detail for OrderService.",
       "wrong": [
         "More categories on the class flag still don't start logging.",
-        "Trigger trace flags don't generate logs on their own either.",
-        "The Developer Console captures logs for its own user, not other users.",
+        "Trigger trace flags don't start logs on their own either.",
+        "The Developer Console records logs only for its own user.",
         ""
       ],
       "source": "Apex Developer Guide: Debug Log"
@@ -2356,11 +2509,11 @@
       "answer": [
         1
       ],
-      "explain": "Every SOQL_EXECUTE_BEGIN comes from the same line [14], with one bind value and one row each time: the pattern of a query inside a loop. One query with WHERE Id IN :accountIds before the loop fixes it.",
+      "explain": "The same line running the same query again and again means a query inside a loop. Every SOQL_EXECUTE_BEGIN comes from line [14], with one row each time. Query once with `WHERE Id IN :accountIds` before the loop.",
       "wrong": [
-        "Triggers process records in chunks of up to 200. The limit is the same; the per-record query is the problem.",
+        "Triggers get records in chunks of up to 200, and the limit stays the same.",
         "",
-        "Each query returns one row within milliseconds. It isn't a timeout.",
+        "Each query returns one row in milliseconds; nothing times out.",
         "LimitException can't be caught."
       ],
       "source": "Apex Developer Guide: Debug Log; Execution Governors and Limits"
@@ -2382,12 +2535,12 @@
       "answer": [
         0
       ],
-      "explain": "With allOrNone = false, records that fail (for example because the owner is an inactive user) don't throw. The errors are only in the returned Database.SaveResult list, so the code should check isSuccess() and log getErrors().",
+      "explain": "With `allOrNone` set to false, failures don't throw; they hide in the results. Failed records, for example ones with an inactive owner, appear only in the returned `Database.SaveResult` list. Check `isSuccess()` and log `getErrors()`.",
       "wrong": [
         "",
-        "Records inserted in execute() are committed when that execute() transaction ends.",
-        "DML isn't deferred between execute() calls.",
-        "WhatId can be set on Task from Apex."
+        "Records inserted in execute() commit when that execute() transaction ends.",
+        "DML isn't held over between execute() calls.",
+        "Apex can set WhatId on a Task."
       ],
       "source": "Apex Reference Guide: Database Class; SaveResult Class"
     },
@@ -2408,12 +2561,12 @@
       "answer": [
         1
       ],
-      "explain": "Code coverage is calculated as part of validation, so skipping validation and computing coverage are mutually exclusive. Versions created with skip validation can't be promoted, so a promotable build needs validation plus --code-coverage.",
+      "explain": "Coverage is measured during validation, so you can't skip one and keep the other. `--skip-validation` and `--code-coverage` can't be combined. Versions built with skip validation also can't be promoted.",
       "wrong": [
         "Installation key bypass is valid for unlocked packages.",
         "",
-        "There is no such minimum wait time.",
-        "Coverage is computed with --code-coverage at version creation, and promotion requires it."
+        "There's no minimum wait time.",
+        "Coverage is measured at version creation with --code-coverage, and promotion needs it."
       ],
       "source": "Salesforce DX Developer Guide: Create New Versions of an Unlocked Package; Code Coverage for Unlocked Packages"
     },
@@ -2434,12 +2587,12 @@
         2,
         4
       ],
-      "explain": "Developer and Developer Pro sandboxes have a one-day refresh interval, and Full sandboxes 29 days. Only Partial Copy (a template-selected sample) and Full sandboxes copy production data.",
+      "explain": "Each sandbox type has its own refresh interval. Developer and Developer Pro refresh every day, and Full every 29 days. Only Partial Copy and Full sandboxes copy production data.",
       "wrong": [
-        "Developer sandboxes copy metadata only. Templates are for Partial Copy and Full sandboxes.",
-        "Partial Copy copies all metadata plus a sample of data chosen by a template.",
+        "Developer sandboxes copy metadata only; templates are for Partial Copy and Full.",
+        "Partial Copy copies all metadata plus a template-picked sample of data.",
         "",
-        "A refresh replaces the sandbox with a new copy of production, so its own changes are lost.",
+        "A refresh replaces the sandbox with a new copy, so its own changes are lost.",
         ""
       ],
       "source": "Salesforce Help: Sandbox Types and Templates"
@@ -2461,12 +2614,12 @@
       "answer": [
         0
       ],
-      "explain": "Coverage records such as ApexCodeCoverageAggregate are Tooling API objects. sf data query needs --use-tooling-api to query Tooling API objects.",
+      "explain": "Coverage records live in the Tooling API, not the standard API. `ApexCodeCoverageAggregate` is a Tooling API object, so `sf data query` needs `--use-tooling-api`.",
       "wrong": [
         "",
-        "Coverage results aren't metadata components, so they can't be retrieved.",
+        "Coverage results aren't metadata, so they can't be retrieved.",
         "Apex SOQL can't query Tooling API objects.",
-        "ApexClass has no coverage field. Coverage lives in Tooling API objects."
+        "ApexClass has no coverage field; coverage lives in Tooling API objects."
       ],
       "source": "Tooling API Developer Guide: ApexCodeCoverageAggregate; Salesforce CLI Command Reference: data query"
     },
@@ -2485,12 +2638,12 @@
       "answer": [
         2
       ],
-      "explain": "DevOps Center is built on source control. The changes for each work item are committed to a repository and promoted through the stages of a pipeline, instead of being moved with change sets.",
+      "explain": "DevOps Center is built on source control. Each work item's changes are committed to a repository and promoted through pipeline stages, instead of moving by change set.",
       "wrong": [
         "DevOps Center replaces change sets with promotion based on source control.",
-        "Development environments can be sandboxes. Scratch orgs aren't required.",
+        "Sandboxes work as development environments; scratch orgs aren't required.",
         "",
-        "Deployments to production still follow the normal Apex test requirements."
+        "Production deploys still follow the normal Apex test rules."
       ],
       "source": "Salesforce Help: DevOps Center"
     },
@@ -2511,11 +2664,11 @@
       "answer": [
         3
       ],
-      "explain": "deploy validate is meant for production orgs. For a sandbox, the CLI reference recommends deploy start with --dry-run and an explicit test level: it validates and runs the tests without saving anything.",
+      "explain": "To test-drive a deploy to a sandbox, use a dry run. `deploy validate` is meant for production, so the CLI reference recommends `deploy start --dry-run` with a test level. It validates and runs the tests but saves nothing.",
       "wrong": [
-        "Without --dry-run this really deploys to UAT and changes it.",
-        "quick deploys an earlier validation by job ID. It doesn't validate source.",
-        "preview only lists what would deploy and possible conflicts. It runs no tests.",
+        "Without --dry-run, this really deploys and changes UAT.",
+        "quick deploys an earlier validation by job ID; it doesn't validate source.",
+        "preview only lists what would deploy and possible conflicts; it runs no tests.",
         ""
       ],
       "source": "Salesforce CLI Command Reference: project deploy validate"
@@ -2537,12 +2690,12 @@
       "answer": [
         1
       ],
-      "explain": "--use-most-recent only finds validations from the past 3 days. The job ID itself is valid for 10 days from the start of the validation, so passing it with --job-id works.",
+      "explain": "The job ID lasts longer than the shortcut that finds it. `--use-most-recent` only looks back 3 days. The job ID itself is valid for 10 days from the start of validation, so pass it with `--job-id`.",
       "wrong": [
-        "The job ID is valid for 10 days. Only the --use-most-recent lookup is limited to 3 days.",
+        "The job ID is valid for 10 days; only --use-most-recent is limited to 3.",
         "",
         "Quick deploy skips tests because they already ran during validation.",
-        "resume watches an operation that is still running. It doesn't deploy a validation."
+        "resume watches an operation that is still running; it doesn't deploy a validation."
       ],
       "source": "Salesforce CLI Command Reference: project deploy quick"
     },
@@ -2563,12 +2716,12 @@
       "answer": [
         2
       ],
-      "explain": "Post-destructive changes run after the other components are deployed, so AccountMapper drops its reference first and the field can then be deleted. Post-destructive changes are processed before tests run.",
+      "explain": "Remove the reference first, then delete the field. `destructiveChangesPost.xml` deletes after the other components deploy, so AccountMapper drops its reference first. Post-destructive changes are still processed before tests run.",
       "wrong": [
-        "Deleting first fails, because the current AccountMapper still references the field.",
-        "package.xml has no delete option. Deletions go in a destructive changes manifest.",
+        "Deleting first fails, because the current AccountMapper still uses the field.",
+        "package.xml has no delete option; deletions go in a destructive changes manifest.",
         "",
-        "Wildcards aren't supported in destructive changes manifests, and plain destructiveChanges.xml deletes before additions."
+        "Wildcards aren't allowed there, and plain destructiveChanges.xml deletes before additions."
       ],
       "source": "Metadata API Developer Guide: Deleting Components from an Organization"
     },
@@ -2589,11 +2742,11 @@
         1,
         3
       ],
-      "explain": "NoTestRun is only for development environments, and RunLocalTests leaves out tests from installed managed and unlocked packages. RunSpecifiedTests needs 75% coverage for each class and trigger, and deploy validate defaults to RunLocalTests.",
+      "explain": "Each test level has a clear scope. NoTestRun is only for development environments, and RunLocalTests skips tests from installed managed and unlocked packages. RunSpecifiedTests needs 75% per class and trigger, and deploy validate defaults to RunLocalTests.",
       "wrong": [
         "RunAllTestsInOrg includes managed package tests.",
         "",
-        "RunSpecifiedTests requires 75% coverage for each class and trigger in the deployment.",
+        "RunSpecifiedTests needs 75% coverage for each class and trigger deployed.",
         "",
         "deploy validate requires tests and defaults to RunLocalTests."
       ],
@@ -2616,12 +2769,12 @@
       "answer": [
         1
       ],
-      "explain": "Every call on a stub goes through handleMethodCall with the method name and listOfArgs, so the provider can record them for the test to assert on. The Stub API has no built-in verify method.",
+      "explain": "A stub can count its own calls, because every call passes through it. `handleMethodCall` gets the method name and `listOfArgs`, so record them and assert. The Stub API has no built-in verify.",
       "wrong": [
-        "There is no Test.verify method; the provider has to record the calls itself.",
+        "There is no Test.verify; the provider must record the calls itself.",
         "",
-        "Test.setMock is only for HTTP and SOAP callout mocks, and send() makes no callout to count.",
-        "A subclass can't override an instance method with a static one, and static methods can't be stubbed anyway."
+        "Test.setMock is only for callout mocks, and send() makes no callout to count.",
+        "An instance method can't be redeclared as static, and statics can't be stubbed anyway."
       ],
       "source": "Apex Developer Guide: Build a Mocking Framework with the Stub API; StubProvider Interface"
     },
@@ -2641,11 +2794,11 @@
       "answer": [
         3
       ],
-      "explain": "The Stub API returns a stub object; it doesn't intercept the new keyword. The class under test needs a seam, such as constructor injection, so the test can pass the stub in.",
+      "explain": "The Stub API makes a stub object; it doesn't intercept `new`. The class under test needs a seam, such as constructor injection, so the test can pass the stub in.",
       "wrong": [
         "Static methods can't be stubbed with the Stub API.",
-        "@TestVisible only exposes private members to tests; it doesn't redirect object creation.",
-        "Test.setMock works only for callout mock interfaces, not for replacing Apex classes.",
+        "@TestVisible only exposes private members to tests; it doesn't redirect new.",
+        "Test.setMock only works for callout mocks, not for Apex classes.",
         ""
       ],
       "source": "Apex Developer Guide: Build a Mocking Framework with the Stub API"
@@ -2665,12 +2818,12 @@
       "answer": [
         2
       ],
-      "explain": "The LWC custom formatter for Chrome DevTools shows the real values held in proxy objects while leaving the proxies in place. With LWS enabled, it also adds extra messages and a filtered call stack.",
+      "explain": "A DevTools setting can unwrap LWC proxies for you. Turn on Enable custom formatters in the Console settings. The LWC formatter shows the real values and leaves the proxies in place; with LWS on, it adds extra messages too.",
       "wrong": [
-        "The proxies come from the LWC engine, not from LWS, and turning off a security feature changes behavior.",
+        "The proxies come from the LWC engine, not LWS, and turning off security changes behavior.",
         "Changing the decorator changes the component, and tracked objects are proxied too.",
         "",
-        "Browser caching affects which code version loads, not how objects show in the console."
+        "Browser caching affects which code loads, not how objects show in the console."
       ],
       "source": "LWC Developer Guide: Debug Using Chrome DevTools"
     },
@@ -2689,7 +2842,7 @@
       "answer": [
         3
       ],
-      "explain": "Turning off secure and persistent browser caching in a sandbox or Developer Edition org lets a reload pick up code changes without emptying the cache. It hurts performance badly, so it stays on in production and is re-enabled after debugging.",
+      "explain": "Browser caching can keep old component code around. In a sandbox or Developer Edition org, clear Enable secure and persistent browser caching while you debug. It hurts performance badly, so turn it back on after, and keep it on in production.",
       "wrong": [
         "Debug Mode serves unminified code; it's not the documented fix for stale cached components.",
         "LWC module imports don't take query strings; the platform serves component code.",
@@ -2712,12 +2865,12 @@
       "answer": [
         0
       ],
-      "explain": "With pause on exceptions enabled, the browser stops where the exception is thrown, even if framework code later catches it. That shows the failing line in the component's source.",
+      "explain": "Pausing on exceptions stops the browser at the line that throws. That works even if framework code catches the error later. So you land on the failing line in your own source.",
       "wrong": [
         "",
         "Debug logs record server-side activity, not browser JavaScript stacks.",
-        "Wrapping in Aura changes nothing about where the exception is caught.",
-        "Jest coverage measures local test runs; it doesn't record errors from the browser."
+        "Wrapping in Aura doesn't change where the exception is caught.",
+        "Jest coverage measures local test runs, not errors in the browser."
       ],
       "source": "LWC Developer Guide: Debug Using Chrome DevTools"
     },
@@ -2735,11 +2888,11 @@
       "answer": [
         1
       ],
-      "explain": "sfdx-lwc-jest --debug runs Jest under node --inspect-brk in band. Chrome's chrome://inspect page then lists the Jest process so DevTools can attach and stop at breakpoints. VS Code's Debug Test link does the same.",
+      "explain": "Jest has a debug mode that Chrome can attach to. `sfdx-lwc-jest --debug` runs Jest under `node --inspect-brk`, and chrome://inspect lists the process for DevTools. VS Code's Debug Test link does the same.",
       "wrong": [
         "Jest tests run locally in Node.js, not in an org.",
         "",
-        "Debug Mode affects code served in the org; Jest tests never run there.",
+        "Debug Mode affects code served by the org; Jest tests never run there.",
         "sf apex run test runs Apex tests, not Jest tests."
       ],
       "source": "LWC Developer Guide: Debug Jest Tests for Lightning Web Components"
