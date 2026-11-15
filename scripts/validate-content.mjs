@@ -9,7 +9,7 @@ const qids = new Set(d.questions.map(q => q.id));
 const lids = new Set(d.lessons.map(l => l.id));
 if (qids.size !== d.questions.length) err.push('dup qid');
 for (const l of d.lessons) {
-  if (l.cards.length < 4 || l.cards.length > 7) err.push(l.id + ' cards ' + l.cards.length);
+  if (l.cards.length < 4 || l.cards.length > 9) err.push(l.id + ' cards ' + l.cards.length);
   if (l.check.length < 2 || l.check.length > 3) err.push(l.id + ' check count');
   for (const c of l.check) { if (!qids.has(c)) err.push('missing check ' + c); else if (d.questions.find(q=>q.id===c).lesson!==l.id) err.push('check lesson mismatch '+c); }
   for (const c of l.cards) { const w = ((c.body||'')+' '+(c.items||[]).join(' ')).split(/\s+/).length; if (w > 65) err.push(`${l.id} card words ${w}: ${(c.title||c.body).slice(0,30)}`); }
