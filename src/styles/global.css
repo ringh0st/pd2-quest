@@ -1255,10 +1255,10 @@ h1[tabindex='-1']:focus, h2[tabindex='-1']:focus { outline: none; }
    on the page's own colour. On iPhone home-screen apps iOS can leave a strip under the page that
    only takes the root background; with the dock floating on page colour that strip is just more page. */
 :root {
-  /* low: just over the home indicator line on newer iPhones (34px zone), 6px from the edge otherwise */
-  --nav-gap: max(6px, calc(var(--safe-b) - 16px));
-  /* side margin follows the phone width: 6px on a 320px phone, up to 12px on bigger ones */
-  --nav-side: clamp(6px, 2.6vw, 12px);
+  /* as low as it can go: a hair above the home indicator line on newer iPhones, 4px from the edge otherwise */
+  --nav-gap: max(4px, calc(var(--safe-b) - 26px));
+  /* side margin follows the phone width: 5px on a 320px phone, up to 8px on bigger ones */
+  --nav-side: clamp(4px, 1.6vw, 8px);
 }
 html { background: var(--bg); }
 .bottom-nav {
