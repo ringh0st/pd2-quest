@@ -1,8 +1,14 @@
 // The opening screen: Zap flies in, a lightning arc lights up the PD2 badge, the title pops in letter
-// by letter and a bar fills for about 4 seconds while the app loads underneath. Shows the exam facts,
-// the studio and the version. Tap, Enter, Space or Escape skips it. Static with reduced motion.
+// by letter and a bar fills for about 4 seconds while the app loads underneath. Then a big Start (first
+// time) or Play button appears; the app opens only when it is pressed. A tap during loading skips to the
+// button. Shows the exam facts, the studio and the version. Static with reduced motion.
 import { useEffect, useRef, useState } from 'react';
+import { motion } from 'motion/react';
 import { Zap } from '../game/Zap.jsx';
+import { Icon } from '../icons/Icon.jsx';
+import { useStore } from '../../state/store.js';
+import { sfx } from '../../audio/sfx.js';
+import { haptic } from '../../audio/haptics.js';
 import { useHoldCelebrations } from '../../hooks/useFocusMode.js';
 import { exam } from '../../data/index.js';
 import { APP_NAME, APP_TAGLINE, APP_VERSION, COPYRIGHT_YEAR, STUDIO_NAME } from '../../lib/appInfo.js';
@@ -12,18 +18,24 @@ const FADE_MS = 450;
 const LINES = ['Bulkifying the triggers…', 'Warming up the governor limits…', 'Shuffling your flashcards…', 'Waking up the Bosses…'];
 
 export function SplashScreen({ onDone }) {
+  const [ready, setReady] = useState(false);
   const [leaving, setLeaving] = useState(false);
   const [line, setLine] = useState(0);
   const ref = useRef(null);
+  const startRef = useRef(null);
+  const returning = useStore((s) => s.onboarded);
   useHoldCelebrations(true); // rewards and pop-ups wait until the splash is gone
 
   useEffect(() => {
-    const leave = setTimeout(() => setLeaving(true), SPLASH_MS);
+    const done = setTimeout(() => setReady(true), SPLASH_MS);
     const lines = setInterval(() => setLine((i) => (i + 1) % LINES.length), SPLASH_MS / LINES.length);
-    // Focus the splash itself so Enter or Escape skips it without a visible focus ring.
+    // Focus the splash itself so Enter or a tap can skip the loading without a visible focus ring.
     ref.current?.focus({ preventScroll: true });
-    return () => { clearTimeout(leave); clearInterval(lines); };
+    return () => { clearTimeout(done); clearInterval(lines); };
   }, []);
+
+  // When loading is done, the Start/Play button takes focus (Enter or Space presses it).
+  useEffect(() => { if (ready) startRef.current?.focus({ preventScroll: true }); }, [ready]);
 
   useEffect(() => {
     if (!leaving) return undefined;
@@ -31,16 +43,17 @@ export function SplashScreen({ onDone }) {
     return () => clearTimeout(done);
   }, [leaving, onDone]);
 
-  const skip = () => setLeaving(true);
+  const skip = () => setReady(true);
+  const start = (e) => { e.stopPropagation(); sfx.levelUp(); haptic('success'); setLeaving(true); };
 
   return (
     <div
       ref={ref} tabIndex={-1}
       className={`splash${leaving ? ' leaving' : ''}`}
-      onClick={skip}
-      onKeyDown={(e) => ['Enter', 'Escape', ' '].includes(e.key) && skip()}
+      onClick={ready ? undefined : skip}
+      onKeyDown={(e) => !ready && ['Enter', 'Escape', ' '].includes(e.key) && skip()}
       role="dialog" aria-modal="true"
-      aria-label={`${APP_NAME}, ${APP_TAGLINE} exam prep, by ${STUDIO_NAME}. Version ${APP_VERSION}. Loading.`}
+      aria-label={`${APP_NAME}, ${APP_TAGLINE} exam prep, by ${STUDIO_NAME}. Version ${APP_VERSION}.${ready ? '' : ' Loading.'}`}
     >
       <div className="splash-rays" aria-hidden="true" />
 
@@ -72,10 +85,20 @@ export function SplashScreen({ onDone }) {
         {exam.questions} questions · {exam.minutes} min · {exam.passing}% to pass
       </p>
 
-      <div className="splash-loading" aria-hidden="true">
-        <div className="splash-bar"><span className="splash-fill" style={{ animationDuration: `${SPLASH_MS}ms` }} /></div>
-        <p key={line} className="splash-line">{LINES[line]}</p>
-      </div>
+      {ready ? (
+        <motion.button
+          ref={startRef} type="button" className="btn primary big splash-start" onClick={start}
+          initial={{ opacity: 0, scale: 0.7, y: 10 }} animate={{ opacity: 1, scale: 1, y: 0 }}
+          transition={{ type: 'spring', stiffness: 420, damping: 18 }}
+        >
+          <Icon name="play" fill /> {returning ? 'Play' : 'Start'}
+        </motion.button>
+      ) : (
+        <div className="splash-loading" aria-hidden="true">
+          <div className="splash-bar"><span className="splash-fill" style={{ animationDuration: `${SPLASH_MS}ms` }} /></div>
+          <p key={line} className="splash-line">{LINES[line]}</p>
+        </div>
+      )}
 
       <footer className="splash-footer">
         <p className="splash-studio">A <strong>{STUDIO_NAME}</strong> production</p>
@@ -83,7 +106,7 @@ export function SplashScreen({ onDone }) {
         <p className="splash-meta">Not affiliated with Salesforce.</p>
       </footer>
 
-      <button type="button" className="splash-skip" onClick={skip}>Tap to skip</button>
+      {!ready && <button type="button" className="splash-skip" onClick={(e) => { e.stopPropagation(); skip(); }}>Skip</button>}
     </div>
   );
 }

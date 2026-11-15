@@ -1186,3 +1186,8 @@ h1[tabindex='-1']:focus, h2[tabindex='-1']:focus { outline: none; }
 :root[data-motion='reduced'] .splash-badge-glow, :root[data-calm='true'] .splash-badge-glow { opacity: 0.45; }
 :root[data-motion='reduced'] .splash-fill, :root[data-calm='true'] .splash-fill { transform: none; }
 /* ===== end splash ===== */
+/* splash: the Start / Play button that appears when loading is done */
+.splash-start { min-width: min(240px, 70vw); min-height: 58px; margin-top: 6px; font-size: calc(20px * var(--text-scale)); gap: 10px; cursor: pointer; }
+.splash { cursor: default; }
+.splash:not(:has(.splash-start)) { cursor: pointer; }
+:root[data-input='touch'] .splash-start:focus-visible, :root[data-input='mouse'] .splash-start:focus-visible { outline: none; }
