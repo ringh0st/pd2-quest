@@ -6,7 +6,9 @@ import { levelById, nextLevelAfter, levelOpen } from '../state/gameSelectors.js'
 import { WORLD_THEMES, HARD_SIZE, BOSS_HP, BOSS_HEARTS, starsFor } from '../game/worlds.js';
 import { COINS } from '../game/economy.js';
 import { shuffle } from '../engine/session.js';
-import { useStore, saveStars, addCoins, earn, useHelper, getState, checkBadges } from '../state/store.js';
+import { useStore, saveStars, addCoins, earn, useHelper, refundHelper, getState, checkBadges } from '../state/store.js';
+import { saveRun, loadRun, clearRun, questionsFor } from '../state/runSession.js';
+import { useFeedback } from '../components/Feedback.jsx';
 import { totalLessons } from '../state/selectors.js';
 import { PracticeRunner } from '../components/PracticeRunner.jsx';
 import { WinScreen } from '../components/game/WinScreen.jsx';
@@ -41,9 +43,13 @@ export function Play({ id }) {
   const [result, setResult] = useState(null);
   const [extraHeart, setExtraHeart] = useState(false);
   const [rematch, setRematch] = useState(false); // after a loss, the next try gets a free heart
+  const [saved, setSaved] = useState(() => (level ? loadRun(level.id) : null)); // unfinished run to resume
+  const [resuming, setResuming] = useState(null);
   const stars = useStore((s) => s.stars);
   const heartsHeld = useStore((s) => s.helpers.heart ?? 0);
-  const questions = useMemo(() => (level ? pickQuestions(level) : []), [level, run]); // eslint-disable-line react-hooks/exhaustive-deps
+  const { showToast } = useFeedback();
+  const fresh = useMemo(() => (level ? pickQuestions(level) : []), [level, run]); // eslint-disable-line react-hooks/exhaustive-deps
+  const questions = resuming ? questionsFor(resuming.runner) : fresh;
 
   if (!level || level.kind === 'lesson') return <main className="screen"><p>Level not found.</p><button className="btn" onClick={() => go('/map')}>Map</button></main>;
   if (!levelOpen(id, stars)) return <main className="screen"><p>🔒 Finish the level before this one first.</p><button className="btn" onClick={() => go(`/world/${level.world}`)}>Back to the map</button></main>;
@@ -52,13 +58,33 @@ export function Play({ id }) {
   const isBoss = level.kind === 'boss';
   const baseHearts = (isBoss ? BOSS_HEARTS : 3) + (rematch ? 1 : 0);
 
+  const totalHearts = baseHearts + (extraHeart ? 1 : 0);
   const start = () => {
-    if (extraHeart && !useHelper('heart')) setExtraHeart(false);
+    // A new run replaces a saved one; give back the heart that run had spent.
+    if (saved) { if (saved.usedHeart) refundHelper('heart'); clearRun(level.id); setSaved(null); }
+    const usedHeart = extraHeart && useHelper('heart');
+    if (extraHeart && !usedHeart) setExtraHeart(false);
+    setResuming(null);
+    saveRun(level.id, { usedHeart, hearts: baseHearts + (usedHeart ? 1 : 0), runner: null });
     sfx.levelUp(); haptic('medium');
     setPhase('run');
   };
+  const resume = () => {
+    sfx.tap(); haptic('medium');
+    setResuming(saved);
+    setPhase('run');
+  };
+  const progress = (runner) => {
+    const cur = resuming ?? loadRun(level.id) ?? {};
+    saveRun(level.id, { usedHeart: !!cur.usedHeart, hearts: cur.hearts ?? totalHearts, runner });
+  };
+  const leave = () => {
+    showToast('⏸ Saved. Resume any time from the level.');
+    go(`/world/${level.world}`);
+  };
 
   const done = (r) => {
+    clearRun(level.id);
     const won = isBoss ? r.right >= BOSS_HP && !r.failed : !r.failed;
     const st = won ? starsFor(level.kind, isBoss ? { won, hearts: r.heartsLeft } : { right: r.firstRight, total: r.total }) : 0;
     const saved = st ? saveStars(level.id, st) : { coins: 0, before: getState().stars[level.id] ?? 0 };
@@ -71,7 +97,7 @@ export function Play({ id }) {
     setPhase('done');
   };
 
-  const retry = () => { setRematch(!result?.stars); setResult(null); setRun((x) => x + 1); setPhase('intro'); };
+  const retry = () => { setRematch(!result?.stars); setResult(null); setResuming(null); setSaved(null); setRun((x) => x + 1); setPhase('intro'); };
 
   if (phase === 'done') {
     return (
@@ -89,18 +115,20 @@ export function Play({ id }) {
   }
 
   if (phase === 'intro') {
-    return <LevelIntro level={level} theme={theme} best={stars[level.id] ?? 0} heartsHeld={heartsHeld} extraHeart={extraHeart} setExtraHeart={setExtraHeart} baseHearts={baseHearts} onStart={start} />;
+    return <LevelIntro level={level} theme={theme} best={stars[level.id] ?? 0} heartsHeld={heartsHeld} extraHeart={extraHeart} setExtraHeart={setExtraHeart} baseHearts={baseHearts} onStart={start} saved={saved?.runner ? saved : null} onResume={resume} />;
   }
 
   return (
     <main className={`screen focus play-screen ${isBoss ? 'boss-mode' : 'hard-mode'}`} id="main">
       <PracticeRunner
-        key={run}
+        key={`${run}-${resuming ? 'r' : 'n'}`}
         questions={questions}
         requeue={false}
-        hearts={baseHearts + (extraHeart ? 1 : 0)}
+        hearts={resuming?.hearts ?? totalHearts}
+        initial={resuming?.runner ?? null}
+        onProgress={progress}
         helpers
-        onExit={() => go(`/world/${level.world}`)}
+        onExit={leave}
         onDone={done}
         shouldStop={isBoss ? (s) => s.right >= BOSS_HP : undefined}
         header={isBoss ? (st) => <BossPanel theme={theme} hits={st.stats.right} lastRight={st.revealed ? st.lastRight : null} /> : undefined}
@@ -109,7 +137,7 @@ export function Play({ id }) {
   );
 }
 
-function LevelIntro({ level, theme, best, heartsHeld, extraHeart, setExtraHeart, baseHearts, onStart }) {
+function LevelIntro({ level, theme, best, heartsHeld, extraHeart, setExtraHeart, baseHearts, onStart, saved, onResume }) {
   const reduced = useReducedMotion();
   const isBoss = level.kind === 'boss';
   return (
@@ -149,7 +177,18 @@ function LevelIntro({ level, theme, best, heartsHeld, extraHeart, setExtraHeart,
           </label>
         )}
         <p className="small muted">✂️ 50/50 and 💡 Hint helpers work here.</p>
-        <button className="btn primary block big" autoFocus onClick={onStart}>{isBoss ? 'FIGHT! ⚔️' : 'Let’s go! 💪'}</button>
+        {saved ? (
+          <>
+            <button className="btn primary block big" autoFocus onClick={onResume}>
+              Resume ▶ <span className="small" style={{ fontWeight: 400 }}>
+                Q{saved.runner.idx + 1} · {'❤️'.repeat(Math.max(0, saved.runner.heartsLeft ?? 0))}{isBoss ? ` · ${saved.runner.stats.right}/${BOSS_HP} hits` : ''}
+              </span>
+            </button>
+            <button className="btn block" onClick={onStart}>Start over{saved.usedHeart ? ' (your extra heart comes back)' : ''}</button>
+          </>
+        ) : (
+          <button className="btn primary block big" autoFocus onClick={onStart}>{isBoss ? 'FIGHT! ⚔️' : 'Let’s go! 💪'}</button>
+        )}
       </motion.div>
     </main>
   );

@@ -104,3 +104,34 @@ test('saved progress with broken fields is repaired, not crashed on', async () =
   assert.deepEqual(bad.stars, { y: 2 });
   assert.deepEqual(sanitizeState('garbage').items, {});
 });
+
+test('placement: one question per lesson, results and test-out rule', async () => {
+  const { placementQuestions, placementResult, testOutQuestions, testOutPassed } = await import('../src/game/placement.js');
+  const sec = {
+    id: 'z',
+    lessons: [{ id: 'z-1', check: ['a1'] }, { id: 'z-2', check: ['b1'] }, { id: 'z-3', check: [] }],
+    questions: [
+      { id: 'a1', lesson: 'z-1', difficulty: 1 }, { id: 'a2', lesson: 'z-1', difficulty: 2 }, { id: 'a3', lesson: 'z-1', difficulty: 3 },
+      { id: 'b1', lesson: 'z-2', difficulty: 3 }, { id: 'c1', lesson: 'z-3', difficulty: 1 },
+    ],
+  };
+  const qs = placementQuestions(sec, 'seed');
+  assert.deepEqual(qs.map((q) => q.lesson), ['z-1', 'z-2', 'z-3']);
+  assert.equal(qs[0].id, 'a2'); // medium preferred
+  assert.deepEqual(placementQuestions(sec, 'seed').map((q) => q.id), qs.map((q) => q.id)); // stable
+  const r = placementResult(qs, { [qs[0].id]: true, [qs[1].id]: true, [qs[2].id]: false });
+  assert.deepEqual(r.proven, ['z-1', 'z-2']);
+  assert.equal(r.unlocks, false); // 2/3 < 70%
+  assert.equal(placementResult(qs, Object.fromEntries(qs.map((q) => [q.id, true]))).unlocks, true);
+  assert.equal(testOutQuestions(sec, sec.lessons[0])[0].id, 'a1'); // check question first
+  assert.equal(testOutPassed({ a: true, b: true, c: false, d: true }), true);
+  assert.equal(testOutPassed({ a: true, b: false, c: false, d: true }), false);
+  assert.equal(testOutPassed({ a: true, b: true }), false); // too few
+});
+
+test('a tested-out level is open even if the one before it is not done', () => {
+  const lv = [{ id: 'l1' }, { id: 'h1' }, { id: 'l2' }, { id: 'l3' }];
+  assert.equal(isLevelOpen(lv, 2, { l1: 1 }), false);
+  assert.equal(isLevelOpen(lv, 2, { l1: 1, l2: 1 }), true);
+  assert.equal(isLevelOpen(lv, 3, { l1: 1, l2: 1 }), true);
+});

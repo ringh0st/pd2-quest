@@ -36,6 +36,9 @@ export function continueLevel(stars, unlocked) {
   return null;
 }
 
+/** Every level in path order across all worlds. */
+export const allLevels = sections.flatMap((s) => worldLevels[s.id]);
+
 /** Every level has at least one star. */
 export function mapCleared(stars) {
   return sections.every((s) => worldLevels[s.id].every((l) => stars[l.id] > 0));

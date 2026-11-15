@@ -16,13 +16,17 @@ import { starsFor } from '../game/worlds.js';
 import { nextLevelAfter } from '../state/gameSelectors.js';
 import { WinScreen } from '../components/game/WinScreen.jsx';
 import { ParkIt } from '../components/ParkIt.jsx';
+import { saveRun, loadRun, clearRun, questionsFor } from '../state/runSession.js';
 
 const KIND_LABEL = { text: '', code: 'Code', tip: '💡 Memory hook', trap: '⚠️ Exam trap', list: '' };
 
 export function Lesson({ id }) {
   const lesson = lessonById[id];
-  const [phase, setPhase] = useState('cards'); // cards | check | done
-  const [i, setI] = useState(0);
+  // Pick up where you left off: the card you were on, or the quick check mid-way.
+  const [saved] = useState(() => (lesson ? loadRun(lesson.id) : null));
+  const [phase, setPhase] = useState(() => (saved?.phase === 'check' && saved.runner ? 'check' : 'cards')); // cards | check | done
+  const [i, setI] = useState(() => (saved?.phase === 'cards' ? Math.min(saved.i ?? 0, (lesson?.cards.length ?? 1) - 1) : 0));
+  const [resumeRunner, setResumeRunner] = useState(() => (saved?.phase === 'check' ? saved.runner : null));
   const [dir, setDir] = useState(1);
   const [summary, setSummary] = useState(null);
   const reduced = useReducedMotion();
@@ -31,7 +35,7 @@ export function Lesson({ id }) {
   const sec = sectionById[lesson.section];
   const cards = lesson.cards;
   const card = cards[i];
-  const checks = lesson.check.map((q) => questionById[q]).filter(Boolean);
+  const checks = resumeRunner ? questionsFor(resumeRunner) : lesson.check.map((q) => questionById[q]).filter(Boolean);
 
   const move = (d) => {
     const n = i + d;
@@ -39,14 +43,17 @@ export function Lesson({ id }) {
     sfx.flip(); haptic('light');
     if (n >= cards.length) {
       earn(5);
+      if (checks.length) saveRun(lesson.id, { phase: 'check', runner: null });
       setPhase(checks.length ? 'check' : 'done');
       if (!checks.length) finish({ right: 0, total: 0 });
       return;
     }
     setDir(d); setI(n);
+    saveRun(lesson.id, { phase: 'cards', i: n });
   };
 
   const finish = (result) => {
+    clearRun(lesson.id);
     const firstTime = !getState().lessons[lesson.id];
     completeLesson(lesson.id);
     if (firstTime) earn(XP.lessonDone);
@@ -56,13 +63,17 @@ export function Lesson({ id }) {
     setSummary({ ...result, firstTime, stars, ...saved });
     setPhase('done');
   };
-  const restart = () => { setI(0); setDir(1); setSummary(null); setPhase('cards'); };
+  const restart = () => { clearRun(lesson.id); setResumeRunner(null); setI(0); setDir(1); setSummary(null); setPhase('cards'); };
 
   if (phase === 'check') {
     return (
       <main className="screen focus" id="main">
         <h1 className="small muted center" style={{ fontSize: 'var(--fs-small)' }}>Quick check · {checks.length} questions</h1>
-        <PracticeRunner questions={checks} requeue={false} onExit={() => go(`/world/${sec.id}`)} onDone={finish} />
+        <PracticeRunner
+          questions={checks} requeue={false} initial={resumeRunner}
+          onProgress={(runner) => saveRun(lesson.id, { phase: 'check', runner })}
+          onExit={() => go(`/world/${sec.id}`)} onDone={finish}
+        />
       </main>
     );
   }
@@ -93,6 +104,11 @@ export function Lesson({ id }) {
       <div>
         <p className="small muted" style={{ fontWeight: 700 }}>{sec.emoji} {sec.title}</p>
         <h1 style={{ fontSize: 'calc(22px * var(--text-scale))' }}>{lesson.title}</h1>
+        {i === 0 && (
+          <a className="small test-out-link" href={`#/placement/lesson/${lesson.id}`} onClick={() => sfx.tap()}>
+            Know this already? Test out in 4 questions →
+          </a>
+        )}
       </div>
 
       <div className="lesson-stage" aria-live="polite">

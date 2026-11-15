@@ -137,3 +137,26 @@ test('streak ignores a device clock set back in time', () => {
   assert.equal(streak.count, 4);
   assert.equal(streak.lastDay, '2026-11-15');
 });
+
+test('study plan: pace, status, final week and past date', async () => {
+  const { studyPlan } = await import('../src/engine/plan.js');
+  const levels = Array.from({ length: 40 }, (_, i) => ({ id: 'L' + i, kind: i % 10 === 9 ? 'boss' : 'lesson', title: 'Level ' + i, world: 'w' + Math.floor(i / 10) }));
+  const base = { today: '2026-11-15', levels, stars: {}, exams: [], dueReviews: 0 };
+  const roomy = studyPlan({ ...base, examDate: '2027-01-14' }); // 60 days: 53 learning days
+  assert.equal(roomy.phase, 'learn');
+  assert.equal(roomy.perDay, 1);
+  assert.equal(roomy.status, 'on-track');
+  assert.equal(roomy.today[0].level.id, 'L0');
+  assert.equal(roomy.weeks.at(-1).kind, 'final');
+  const tight = studyPlan({ ...base, examDate: '2026-11-25' }); // 10 days: 3 learning days
+  assert.equal(tight.perDay, 14);
+  assert.equal(tight.status, 'tight');
+  const final = studyPlan({ ...base, examDate: '2026-11-20', dueReviews: 3 });
+  assert.equal(final.phase, 'final');
+  assert.ok(final.today.some((t) => t.kind === 'mock'));
+  assert.ok(final.today.some((t) => t.kind === 'reviews'));
+  assert.equal(studyPlan({ ...base, examDate: '2026-11-01' }).phase, 'past');
+  assert.equal(studyPlan({ ...base, examDate: '' }).phase, 'no-date');
+  const half = studyPlan({ ...base, examDate: '2027-01-14', stars: Object.fromEntries(levels.slice(0, 20).map((l) => [l.id, 2])) });
+  assert.ok(half.today.some((t) => t.kind === 'mock' && /halfway/.test(t.label)));
+});

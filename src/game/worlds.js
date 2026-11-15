@@ -50,9 +50,9 @@ export function levelsFor(section) {
   return out;
 }
 
-/** A level is open when the one before it has at least one star (the first is always open). */
+/** A level is open when the one before it has a star, or it has stars itself (e.g. tested out). The first is always open. */
 export function isLevelOpen(levels, index, stars) {
-  return index === 0 || (stars[levels[index - 1].id] ?? 0) > 0;
+  return index === 0 || (stars[levels[index - 1].id] ?? 0) > 0 || (stars[levels[index].id] ?? 0) > 0;
 }
 
 export const WORLD_UNLOCK_STARS = { fund: 0, auto: 6, ui: 15, test: 25, perf: 35 };

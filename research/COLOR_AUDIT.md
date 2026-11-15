@@ -35,6 +35,38 @@ The brand palette was kept as it was: magenta primary, teal-blue for correct, or
 | `--gold-meter` | dark | (new) | `#FFC94D` | Already 8.3:1, so it is unchanged. |
 | `--hero-gold-tint` | light / dark | 26% / 26% | 26% / **16%** | In dark mode, `text-muted` over the hero's gold corner glow measured 4.36:1. It is now 5.72:1. |
 
+## Warm charcoal dark theme (2026-11-15)
+
+A visual-design review asked for the dark neutrals to move from cool purple-greys to warm charcoal. Only neutrals changed. The accent themes, semantic colors (correct, incorrect, gold, flame), focus ring and section accents keep their dark values, because they all still pass on the new surfaces.
+
+| Token (dark) | Before | After | Note |
+|---|---|---|---|
+| `--bg` | `#14111C` | `#161412` | Reviewer value. Also the dark `theme-color` (App.jsx, index.html). |
+| `--surface` | `#1F1B2B` | `#201D1A` | Reviewer value |
+| `--surface-2` | `#2A253A` | `#2B2723` | Reviewer value |
+| `--surface-3` | `#352F48` | `#36312C` | Same step up as before, warm |
+| `--text` | `#F3F0FA` | `#F6F1EA` | Warm off-white; 16.35:1 on bg |
+| `--text-muted` | `#B9B4CC` | `#C2B8AB` | Warm grey, a touch lighter so the gold-tinted cards stay above 4.5:1 (min 4.93) |
+| `--border` | `#807B98` | `#8C8277` | Warm grey; min 3.70:1 (on `correct-bg`), was 3.46 |
+| `--hairline` | `#2F2A40` | `#36302A` | Decorative; 1.29:1 on surface (was 1.22) |
+| `--on-primary` (token default) | `#14111C` | `#161412` | App.jsx overrides it with the accent theme value from economy.js (still `#14111C`, measured below) |
+| `--on-gold` | `#14111C` | `#161412` | 12.00:1 on gold |
+
+Light theme: no changes were needed. Every light pair still passes.
+
+**How it was measured:** `contrast.mjs` (kept outside the repo) reads the token blocks in `tokens.css` and the `THEMES` list in `src/game/economy.js`, flattens each `color-mix()` surface the CSS paints (nav bar, tip/hint cards, combo chip, hero tints, section-emoji tile, CTA subtitle, heat strip), and computes WCAG 2.x ratios. It checks 240 pairs (120 per theme), including all five accent themes in both themes. **0 failures.**
+
+| Category | Light min | Dark min (before → after) | Threshold |
+|---|---|---|---|
+| Text on every surface | 13.38 (surface-3) | 8.70 → **8.58** (hint card) | 4.5 |
+| Muted text on every surface | 5.87 (surface-3) | 4.88 → **4.93** (hint card) | 4.5 |
+| Semantic text (correct, incorrect, gold, flame) | 4.89 (incorrect on incorrect-bg) | 7.50 → **7.50** (incorrect on incorrect-bg) | 4.5 |
+| Accent themes (on-primary on primary, CTA subtitle, primary on surfaces and soft, text on soft and tints), 5 themes | 4.98 (magenta: muted on hero tint) | 4.88 → **4.93** (gold: muted on hero tint) | 4.5 |
+| Focus ring on bg, surfaces, feedback panels | 5.34 (surface-3) | 5.88 → **5.95** (surface-3) | 3 |
+| UI components (borders, meters, bars, switch, section accents) | 3.26 (border on incorrect-bg) | 3.46 → **3.70** (border on correct-bg) | 3 |
+
+The dark table in the next section is the new measurement; the light table is unchanged.
+
 ## Contrast tables
 
 "Before" shows the old ratio only where the colors changed; `=` means the colors are unchanged.
@@ -112,78 +144,134 @@ The brand palette was kept as it was: magenta primary, teal-blue for correct, or
 | UI dots on / surface-3 | `#B3125F` on `#EFE4D7` | 3:1 | = | **5.29** | pass |
 | UI ghost btn border / bg | `#858098` on `#FFF9F2` | 3:1 | 1.27 | **3.63** | pass (changed) |
 
-### Dark theme
+### Dark theme (warm charcoal, measured 2026-11-15)
 
-| Pair | Colors (after) | Min | Before | After | |
-|---|---|---|---|---|---|
-| text / bg | `#F3F0FA` on `#14111C` | 4.5:1 | = | **16.56** | pass |
-| text / surface | `#F3F0FA` on `#1F1B2B` | 4.5:1 | = | **14.93** | pass |
-| text / surface-2 (chip, btn) | `#F3F0FA` on `#2A253A` | 4.5:1 | = | **13.10** | pass |
-| text / surface-3 | `#F3F0FA` on `#352F48` | 4.5:1 | = | **11.30** | pass |
-| text-muted / bg | `#B9B4CC` on `#14111C` | 4.5:1 | = | **9.29** | pass |
-| text-muted / surface | `#B9B4CC` on `#1F1B2B` | 4.5:1 | = | **8.37** | pass |
-| text-muted / surface-2 (segmented, week day) | `#B9B4CC` on `#2A253A` | 4.5:1 | = | **7.35** | pass |
-| text-muted / surface-3 (disabled btn) | `#B9B4CC` on `#352F48` | 4.5:1 | = | **6.34** | pass |
-| text-muted / primary-soft (nav pill area) | `#B9B4CC` on `#3A1E31` | 4.5:1 | = | **7.42** | pass |
-| text-muted / correct-bg (feedback source) | `#B9B4CC` on `#10303A` | 4.5:1 | = | **6.95** | pass |
-| text-muted / incorrect-bg (feedback source) | `#B9B4CC` on `#3A1D16` | 4.5:1 | = | **7.65** | pass |
-| text-muted / tip card (gold 18% on surface) | `#B9B4CC` on `#473A31` | 4.5:1 | = | **5.46** | pass |
-| text-muted / flip back (primary 8% on surface) | `#B9B4CC` on `#312336` | 4.5:1 | = | **7.35** | pass |
-| on-primary / primary (btn, badge, letter) | `#14111C` on `#FF7AB8` | 4.5:1 | = | **7.75** | pass |
-| primary / surface (nav active, choose-n, link) | `#FF7AB8` on `#1F1B2B` | 4.5:1 | = | **6.98** | pass |
-| primary / bg (link) | `#FF7AB8` on `#14111C` | 4.5:1 | = | **7.75** | pass |
-| primary / primary-soft (nav active on pill) | `#FF7AB8` on `#3A1E31` | 4.5:1 | = | **6.19** | pass |
-| text / primary-soft (selected option, chip.primary) | `#F3F0FA` on `#3A1E31` | 4.5:1 | = | **13.23** | pass |
-| on-gold / gold (chip.gold, btn.gold, xp-pop) | `#14111C` on `#FFC94D` | 4.5:1 | = | **12.17** | pass |
-| gold-text / surface | `#FFC94D` on `#1F1B2B` | 4.5:1 | = | **10.97** | pass |
-| correct / surface (mark ✓) | `#5CD0E8` on `#1F1B2B` | 4.5:1 | = | **9.31** | pass |
-| correct / correct-bg (verdict, mark on is-right) | `#5CD0E8` on `#10303A` | 4.5:1 | = | **7.73** | pass |
-| text / correct-bg | `#F3F0FA` on `#10303A` | 4.5:1 | = | **12.39** | pass |
-| surface / correct (.letter on is-right) | `#1F1B2B` on `#5CD0E8` | 4.5:1 | = | **9.31** | pass |
-| incorrect / surface | `#FF9B80` on `#1F1B2B` | 4.5:1 | = | **8.20** | pass |
-| incorrect / incorrect-bg (verdict, mark on is-wrong) | `#FF9B80` on `#3A1D16` | 4.5:1 | = | **7.50** | pass |
-| text / incorrect-bg (trap card, low timer) | `#F3F0FA` on `#3A1D16` | 4.5:1 | = | **13.64** | pass |
-| surface / incorrect (.letter on is-wrong) | `#1F1B2B` on `#FF9B80` | 4.5:1 | = | **8.20** | pass |
-| text / combo (flame 22% on surface) | `#F3F0FA` on `#503531` | 4.5:1 | = | **9.85** | pass |
-| text / tip card | `#F3F0FA` on `#473A31` | 4.5:1 | = | **9.73** | pass |
-| toast: bg / text | `#14111C` on `#F3F0FA` | 4.5:1 | = | **16.56** | pass |
-| UI border / surface (inputs, switch) | `#807B98` on `#1F1B2B` | 3:1 | 3.22 | **4.16** | pass (changed) |
-| UI border / surface-2 | `#807B98` on `#2A253A` | 3:1 | 2.82 | **3.65** | pass (changed) |
-| UI hairline / surface (unselected option border; exempt: label text + letter identify it) | `#2F2A40` on `#1F1B2B` | — | = | **1.22** | info |
-| UI primary / surface (selected option border) | `#FF7AB8` on `#1F1B2B` | 3:1 | = | **6.98** | pass |
-| UI correct / surface (is-right border) | `#5CD0E8` on `#1F1B2B` | 3:1 | = | **9.31** | pass |
-| UI incorrect / surface (is-wrong border) | `#FF9B80` on `#1F1B2B` | 3:1 | = | **8.20** | pass |
-| UI focus / bg | `#7FB2FF` on `#14111C` | 3:1 | = | **8.62** | pass |
-| UI focus / surface | `#7FB2FF` on `#1F1B2B` | 3:1 | = | **7.77** | pass |
-| UI focus / surface-2 | `#7FB2FF` on `#2A253A` | 3:1 | = | **6.82** | pass |
-| UI focus / primary (n/a: 3px offset gap of bg sits between) | `#7FB2FF` on `#FF7AB8` | — | = | **1.11** | info |
-| UI primary bar / surface-3 track | `#FF7AB8` on `#352F48` | 3:1 | = | **5.28** | pass |
-| UI gold bar fill / surface-3 track | `#FFC94D` on `#352F48` | — | = | **8.30** | info |
-| UI gold bar edge (gold-meter) / surface-3 track | `#FFC94D` on `#352F48` | 3:1 | = | **8.30** | pass |
-| UI gold-ledge / surface-3 (gradient start; edge carries 3:1) | `#A8771A` on `#352F48` | — | = | **3.22** | info |
-| UI gold ring (gold-meter) / surface-3 track | `#FFC94D` on `#352F48` | 3:1 | = | **8.30** | pass |
-| UI gold ring (gold-meter) / surface | `#FFC94D` on `#1F1B2B` | 3:1 | = | **10.97** | pass |
-| text-muted / hero primary tint (22%) | `#B9B4CC` on `#50304A` | 4.5:1 | = | **5.62** | pass |
-| text-muted / hero gold tint | `#B9B4CC` on `#433730` | 4.5:1 | 4.36 | **5.72** | pass (changed) |
-| CTA subtitle (on-primary @90%) / primary | `#2B1C2C` on `#FF7AB8` | 4.5:1 | = | **6.69** | pass |
-| UI ghost btn border (border) / correct-bg | `#807B98` on `#10303A` | 3:1 | 2.67 | **3.46** | pass (changed) |
-| UI ghost btn border (border) / incorrect-bg | `#807B98` on `#3A1D16` | 3:1 | 2.94 | **3.81** | pass (changed) |
-| UI week empty-cell outline (border) / surface-2 | `#807B98` on `#2A253A` | 3:1 | 2.82 | **3.65** | pass (changed) |
-| UI sec-fund / surface-3 | `#FFC94D` on `#352F48` | 3:1 | = | **8.30** | pass |
-| UI sec-auto / surface-3 | `#5EE0B4` on `#352F48` | 3:1 | = | **7.75** | pass |
-| UI sec-ui / surface-3 | `#FF7AB8` on `#352F48` | 3:1 | = | **5.28** | pass |
-| UI sec-test / surface-3 | `#5CD0E8` on `#352F48` | 3:1 | = | **7.05** | pass |
-| UI sec-perf / surface-3 | `#FF9248` on `#352F48` | 3:1 | = | **5.73** | pass |
-| UI switch on (primary) / surface | `#FF7AB8` on `#1F1B2B` | 3:1 | = | **6.98** | pass |
-| UI switch off (surface-3+border) / surface | `#807B98` on `#1F1B2B` | 3:1 | 3.22 | **4.16** | pass (changed) |
-| UI week lvl1 / surface (card) | `#8A5640` on `#1F1B2B` | — | 2.27 | **2.79** | info (changed) |
-| UI week lvl1 / surface-2 (empty cell) | `#8A5640` on `#2A253A` | — | 1.99 | **2.45** | info (changed) |
-| UI week lvl2 / lvl1 | `#BF7144` on `#8A5640` | — | 2.00 | **1.62** | info (changed) |
-| UI week lvl3 / surface (also carries 🔥 glyph) | `#FF9248` on `#1F1B2B` | — | = | **7.57** | info |
-| UI week empty cell fill / surface (outline carries it now) | `#2A253A` on `#1F1B2B` | — | = | **1.14** | info |
-| UI today outline (text) / surface | `#F3F0FA` on `#1F1B2B` | 3:1 | = | **14.93** | pass |
-| UI dots on / surface-3 | `#FF7AB8` on `#352F48` | 3:1 | = | **5.28** | pass |
-| UI ghost btn border / bg | `#807B98` on `#14111C` | 3:1 | 1.35 | **4.62** | pass (changed) |
+| Pair | Colors | Min | Ratio | |
+|---|---|---|---|---|
+| text / bg | `#F6F1EA` on `#161412` | 4.5:1 | **16.35** | pass |
+| text / surface | `#F6F1EA` on `#201D1A` | 4.5:1 | **14.93** | pass |
+| text / surface-2 | `#F6F1EA` on `#2B2723` | 4.5:1 | **13.19** | pass |
+| text / surface-3 | `#F6F1EA` on `#36312C` | 4.5:1 | **11.45** | pass |
+| text / nav bar (surface 92% on bg) | `#F6F1EA` on `#1F1C19` | 4.5:1 | **15.09** | pass |
+| text / tip card (gold 18%) | `#F6F1EA` on `#483C23` | 4.5:1 | **9.60** | pass |
+| text / hint card / badge.got (gold 22%) | `#F6F1EA` on `#514325` | 4.5:1 | **8.58** | pass |
+| text / combo (flame 22%) | `#F6F1EA` on `#513724` | 4.5:1 | **9.72** | pass |
+| text / hero gold tint | `#F6F1EA` on `#443922` | 4.5:1 | **10.08** | pass |
+| text / correct-bg | `#F6F1EA` on `#10303A` | 4.5:1 | **12.41** | pass |
+| text / incorrect-bg | `#F6F1EA` on `#3A1D16` | 4.5:1 | **13.67** | pass |
+| text-muted / bg | `#C2B8AB` on `#161412` | 4.5:1 | **9.40** | pass |
+| text-muted / surface | `#C2B8AB` on `#201D1A` | 4.5:1 | **8.58** | pass |
+| text-muted / surface-2 | `#C2B8AB` on `#2B2723` | 4.5:1 | **7.58** | pass |
+| text-muted / surface-3 | `#C2B8AB` on `#36312C` | 4.5:1 | **6.58** | pass |
+| text-muted / nav bar (surface 92% on bg) | `#C2B8AB` on `#1F1C19` | 4.5:1 | **8.67** | pass |
+| text-muted / tip card (gold 18%) | `#C2B8AB` on `#483C23` | 4.5:1 | **5.52** | pass |
+| text-muted / hint card / badge.got (gold 22%) | `#C2B8AB` on `#514325` | 4.5:1 | **4.93** | pass |
+| text-muted / combo (flame 22%) | `#C2B8AB` on `#513724` | 4.5:1 | **5.59** | pass |
+| text-muted / hero gold tint | `#C2B8AB` on `#443922` | 4.5:1 | **5.79** | pass |
+| text-muted / correct-bg | `#C2B8AB` on `#10303A` | 4.5:1 | **7.13** | pass |
+| text-muted / incorrect-bg | `#C2B8AB` on `#3A1D16` | 4.5:1 | **7.85** | pass |
+| toast: bg on text | `#161412` on `#F6F1EA` | 4.5:1 | **16.35** | pass |
+| correct / surface | `#5CD0E8` on `#201D1A` | 4.5:1 | **9.30** | pass |
+| correct / correct-bg | `#5CD0E8` on `#10303A` | 4.5:1 | **7.73** | pass |
+| surface on correct (.letter) | `#201D1A` on `#5CD0E8` | 4.5:1 | **9.30** | pass |
+| incorrect / surface | `#FF9B80` on `#201D1A` | 4.5:1 | **8.19** | pass |
+| incorrect / incorrect-bg | `#FF9B80` on `#3A1D16` | 4.5:1 | **7.50** | pass |
+| surface on incorrect (.letter) | `#201D1A` on `#FF9B80` | 4.5:1 | **8.19** | pass |
+| on-gold / gold | `#161412` on `#FFC94D` | 4.5:1 | **12.00** | pass |
+| gold-text / surface | `#FFC94D` on `#201D1A` | 4.5:1 | **10.95** | pass |
+| gold-text / bg | `#FFC94D` on `#161412` | 4.5:1 | **12.00** | pass |
+| gold-text / surface-2 | `#FFC94D` on `#2B2723` | 4.5:1 | **9.68** | pass |
+| flame / surface | `#FF9248` on `#201D1A` | 4.5:1 | **7.55** | pass |
+| magenta: on-primary / primary | `#14111C` on `#FF7AB8` | 4.5:1 | **7.75** | pass |
+| magenta: CTA subtitle (on-primary 90%) / primary | `#2B1C2C` on `#FF7AB8` | 4.5:1 | **6.69** | pass |
+| magenta: primary / surface | `#FF7AB8` on `#201D1A` | 4.5:1 | **6.97** | pass |
+| magenta: primary / bg | `#FF7AB8` on `#161412` | 4.5:1 | **7.64** | pass |
+| magenta: primary / surface-2 | `#FF7AB8` on `#2B2723` | 4.5:1 | **6.16** | pass |
+| magenta: primary / primary-soft | `#FF7AB8` on `#3A1E31` | 4.5:1 | **6.19** | pass |
+| magenta: text / primary-soft | `#F6F1EA` on `#3A1E31` | 4.5:1 | **13.25** | pass |
+| magenta: text-muted / primary-soft | `#C2B8AB` on `#3A1E31` | 4.5:1 | **7.62** | pass |
+| magenta: text-muted / hero primary tint 22% | `#C2B8AB` on `#51313D` | 4.5:1 | **5.78** | pass |
+| magenta: text / section-emoji tile (16%) | `#F6F1EA` on `#442C33` | 4.5:1 | **11.30** | pass |
+| magenta: primary bar / surface-3 track | `#FF7AB8` on `#36312C` | 3:1 | **5.35** | pass |
+| magenta: switch on (primary) / surface | `#FF7AB8` on `#201D1A` | 3:1 | **6.97** | pass |
+| mango: on-primary / primary | `#14111C` on `#FFA45C` | 4.5:1 | **9.51** | pass |
+| mango: CTA subtitle (on-primary 90%) / primary | `#2B2022` on `#FFA45C` | 4.5:1 | **8.04** | pass |
+| mango: primary / surface | `#FFA45C` on `#201D1A` | 4.5:1 | **8.56** | pass |
+| mango: primary / bg | `#FFA45C` on `#161412` | 4.5:1 | **9.38** | pass |
+| mango: primary / surface-2 | `#FFA45C` on `#2B2723` | 4.5:1 | **7.56** | pass |
+| mango: primary / primary-soft | `#FFA45C` on `#3A2416` | 4.5:1 | **7.42** | pass |
+| mango: text / primary-soft | `#F6F1EA` on `#3A2416` | 4.5:1 | **12.94** | pass |
+| mango: text-muted / primary-soft | `#C2B8AB` on `#3A2416` | 4.5:1 | **7.44** | pass |
+| mango: text-muted / hero primary tint 22% | `#C2B8AB` on `#513B29` | 4.5:1 | **5.35** | pass |
+| mango: text / section-emoji tile (16%) | `#F6F1EA` on `#443325` | 4.5:1 | **10.70** | pass |
+| mango: primary bar / surface-3 track | `#FFA45C` on `#36312C` | 3:1 | **6.56** | pass |
+| mango: switch on (primary) / surface | `#FFA45C` on `#201D1A` | 3:1 | **8.56** | pass |
+| mint: on-primary / primary | `#14111C` on `#5EE0B4` | 4.5:1 | **11.36** | pass |
+| mint: CTA subtitle (on-primary 90%) / primary | `#1B262B` on `#5EE0B4` | 4.5:1 | **9.42** | pass |
+| mint: primary / surface | `#5EE0B4` on `#201D1A` | 4.5:1 | **10.22** | pass |
+| mint: primary / bg | `#5EE0B4` on `#161412` | 4.5:1 | **11.20** | pass |
+| mint: primary / surface-2 | `#5EE0B4` on `#2B2723` | 4.5:1 | **9.03** | pass |
+| mint: primary / primary-soft | `#5EE0B4` on `#16332A` | 4.5:1 | **8.30** | pass |
+| mint: text / primary-soft | `#F6F1EA` on `#16332A` | 4.5:1 | **12.13** | pass |
+| mint: text-muted / primary-soft | `#C2B8AB` on `#16332A` | 4.5:1 | **6.97** | pass |
+| mint: text-muted / hero primary tint 22% | `#C2B8AB` on `#2E483C` | 4.5:1 | **5.09** | pass |
+| mint: text / section-emoji tile (16%) | `#F6F1EA` on `#2A3C33` | 4.5:1 | **10.43** | pass |
+| mint: primary bar / surface-3 track | `#5EE0B4` on `#36312C` | 3:1 | **7.84** | pass |
+| mint: switch on (primary) / surface | `#5EE0B4` on `#201D1A` | 3:1 | **10.22** | pass |
+| lava: on-primary / primary | `#14111C` on `#FF8A8F` | 4.5:1 | **8.24** | pass |
+| lava: CTA subtitle (on-primary 90%) / primary | `#2B1D28` on `#FF8A8F` | 4.5:1 | **7.09** | pass |
+| lava: primary / surface | `#FF8A8F` on `#201D1A` | 4.5:1 | **7.41** | pass |
+| lava: primary / bg | `#FF8A8F` on `#161412` | 4.5:1 | **8.12** | pass |
+| lava: primary / surface-2 | `#FF8A8F` on `#2B2723` | 4.5:1 | **6.55** | pass |
+| lava: primary / primary-soft | `#FF8A8F` on `#3A1A1D` | 4.5:1 | **6.90** | pass |
+| lava: text / primary-soft | `#F6F1EA` on `#3A1A1D` | 4.5:1 | **13.89** | pass |
+| lava: text-muted / primary-soft | `#C2B8AB` on `#3A1A1D` | 4.5:1 | **7.98** | pass |
+| lava: text-muted / hero primary tint 22% | `#C2B8AB` on `#513534` | 4.5:1 | **5.63** | pass |
+| lava: text / section-emoji tile (16%) | `#F6F1EA` on `#442E2D` | 4.5:1 | **11.16** | pass |
+| lava: primary bar / surface-3 track | `#FF8A8F` on `#36312C` | 3:1 | **5.69** | pass |
+| lava: switch on (primary) / surface | `#FF8A8F` on `#201D1A` | 3:1 | **7.41** | pass |
+| gold: on-primary / primary | `#14111C` on `#FFC94D` | 4.5:1 | **12.17** | pass |
+| gold: CTA subtitle (on-primary 90%) / primary | `#2B2321` on `#FFC94D` | 4.5:1 | **10.05** | pass |
+| gold: primary / surface | `#FFC94D` on `#201D1A` | 4.5:1 | **10.95** | pass |
+| gold: primary / bg | `#FFC94D` on `#161412` | 4.5:1 | **12.00** | pass |
+| gold: primary / surface-2 | `#FFC94D` on `#2B2723` | 4.5:1 | **9.68** | pass |
+| gold: primary / primary-soft | `#FFC94D` on `#352A12` | 4.5:1 | **9.20** | pass |
+| gold: text / primary-soft | `#F6F1EA` on `#352A12` | 4.5:1 | **12.53** | pass |
+| gold: text-muted / primary-soft | `#C2B8AB` on `#352A12` | 4.5:1 | **7.20** | pass |
+| gold: text-muted / hero primary tint 22% | `#C2B8AB` on `#514325` | 4.5:1 | **4.93** | pass |
+| gold: text / section-emoji tile (16%) | `#F6F1EA` on `#443922` | 4.5:1 | **10.08** | pass |
+| gold: primary bar / surface-3 track | `#FFC94D` on `#36312C` | 3:1 | **8.40** | pass |
+| gold: switch on (primary) / surface | `#FFC94D` on `#201D1A` | 3:1 | **10.95** | pass |
+| focus / bg | `#7FB2FF` on `#161412` | 3:1 | **8.50** | pass |
+| focus / surface | `#7FB2FF` on `#201D1A` | 3:1 | **7.76** | pass |
+| focus / surface-2 | `#7FB2FF` on `#2B2723` | 3:1 | **6.85** | pass |
+| focus / surface-3 | `#7FB2FF` on `#36312C` | 3:1 | **5.95** | pass |
+| focus / correct-bg | `#7FB2FF` on `#10303A` | 3:1 | **6.45** | pass |
+| focus / incorrect-bg | `#7FB2FF` on `#3A1D16` | 3:1 | **7.11** | pass |
+| border / bg | `#8C8277` on `#161412` | 3:1 | **4.88** | pass |
+| border / surface | `#8C8277` on `#201D1A` | 3:1 | **4.45** | pass |
+| border / surface-2 | `#8C8277` on `#2B2723` | 3:1 | **3.93** | pass |
+| border / correct-bg | `#8C8277` on `#10303A` | 3:1 | **3.70** | pass |
+| border / incorrect-bg | `#8C8277` on `#3A1D16` | 3:1 | **4.08** | pass |
+| correct border / surface | `#5CD0E8` on `#201D1A` | 3:1 | **9.30** | pass |
+| incorrect border / surface | `#FF9B80` on `#201D1A` | 3:1 | **8.19** | pass |
+| gold-meter / surface-3 track | `#FFC94D` on `#36312C` | 3:1 | **8.40** | pass |
+| gold-meter / surface | `#FFC94D` on `#201D1A` | 3:1 | **10.95** | pass |
+| today outline (text) / surface | `#F6F1EA` on `#201D1A` | 3:1 | **14.93** | pass |
+| sec-fund / surface-3 | `#FFC94D` on `#36312C` | 3:1 | **8.40** | pass |
+| sec-auto / surface-3 | `#5EE0B4` on `#36312C` | 3:1 | **7.84** | pass |
+| sec-ui / surface-3 | `#FF7AB8` on `#36312C` | 3:1 | **5.35** | pass |
+| sec-test / surface-3 | `#5CD0E8` on `#36312C` | 3:1 | **7.13** | pass |
+| sec-perf / surface-3 | `#FF9248` on `#36312C` | 3:1 | **5.79** | pass |
+| sec-fund / surface | `#FFC94D` on `#201D1A` | 3:1 | **10.95** | pass |
+| sec-auto / surface | `#5EE0B4` on `#201D1A` | 3:1 | **10.22** | pass |
+| sec-ui / surface | `#FF7AB8` on `#201D1A` | 3:1 | **6.97** | pass |
+| sec-test / surface | `#5CD0E8` on `#201D1A` | 3:1 | **9.30** | pass |
+| sec-perf / surface | `#FF9248` on `#201D1A` | 3:1 | **7.55** | pass |
+| hairline / surface (exempt) | `#36302A` on `#201D1A` | — | **1.29** | info |
+| hairline / bg (exempt) | `#36302A` on `#161412` | — | **1.41** | info |
+| surface / bg (card edge, exempt) | `#201D1A` on `#161412` | — | **1.10** | info |
+| week lvl1 / surface-2 | `#8A5734` on `#2B2723` | — | **2.47** | info |
 
 ### Code block palette on `#1A1726` (unchanged, both themes)
 
@@ -222,12 +310,12 @@ The brand palette was kept as it was: magenta primary, teal-blue for correct, or
 
 ## Non-text contrast notes
 
-- **Focus ring vs primary (1.01:1 light, 1.11:1 dark):** this is not an adjacency failure. The ring has `outline-offset: 3px`, so a strip of page background always sits between the ring and a primary button. Against that background the ring measures 6.41:1 (light) and 8.62:1 (dark). Against `surface-2` it measures 5.83:1 and 6.82:1.
+- **Focus ring vs primary (1.01:1 light, 1.11:1 dark; focus and primary did not change):** this is not an adjacency failure. The ring has `outline-offset: 3px`, so a strip of page background always sits between the ring and a primary button. Against that background the ring measures 6.41:1 (light) and 8.50:1 (dark). Against `surface-2` it measures 5.83:1 and 6.85:1.
 - **Unselected answer option border (`hairline`, 1.33:1):** left as is. SC 1.4.11 does not require a visible boundary when the label text and the A/B/C/D letter chip identify the control. The 3 px ledge shadow gives the tappable affordance. Selected, correct and wrong states all have 2 px borders of 5.7:1 or better.
 - **Gold bar:** the bright `#FFC94D` fill is kept for the reward feel. A 2 px inset edge in `--gold-meter` now carries the 3:1 boundary against the track.
-- **Disabled buttons:** exempt from contrast (still 5.87:1 and 6.34:1). They now drop the 3D ledge so they no longer look pressable.
-- **The `.letter` badge on revealed options uses `var(--surface)` text on the fill:** 6.05:1 on correct and 5.70:1 on incorrect (light), 9.31:1 and 8.20:1 (dark).
-- **Toast (`bg` on `text`):** 16.05:1 (light) and 16.56:1 (dark).
+- **Disabled buttons:** exempt from contrast (still 5.87:1 and 6.58:1). They now drop the 3D ledge so they no longer look pressable.
+- **The `.letter` badge on revealed options uses `var(--surface)` text on the fill:** 6.05:1 on correct and 5.70:1 on incorrect (light), 9.30:1 and 8.19:1 (dark).
+- **Toast (`bg` on `text`):** 16.05:1 (light) and 16.35:1 (dark).
 
 ## axe results
 

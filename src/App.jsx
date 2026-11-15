@@ -26,8 +26,10 @@ import { Me } from './screens/Me.jsx';
 import { Settings } from './screens/Settings.jsx';
 import { Resources } from './screens/Resources.jsx';
 import { Onboarding } from './screens/Onboarding.jsx';
+import { Placement } from './screens/Placement.jsx';
+import { Plan } from './screens/Plan.jsx';
 
-const FOCUS_ROUTES = /^\/(lesson|sprint|welcome|play|bolt)/;
+const FOCUS_ROUTES = /^\/(lesson|sprint|welcome|play|bolt|placement)/;
 
 function useSystemDark() {
   const [dark, setDark] = useState(() => window.matchMedia?.('(prefers-color-scheme: dark)').matches ?? false);
@@ -61,7 +63,7 @@ function useApplySettings() {
     root.style.setProperty('--primary-ledge', ledge);
     root.style.setProperty('--on-primary', on);
     root.style.setProperty('--primary-soft', soft);
-    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', theme === 'dark' ? '#14111C' : '#FFF9F2');
+    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', theme === 'dark' ? '#161412' : '#FFF9F2');
     setSoundEnabled(st.sound);
     setHapticsEnabled(st.haptics);
   }, [st, sysDark, reduced, accent]);
@@ -85,6 +87,8 @@ function Screen({ route }) {
     case 'settings': return <Settings />;
     case 'resources': return <Resources />;
     case 'welcome': return <Onboarding />;
+    case 'plan': return <Plan />;
+    case 'placement': return <Placement a={b} b={route.parts[2]} key={route.path} />;
     default: return <Home />;
   }
 }
@@ -92,7 +96,7 @@ function Screen({ route }) {
 const TITLES = {
   '': 'Home', map: 'Adventure map', learn: 'Adventure map', world: 'World', section: 'World', play: 'Level', shop: 'Shop', bolt: 'Daily Bolt',
   lesson: 'Lesson', sprint: 'Practice sprint', cards: 'Flashcards', exam: 'Exam simulator', me: 'Me', settings: 'Settings',
-  resources: 'Resources', welcome: 'Welcome',
+  resources: 'Resources', welcome: 'Welcome', placement: 'Placement', plan: 'Study plan',
 };
 
 /** On every screen change: a page title for the tab/screen reader, and focus on the new screen's heading. */

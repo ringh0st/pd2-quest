@@ -17,6 +17,8 @@ import { ZapSays } from '../components/game/Zap.jsx';
 import { CoinChip } from '../components/game/CoinChip.jsx';
 import { DailyQuests } from '../components/game/DailyQuests.jsx';
 import { ParkIt } from '../components/ParkIt.jsx';
+import { InstallCard } from '../components/InstallCard.jsx';
+import { StudyPlanCard } from '../components/plan/StudyPlanCard.jsx';
 import { go } from '../hooks/useRoute.js';
 import { useReducedMotion } from '../hooks/useMotionPrefs.js';
 import { sfx } from '../audio/sfx.js';
@@ -116,6 +118,8 @@ export function Home() {
         </motion.section>
       )}
 
+      <motion.div {...enter(2)}><StudyPlanCard /></motion.div>
+
       <motion.button className="zap-card" {...enter(2)} onClick={() => { sfx.flip(); setLine(zapSays('idle')); }} aria-label={`Zap says: ${line}. Tap for another`}>
         <ZapSays text={line} mood="happy" size={70} />
       </motion.button>
@@ -150,6 +154,8 @@ export function Home() {
           <span aria-hidden="true" style={{ fontSize: 24 }}>{weak?.emoji}</span><span className="lbl">Weak spot</span>
         </a>
       </motion.div>
+
+      <InstallCard show={Object.keys(s.lessons).length >= 1} />
 
       <motion.div {...enter(4)}><DailyQuests /></motion.div>
 

@@ -38,6 +38,7 @@ export function initialState() {
     exams: [],            // { at, score, total, bySection }
     bestCombo: 0,
     examDate: '',
+    examOutcome: '',      // '' | 'passed' (set after the exam date)
     parked: [],           // brain-dump notes: { id, text, at }
     settings: { ...DEFAULT_SETTINGS },
     // ---- game layer ----
@@ -52,6 +53,7 @@ export function initialState() {
     bolt: { day: '', score: 0 },
     boltCount: 0,
     parkedEver: 0,
+    placements: {},       // world id -> { score 0..1, at }
     events: [],           // transient celebrations queue (not persisted)
   };
 }
@@ -94,6 +96,7 @@ export function sanitizeState(saved) {
     lessons: cleanMap(s.lessons, 'number'),
     stars: cleanMap(s.stars, 'number'),
     badges: cleanMap(s.badges, 'number'),
+    placements: cleanMap(s.placements, 'object'),
     history: cleanMap(s.history, 'number'),
     streak: sameShape(s.streak, base.streak),
     today: sameShape(s.today, base.today),
@@ -280,6 +283,29 @@ export function useHelper(id) {
   if ((state.helpers[id] ?? 0) <= 0) return false;
   setState((s) => ({ ...s, helpers: { ...s.helpers, [id]: s.helpers[id] - 1 } }));
   return true;
+}
+
+/**
+ * Placement / test-out: mark lessons as known (1★ if they had none, no coins: it isn't new play),
+ * optionally open the world for free, and remember the score.
+ */
+export function testOut(lessonIds, { worldId = null, unlock = false, score = null } = {}, now = Date.now()) {
+  setState((s) => {
+    const stars = { ...s.stars };
+    const lessons = { ...s.lessons };
+    for (const id of lessonIds) {
+      if (!(stars[id] > 0)) stars[id] = 1;
+      if (!lessons[id]) lessons[id] = now;
+    }
+    const unlockedWorlds = unlock && worldId && !s.unlockedWorlds.includes(worldId) ? [...s.unlockedWorlds, worldId] : s.unlockedWorlds;
+    const placements = worldId && score != null ? { ...s.placements, [worldId]: { score, at: now } } : s.placements;
+    return { ...s, stars, lessons, unlockedWorlds, placements };
+  });
+}
+
+/** Give back a helper that was spent on a run the learner threw away (never above the cap). */
+export function refundHelper(id) {
+  setState((s) => ({ ...s, helpers: { ...s.helpers, [id]: Math.min(HELPERS[id]?.max ?? 9, (s.helpers[id] ?? 0) + 1) } }));
 }
 
 export function equip(slot, id) {

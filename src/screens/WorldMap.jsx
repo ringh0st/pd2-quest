@@ -65,6 +65,7 @@ export function WorldMap() {
                       className="btn gold small" disabled={s.coins < WORLD_UNLOCK_COINS}
                       onClick={() => { unlockWorld(sec.id, WORLD_UNLOCK_COINS); sfx.chest(); haptic('success'); celebrate(30); showToast(`🔓 ${t.name} unlocked!`); }}
                     >🪙{WORLD_UNLOCK_COINS} Unlock<span className="sr-only"> {t.name} now</span></button>
+                    <a className="btn small" href={`#/placement/${sec.id}`} onClick={() => sfx.tap()}>🎯 Test in<span className="sr-only"> to {t.name}</span></a>
                   </div>
                 )}
               </div>

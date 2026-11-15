@@ -4,6 +4,7 @@ import { FEEL_PRESETS, presetFor } from '../state/feelPresets.js';
 import { Switch, Segmented } from '../components/Controls.jsx';
 import { go } from '../hooks/useRoute.js';
 import { useFeedback } from '../components/Feedback.jsx';
+import { ReminderSettings } from '../components/ReminderSettings.jsx';
 
 export function Settings() {
   const s = useStore();
@@ -48,6 +49,8 @@ export function Settings() {
           <input id="name" className="input" value={s.name} maxLength={24} onChange={(e) => setState({ name: e.target.value })} autoComplete="given-name" />
         </div>
       </section>
+
+      <ReminderSettings />
 
       <section className="card stack">
         <h2>🌈 Feel</h2>

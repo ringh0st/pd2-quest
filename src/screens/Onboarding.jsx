@@ -20,11 +20,11 @@ export function Onboarding() {
   const reduced = useReducedMotion();
   const anim = (i) => (reduced ? {} : { initial: { opacity: 0, y: 20 }, animate: { opacity: 1, y: 0 }, transition: { delay: 0.1 + i * 0.08, duration: 0.4, ease: [0.2, 0, 0, 1] } });
 
-  const start = () => {
+  const start = (to = `/lesson/${sections[0].lessons[0].id}`) => {
     sfx.levelUp(); haptic('success');
     updateSettings(FEEL_PRESETS[feel].settings);
     setState({ onboarded: true, dailyGoal: goal, name: name.trim(), examDate: date });
-    replace(`/lesson/${sections[0].lessons[0].id}`);
+    replace(to);
   };
 
   return (
@@ -59,7 +59,10 @@ export function Onboarding() {
         </div>
       </motion.div>
       <motion.div {...anim(3)}>
-        <button className="btn primary block big" onClick={start}>Start my first lesson ▶</button>
+        <button className="btn primary block big" onClick={() => start()}>Start my first lesson ▶</button>
+        <button className="btn block" style={{ marginTop: 10 }} onClick={() => start(`/placement/${sections[0].id}`)}>
+          I have PD1 or Apex experience: skip what I know
+        </button>
       </motion.div>
     </main>
   );

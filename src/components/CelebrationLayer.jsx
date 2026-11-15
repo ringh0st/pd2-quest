@@ -22,6 +22,7 @@ function line(ev) {
     case 'chest': return ev.coins
       ? { emoji: '🎁', title: ev.title || 'Bonus chest!', body: `+${ev.coins} coins for the shop.`, rank: 1 }
       : { emoji: '🎁', title: `Lucky drop: +${ev.xp} XP`, body: 'Surprise bonus for finishing a round.', rank: 1 };
+    case 'passed': return { emoji: '🏆', title: 'Platform Developer II!', body: 'You did it. Zap is so proud. Go celebrate!', rank: 4 };
     case 'badge': return { emoji: ev.badge.emoji, title: `Badge: ${ev.badge.name}`, body: `${ev.badge.about}.`, rank: 2 };
     case 'streak': {
       const n = ev.count;

@@ -1,4 +1,5 @@
 // One world: a winding path of levels (lessons, 💀 Hard, 👹 Boss) over themed scenery. Zap waits at your next level.
+import { savedRunIds } from '../state/runSession.js';
 import { motion } from 'motion/react';
 import { useStore } from '../state/store.js';
 import { sectionById } from '../data/index.js';
@@ -26,6 +27,7 @@ export function World({ id }) {
     return <main className="screen"><p>🔒 This world is still locked.</p><button className="btn" onClick={() => go('/map')}>Back to map</button></main>;
   }
   const levels = worldLevels[id];
+  const inProgress = savedRunIds();
   const current = levels.findIndex((l, k) => !(s.stars[l.id] > 0) && isLevelOpen(levels, k, s.stars));
   const ws = worldStars(sec, s.stars);
   const height = levels.length * ROW + 40;
@@ -50,6 +52,7 @@ export function World({ id }) {
         <div className="spread small"><span>⭐ {ws.got}/{ws.max}</span><span>{levels.length} levels</span></div>
         <div className="row">
           <a className="btn small grow" href={`#/sprint?section=${sec.id}`} onClick={() => sfx.tap()}>⚡ Practice</a>
+          {!s.placements?.[sec.id] && <a className="btn small grow" href={`#/placement/${sec.id}`} onClick={() => sfx.tap()}>🎯 Skip what I know</a>}
           <a className="btn small grow" href={`#/cards?section=${sec.id}`} onClick={() => sfx.tap()}>🃏 Cards</a>
         </div>
       </div>
@@ -71,10 +74,11 @@ export function World({ id }) {
         <ol className="list-plain">
           {levels.map((l, i) => {
             const st = s.stars[l.id] ?? 0;
+            const paused = inProgress.has(l.kind === 'lesson' ? l.lessonId : l.id);
             const open = isLevelOpen(levels, i, s.stars);
             const isCur = i === current;
             const kind = l.kind;
-            const label = `${kind === 'boss' ? 'Boss: ' : kind === 'hard' ? 'Hard level: ' : `Level ${i + 1}: `}${l.title}. ${open ? (st ? `${st} stars` : isCur ? 'Up next' : 'Open') : 'Locked'}`;
+            const label = `${kind === 'boss' ? 'Boss: ' : kind === 'hard' ? 'Hard level: ' : `Level ${i + 1}: `}${l.title}. ${open ? (st ? `${st} stars` : isCur ? 'Up next' : 'Open') : 'Locked'}${paused ? '. In progress, tap to resume' : ''}`;
             return (
               <li key={l.id} className="node-wrap" style={{ left: `${xFor(i)}%`, top: i * ROW + 50 }}>
                 {isCur && (
@@ -94,8 +98,10 @@ export function World({ id }) {
                     {!open ? '🔒' : kind === 'boss' ? t.boss.emoji : kind === 'hard' ? '💀' : st ? '★' : i + 1}
                   </span>
                 </motion.button>
+                {paused && <span className="node-paused" aria-hidden="true">⏸</span>}
                 <div className="node-label" aria-hidden="true">
-                  {st > 0 ? <Stars count={st} size={14} /> : <span>{kind === 'boss' ? 'BOSS' : kind === 'hard' ? 'HARD' : l.title}</span>}
+                  <span>{kind === 'boss' ? 'BOSS' : kind === 'hard' ? 'HARD' : l.title}</span>
+                  {st > 0 && <Stars count={st} size={14} />}
                 </div>
               </li>
             );

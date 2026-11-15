@@ -30,21 +30,25 @@ function hintFor(q) {
   return card?.body ?? 'Re-read the question: what is the scenario really asking for?';
 }
 
-export function PracticeRunner({ questions, onDone, onExit, topRight, requeue = true, hearts = null, helpers = false, header, onAnswer, shouldStop }) {
-  const [queue, setQueue] = useState(() => questions.map((q) => q.id));
+/**
+ * `initial` resumes a saved run ({ queue, idx, stats, heartsLeft, combo, requeued });
+ * `onProgress(snapshot)` is called after every answer with the state to resume from.
+ */
+export function PracticeRunner({ questions, onDone, onExit, topRight, requeue = true, hearts = null, helpers = false, header, onAnswer, shouldStop, initial = null, onProgress }) {
+  const [queue, setQueue] = useState(() => initial?.queue ?? questions.map((q) => q.id));
   // Options are reshuffled each session so learners remember the idea, not the letter.
   const byId = useMemo(() => Object.fromEntries(questions.map((q) => [q.id, shuffleOptions(q)])), [questions]);
-  const [idx, setIdx] = useState(0);
+  const [idx, setIdx] = useState(() => initial?.idx ?? 0);
   const [chosen, setChosen] = useState([]);
   const [revealed, setRevealed] = useState(false);
   const [lastRight, setLastRight] = useState(null);
-  const [combo, setCombo] = useState(0);
+  const [combo, setCombo] = useState(() => initial?.combo ?? 0);
   const [pop, setPop] = useState(null);
   const [showWhy, setShowWhy] = useState(false);
   const [verdict, setVerdict] = useState('');
-  const stats = useRef({ right: 0, wrong: 0, xp: 0, bestCombo: 0, firstAnswers: {} });
-  const requeued = useRef(new Set());
-  const [heartsLeft, setHeartsLeft] = useState(hearts);
+  const stats = useRef(initial?.stats ?? { right: 0, wrong: 0, xp: 0, bestCombo: 0, firstAnswers: {} });
+  const requeued = useRef(new Set(initial?.requeued ?? []));
+  const [heartsLeft, setHeartsLeft] = useState(() => initial?.heartsLeft ?? hearts);
   const [hidden, setHidden] = useState([]);
   const [hint, setHint] = useState(null);
   const [zapLine, setZapLine] = useState('');
@@ -102,7 +106,8 @@ export function PracticeRunner({ questions, onDone, onExit, topRight, requeue = 
     s.bestCombo = Math.max(s.bestCombo, nextCombo);
 
     setCombo(nextCombo);
-    if (!right && heartsLeft != null) setHeartsLeft((h) => Math.max(0, h - 1));
+    const nextHearts = !right && heartsLeft != null ? Math.max(0, heartsLeft - 1) : heartsLeft;
+    setHeartsLeft(nextHearts);
     setZapLine(zapSays(right ? (nextCombo >= 3 ? 'combo' : 'correct') : 'wrong'));
     onAnswer?.(right, nextCombo);
     setRevealed(true);
@@ -112,6 +117,7 @@ export function PracticeRunner({ questions, onDone, onExit, topRight, requeue = 
     setVerdict(v);
     setPop({ xp, id: Date.now(), mult: comboMultiplier(nextCombo) });
 
+    let nextQueue = queue;
     if (right) {
       sfx.correct(nextCombo);
       haptic(nextCombo >= 3 ? 'double' : 'light');
@@ -121,9 +127,13 @@ export function PracticeRunner({ questions, onDone, onExit, topRight, requeue = 
       haptic('soft');
       if (requeue && !requeued.current.has(q.id)) {
         requeued.current.add(q.id);
-        setQueue((list) => { const n = [...list]; n.splice(Math.min(n.length, idx + 4), 0, q.id); return n; });
+        nextQueue = [...queue];
+        nextQueue.splice(Math.min(nextQueue.length, idx + 4), 0, q.id);
+        setQueue(nextQueue);
       }
     }
+    // Resume point: the question after this one (this answer is already saved in reviews).
+    onProgress?.({ queue: nextQueue, idx: idx + 1, stats: { ...stats.current }, heartsLeft: nextHearts, combo: nextCombo, requeued: [...requeued.current] });
     announce(`${right ? 'Correct' : 'Not quite'}. Plus ${xp} XP. ${right ? '' : 'The right answer is shown.'}`);
   };
 
