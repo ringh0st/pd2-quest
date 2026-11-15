@@ -1,3 +1,4 @@
+import { APP_NAME, APP_VERSION, STUDIO_NAME } from '../lib/appInfo.js';
 import { useRef } from 'react';
 import { useStore, updateSettings, setState, resetProgress, exportProgress, importProgress } from '../state/store.js';
 import { FEEL_PRESETS, presetFor } from '../state/feelPresets.js';
@@ -92,7 +93,7 @@ export function Settings() {
           if (confirm('Reset all progress? XP, streak and reviews will be cleared. Settings stay.')) { resetProgress(); showToast(<><Icon name="sparkles" /> Fresh start</>); }
         }}><Icon name="retry" /> Reset progress</button>
       </section>
-      <p className="small muted center">PD2 Quest v{import.meta.env.VITE_APP_VERSION} · Original practice content, not affiliated with Salesforce.</p>
+      <p className="small muted center">{APP_NAME} v{APP_VERSION} · by {STUDIO_NAME} · Original practice content, not affiliated with Salesforce.</p>
     </main>
   );
 }

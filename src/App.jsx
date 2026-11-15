@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { MotionConfig } from 'motion/react';
 import { useRoute, go } from './hooks/useRoute.js';
 import { useStore } from './state/store.js';
@@ -12,6 +12,7 @@ import { FeedbackProvider } from './components/Feedback.jsx';
 import { CelebrationLayer } from './components/CelebrationLayer.jsx';
 import { BottomNav } from './components/BottomNav.jsx';
 import { ErrorBoundary } from './components/ErrorBoundary.jsx';
+import { SplashScreen } from './components/splash/SplashScreen.jsx';
 import { Home } from './screens/Home.jsx';
 import { WorldMap } from './screens/WorldMap.jsx';
 import { World } from './screens/World.jsx';
@@ -46,6 +47,7 @@ function useApplySettings() {
     root.dataset.font = st.font;
     root.style.setProperty('--text-scale', String(st.textScale));
     root.classList.toggle('reduced', reduced);
+    root.dataset.motion = reduced ? 'reduced' : 'full';
     // Accent theme from the shop (each pair checked for AA contrast in economy.js)
     const th = THEMES.find((t) => t.id === accent) ?? THEMES[0];
     const [p, ledge, on, soft] = theme === 'dark' ? th.dark : th.light;
@@ -121,6 +123,15 @@ export default function App() {
     if (!onboarded && route.path !== '/welcome' && !route.path.startsWith('/lesson')) go('/welcome');
   }, [onboarded, route.path]);
 
+  // The opening splash shows once each time the app opens; the app loads underneath it.
+  // Automated test browsers (navigator.webdriver) skip it so tests can drive the app straight away.
+  const [splash, setSplash] = useState(() => !navigator.webdriver || window.__PD2_SHOW_SPLASH === true);
+  const hideSplash = useCallback(() => {
+    setSplash(false);
+    document.getElementById('boot-splash')?.remove();
+  }, []);
+  useEffect(() => { if (!splash) document.getElementById('boot-splash')?.remove(); }, [splash]);
+
   return (
     <MotionConfig reducedMotion={reduced ? 'always' : 'never'}>
       <FeedbackProvider>
@@ -130,6 +141,7 @@ export default function App() {
         </div>
         {!focus && onboarded && <BottomNav path={route.path} dueCards={dueCardCount(cards)} />}
         <CelebrationLayer />
+        {splash && <SplashScreen onDone={hideSplash} />}
       </FeedbackProvider>
     </MotionConfig>
   );
