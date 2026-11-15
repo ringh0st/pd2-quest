@@ -14,6 +14,7 @@ import { sfx } from '../audio/sfx.js';
 import { haptic } from '../audio/haptics.js';
 import { useFocusMode } from '../hooks/useFocusMode.js';
 import { ParkIt } from '../components/ParkIt.jsx';
+import { Icon } from '../components/icons/Icon.jsx';
 
 const NEW_PER_DECK = 10;
 
@@ -44,13 +45,13 @@ export function Cards({ query }) {
   if (!deck) {
     return (
       <main className="screen" id="main">
-        <h1>🃏 Flashcards</h1>
+        <h1 className="ic-label"><span className="ic-tile" aria-hidden="true"><Icon name="cards" /></span>Flashcards</h1>
         <p className="muted">Quick recall. Flip, then be honest: “Again” brings it back sooner, which is how it sticks.</p>
         <div className="field">
           <label htmlFor="deck-sec">Deck</label>
           <select id="deck-sec" className="input" value={sectionId} onChange={(e) => setSectionId(e.target.value)}>
-            <option value="">🎲 All sections (mixed)</option>
-            {sections.map((s) => <option key={s.id} value={s.id}>{s.emoji} {s.title}</option>)}
+            <option value="">All sections (mixed)</option>
+            {sections.map((s) => <option key={s.id} value={s.id}>{s.title}</option>)}
           </select>
         </div>
         <div className="stat-row">
@@ -62,7 +63,9 @@ export function Cards({ query }) {
           className="btn primary block big" disabled={!counts.due && !counts.fresh}
           onClick={() => { sfx.tap(); const d = buildDeck(sectionId); setDeck(d); setI(0); setFlipped(false); setTally({ again: 0, good: 0, easy: 0 }); }}
         >
-          {counts.due || counts.fresh ? `Start ${Math.min(20, counts.due + Math.min(NEW_PER_DECK, counts.fresh))} cards ▶` : 'All caught up! 🎉'}
+          {counts.due || counts.fresh
+            ? <>Start {Math.min(20, counts.due + Math.min(NEW_PER_DECK, counts.fresh))} cards <Icon name="play" fill /></>
+            : <>All caught up! <Icon name="party" /></>}
         </button>
       </main>
     );
@@ -72,12 +75,12 @@ export function Cards({ query }) {
     return (
       <main className="screen focus" id="main" style={{ justifyContent: 'center' }}>
         <motion.div className="celebrate-card" style={{ margin: '0 auto' }} initial={reduced ? { opacity: 0 } : { scale: 0.7, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ type: 'spring', stiffness: 400, damping: 22 }}>
-          <div className="big-emoji" aria-hidden="true">🧠</div>
+          <span className="ic-tile xl ic-hero" aria-hidden="true"><Icon name="brain" /></span>
           <h1>Deck done!</h1>
           <p>{tally.good + tally.easy} known · {tally.again} to revisit</p>
           <span className="chip gold">+{deck.length * XP.flashcard} XP</span>
           <button className="btn primary block" autoFocus onClick={() => { setDeck(null); }}>Another deck</button>
-          <button className="btn block" onClick={() => go('/')}>Done for now ✓</button>
+          <button className="btn block" onClick={() => go('/')}>Done for now <Icon name="check" /></button>
         </motion.div>
       </main>
     );
@@ -100,14 +103,17 @@ export function Cards({ query }) {
     <main className="screen focus" id="main">
       <h1 className="sr-only">Flashcards</h1>
       <div className="quiz-top">
-        <button className="icon-btn" onClick={() => setDeck(null)} aria-label="Leave deck">✕</button>
+        <button className="icon-btn" onClick={() => setDeck(null)} aria-label="Leave deck"><Icon name="close" /></button>
         <div className="bar" role="progressbar" aria-label="Deck progress" aria-valuemin={0} aria-valuemax={deck.length} aria-valuenow={i}>
           <span style={{ width: `${Math.max(3, (i / deck.length) * 100)}%` }} />
         </div>
         <span className="chip">{i + 1}/{deck.length}</span>
         <ParkIt />
       </div>
-      <span className="chip" style={{ justifySelf: 'start' }}>{sec.emoji} {sec.short}{!cards[card.id]?.seen ? ' · ✨ new' : ''}</span>
+      <span className="chip ic-label" style={{ justifySelf: 'start', gap: 6 }}>
+        <Icon name={sec.id} className="ic-sec" style={{ '--sec-accent': `var(--sec-${sec.id})` }} />{sec.short}
+        {!cards[card.id]?.seen && <> · <Icon name="sparkles" className="ic-gold" />new</>}
+      </span>
 
       <AnimatePresence mode="wait">
         <motion.div
@@ -124,7 +130,7 @@ export function Cards({ query }) {
               <div className="flip-face front" aria-hidden={flipped}>
                 <span className="small muted" style={{ fontWeight: 700 }}>QUESTION</span>
                 <strong><Rich text={card.front} autoCode /></strong>
-                <span className="small muted">Tap to flip ↻</span>
+                <span className="small muted">Tap to flip <Icon name="retry" /></span>
               </div>
             )}
             {(!reduced || flipped) && (
@@ -140,12 +146,12 @@ export function Cards({ query }) {
 
       <div className="sticky-actions">
         {!flipped ? (
-          <button className="btn primary block big" onClick={flip}>Show answer ↻</button>
+          <button className="btn primary block big" onClick={flip}>Show answer <Icon name="retry" /></button>
         ) : (
           <div className="grade-row">
-            <button className="btn" onClick={() => grade('again')}>🔁 Again</button>
-            <button className="btn primary" onClick={() => grade('good')} autoFocus>👍 Got it</button>
-            <button className="btn gold" onClick={() => grade('easy')}>⚡ Easy</button>
+            <button className="btn" onClick={() => grade('again')}><Icon name="review" /> Again</button>
+            <button className="btn primary" onClick={() => grade('good')} autoFocus><Icon name="check" /> Got it</button>
+            <button className="btn gold" onClick={() => grade('easy')}><Icon name="bolt" fill /> Easy</button>
           </div>
         )}
       </div>

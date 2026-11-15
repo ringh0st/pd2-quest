@@ -13,7 +13,7 @@ export function initInstallCapture() {
   if (typeof window === 'undefined' || window.__pd2InstallCapture) return;
   window.__pd2InstallCapture = true;
   window.addEventListener('beforeinstallprompt', (e) => {
-    e.preventDefault(); // keep the browser's own mini-infobar away; the 📲 button offers it instead
+    e.preventDefault(); // keep the browser's own mini-infobar away; the Add to Home Screen button offers it instead
     deferredPrompt = e;
     notify();
   });
@@ -30,7 +30,7 @@ export function subscribeInstall(fn) {
   return () => listeners.delete(fn);
 }
 
-/** 'prompt' (Chromium button), 'ios' (Share → Add to Home Screen steps) or null (nothing to offer). */
+/** 'prompt' (Chromium button), 'ios' (Share, then Add to Home Screen steps) or null (nothing to offer). */
 export function installMode() {
   if (installed || isStandalone()) return null;
   if (deferredPrompt) return 'prompt';
@@ -60,7 +60,7 @@ export function installDone() {
   return installed || isStandalone() || readInstallState().installed;
 }
 
-/** "✓ I added it": hide every install hint in this browser from now on. */
+/** "I added it": hide every install hint in this browser from now on. */
 export function markInstalled() {
   installed = true;
   deferredPrompt = null;

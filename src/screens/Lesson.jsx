@@ -16,9 +16,14 @@ import { starsFor } from '../game/worlds.js';
 import { nextLevelAfter } from '../state/gameSelectors.js';
 import { WinScreen } from '../components/game/WinScreen.jsx';
 import { ParkIt } from '../components/ParkIt.jsx';
+import { Icon } from '../components/icons/Icon.jsx';
 import { saveRun, loadRun, clearRun, questionsFor } from '../state/runSession.js';
 
-const KIND_LABEL = { text: '', code: 'Code', tip: '💡 Memory hook', trap: '⚠️ Exam trap', list: '' };
+const KIND_LABEL = {
+  text: '', code: 'Code', list: '',
+  tip: <span className="ic-label"><Icon name="idea" />Memory hook</span>,
+  trap: <span className="ic-label"><Icon name="warn" />Exam trap</span>,
+};
 
 export function Lesson({ id }) {
   const lesson = lessonById[id];
@@ -84,7 +89,7 @@ export function Lesson({ id }) {
         kind="lesson" title={lesson.title} worldId={sec.id}
         stars={summary.stars} prevStars={summary.before} coins={summary.coins}
         xp={(summary.firstTime ? XP.lessonDone : 0) + (summary.xp ?? 0) + 5}
-        detail={summary.total ? `${summary.firstRight}/${summary.total} right on first try${summary.firstRight === summary.total ? ' 🎯' : ' · misses come back for review 🌱'}` : null}
+        detail={summary.total ? `${summary.firstRight}/${summary.total} right on first try${summary.firstRight === summary.total ? '' : ' · misses come back for review'}` : null}
         next={nextLevelAfter(lesson.id)}
         onRetry={restart}
       />
@@ -94,7 +99,7 @@ export function Lesson({ id }) {
   return (
     <main className="screen focus" id="main">
       <div className="quiz-top">
-        <button className="icon-btn" onClick={() => go(`/world/${sec.id}`)} aria-label="Close lesson">✕</button>
+        <button className="icon-btn" onClick={() => go(`/world/${sec.id}`)} aria-label="Close lesson"><Icon name="close" /></button>
         <div className="bar" role="progressbar" aria-label="Lesson progress" aria-valuemin={0} aria-valuemax={cards.length} aria-valuenow={i + 1}>
           <span style={{ width: `${((i + 1) / (cards.length + 1)) * 100}%` }} />
         </div>
@@ -102,11 +107,11 @@ export function Lesson({ id }) {
         <ParkIt />
       </div>
       <div>
-        <p className="small muted" style={{ fontWeight: 700 }}>{sec.emoji} {sec.title}</p>
+        <p className="small muted ic-label" style={{ fontWeight: 700 }}><Icon name={sec.id} className="ic-sec" style={{ '--sec-accent': `var(--sec-${sec.id})` }} />{sec.title}</p>
         <h1 style={{ fontSize: 'calc(22px * var(--text-scale))' }}>{lesson.title}</h1>
         {i === 0 && (
           <a className="small test-out-link" href={`#/placement/lesson/${lesson.id}`} onClick={() => sfx.tap()}>
-            Know this already? Test out in 4 questions →
+            Know this already? Test out in 4 questions <Icon name="next" />
           </a>
         )}
       </div>
@@ -138,8 +143,10 @@ export function Lesson({ id }) {
       <div className="dots" aria-hidden="true">{cards.map((_, k) => <span key={k} className={k === i ? 'on' : ''} />)}</div>
       <p className="small muted center">Swipe or tap the buttons</p>
       <div className="sticky-actions" style={{ gridTemplateColumns: '1fr 2fr' }}>
-        <button className="btn" onClick={() => move(-1)} disabled={i === 0}><span aria-hidden="true">←</span> Back</button>
-        <button className="btn primary" onClick={() => move(1)}>{i + 1 >= cards.length ? (checks.length ? 'Quick check ⚡' : 'Finish 🎉') : 'Next →'}</button>
+        <button className="btn" onClick={() => move(-1)} disabled={i === 0}><Icon name="back" /> Back</button>
+        <button className="btn primary" onClick={() => move(1)}>{i + 1 >= cards.length
+          ? (checks.length ? <>Quick check <Icon name="bolt" fill /></> : <>Finish <Icon name="party" /></>)
+          : <>Next <Icon name="next" /></>}</button>
       </div>
     </main>
   );

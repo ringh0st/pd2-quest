@@ -37,7 +37,7 @@ const ok = (name, pass, info = '') => results.push(`${pass ? 'PASS' : 'FAIL'}  $
   await page.waitForTimeout(300);
   let lost = 0;
   for (let k = 0; k < 6; k++) {
-    await page.getByRole('button', { name: 'Next →' }).click();
+    await page.getByRole('button', { name: 'Next', exact: true }).click();
     await page.locator('.option').first().click(); // within a few ms of Next
     const checked = await page.locator('.option').first().getAttribute('aria-checked');
     if (checked !== 'true') lost++;
@@ -65,7 +65,7 @@ const ok = (name, pass, info = '') => results.push(`${pass ? 'PASS' : 'FAIL'}  $
       ok('choose-N blocks an extra pick instead of dropping one', st.join() === 'true,true,false', st.join());
       multiTested = true;
     } else {
-      const next = page.getByRole('button', { name: 'Next →' });
+      const next = page.getByRole('button', { name: 'Next', exact: true });
       if (!(await next.count())) break;
       await next.click();
     }

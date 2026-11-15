@@ -728,3 +728,106 @@ h1[tabindex='-1']:focus, h2[tabindex='-1']:focus { outline: none; }
 /* ===== icon system (Icon.jsx) ===== */
 .icon { display: inline-block; vertical-align: -0.18em; flex: none; }
 .art { display: inline-block; flex: none; }
+/* ===== icons: home, nav, exam, sprint, cards, lesson, placement, plan ===== */
+.ic-tile {
+  --tile: calc(40px * var(--text-scale));
+  --tile-accent: var(--primary);
+  width: var(--tile); height: var(--tile); flex: none;
+  display: inline-grid; place-items: center;
+  border-radius: calc(var(--tile) * 0.32);
+  background: color-mix(in srgb, var(--tile-accent) 18%, var(--surface));
+  color: var(--tile-accent);
+  font-size: calc(var(--tile) * 0.48);
+  line-height: 1;
+}
+.ic-tile.sm { --tile: calc(32px * var(--text-scale)); }
+.ic-tile.lg { --tile: calc(52px * var(--text-scale)); }
+.ic-tile.xl { --tile: calc(76px * var(--text-scale)); border-radius: 26px; box-shadow: inset 0 -4px 0 color-mix(in srgb, var(--tile-accent) 22%, transparent); }
+.ic-tile .icon { width: 1em; height: 1em; vertical-align: 0; }
+.ic-tile.gold { --tile-accent: var(--gold-text); background: color-mix(in srgb, var(--gold) 30%, var(--surface)); }
+.ic-tile.flame { --tile-accent: var(--flame); background: color-mix(in srgb, var(--flame-fill) 22%, var(--surface)); }
+.ic-tile.correct { --tile-accent: var(--correct); }
+.ic-tile.muted { --tile-accent: var(--text-muted); background: var(--surface-2); }
+.ic-label { display: inline-flex; align-items: center; gap: 0.4em; }
+.ic-flame { color: var(--flame); fill: var(--flame-fill); }
+.ic-freeze { color: var(--correct); }
+.ic-gold { color: var(--gold-text); }
+.ic-gold-fill { color: var(--gold-ledge); fill: var(--gold); }
+.ic-ok { color: var(--correct); }
+.ic-bad { color: var(--incorrect); }
+.ic-sec { color: var(--sec-accent, var(--primary)); }
+.ic-hero { display: grid; place-items: center; justify-self: center; margin: 0 auto; }
+.btn .icon { flex: none; }
+/* play button: art sits in the existing translucent tile */
+.play-emoji { color: var(--on-primary); font-size: calc(26px * var(--text-scale)); overflow: hidden; }
+.play-emoji .icon { width: 1em; height: 1em; vertical-align: 0; }
+.play-sub { display: inline-flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.play-stars { display: inline-flex; gap: 1px; vertical-align: -0.1em; }
+/* stat tiles */
+.stat .ic-tile { --tile: calc(34px * var(--text-scale)); }
+/* bottom nav: filled pill, bolder icon, spring (motion only) */
+.nav-item .nav-icon { display: inline-grid; place-items: center; font-size: calc(22px * var(--text-scale)); transition: none; }
+.nav-item[aria-current='page'] .nav-icon { transform: none; }
+.nav-item[aria-current='page'] .nav-pill { background: color-mix(in srgb, var(--primary) 20%, var(--surface)); }
+/* question map + review marks */
+.qmap-mark { display: inline-grid; place-items: center; }
+.qmap-mark .icon { width: 1.1em; height: 1.1em; }
+.review-tag .icon, .verdict .icon { vertical-align: -0.15em; }
+.legend { display: flex; flex-wrap: wrap; gap: 4px 12px; }
+.legend > span { display: inline-flex; align-items: center; gap: 4px; }
+/* placement list */
+.placement-list li .icon { vertical-align: -0.15em; }
+/* plan header art */
+.plan-head { display: flex; align-items: center; gap: 10px; min-width: 0; }
+/* ===== end icons: home, nav, exam, sprint, cards, lesson, placement, plan ===== */
+/* ===== icons: settings, onboarding, resources, install, practice ===== */
+/* Rounded icon tile where an emoji used to be a big visual. Set the tone with data-tone. */
+.pq-tile {
+  --tile: var(--primary);
+  flex: none; display: inline-grid; place-items: center;
+  width: calc(40px * var(--text-scale)); height: calc(40px * var(--text-scale)); border-radius: 12px;
+  background: color-mix(in srgb, var(--tile) 16%, var(--surface)); color: var(--tile);
+  font-size: calc(18px * var(--text-scale));
+}
+.pq-tile.s { width: calc(34px * var(--text-scale)); height: calc(34px * var(--text-scale)); border-radius: 10px; font-size: calc(16px * var(--text-scale)); }
+.pq-tile[data-tone='gold'] { --tile: var(--gold-text); }
+.pq-tile[data-tone='flame'] { --tile: var(--flame); }
+.pq-tile[data-tone='teal'] { --tile: var(--correct); }
+.pq-tile[data-tone='green'] { --tile: var(--sec-auto); }
+.pq-tile[data-tone='muted'] { --tile: var(--text-muted); }
+.pq-head { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.pq-head > :last-child { min-width: 0; overflow-wrap: anywhere; }
+.pq-label { display: inline-flex; align-items: center; gap: 6px; }
+.pq-label .icon { color: var(--primary); }
+/* segmented options with an icon over the word */
+.pq-seg { display: inline-grid; justify-items: center; gap: 2px; }
+.pq-seg .icon { font-size: 1.15em; }
+.segmented button[aria-checked='true'] .pq-seg .icon { color: var(--primary); }
+.btn .icon, .code-toggle .icon, .install-help-btn .icon { margin-right: 2px; }
+/* onboarding */
+.pq-hero { display: grid; place-items: center; }
+.pq-features { display: grid; gap: 10px; }
+.pq-features li { display: flex; align-items: center; gap: 12px; }
+/* resources */
+.pq-res-icon { margin-top: 2px; }
+.pq-ext { color: var(--text-muted); align-self: center; }
+/* install sheet */
+.pq-install-head { display: flex; align-items: center; gap: 12px; }
+.pq-install-head h2 { min-width: 0; overflow-wrap: anywhere; }
+.pq-step-tile { position: relative; }
+.pq-step-tile .install-num {
+  position: absolute; right: -6px; top: -6px; width: calc(20px * var(--text-scale)); height: calc(20px * var(--text-scale));
+  border-radius: 999px; font-size: calc(11px * var(--text-scale)); box-shadow: 0 0 0 2px var(--surface-2);
+}
+.pq-path .icon { color: var(--text-muted); vertical-align: -0.2em; }
+/* practice: answer marks, verdict, combo, hearts, helpers */
+.option .mark .icon { stroke-width: 3; }
+.feedback .verdict-mark { display: inline-grid; place-items: center; vertical-align: -0.2em; }
+.combo .icon { color: var(--flame); }
+.hearts .icon { color: var(--incorrect); }
+.hearts .lost .icon { color: var(--text-muted); }
+.hint-card strong .icon { color: var(--gold-text); }
+.why-card .icon { color: var(--incorrect); }
+.why-card { margin: 0; padding: 10px 12px; border-radius: var(--radius-s); background: var(--surface-2); display: grid; gap: 6px; }
+.pq-error-art { display: grid; place-items: center; }
+/* ===== end icons: settings, onboarding, resources, install, practice ===== */

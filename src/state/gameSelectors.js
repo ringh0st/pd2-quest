@@ -44,7 +44,7 @@ export function mapCleared(stars) {
   return sections.every((s) => worldLevels[s.id].every((l) => stars[l.id] > 0));
 }
 
-/** First level that is not yet ★★★ (for "keep your crowns" after the map is cleared). */
+/** First level that is not yet at 3 stars (for "keep your crowns" after the map is cleared). */
 export function firstImperfectLevel(stars) {
   for (const s of sections) {
     const l = worldLevels[s.id].find((x) => (stars[x.id] ?? 0) < 3);

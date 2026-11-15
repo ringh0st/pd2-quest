@@ -5,6 +5,7 @@ import { Rich, isCodeOnly } from '../lib/rich.jsx';
 import { sfx } from '../audio/sfx.js';
 import { haptic } from '../audio/haptics.js';
 import { useReducedMotion } from '../hooks/useMotionPrefs.js';
+import { Icon } from './icons/Icon.jsx';
 
 const LETTERS = 'ABCDEF';
 
@@ -51,11 +52,11 @@ export function QuestionView({ question, chosen, onToggle, revealed, nudge, shak
           const isChosen = chosen.includes(i);
           const gone = hidden.includes(i) && !revealed;
           let cls = gone ? 'option is-gone' : 'option';
-          let mark = '';
+          let mark = null;
           let srState = '';
           if (revealed) {
-            if (correct.has(i)) { cls += ' is-right'; mark = '✓'; srState = ' (correct answer)'; }
-            else if (isChosen) { cls += ' is-wrong'; mark = '✗'; srState = ' (your choice, incorrect)'; }
+            if (correct.has(i)) { cls += ' is-right'; mark = <Icon name="check" />; srState = ' (correct answer)'; }
+            else if (isChosen) { cls += ' is-wrong'; mark = <Icon name="close" />; srState = ' (your choice, incorrect)'; }
           }
           return (
             <motion.button

@@ -6,13 +6,14 @@ import { allLevels, routeForLevel } from '../../state/gameSelectors.js';
 import { dueQuestionCount } from '../../state/selectors.js';
 import { exam } from '../../data/index.js';
 import { sfx } from '../../audio/sfx.js';
+import { Icon } from '../icons/Icon.jsx';
 
 const STATUS = {
-  'on-track': { emoji: '🟢', text: 'On track. Steady wins it.' },
-  'bit-behind': { emoji: '🟡', text: 'A bit behind. One extra level a day catches up.' },
-  tight: { emoji: '🟠', text: 'Tight on time. Focus on weak spots and mocks; skip what you know with placement.' },
-  final: { emoji: '🏁', text: 'Final week: mocks and reviews, no new topics.' },
-  'final-catchup': { emoji: '🏁', text: 'Final week: mocks first, then any levels left.' },
+  'on-track': { icon: 'ok', tone: 'ic-ok', text: 'On track. Steady wins it.' },
+  'bit-behind': { icon: 'clock', tone: 'ic-gold', text: 'A bit behind. One extra level a day catches up.' },
+  tight: { icon: 'warn', tone: 'ic-flame', text: 'Tight on time. Focus on weak spots and mocks; skip what you know with placement.' },
+  final: { icon: 'exam', tone: '', text: 'Final week: mocks and reviews, no new topics.' },
+  'final-catchup': { icon: 'exam', tone: '', text: 'Final week: mocks first, then any levels left.' },
 };
 
 export function usePlan() {
@@ -27,9 +28,9 @@ export function StudyPlanCard() {
   if (plan.phase === 'no-date') {
     return (
       <a className="card link row" href="#/settings" onClick={() => sfx.tap()}>
-        <span aria-hidden="true" style={{ fontSize: 24 }}>📅</span>
+        <span className="ic-tile" aria-hidden="true"><Icon name="plan" /></span>
         <span className="grow"><strong>Booked your exam?</strong><br /><span className="small muted">Add the date and you’ll get a daily plan that fits.</span></span>
-        <span aria-hidden="true">›</span>
+        <Icon name="chevron" />
       </a>
     );
   }
@@ -38,9 +39,9 @@ export function StudyPlanCard() {
     if (outcome === 'passed') return null;
     return (
       <section className="card stack-s" aria-labelledby="plan-past">
-        <strong id="plan-past">📅 Exam day has passed. How did it go?</strong>
+        <strong id="plan-past" className="ic-label"><Icon name="plan" style={{ color: 'var(--primary)' }} />Exam day has passed. How did it go?</strong>
         <div className="row wrap">
-          <button className="btn primary grow" onClick={() => { setState({ examOutcome: 'passed' }); pushEvent({ type: 'passed' }); sfx.levelUp(); }}>🎉 I passed!</button>
+          <button className="btn primary grow" onClick={() => { setState({ examOutcome: 'passed' }); pushEvent({ type: 'passed' }); sfx.levelUp(); }}><Icon name="party" /> I passed!</button>
           <a className="btn grow" href="#/settings">Pick a new date</a>
         </div>
         <p className="small muted">Not this time? Retakes are common. Set a new date and the plan rebuilds around it.</p>
@@ -52,7 +53,7 @@ export function StudyPlanCard() {
   return (
     <section className="card stack-s plan-card" aria-labelledby="plan-title">
       <div className="spread">
-        <strong id="plan-title">🗓️ Today’s plan</strong>
+        <strong id="plan-title" className="ic-label"><Icon name="plan" style={{ color: 'var(--primary)' }} />Today’s plan</strong>
         <span className="chip">{plan.daysLeft === 0 ? 'Exam today!' : `${plan.daysLeft} day${plan.daysLeft === 1 ? '' : 's'} left`}</span>
       </div>
       {plan.today.length ? (
@@ -60,16 +61,16 @@ export function StudyPlanCard() {
           {plan.today.map((t, k) => (
             <li key={k}>
               <a className="plan-task" href={`#${t.kind === 'levels' ? routeForLevel(t.level) : t.to}`} onClick={() => sfx.tap()}>
-                <span aria-hidden="true">{t.kind === 'levels' ? '▶' : t.kind === 'reviews' ? '🔁' : '🏁'}</span>
+                <span className="ic-tile sm" aria-hidden="true"><Icon name={t.kind === 'levels' ? 'play' : t.kind === 'reviews' ? 'review' : 'exam'} /></span>
                 <span className="grow">{t.label}</span>
-                <span aria-hidden="true">›</span>
+                <Icon name="chevron" />
               </a>
             </li>
           ))}
         </ol>
-      ) : <p className="small">Nothing left but you! Rest, hydrate, and good luck. 🍀</p>}
-      {st && <p className="small"><span aria-hidden="true">{st.emoji}</span> {st.text}</p>}
-      <a className="small" href="#/plan">See the week-by-week plan →</a>
+      ) : <p className="small">Nothing left but you! Rest, hydrate, and good luck. <Icon name="leaf" className="ic-ok" /></p>}
+      {st && <p className="small"><Icon name={st.icon} className={st.tone} /> {st.text}</p>}
+      <a className="small" href="#/plan">See the week-by-week plan <Icon name="next" /></a>
     </section>
   );
 }

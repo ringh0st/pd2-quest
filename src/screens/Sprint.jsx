@@ -13,6 +13,8 @@ import { sfx } from '../audio/sfx.js';
 import { haptic } from '../audio/haptics.js';
 import { isDue } from '../engine/srs.js';
 import { useHoldCelebrations } from '../hooks/useFocusMode.js';
+import { Icon } from '../components/icons/Icon.jsx';
+import { HeroArt } from '../components/art/HeroArt.jsx';
 
 function makeRound(query) {
   const s = getState();
@@ -47,7 +49,7 @@ export function Sprint({ query }) {
     if (left === 0 && minutes && !warned.current) {
       warned.current = true;
       sfx.done(); haptic('double');
-      showToast('⏰ Sprint time! Finish this one, then breathe.');
+      showToast('Sprint time! Finish this one, then breathe.');
     }
   }, [left, minutes, showToast]);
 
@@ -78,7 +80,7 @@ export function Sprint({ query }) {
 
   const timer = minutes ? (
     <button className="timer-pill" onClick={() => setPaused((p) => !p)} aria-pressed={paused}>
-      <span aria-hidden="true">{paused ? '⏸' : left === 0 ? '✅' : '⏱'}</span>
+      <Icon name={paused ? 'pause' : left === 0 ? 'ok' : 'timer'} />
       <span className="sr-only">Pause focus timer, </span>
       {Math.floor(left / 60)}:{String(left % 60).padStart(2, '0')}
       <span className="sr-only"> left</span>
@@ -98,18 +100,18 @@ export function Sprint({ query }) {
           initial={reduced ? { opacity: 0 } : { scale: 0.7, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
           transition={{ type: 'spring', stiffness: 400, damping: 22 }}
         >
-          <div className="big-emoji" aria-hidden="true">{perfect ? '🌟' : result.firstRight >= result.total / 2 ? '💪' : '🌱'}</div>
+          <HeroArt kind={perfect ? 'star' : result.firstRight >= result.total / 2 ? 'levelUp' : 'calm'} size={96} className="ic-hero" />
           <h1>{perfect ? 'Perfect round!' : `Round ${round.n} done!`}</h1>
-          <p><strong>{result.firstRight}/{result.total}</strong> first try · best combo 🔥{result.bestCombo}</p>
+          <p><strong>{result.firstRight}/{result.total}</strong> first try · best combo <Icon name="flame" className="ic-flame" />{result.bestCombo}</p>
           <div className="row" style={{ justifyContent: 'center', flexWrap: 'wrap' }}>
             <span className="chip gold">+{result.xp + result.bonus} XP</span>
             {round.n > 1 && <span className="chip">Session: {totals.xp} XP</span>}
           </div>
           {result.sprintOver
-            ? <p className="muted small">Sprint complete! A 3-minute break helps it stick. 🧃</p>
+            ? <p className="muted small">Sprint complete! A 3-minute break helps it stick. <Icon name="coffee" /></p>
             : <p className="muted small">{perfect ? 'Your brain is on fire. One more?' : 'Missed ones will come back soon. That’s how it sticks.'}</p>}
-          <button className="btn primary block big" autoFocus onClick={again}>Keep going ⚡</button>
-          <button className="btn block" onClick={() => go('/')}>Done for now ✓</button>
+          <button className="btn primary block big" autoFocus onClick={again}>Keep going <Icon name="bolt" fill /></button>
+          <button className="btn block" onClick={() => go('/')}>Done for now <Icon name="check" /></button>
         </motion.div>
       </main>
     );
@@ -118,7 +120,11 @@ export function Sprint({ query }) {
   return (
     <main className="screen focus" id="main">
       <h1 className="sr-only">Practice sprint, round {round.n}</h1>
-      {(sec || query.hard) && <p className="small muted center" style={{ fontWeight: 700 }}>{query.hard ? '🔥 Exam-hard ' : ''}{sec ? `${sec.emoji} ${sec.short} ` : ''}practice</p>}
+      {(sec || query.hard) && <p className="small muted center" style={{ fontWeight: 700 }}>
+          {query.hard && <><Icon name="flame" className="ic-flame" /> Exam-hard </>}
+          {sec && <><Icon name={sec.id} className="ic-sec" style={{ '--sec-accent': `var(--sec-${sec.id})` }} /> {sec.short} </>}
+          practice
+        </p>}
       <PracticeRunner key={round.n} questions={round.questions} onExit={() => go('/')} onDone={done} topRight={timer} />
     </main>
   );

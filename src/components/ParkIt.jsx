@@ -4,6 +4,7 @@ import { parkThought } from '../state/store.js';
 import { useFeedback } from './Feedback.jsx';
 import { sfx } from '../audio/sfx.js';
 import { Sheet } from './Sheet.jsx';
+import { Icon } from './icons/Icon.jsx';
 
 export function ParkIt() {
   const [open, setOpen] = useState(false);
@@ -17,15 +18,15 @@ export function ParkIt() {
     setText('');
     setOpen(false);
     sfx.done();
-    showToast('🅿️ Parked! Back to it.');
+    showToast(<><Icon name="park" /> Parked! Back to it.</>);
   };
   return (
     <>
-      <button className="icon-btn" onClick={() => { sfx.tap(); setOpen(true); }} aria-label="Park a distracting thought" title="Park a thought" aria-haspopup="dialog">🅿️</button>
+      <button className="icon-btn" onClick={() => { sfx.tap(); setOpen(true); }} aria-label="Park a distracting thought" title="Park a thought" aria-haspopup="dialog"><Icon name="park" /></button>
       <Sheet open={open} onClose={close} labelledBy="park-title">
         <form className="stack" onSubmit={save}>
-          <h2 id="park-title">🅿️ Park that thought</h2>
-          <p className="muted small">Brain wandered? Dump it here. It’ll wait for you under Me → Parked thoughts. Enter parks it; Shift+Enter adds a line.</p>
+          <h2 id="park-title" className="pq-head"><span className="pq-tile" data-tone="green"><Icon name="park" /></span><span>Park that thought</span></h2>
+          <p className="muted small">Brain wandered? Dump it here. It’ll wait for you under Me, in Parked thoughts. Enter parks it; Shift+Enter adds a line.</p>
           <textarea
             className="input" rows={3} data-autofocus value={text} onChange={(e) => setText(e.target.value)}
             onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) save(e); }}

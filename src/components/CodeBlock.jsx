@@ -2,6 +2,7 @@
 // appears only when lines are cut off, so phones can show everything without sideways scrolling.
 import { useLayoutEffect, useRef, useState } from 'react';
 import { tokenize } from '../lib/highlight.js';
+import { Icon } from './icons/Icon.jsx';
 
 export function CodeBlock({ code, lang = 'apex' }) {
   const tokens = tokenize(code || '');
@@ -30,7 +31,7 @@ export function CodeBlock({ code, lang = 'apex' }) {
       </pre>
       {(wide || wrap) && (
         <button type="button" className="code-toggle" aria-pressed={wrap} onClick={() => setWrap((w) => !w)}>
-          {wrap ? '↔ Scroll lines' : '↩ Wrap lines'}
+          <Icon name={wrap ? 'scroll' : 'wrap'} /> {wrap ? 'Scroll lines' : 'Wrap lines'}
         </button>
       )}
     </div>

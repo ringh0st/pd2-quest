@@ -1,6 +1,7 @@
 // Last line of defence: if a screen crashes, show a calm recovery card instead of a white screen.
 import { Component } from 'react';
 import { exportProgress } from '../state/store.js';
+import { HeroArt } from './art/HeroArt.jsx';
 
 export class ErrorBoundary extends Component {
   constructor(props) {
@@ -30,7 +31,7 @@ export class ErrorBoundary extends Component {
     return (
       <main className="screen" id="main" role="alert" style={{ justifyContent: 'center' }}>
         <div className="card stack center">
-          <div style={{ fontSize: 56 }} aria-hidden="true">🛠️</div>
+          <div className="pq-error-art"><HeroArt kind="oops" size={96} /></div>
           <h1>Oops, that screen tripped</h1>
           <p className="muted">Your progress is safe. Go home, or save a backup first if you like.</p>
           <button className="btn primary block big" onClick={() => { window.location.hash = '#/'; this.setState({ error: null }); }}>Go home</button>

@@ -4,12 +4,12 @@
 
 export const REMINDER_DAYS = ['daily', 'weekdays'];
 export const DEFAULT_REMINDER = { time: '19:00', days: 'daily', notify: false };
-export const REMINDER_TITLE = '⚡ 5 minutes of PD2 Quest';
+export const REMINDER_TITLE = 'PD2 Quest: 5 minutes';
 export const REMINDER_BODY = 'Got 5 minutes? A tiny round is ready whenever you are. No pressure.';
 
 const pad = (n) => String(n).padStart(2, '0');
 
-/** "HH:MM" → { h, m }, or null when it isn't a valid 24-hour time. */
+/** "HH:MM" to { h, m }, or null when it isn't a valid 24-hour time. */
 export function parseTime(time) {
   const match = /^(\d{1,2}):(\d{2})$/.exec(String(time ?? ''));
   if (!match) return null;

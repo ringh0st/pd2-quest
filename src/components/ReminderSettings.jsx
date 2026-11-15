@@ -2,6 +2,7 @@
 import { useId, useState } from 'react';
 import { Switch, Segmented } from './Controls.jsx';
 import { useFeedback } from './Feedback.jsx';
+import { Icon } from './icons/Icon.jsx';
 import {
   canOfferNotifications, downloadReminderIcs, notificationPermission, readReminder, requestNotificationPermission, saveReminder,
 } from '../lib/reminders.js';
@@ -16,7 +17,7 @@ export function ReminderSettings() {
 
   const addToCalendar = () => {
     downloadReminderIcs(reminder);
-    showToast('📅 Calendar file ready');
+    showToast(<><Icon name="plan" /> Calendar file ready</>);
   };
 
   const toggleNotify = async (on) => {
@@ -25,7 +26,7 @@ export function ReminderSettings() {
     setPermission(result);
     if (result === 'granted') {
       update({ notify: true });
-      showToast('🔔 Nudge set');
+      showToast(<><Icon name="bell" /> Nudge set</>);
     } else {
       showToast('No problem. The calendar option still works.');
     }
@@ -33,7 +34,7 @@ export function ReminderSettings() {
 
   return (
     <section className="card stack">
-      <h2>⏰ Study reminder</h2>
+      <h2 className="pq-head"><span className="pq-tile" data-tone="green"><Icon name="bell" /></span><span>Study reminder</span></h2>
       <p className="small muted">Optional, and off unless you turn it on. A gentle nudge for a few minutes of practice, never a nag about streaks.</p>
       <div className="field">
         <label htmlFor={timeId}>Nudge me at</label>
@@ -43,7 +44,7 @@ export function ReminderSettings() {
         />
       </div>
       <Segmented label="On which days?" value={reminder.days} onChange={(v) => update({ days: v })} options={[['daily', 'Every day'], ['weekdays', 'Weekdays']]} />
-      <button type="button" className="btn primary" onClick={addToCalendar}>📅 Add to my calendar</button>
+      <button type="button" className="btn primary" onClick={addToCalendar}><Icon name="plan" /> Add to my calendar</button>
       <p className="small muted">Adds a repeating 5-minute event with an alert to your calendar app. This is the most reliable option: it rings even when PD2 Quest is closed. Change or delete it any time in your calendar.</p>
       {offerNotify && (
         <Switch

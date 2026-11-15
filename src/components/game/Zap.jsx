@@ -1,4 +1,4 @@
-// Zap ⚡, the mascot: a little lightning bolt with a face. Moods change the face; outfits from the shop
+// Zap, the mascot: a little lightning bolt with a face. Moods change the face; outfits from the shop
 // are vector parts drawn inside Zap's own viewBox, so they stay put at every size.
 import { motion } from 'motion/react';
 import { useReducedMotion, useCalm } from '../../hooks/useMotionPrefs.js';

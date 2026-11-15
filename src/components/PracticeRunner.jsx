@@ -1,4 +1,4 @@
-// Practice loop: answer → instant feedback → XP pop → continue. Misses come back 3 questions later.
+// Practice loop: answer, instant feedback, XP pop, continue. Misses come back 3 questions later.
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { QuestionView } from './QuestionView.jsx';
@@ -18,6 +18,7 @@ import { useStore, useHelper } from '../state/store.js';
 import { fiftyFifty, HELPERS } from '../game/economy.js';
 import { lessonById } from '../data/index.js';
 import { zapSays } from '../game/mascot.js';
+import { Icon } from './icons/Icon.jsx';
 
 const PRAISE = ['Nailed it!', 'Yes!', 'Boom!', 'Correct!', 'Sharp!', 'You got it!', 'Brain on fire!', 'Clean!'];
 const KIND = ['Not quite', 'Not yet', 'Good try'];
@@ -162,7 +163,7 @@ export function PracticeRunner({ questions, onDone, onExit, topRight, requeue = 
   return (
     <div className="stack" style={{ flex: 1 }} ref={topRef}>
       <div className="quiz-top">
-        <button className="icon-btn" onClick={onExit} aria-label="Leave session">✕</button>
+        <button className="icon-btn" onClick={onExit} aria-label="Leave session"><Icon name="close" /></button>
         <div className="bar" role="progressbar" aria-label="Session progress" aria-valuemin={0} aria-valuemax={queue.length} aria-valuenow={idx + (revealed ? 1 : 0)}>
           <span style={{ width: `${Math.max(4, progress * 100)}%` }} />
         </div>
@@ -171,12 +172,12 @@ export function PracticeRunner({ questions, onDone, onExit, topRight, requeue = 
       </div>
       {header?.({ combo, heartsLeft, lastRight, revealed, stats: stats.current })}
       {topRight && <div className="row" style={{ justifyContent: 'space-between' }}>
-        <span className="chip trunc" title={sec?.title}>{sec?.emoji} {sec?.short ?? sec?.title}</span>
+        <span className="chip trunc" title={sec?.title}><Icon name={q.section} /> {sec?.short ?? sec?.title}</span>
         <ComboChip combo={combo} reduced={reduced} />
       </div>}
       {!topRight && !header && (
         <div className="row" style={{ justifyContent: 'space-between' }}>
-          <span className="chip trunc" title={sec?.title}>{sec?.emoji} {sec?.short ?? sec?.title}</span>
+          <span className="chip trunc" title={sec?.title}><Icon name={q.section} /> {sec?.short ?? sec?.title}</span>
           {heartsLeft != null && <ComboChip combo={combo} reduced={reduced} />}
         </div>
       )}
@@ -209,18 +210,18 @@ export function PracticeRunner({ questions, onDone, onExit, topRight, requeue = 
             <button
               className="btn small" disabled={!held.fifty || hidden.length > 0}
               onClick={() => { if (useHelper('fifty')) { sfx.flip(); haptic('medium'); const h = fiftyFifty(q); setHidden(h); setChosen((c) => c.filter((x) => !h.includes(x))); announce('Two wrong answers removed.'); } }}
-            >{HELPERS.fifty.emoji} 50/50 <span className="helper-count">×{held.fifty ?? 0}</span></button>
+            ><Icon name="scissors" /> {HELPERS.fifty.name} <span className="helper-count">×{held.fifty ?? 0}</span></button>
           )}
           <button
             className="btn small" disabled={!held.hint || !!hint}
             onClick={() => { if (useHelper('hint')) { sfx.flip(); haptic('light'); const t = hintFor(q); setHint(t); announce('Hint: ' + t); } }}
-          >{HELPERS.hint.emoji} Hint <span className="helper-count">×{held.hint ?? 0}</span></button>
+          ><Icon name="idea" /> {HELPERS.hint.name} <span className="helper-count">×{held.hint ?? 0}</span></button>
         </div>
       )}
       <AnimatePresence>
         {hint && !revealed && (
           <motion.div className="hint-card" initial={reduced ? { opacity: 0 } : { opacity: 0, y: 10, scale: 0.96 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0 }}>
-            <strong>💡 Hint</strong> <Rich text={hint} />
+            <strong><Icon name="idea" /> Hint</strong> <Rich text={hint} />
           </motion.div>
         )}
       </AnimatePresence>
@@ -236,7 +237,7 @@ export function PracticeRunner({ questions, onDone, onExit, topRight, requeue = 
           >
             <div className="verdict">
               <Zap mood={lastRight ? 'cheer' : 'sad'} size={38} bounce={false} label="" />
-              <span><span aria-hidden="true">{lastRight ? '✓' : '✗'}</span> {verdict}<br /><span className="small muted" style={{ fontWeight: 400 }}>{zapLine}</span></span>
+              <span><span className="verdict-mark"><Icon name={lastRight ? 'ok' : 'wrong'} /></span> {verdict}<br /><span className="small muted" style={{ fontWeight: 400 }}>{zapLine}</span></span>
             </div>
             {!lastRight && (
               <p className="right-answer"><strong>Answer{need > 1 ? 's' : ''}:</strong>{' '}
@@ -247,16 +248,16 @@ export function PracticeRunner({ questions, onDone, onExit, topRight, requeue = 
             {q.wrong?.some(Boolean) && (
               <>
                 <button className="btn ghost small" onClick={() => setShowWhy((v) => !v)} aria-expanded={showWhy}>
-                  {showWhy ? 'Hide' : 'Why not the others?'}
+                  <Icon name={showWhy ? 'eye' : 'idea'} /> {showWhy ? 'Hide' : 'Why not the others?'}
                 </button>
                 {showWhy && (
-                  <ul className="list-plain small">
-                    {q.options.map((o, i) => q.wrong[i] ? <li key={i}><strong>{'ABCDEF'[i]}.</strong> <Rich text={q.wrong[i]} /></li> : null)}
+                  <ul className="list-plain small why-card">
+                    {q.options.map((o, i) => q.wrong[i] ? <li key={i}><Icon name="wrong" /> <strong>{'ABCDEF'[i]}.</strong> <Rich text={q.wrong[i]} /></li> : null)}
                   </ul>
                 )}
               </>
             )}
-            {q.source && <p className="small muted">📚 {q.source}</p>}
+            {q.source && <p className="small muted"><Icon name="book" /> {q.source}</p>}
           </motion.div>
         )}
       </AnimatePresence>
@@ -269,7 +270,7 @@ export function PracticeRunner({ questions, onDone, onExit, topRight, requeue = 
           </button>
         ) : (
           <button className="btn primary block big" onClick={next} autoFocus>
-            {heartsLeft === 0 ? 'See result' : idx + 1 >= queue.length ? 'Finish 🎉' : 'Continue →'}
+            {heartsLeft === 0 ? 'See result' : idx + 1 >= queue.length ? <>Finish <Icon name="party" /></> : <>Continue <Icon name="next" /></>}
           </button>
         )}
       </div>
@@ -288,7 +289,7 @@ function ComboChip({ combo, reduced }) {
       animate={{ scale: 1 }}
       transition={{ type: 'spring', stiffness: 500, damping: 15 }}
     >
-      <span aria-hidden="true" style={{ fontSize: 14 + Math.min(combo, 10) }}>🔥</span>
+      <Icon name="flame" fill={combo > 0} size={`${1 + Math.min(combo, 10) * 0.05}em`} />
       {combo}{mult > 1 && <small>×{mult}</small>}
     </motion.span>
   );
@@ -299,11 +300,11 @@ function HeartsChip({ hearts, max, reduced }) {
     <span className="chip hearts" role="img" aria-label={`${hearts} of ${max} hearts left`}>
       {Array.from({ length: max }, (_, i) => (
         <motion.span
-          key={i + '-' + (i < hearts)} aria-hidden="true"
+          key={i + '-' + (i < hearts)} aria-hidden="true" className={i < hearts ? undefined : 'lost'}
           initial={reduced || i < hearts ? false : { scale: 1.6, rotate: -20 }}
-          animate={{ scale: 1, rotate: 0, opacity: i < hearts ? 1 : 0.35, filter: i < hearts ? 'none' : 'grayscale(1)' }}
+          animate={{ scale: 1, rotate: 0, opacity: i < hearts ? 1 : 0.6 }}
           transition={{ type: 'spring', stiffness: 400, damping: 12 }}
-        >{i < hearts ? '❤️' : '🖤'}</motion.span>
+        ><Icon name="heart" fill={i < hearts} /></motion.span>
       ))}
     </span>
   );

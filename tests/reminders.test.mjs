@@ -38,7 +38,7 @@ test('reminders: ics has CRLF lines of at most 75 octets, alarm, summary and URL
   const flat = unfold(ics);
   assert.match(flat, /BEGIN:VALARM\r\nACTION:DISPLAY\r\n/);
   assert.match(flat, /\r\nTRIGGER:PT0S\r\n/);
-  assert.match(flat, /\r\nSUMMARY:⚡ 5 minutes of PD2 Quest\r\n/);
+  assert.match(flat, /\r\nSUMMARY:PD2 Quest: 5 minutes\r\n/);
   assert.match(flat, new RegExp(`\\r\\nURL:${url}\\r\\n`));
   assert.ok(flat.includes(url), 'description links to the app');
 });

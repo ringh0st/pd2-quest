@@ -6,6 +6,10 @@ import { Switch, Segmented } from '../components/Controls.jsx';
 import { go } from '../hooks/useRoute.js';
 import { useFeedback } from '../components/Feedback.jsx';
 import { ReminderSettings } from '../components/ReminderSettings.jsx';
+import { Icon } from '../components/icons/Icon.jsx';
+
+/** Segmented option with its icon over the word. */
+export const iconOption = (value, icon, text) => [value, <span className="pq-seg"><Icon name={icon} />{text}</span>];
 
 export function Settings() {
   const s = useStore();
@@ -20,30 +24,30 @@ export function Settings() {
     a.download = `pd2-quest-backup-${new Date().toISOString().slice(0, 10)}.json`;
     a.click();
     URL.revokeObjectURL(a.href);
-    showToast('💾 Backup saved');
+    showToast(<><Icon name="download" /> Backup saved</>);
   };
   const restore = async (e) => {
     const file = e.target.files?.[0];
     e.target.value = '';
     if (!file) return;
     if (!confirm('Replace your current progress with this backup?')) return;
-    showToast(importProgress(await file.text()) ? '✅ Progress restored' : 'That file isn’t a PD2 Quest backup');
+    showToast(importProgress(await file.text()) ? <><Icon name="ok" /> Progress restored</> : 'That file isn’t a PD2 Quest backup');
   };
   return (
     <main className="screen" id="main">
       <div className="topbar">
-        <button className="icon-btn" onClick={() => go('/me')} aria-label="Back">←</button>
-        <h1 className="grow">⚙️ Settings</h1>
+        <button className="icon-btn" onClick={() => go('/me')} aria-label="Back"><Icon name="back" /></button>
+        <h1 className="grow pq-head"><span className="pq-tile s" data-tone="muted"><Icon name="settings" /></span><span>Settings</span></h1>
       </div>
       <InstallHelpButton />
 
       <section className="card stack">
-        <h2>🎯 Goals</h2>
+        <h2 className="pq-head"><span className="pq-tile"><Icon name="target" /></span><span>Goals</span></h2>
         <Segmented label="Daily goal (XP)" value={s.dailyGoal} onChange={(v) => setState({ dailyGoal: v })} options={[[20, '20'], [50, '50'], [100, '100'], [150, '150']]} />
         <Segmented label="Questions per round" value={st.sprintSize} onChange={(v) => updateSettings({ sprintSize: v })} options={[[3, '3'], [5, '5'], [8, '8'], [10, '10']]} />
         <Segmented label="Focus timer (minutes)" value={st.focusMinutes} onChange={(v) => updateSettings({ focusMinutes: v })} options={[[0, 'Off'], [5, '5'], [10, '10'], [15, '15'], [25, '25']]} />
         <div className="field">
-          <label htmlFor="exam-date">📅 Exam date (optional, tap to pick)</label>
+          <label htmlFor="exam-date" className="pq-label"><Icon name="plan" /> Exam date (optional, tap to pick)</label>
           <input id="exam-date" className="input" type="date" value={s.examDate} onChange={(e) => setState({ examDate: e.target.value })} />
         </div>
         <div className="field">
@@ -55,14 +59,14 @@ export function Settings() {
       <ReminderSettings />
 
       <section className="card stack">
-        <h2>🌈 Feel</h2>
+        <h2 className="pq-head"><span className="pq-tile" data-tone="gold"><Icon name="palette" /></span><span>Feel</span></h2>
         <Segmented
           label="How do you like it?" value={preset ?? 'custom'}
           onChange={(v) => FEEL_PRESETS[v] && updateSettings(FEEL_PRESETS[v].settings)}
-          options={Object.entries(FEEL_PRESETS).map(([k, p]) => [k, p.label])}
+          options={Object.entries(FEEL_PRESETS).map(([k, p]) => iconOption(k, p.icon, p.label))}
         />
         {!preset && <p className="small muted">Custom mix. Tap a preset to reset all of these at once.</p>}
-        <Segmented label="Theme" value={st.theme} onChange={(v) => updateSettings({ theme: v })} options={[['system', 'Auto'], ['light', '☀️ Light'], ['dark', '🌙 Dark']]} />
+        <Segmented label="Theme" value={st.theme} onChange={(v) => updateSettings({ theme: v })} options={[iconOption('system', 'phone', 'Auto'), iconOption('light', 'sun', 'Light'), iconOption('dark', 'moon', 'Dark')]} />
         <Switch label="Calm mode" hint="Quieter colors, no confetti, no idle animations" checked={st.calm} onChange={(v) => updateSettings({ calm: v })} />
         <Segmented label="Motion" value={st.motion} onChange={(v) => updateSettings({ motion: v })} options={[['system', 'Auto'], ['full', 'Full'], ['reduced', 'Reduced']]} />
         <Switch label="Confetti" hint={st.calm ? 'Off while Calm mode is on' : undefined} disabled={st.calm} checked={!st.calm && st.confetti !== false} onChange={(v) => updateSettings({ confetti: v })} />
@@ -71,22 +75,22 @@ export function Settings() {
       </section>
 
       <section className="card stack">
-        <h2>🔤 Reading</h2>
+        <h2 className="pq-head"><span className="pq-tile" data-tone="teal"><Icon name="book" /></span><span>Reading</span></h2>
         <Segmented label="Font" value={st.font} onChange={(v) => updateSettings({ font: v })} options={[['atkinson', 'Atkinson'], ['lexend', 'Lexend']]} />
         <Segmented label="Text size" value={st.textScale} onChange={(v) => updateSettings({ textScale: v })} options={[[0.9, 'A−'], [1, 'A'], [1.15, 'A+'], [1.3, 'A++']]} />
       </section>
 
       <section className="card stack">
-        <h2>🧹 Data</h2>
+        <h2 className="pq-head"><span className="pq-tile" data-tone="flame"><Icon name="database" /></span><span>Data</span></h2>
         <p className="small muted">Your progress stays on this phone only. No account, no tracking. Save a backup now and then, because a browser can clear site data.</p>
         <div className="row wrap">
-          <button className="btn grow" onClick={backup}>💾 Save backup</button>
-          <button className="btn grow" onClick={() => fileRef.current?.click()}>📂 Restore</button>
+          <button className="btn grow" onClick={backup}><Icon name="download" /> Save backup</button>
+          <button className="btn grow" onClick={() => fileRef.current?.click()}><Icon name="upload" /> Restore</button>
           <input ref={fileRef} type="file" accept="application/json,.json" hidden onChange={restore} aria-label="Choose a backup file" />
         </div>
         <button className="btn" onClick={() => {
-          if (confirm('Reset all progress? XP, streak and reviews will be cleared. Settings stay.')) { resetProgress(); showToast('Fresh start ✨'); }
-        }}>Reset progress</button>
+          if (confirm('Reset all progress? XP, streak and reviews will be cleared. Settings stay.')) { resetProgress(); showToast(<><Icon name="sparkles" /> Fresh start</>); }
+        }}><Icon name="retry" /> Reset progress</button>
       </section>
       <p className="small muted center">PD2 Quest v{import.meta.env.VITE_APP_VERSION} · Original practice content, not affiliated with Salesforce.</p>
     </main>

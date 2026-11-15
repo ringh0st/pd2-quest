@@ -18,15 +18,21 @@ import { useFocusMode, useHoldCelebrations } from '../hooks/useFocusMode.js';
 import { ParkIt } from '../components/ParkIt.jsx';
 import { Sheet } from '../components/Sheet.jsx';
 import { Segmented } from '../components/Controls.jsx';
+import { Icon } from '../components/icons/Icon.jsx';
+import { HeroArt } from '../components/art/HeroArt.jsx';
 import { saveExamSession, loadExamSession, clearExamSession } from '../state/examSession.js';
 
 const LETTERS = 'ABCDEF';
 const MODES = [
-  { id: 'mini', label: 'Mini mock', count: 20, minutes: 40, emoji: '🏃', blurb: '20 questions · 40 min' },
-  { id: 'full', label: 'Full mock exam', count: exam.questions, minutes: exam.minutes, emoji: '🏁', blurb: `${exam.questions} questions · ${exam.minutes} min, like the real thing` },
-  { id: 'hard', label: 'Exam-hard mock', count: exam.questions, minutes: exam.minutes, emoji: '🔥', blurb: `${exam.questions} of the toughest questions · ${exam.minutes} min`, hardOnly: true },
+  { id: 'mini', label: 'Mini mock', count: 20, minutes: 40, icon: 'bolt', tone: '', blurb: '20 questions · 40 min' },
+  { id: 'full', label: 'Full mock exam', count: exam.questions, minutes: exam.minutes, icon: 'exam', tone: 'gold', blurb: `${exam.questions} questions · ${exam.minutes} min, like the real thing` },
+  { id: 'hard', label: 'Exam-hard mock', count: exam.questions, minutes: exam.minutes, icon: 'flame', tone: 'flame', blurb: `${exam.questions} of the toughest questions · ${exam.minutes} min`, hardOnly: true },
 ];
-const TIME = [['standard', '⏱ Real'], ['extra', '+50%'], ['untimed', '∞ None']];
+const TIME = [
+  ['standard', <span key="s" className="ic-label"><Icon name="timer" />Real</span>],
+  ['extra', '+50%'],
+  ['untimed', <span key="u" className="ic-label"><Icon name="infinity" />None</span>],
+];
 const timeFor = (mode, time) => (time === 'untimed' ? null : Math.round(mode.minutes * (time === 'extra' ? 1.5 : 1)) * 60 * 1000);
 const letters = (idx) => idx.map((c) => LETTERS[c]).join(', ');
 
@@ -72,17 +78,17 @@ export function Exam() {
   const last = history[history.length - 1];
   return (
     <main className="screen" id="main">
-      <h1>🏁 Exam simulator</h1>
+      <h1 className="ic-label"><span className="ic-tile gold" aria-hidden="true"><Icon name="exam" /></span>Exam simulator</h1>
       <p className="muted">Exam conditions: no hints, flag questions you’re unsure of, and see the full review at the end. Pass mark {exam.passing}%.</p>
       {saved && (
         <div className="card stack-s" style={{ borderColor: 'var(--primary)' }}>
-          <strong>⏸ {saved.label} in progress</strong>
+          <strong className="ic-label"><Icon name="pause" style={{ color: 'var(--primary)' }} />{saved.label} in progress</strong>
           <p className="small muted">
             {Object.values(saved.answers).filter((a) => a?.length).length}/{saved.questions.length} answered
             {saved.remainingMs != null ? ` · ${Math.ceil(saved.remainingMs / 60000)} min left` : ' · untimed'}
           </p>
           <div className="row">
-            <button className="btn primary grow" onClick={() => { sfx.tap(); setRun(saved); }}>Resume ▶</button>
+            <button className="btn primary grow" onClick={() => { sfx.tap(); setRun(saved); }}>Resume <Icon name="play" fill /></button>
             <button className="btn" onClick={() => { if (confirm('Throw away this unfinished mock exam?')) { clearExamSession(); setSaved(null); } }}>Discard</button>
           </div>
         </div>
@@ -95,15 +101,15 @@ export function Exam() {
             sfx.tap(); haptic('medium'); setSetup(m);
           }}
         >
-          <span className="section-emoji" aria-hidden="true">{m.emoji}</span>
+          <span className={`ic-tile lg ${m.tone}`} aria-hidden="true"><Icon name={m.icon} /></span>
           <span><strong>{m.label}</strong><br /><span className="small muted">{m.blurb}</span></span>
-          <span aria-hidden="true">▶</span>
+          <Icon name="chevron" />
         </button>
       ))}
       <a className="card link row" href="#/sprint?hard=1" onClick={() => sfx.tap()}>
-        <span className="section-emoji" aria-hidden="true">🔥</span>
+        <span className="ic-tile lg flame" aria-hidden="true"><Icon name="flame" /></span>
         <span className="grow"><strong>Exam-hard sprint</strong><br /><span className="small muted">Short rounds of only the toughest questions, with explanations</span></span>
-        <span aria-hidden="true">▶</span>
+        <Icon name="chevron" />
       </a>
       {last && (
         <div className="card stack-s">
@@ -113,7 +119,7 @@ export function Exam() {
               <li key={h.at} className="spread">
                 <span>{new Date(h.at).toLocaleDateString()} · {h.total} q</span>
                 <span className="chip" style={h.score >= exam.passing ? { background: 'var(--correct-bg)' } : undefined}>
-                  {h.score >= exam.passing ? '✓ pass' : '• not yet'} {h.score}%
+                  <Icon name={h.score >= exam.passing ? 'check' : 'dot'} size="0.9em" /> {h.score >= exam.passing ? 'pass' : 'not yet'} {h.score}%
                 </span>
               </li>
             ))}
@@ -121,7 +127,7 @@ export function Exam() {
         </div>
       )}
       <div className="card stack-s">
-        <strong>📋 About the real exam</strong>
+        <strong className="ic-label"><Icon name="info" style={{ color: 'var(--primary)' }} />About the real exam</strong>
         <ul className="small" style={{ margin: 0, paddingLeft: '1.2em' }}>
           <li>{exam.questions} scored questions (+ up to {exam.unscored} unscored), {exam.minutes} minutes</li>
           <li>Passing score: {exam.passing}%</li>
@@ -140,9 +146,9 @@ function ExamStart({ mode, onBack, onStart }) {
   useEffect(() => { window.scrollTo(0, 0); heading.current?.focus(); }, []);
   return (
     <main className="screen focus" id="main">
-      <div className="topbar"><button className="icon-btn" onClick={onBack} aria-label="Back to exam menu">←</button></div>
+      <div className="topbar"><button className="icon-btn" onClick={onBack} aria-label="Back to exam menu"><Icon name="back" /></button></div>
       <div className="stack center">
-        <div style={{ fontSize: 56 }} aria-hidden="true">{mode.emoji}</div>
+        <span className={`ic-tile xl ic-hero ${mode.tone}`} aria-hidden="true"><Icon name={mode.icon} /></span>
         <h1 ref={heading} tabIndex={-1}>{mode.label}</h1>
         <p className="muted">{mode.count} questions · no feedback until the end · pass mark {exam.passing}%</p>
       </div>
@@ -156,7 +162,7 @@ function ExamStart({ mode, onBack, onStart }) {
       </div>
       <div style={{ flex: 1 }} />
       <button className="btn primary block big" onClick={() => { sfx.tap(); haptic('medium'); onStart(time); }}>
-        Start{time === 'untimed' ? ' (untimed)' : ` · ${Math.round(timeFor(mode, time) / 60000)} min`} ▶
+        Start{time === 'untimed' ? ' (untimed)' : ` · ${Math.round(timeFor(mode, time) / 60000)} min`} <Icon name="play" fill />
       </button>
     </main>
   );
@@ -271,27 +277,27 @@ function ExamRun({ run, onSubmit, onLeave, onDiscard }) {
   return (
     <main className="screen focus" id="main">
       <div className="quiz-top">
-        <button className="icon-btn" onClick={onLeave} aria-label="Pause and leave exam. Your progress is saved">⏸</button>
+        <button className="icon-btn" onClick={onLeave} aria-label="Pause and leave exam. Your progress is saved"><Icon name="pause" /></button>
         <div className="bar" role="progressbar" aria-label="Answered" aria-valuemin={0} aria-valuemax={questions.length} aria-valuenow={answered}>
           <span style={{ width: `${Math.max(2, (answered / questions.length) * 100)}%` }} />
         </div>
         {timed
           ? (
             <span className={low ? 'timer-pill low' : 'timer-pill'} role="timer" aria-live="off">
-              <span aria-hidden="true">{low ? '⚠️' : '⏱'}</span><span className="sr-only">Time left </span> {Math.floor(sec / 60)}:{String(sec % 60).padStart(2, '0')}
+              <Icon name={low ? 'warn' : 'timer'} /><span className="sr-only">Time left </span> {Math.floor(sec / 60)}:{String(sec % 60).padStart(2, '0')}
             </span>
           )
-          : <span className="timer-pill"><span aria-hidden="true">∞</span> untimed</span>}
+          : <span className="timer-pill"><Icon name="infinity" /> untimed</span>}
         <ParkIt />
       </div>
       <div className="spread">
         <button className="chip" style={{ border: 0, minHeight: 44 }} onClick={() => setGrid(true)} aria-haspopup="dialog">
-          Q {i + 1}/{questions.length}<span className="sr-only">, open question map</span> <span aria-hidden="true">▾</span>
+          Q {i + 1}/{questions.length}<span className="sr-only">, open question map</span> <Icon name="down" size="1em" />
         </button>
         <button
           className={flags[q.id] ? 'chip gold' : 'chip'} style={{ border: 0, minHeight: 44 }}
           aria-pressed={!!flags[q.id]} onClick={() => { sfx.tap(); setFlags((f) => ({ ...f, [q.id]: !f[q.id] })); }}
-        >🚩 {flags[q.id] ? 'Flagged' : 'Flag'}</button>
+        ><Icon name="exam" fill={!!flags[q.id]} /> {flags[q.id] ? 'Flagged' : 'Flag'}</button>
       </div>
       <h1 className="sr-only" ref={heading} tabIndex={-1}>Question {i + 1} of {questions.length}</h1>
 
@@ -302,16 +308,18 @@ function ExamRun({ run, onSubmit, onLeave, onDiscard }) {
 
       <div style={{ flex: 1 }} />
       <div className="sticky-actions" style={{ gridTemplateColumns: '1fr 2fr' }}>
-        <button className="btn" disabled={i === 0} onClick={() => go(i - 1)}>← Prev</button>
+        <button className="btn" disabled={i === 0} onClick={() => go(i - 1)}><Icon name="back" /> Prev</button>
         {i + 1 < questions.length
-          ? <button className="btn primary" onClick={() => go(i + 1)}>Next →</button>
+          ? <button className="btn primary" onClick={() => go(i + 1)}>Next <Icon name="next" /></button>
           : <button className="btn gold" onClick={() => setGrid(true)} aria-haspopup="dialog">Review &amp; submit</button>}
       </div>
 
       <Sheet open={grid} onClose={() => { setGrid(false); setConfirming(false); }} labelledBy="grid-title">
         <h2 id="grid-title">Question map</h2>
         <p className="small muted">{answered}/{questions.length} answered · {Object.values(flags).filter(Boolean).length} flagged</p>
-        <p className="small muted" aria-hidden="true">✓ answered · ○ blank · 🚩 flagged</p>
+        <p className="small muted legend" aria-hidden="true">
+          <span><Icon name="check" /> answered</span><span><Icon name="dot" /> blank</span><span><Icon name="exam" fill /> flagged</span>
+        </p>
         <div className="qmap">
           {questions.map((qq, k) => {
             const a = answers[qq.id]?.length > 0;
@@ -322,14 +330,14 @@ function ExamRun({ run, onSubmit, onLeave, onDiscard }) {
                 aria-label={`Question ${k + 1}${a ? ', answered' : ', blank'}${flags[qq.id] ? ', flagged' : ''}${k === i ? ', current' : ''}`}
               >
                 <span>{k + 1}</span>
-                <span className="qmap-mark" aria-hidden="true">{flags[qq.id] ? '🚩' : a ? '✓' : '○'}</span>
+                <span className="qmap-mark" aria-hidden="true"><Icon name={flags[qq.id] ? 'exam' : a ? 'check' : 'dot'} fill={!!flags[qq.id]} /></span>
               </button>
             );
           })}
         </div>
         {!confirming ? (
           <button className="btn primary block big" onClick={() => { haptic('medium'); if (blanks) setConfirming(true); else submit(); }}>
-            Submit exam {blanks ? `(${blanks} blank)` : '✓'}
+            Submit exam {blanks ? `(${blanks} blank)` : <Icon name="check" />}
           </button>
         ) : (
           <div className="stack-s" role="alert">
@@ -364,7 +372,7 @@ function ExamResult({ result, onClose }) {
   return (
     <main className="screen" id="main">
       <motion.div className="hero stack center" initial={reduced ? false : { scale: 0.85, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ type: 'spring', stiffness: 380, damping: 24 }}>
-        <div style={{ fontSize: 64 }} aria-hidden="true">{!result.answered ? '🫥' : pass ? '🏆' : '🧗'}</div>
+        <HeroArt kind={!result.answered ? 'empty' : pass ? 'trophy' : 'goal'} size={96} className="ic-hero" />
         <h1 ref={heading} tabIndex={-1}>{!result.answered ? 'Nothing answered' : pass ? 'You passed the mock!' : 'Not yet, and that’s data!'}</h1>
         <p style={{ fontSize: 40, fontWeight: 700 }}>{result.score}%</p>
         <p className="muted">{result.right}/{result.total} correct · {Math.max(1, Math.round(result.seconds / 60))} min · pass mark {exam.passing}%{result.timed ? '' : ' · untimed'}</p>
@@ -375,7 +383,7 @@ function ExamResult({ result, onClose }) {
 
       {pass && (fast || seenBefore > result.total / 3 || !result.timed) && (
         <div className="card stack-s" role="note">
-          <strong>🧭 Keep it honest</strong>
+          <strong className="ic-label"><Icon name="compass" style={{ color: 'var(--primary)' }} />Keep it honest</strong>
           <ul className="small" style={{ margin: 0, paddingLeft: '1.2em' }}>
             {fast && <li>That was quick: under 25 seconds a question. Real PD2 questions take longer to read, so slow down and read every option.</li>}
             {seenBefore > result.total / 3 && <li>You’d seen {seenBefore} of these questions before. A pass on fresh questions is stronger evidence, so try the Exam-hard mock.</li>}
@@ -392,7 +400,7 @@ function ExamResult({ result, onClose }) {
           const p = Math.round((r.right / r.total) * 100);
           return (
             <div key={s.id} className="stack-s">
-              <div className="spread small"><span>{s.emoji} {s.short}</span><strong>{r.right}/{r.total} · {p}%</strong></div>
+              <div className="spread small"><span className="ic-label"><Icon name={s.id} className="ic-sec" style={{ '--sec-accent': `var(--sec-${s.id})` }} />{s.short}</span><strong>{r.right}/{r.total} · {p}%</strong></div>
               <div className="bar" aria-hidden="true"><span style={{ width: `${Math.max(2, p)}%` }} /></div>
             </div>
           );
@@ -400,11 +408,11 @@ function ExamResult({ result, onClose }) {
       </div>
 
       <Segmented label="Review" options={[['wrong', `Missed (${missed})`], ['all', `All (${result.total})`]]} value={filter} onChange={setFilter} />
-      {!list.length && <p className="muted center">Nothing missed. Switch to All to read every explanation. 🌟</p>}
+      {!list.length && <p className="muted center"><Icon name="sparkles" className="ic-gold" /> Nothing missed. Switch to All to read every explanation.</p>}
       <ol className="list-plain stack">
         {list.map(({ q, chosen, ok }) => (
           <li key={q.id} className={`feedback ${ok ? 'right' : 'wrong'}`}>
-            <div className="verdict small"><span aria-hidden="true">{ok ? '✓' : '✗'}</span> {ok ? 'Correct' : chosen.length ? 'Missed' : 'Blank'} · {sectionById[q.section].emoji} {sectionById[q.section].short}</div>
+            <div className="verdict small"><Icon name={ok ? 'ok' : 'wrong'} /> {ok ? 'Correct' : chosen.length ? 'Missed' : 'Blank'} · <Icon name={q.section} /> {sectionById[q.section].short}</div>
             <p><Rich text={cleanQuestion(q.q)} autoCode /></p>
             {q.code && <CodeBlock code={q.code} lang={q.lang} />}
             <ul className="list-plain stack-s small">
@@ -415,7 +423,7 @@ function ExamResult({ result, onClose }) {
                 return (
                   <li key={k} className={isKey ? 'review-opt key' : 'review-opt mine'}>
                     <strong>{LETTERS[k]}.</strong> <Rich text={o} autoCode />
-                    <span className="review-tag">{isKey && mine ? ' ✓ your answer, correct' : isKey ? ' ✓ correct' : ' ✗ your answer'}</span>
+                    <span className="review-tag"> <Icon name={isKey ? 'check' : 'close'} />{isKey && mine ? ' your answer, correct' : isKey ? ' correct' : ' your answer'}</span>
                     {!isKey && q.wrong?.[k] && <div className="muted">Why not: <Rich text={q.wrong[k]} autoCode /></div>}
                   </li>
                 );

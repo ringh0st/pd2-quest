@@ -2,15 +2,15 @@
 import { seeded } from './random.js';
 
 export const QUEST_POOL = [
-  { id: 'answer10', text: 'Answer 10 questions', emoji: '✍️', stat: 'answered', goal: 10 },
-  { id: 'answer20', text: 'Answer 20 questions', emoji: '📝', stat: 'answered', goal: 20 },
-  { id: 'right8', text: 'Get 8 answers right', emoji: '✅', stat: 'right', goal: 8 },
-  { id: 'combo5', text: 'Hit a 5× combo', emoji: '🔥', stat: 'bestCombo', goal: 5 },
-  { id: 'lesson1', text: 'Finish a lesson (new or replay)', emoji: '📖', stat: 'lessons', goal: 1 },
-  { id: 'lesson2', text: 'Finish 2 lessons', emoji: '📚', stat: 'lessons', goal: 2 },
-  { id: 'cards8', text: 'Review 8 flashcards', emoji: '🃏', stat: 'cards', goal: 8 },
-  { id: 'stars3', text: 'Collect 3 stars (replays count)', emoji: '⭐', stat: 'stars', goal: 3 },
-  { id: 'bolt', text: 'Play the Daily Bolt', emoji: '⚡', stat: 'bolt', goal: 1 },
+  { id: 'answer10', text: 'Answer 10 questions', icon: 'pen', stat: 'answered', goal: 10 },
+  { id: 'answer20', text: 'Answer 20 questions', icon: 'checklist', stat: 'answered', goal: 20 },
+  { id: 'right8', text: 'Get 8 answers right', icon: 'ok', stat: 'right', goal: 8 },
+  { id: 'combo5', text: 'Hit a 5× combo', icon: 'flame', stat: 'bestCombo', goal: 5 },
+  { id: 'lesson1', text: 'Finish a lesson (new or replay)', icon: 'book', stat: 'lessons', goal: 1 },
+  { id: 'lesson2', text: 'Finish 2 lessons', icon: 'library', stat: 'lessons', goal: 2 },
+  { id: 'cards8', text: 'Review 8 flashcards', icon: 'cards', stat: 'cards', goal: 8 },
+  { id: 'stars3', text: 'Collect 3 stars (replays count)', icon: 'star', stat: 'stars', goal: 3 },
+  { id: 'bolt', text: 'Play the Daily Bolt', icon: 'bolt', stat: 'bolt', goal: 1 },
 ];
 
 export function questsFor(dayKey) {

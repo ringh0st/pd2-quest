@@ -50,7 +50,7 @@ const seed = (scale, font) => ({
           await page.waitForTimeout(150);
           const m = await page.evaluate(() => [document.documentElement.scrollWidth, document.documentElement.clientWidth]);
           if (m[0] > m[1] + 1) bad.push(`${w}px A×${scale} ${font} exam q${k + 1}: ${m[0]}>${m[1]}`);
-          await page.getByRole('button', { name: 'Next →' }).click();
+          await page.getByRole('button', { name: 'Next', exact: true }).click();
         }
         await ctx.close();
       }

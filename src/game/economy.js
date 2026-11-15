@@ -1,4 +1,4 @@
-// Coins 🪙: earned by playing, spent on cosmetics and a few capped helpers. No real money, no loot boxes.
+// Coins: earned by playing, spent on cosmetics and a few capped helpers. No real money, no loot boxes.
 
 export const COINS = {
   perNewStar: 10,       // only stars you didn't have before
@@ -12,21 +12,21 @@ export const COINS = {
 };
 
 export const HELPERS = {
-  fifty: { id: 'fifty', name: '50/50', emoji: '✂️', price: 40, max: 5, about: 'Removes two wrong answers from one question.' },
-  hint: { id: 'hint', name: 'Hint', emoji: '💡', price: 30, max: 5, about: 'Shows a clue from the lesson.' },
-  heart: { id: 'heart', name: 'Extra heart', emoji: '❤️', price: 60, max: 3, about: 'Start a Boss or Hard level with one more heart.' },
+  fifty: { id: 'fifty', name: '50/50', icon: 'scissors', price: 40, max: 5, about: 'Removes two wrong answers from one question.' },
+  hint: { id: 'hint', name: 'Hint', icon: 'idea', price: 30, max: 5, about: 'Shows a clue from the lesson.' },
+  heart: { id: 'heart', name: 'Extra heart', icon: 'heart', price: 60, max: 3, about: 'Start a Boss or Hard level with one more heart.' },
 };
 
 // Outfits are drawn as vector parts on Zap (src/components/game/Zap.jsx). `slot` says where they sit
 // (head: on the bolt's top edge, eyes: over the eyes) and `look` is the screen-reader description.
 export const OUTFITS = [
-  { id: 'cap', name: 'Dev cap', emoji: '🧢', price: 60, slot: 'head', look: 'a teal baseball cap' },
-  { id: 'shades', name: 'Deploy shades', emoji: '🕶️', price: 90, slot: 'eyes', look: 'dark sunglasses' },
-  { id: 'top', name: 'Fancy top hat', emoji: '🎩', price: 120, slot: 'head', look: 'a tall black top hat' },
-  { id: 'grad', name: 'Grad cap', emoji: '🎓', price: 150, slot: 'head', look: 'a graduation cap with a gold tassel' },
-  { id: 'cowboy', name: 'Bug wrangler', emoji: '🤠', price: 180, slot: 'head', look: 'a brown cowboy hat' },
-  { id: 'party', name: 'Party hat', emoji: '🥳', price: 200, slot: 'head', look: 'a spotty party hat' },
-  { id: 'crown', name: 'PD2 crown', emoji: '👑', price: 400, slot: 'head', look: 'a gold crown with gems' },
+  { id: 'cap', name: 'Dev cap', price: 60, slot: 'head', look: 'a teal baseball cap' },
+  { id: 'shades', name: 'Deploy shades', price: 90, slot: 'eyes', look: 'dark sunglasses' },
+  { id: 'top', name: 'Fancy top hat', price: 120, slot: 'head', look: 'a tall black top hat' },
+  { id: 'grad', name: 'Grad cap', price: 150, slot: 'head', look: 'a graduation cap with a gold tassel' },
+  { id: 'cowboy', name: 'Bug wrangler', price: 180, slot: 'head', look: 'a brown cowboy hat' },
+  { id: 'party', name: 'Party hat', price: 200, slot: 'head', look: 'a spotty party hat' },
+  { id: 'crown', name: 'PD2 crown', price: 400, slot: 'head', look: 'a gold crown with gems' },
 ];
 
 // Accent themes: every pair checked for WCAG AA (on-primary ≥4.5:1 on primary, primary ≥3:1 on bg).
@@ -38,11 +38,13 @@ export const THEMES = [
   { id: 'gold', name: 'Gold rush', price: 300, light: ['#7A5200', '#523700', '#FFFFFF', '#FBEFD2'], dark: ['#FFC94D', '#A8771A', '#14111C', '#352A12'] },
 ];
 
+// Confetti styles: `icon` names the style for the Icon system; the vector pieces (shape and colours
+// per style) live in src/components/Confetti.jsx (CONFETTI_STYLES) and are shared with the shop preview.
 export const CONFETTI = [
-  { id: 'classic', name: 'Classic', price: 0, sample: '🎊' },
-  { id: 'stars', name: 'Star shower', price: 100, sample: '⭐' },
-  { id: 'bolts', name: 'Lightning', price: 120, sample: '⚡' },
-  { id: 'hearts', name: 'Hearts', price: 120, sample: '💖' },
+  { id: 'classic', name: 'Classic', price: 0, icon: 'party' },
+  { id: 'stars', name: 'Star shower', price: 100, icon: 'star' },
+  { id: 'bolts', name: 'Lightning', price: 120, icon: 'bolt' },
+  { id: 'hearts', name: 'Hearts', price: 120, icon: 'heart' },
 ];
 
 export function canBuy(coins, item, owned = []) {
