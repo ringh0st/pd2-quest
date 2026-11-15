@@ -16,6 +16,7 @@ export const DEFAULT_SETTINGS = {
   motion: 'system',       // system | full | reduced
   sound: true,
   music: true,           // soft background music in study screens (needs sound on)
+  codeWrap: true,        // code blocks wrap long lines (the Wrap/Scroll button switches it everywhere)
   haptics: true,
   font: 'atkinson',       // atkinson | lexend
   textScale: 1,           // 0.9 .. 1.3
