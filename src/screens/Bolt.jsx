@@ -17,18 +17,20 @@ import { HeroArt } from '../components/art/HeroArt.jsx';
 import { totalLessons } from '../state/selectors.js';
 import { sfx } from '../audio/sfx.js';
 import { useHoldCelebrations } from '../hooks/useFocusMode.js';
-import { useStudyMusic } from '../hooks/useStudyMusic.js';
+import { useStudyScreen } from '../hooks/useStudyScreen.js';
+import { BreakCard } from '../components/BreakCard.jsx';
 
 /** Same 5 for everyone today: 2 warm-ups from the first worlds, then 3 from anywhere, easiest first. */
 export function boltQuestions(day) {
   const rand = seeded('bolt-' + day);
-  const warm = shuffle(allQuestions.filter((q) => ['fund', 'auto'].includes(q.section) && (q.difficulty ?? 2) <= 2), rand).slice(0, 2);
-  const rest = shuffle(allQuestions.filter((q) => !warm.includes(q)), rand).slice(0, 3);
+  const pool = allQuestions.filter((q) => !q.mockOnly); // mock-only questions stay fresh for mocks
+  const warm = shuffle(pool.filter((q) => ['fund', 'auto'].includes(q.section) && (q.difficulty ?? 2) <= 2), rand).slice(0, 2);
+  const rest = shuffle(pool.filter((q) => !warm.includes(q)), rand).slice(0, 3);
   return [...warm, ...rest.sort((a, b) => (a.difficulty ?? 2) - (b.difficulty ?? 2))];
 }
 
 export function Bolt() {
-  useStudyMusic();
+  useStudyScreen();
   const today = dayKey();
   const bolt = useStore((s) => s.bolt);
   const questions = useMemo(() => boltQuestions(today), [today]);
@@ -91,6 +93,7 @@ export function Bolt() {
             <Stars count={stars} size={40} animateIn={!result.replay || !!result.coins} />
             <p className="ic-label"><strong>{result.right}/5</strong> right{result.right === 5 && <span className="ic-ok"><Icon name="target" label="Perfect" /></span>}</p>
             {result.coins > 0 ? <span className="chip gold"><Icon name="coin" /> +{result.coins}<span className="sr-only"> coins</span></span> : <p className="small muted">Today’s coins collected. New Bolt tomorrow!</p>}
+            <BreakCard />
             <button className="btn primary block" autoFocus onClick={() => go('/')}>Back home</button>
             <button className="btn block" onClick={() => setPhase('run')}>Replay for fun</button>
           </>

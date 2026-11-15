@@ -77,6 +77,8 @@ export function Me() {
         <p className="small muted">Any study keeps your streak. Freezes cover missed days automatically. You earn one every 7 days.</p>
       </section>
 
+      <CalibrationCard calibration={s.calibration} />
+
       <section className="card stack" aria-label="Mastery by section">
         <div className="spread"><strong className="ic-label"><span className="ic-gold"><Icon name="brain" /></span>Memory strength</strong><strong>{ready}%</strong></div>
         {sections.map((sec) => {
@@ -130,5 +132,28 @@ export function Me() {
         <a className="btn" href="#/settings" onClick={() => sfx.tap()}><Icon name="settings" /> Settings</a>
       </nav>
     </main>
+  );
+}
+
+/** "When you're sure, you're right X%": from the Check · Sure / Check · Guessing taps in practice. */
+function CalibrationCard({ calibration = {} }) {
+  const { sureRight = 0, sureWrong = 0, guessRight = 0, guessWrong = 0 } = calibration;
+  const sure = sureRight + sureWrong;
+  const guess = guessRight + guessWrong;
+  if (sure + guess < 5) return null;
+  const pct = (a, n) => (n ? Math.round((100 * a) / n) : null);
+  const sureP = pct(sureRight, sure);
+  const guessP = pct(guessRight, guess);
+  const tip = sureP == null ? null
+    : sureP >= 90 ? 'Your "sure" is trustworthy. Keep going!'
+    : sureP >= 75 ? 'Mostly right when sure. The misses you were sure about are the gold: reread their whys.'
+    : 'You often feel sure but miss. Slow down on those topics and read the explanations closely.';
+  return (
+    <section className="card stack-s" aria-labelledby="cal-title">
+      <strong id="cal-title" className="ic-label"><span className="ic-gold"><Icon name="target" /></span>How well you know what you know</strong>
+      <div className="spread small"><span>When you were <strong>sure</strong></span><strong>{sureP == null ? '–' : `${sureP}% right`} <span className="muted">({sure})</span></strong></div>
+      <div className="spread small"><span>When you were <strong>guessing</strong></span><strong>{guessP == null ? '–' : `${guessP}% right`} <span className="muted">({guess})</span></strong></div>
+      {tip && <p className="small muted">{tip}</p>}
+    </section>
   );
 }

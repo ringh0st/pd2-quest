@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { Suspense, lazy, useCallback, useEffect, useRef, useState } from 'react';
 import { MotionConfig } from 'motion/react';
 import { useRoute, go } from './hooks/useRoute.js';
 import { useStore } from './state/store.js';
@@ -14,24 +14,28 @@ import { BottomNav } from './components/BottomNav.jsx';
 import { ErrorBoundary } from './components/ErrorBoundary.jsx';
 import { SplashScreen } from './components/splash/SplashScreen.jsx';
 import { Home } from './screens/Home.jsx';
-import { WorldMap } from './screens/WorldMap.jsx';
-import { World } from './screens/World.jsx';
+// Secondary screens load when first opened (smaller start-up); the service worker caches them for offline use.
+const screen = (load, name) => lazy(() => load().then((m) => ({ default: m[name] })));
+const WorldMap = screen(() => import('./screens/WorldMap.jsx'), 'WorldMap');
+const World = screen(() => import('./screens/World.jsx'), 'World');
+const Shop = screen(() => import('./screens/Shop.jsx'), 'Shop');
+const Bolt = screen(() => import('./screens/Bolt.jsx'), 'Bolt');
+const Cards = screen(() => import('./screens/Cards.jsx'), 'Cards');
+const Exam = screen(() => import('./screens/Exam.jsx'), 'Exam');
+const Me = screen(() => import('./screens/Me.jsx'), 'Me');
+const Settings = screen(() => import('./screens/Settings.jsx'), 'Settings');
+const Resources = screen(() => import('./screens/Resources.jsx'), 'Resources');
+const Placement = screen(() => import('./screens/Placement.jsx'), 'Placement');
+const Plan = screen(() => import('./screens/Plan.jsx'), 'Plan');
 import { Play } from './screens/Play.jsx';
-import { Shop } from './screens/Shop.jsx';
-import { Bolt } from './screens/Bolt.jsx';
 import { THEMES } from './game/economy.js';
 import { Lesson } from './screens/Lesson.jsx';
 import { Sprint } from './screens/Sprint.jsx';
-import { Cards } from './screens/Cards.jsx';
-import { Exam } from './screens/Exam.jsx';
-import { Me } from './screens/Me.jsx';
-import { Settings } from './screens/Settings.jsx';
-import { Resources } from './screens/Resources.jsx';
 import { Onboarding } from './screens/Onboarding.jsx';
-import { Placement } from './screens/Placement.jsx';
-import { Plan } from './screens/Plan.jsx';
 import { scrollToTop } from './lib/scroller.js';
 import { setMusicSettings } from './audio/music.js';
+import { setSplashUp } from './lib/updates.js';
+import { UpdateBanner } from './components/UpdateBanner.jsx';
 
 const FOCUS_ROUTES = /^\/(lesson|sprint|welcome|play|bolt|placement)/;
 
@@ -132,17 +136,22 @@ export default function App() {
     setSplash(false);
     document.getElementById('boot-splash')?.remove();
   }, []);
-  useEffect(() => { if (!splash) document.getElementById('boot-splash')?.remove(); }, [splash]);
+  useEffect(() => { if (!splash) document.getElementById('boot-splash')?.remove(); setSplashUp(splash); }, [splash]);
 
   return (
     <MotionConfig reducedMotion={reduced ? 'always' : 'never'}>
       <FeedbackProvider>
         <a href="#main" className="sr-only skip-link">Skip to content</a>
         <div className="app">
-          <ErrorBoundary key={route.path}><Screen route={route} /></ErrorBoundary>
+          <ErrorBoundary key={route.path}>
+            <Suspense fallback={<main className="screen" id="main" aria-busy="true"><p className="sr-only">Loading…</p></main>}>
+              <Screen route={route} />
+            </Suspense>
+          </ErrorBoundary>
         </div>
         {!focus && onboarded && <BottomNav path={route.path} dueCards={dueCardCount(cards)} />}
         <CelebrationLayer />
+        {!splash && <UpdateBanner />}
         {splash && <SplashScreen onDone={hideSplash} />}
       </FeedbackProvider>
     </MotionConfig>

@@ -9,7 +9,7 @@ export const TEST_OUT_SIZE = 4;
 export function placementQuestions(section, seed = 'placement') {
   const rand = seeded(`${seed}-${section.id}`);
   return section.lessons.map((l) => {
-    const qs = section.questions.filter((q) => q.lesson === l.id);
+    const qs = section.questions.filter((q) => q.lesson === l.id && !q.mockOnly);
     const pick = (d) => shuffle(qs.filter((q) => (q.difficulty ?? 2) === d), rand)[0];
     return pick(2) || pick(3) || qs[0];
   }).filter(Boolean);
@@ -17,7 +17,7 @@ export function placementQuestions(section, seed = 'placement') {
 
 /** A lesson test-out: its check questions first, topped up with medium/hard ones from the same lesson. */
 export function testOutQuestions(section, lesson, rand = Math.random) {
-  const own = section.questions.filter((q) => q.lesson === lesson.id);
+  const own = section.questions.filter((q) => q.lesson === lesson.id && !q.mockOnly);
   const check = lesson.check.map((id) => own.find((q) => q.id === id)).filter(Boolean);
   const extra = shuffle(own.filter((q) => !lesson.check.includes(q.id) && (q.difficulty ?? 2) >= 2), rand);
   return [...check, ...extra].slice(0, TEST_OUT_SIZE);

@@ -12,6 +12,7 @@ import { ErrorBoundary } from './components/ErrorBoundary.jsx';
 import { initInstallCapture } from './lib/install.js';
 import { startReminderLoop } from './lib/reminders.js';
 import { unlockAudioOnFirstGesture } from './audio/audioContext.js';
+import { initUpdates } from './lib/updates.js';
 
 // Ask the browser to keep our saved progress (Safari may clear site data that isn't installed).
 navigator.storage?.persist?.().catch(() => {});
@@ -22,6 +23,7 @@ root.dataset.input = window.matchMedia?.('(hover: none)').matches ? 'touch' : 'm
 window.addEventListener('pointerdown', (e) => { root.dataset.input = e.pointerType === 'mouse' ? 'mouse' : 'touch'; }, true);
 window.addEventListener('keydown', (e) => { if (['Tab', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Enter', ' '].includes(e.key)) root.dataset.input = 'key'; }, true);
 
+initUpdates(); // apply new versions behind the splash, or offer them with a banner
 unlockAudioOnFirstGesture(); // iPhone needs a tap before any sound
 initInstallCapture(); // catch the browser's install prompt early
 startReminderLoop(); // only does anything if the learner turned phone reminders on

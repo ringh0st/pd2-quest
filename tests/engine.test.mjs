@@ -167,3 +167,13 @@ test('every named sound and vibration runs safely without audio support', async 
   for (const [name, fn] of Object.entries(sfx)) assert.doesNotThrow(() => fn(2), name);
   for (const s of ['light', 'medium', 'soft', 'double', 'success', 'celebrate']) assert.doesNotThrow(() => haptic(s), s);
 });
+
+test('mock-only questions stay out of practice until seen, and mocks use them first', () => {
+  const qs = Array.from({ length: 20 }, (_, i) => ({ id: 'm' + i, difficulty: 3, answer: [0], mockOnly: i < 5 }));
+  const secs = [{ id: 'm', weight: 100, questions: qs }];
+  for (let k = 0; k < 20; k++) assert.ok(buildSprint(secs, {}, { count: 10 }).every((q) => !q.mockOnly));
+  const seen = { m0: { seen: 1, box: 1, due: 0, right: 0, wrong: 1 } };
+  assert.ok(buildSprint(secs, seen, { count: 20 }).some((q) => q.id === 'm0')); // met in a mock: can be reviewed
+  const mock = buildExam(secs, { count: 5 });
+  assert.ok(mock.every((q) => q.mockOnly), mock.map((q) => q.id).join());
+});

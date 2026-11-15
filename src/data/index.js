@@ -12,6 +12,18 @@ export { exam };
 // Lookup tables have no prototype, so ids from the URL like "constructor" never match.
 const table = (entries) => Object.assign(Object.create(null), Object.fromEntries(entries));
 
+/**
+ * About one in five medium/hard questions is kept for mock exams only (never a lesson's own check
+ * question), so a mock can always show questions you have never seen: a more honest readiness score.
+ * Deterministic by id, so it is stable across devices and updates.
+ */
+export function isMockOnly(q, checkIds) {
+  if ((q.difficulty ?? 2) < 2 || checkIds.has(q.id)) return false;
+  let h = 2166136261;
+  for (let i = 0; i < q.id.length; i++) { h ^= q.id.charCodeAt(i); h = Math.imul(h, 16777619); }
+  return (h >>> 0) % 5 === 0;
+}
+
 export const sections = ORDER
   .map((id) => {
     const data = files[`./${id}.json`];
@@ -23,7 +35,7 @@ export const sections = ORDER
       objectives: meta.objectives ?? [],
       short: SHORT[id],
       accent: `var(${ACCENT[id]})`,
-      questions: data.questions.map((q) => ({ ...q, section: id })),
+      questions: data.questions.map((q) => ({ ...q, section: id, mockOnly: isMockOnly(q, new Set(data.lessons.flatMap((l) => l.check))) })),
       flashcards: data.flashcards.map((f) => ({ ...f, section: id })),
     };
   })

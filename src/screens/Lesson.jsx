@@ -18,7 +18,8 @@ import { WinScreen } from '../components/game/WinScreen.jsx';
 import { ParkIt } from '../components/ParkIt.jsx';
 import { Icon } from '../components/icons/Icon.jsx';
 import { saveRun, loadRun, clearRun, questionsFor } from '../state/runSession.js';
-import { useStudyMusic } from '../hooks/useStudyMusic.js';
+import { useStudyScreen } from '../hooks/useStudyScreen.js';
+import { SpeakButton } from '../components/SpeakButton.jsx';
 
 const KIND_LABEL = {
   text: '', code: 'Code', list: '',
@@ -36,7 +37,7 @@ function cardLabel(card) {
 }
 
 export function Lesson({ id }) {
-  useStudyMusic();
+  useStudyScreen();
   const lesson = lessonById[id];
   // Pick up where you left off: the card you were on, or the quick check mid-way.
   const [saved] = useState(() => (lesson ? loadRun(lesson.id) : null));
@@ -143,6 +144,12 @@ export function Lesson({ id }) {
             onDragEnd={(_, info) => { if (info.offset.x < -70) move(1); else if (info.offset.x > 70) move(-1); }}
           >
             {cardLabel(card).label && <div className="kind">{cardLabel(card).label}</div>}
+            <div className="lesson-card-tools">
+              <SpeakButton
+                label="Read this card aloud"
+                text={[card.title, card.body, ...(card.items ?? []), card.type === 'code' ? 'There is a code example on this card.' : ''].filter(Boolean).join('. ')}
+              />
+            </div>
             {cardLabel(card).title && <h2>{cardLabel(card).title}</h2>}
             {card.body && card.type !== 'code' && <p><Rich text={card.body} /></p>}
             {card.type === 'list' && <ul>{card.items.map((it, k) => <li key={k}><Rich text={it} /></li>)}</ul>}

@@ -14,7 +14,10 @@ export function shuffle(arr, rand = Math.random) {
 export function buildSprint(sections, items, { count = 5, sectionId = null, minDifficulty = 1, now = Date.now(), rand = Math.random } = {}) {
   const pool = sections
     .filter((s) => !sectionId || s.id === sectionId)
-    .flatMap((s) => s.questions.filter((q) => (q.difficulty ?? 2) >= minDifficulty).map((q) => ({ q, weight: s.weight })));
+    .flatMap((s) => s.questions
+      // mock-only questions stay out of practice until you have met them in a mock
+      .filter((q) => (q.difficulty ?? 2) >= minDifficulty && (!q.mockOnly || items[q.id]?.seen))
+      .map((q) => ({ q, weight: s.weight })));
 
   const due = pool.filter(({ q }) => isDue(items[q.id], now));
   const shaky = pool.filter(({ q }) => items[q.id]?.seen && !isDue(items[q.id], now) && items[q.id].box <= 2);
@@ -73,9 +76,10 @@ export function buildExam(sections, { count = 60, rand = Math.random, hardOnly =
       // Real PD2 items are mostly long scenarios: ~60% exam-hard, the rest mixed.
       // Fresh questions still come first; the hard share applies within them.
       const fresh = (q) => !seenCount(q);
-      const hFresh = shuffle(hard.filter(fresh), rand);
+      const mockFirst = (list) => [...list.filter((q) => q.mockOnly), ...list.filter((q) => !q.mockOnly)];
+      const hFresh = mockFirst(shuffle(hard.filter(fresh), rand));
       const k = Math.min(hFresh.length, Math.round(n * hardShare));
-      const restFresh = shuffle([...hFresh.slice(k), ...other.filter(fresh)], rand);
+      const restFresh = mockFirst(shuffle([...hFresh.slice(k), ...other.filter(fresh)], rand));
       pool = [...hFresh.slice(0, k), ...restFresh, ...ordered(s.questions.filter((q) => !fresh(q)))];
     }
     out.push(...pool.slice(0, Math.max(0, n)));

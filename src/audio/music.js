@@ -1,7 +1,7 @@
 // Quiet background study music, made on the fly (no files): a slow, warm pad under a few sparse
 // music-box notes that wander a pentatonic scale, so it never repeats exactly and never gets busy.
 // Kept far below the sound effects; fades in and out; pauses while the app is hidden.
-// Plays only while a study screen asks for it (`useStudyMusic`) and both Sound effects and Music are on.
+// Plays only while a study screen asks for it (`useStudyScreen`) and both Sound effects and Music are on.
 import { audio } from './audioContext.js';
 
 const VOLUME = 0.05;

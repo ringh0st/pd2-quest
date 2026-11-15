@@ -7,6 +7,7 @@ import { sfx } from '../audio/sfx.js';
 import { haptic } from '../audio/haptics.js';
 import { useReducedMotion } from '../hooks/useMotionPrefs.js';
 import { Icon } from './icons/Icon.jsx';
+import { SpeakButton } from './SpeakButton.jsx';
 
 const LETTERS = 'ABCDEF';
 
@@ -38,7 +39,13 @@ export function QuestionView({ question, chosen, onToggle, revealed, nudge, shak
           Choose {question.answer.length} answers{!revealed && chosen.length ? ` · ${chosen.length}/${question.answer.length} picked` : ''}
         </div>
       )}
-      <h2 className="question" id={`q-${question.id}`}><Rich text={cleanQuestion(question.q)} autoCode /></h2>
+      <div className="q-head">
+        <h2 className="question" id={`q-${question.id}`}><Rich text={cleanQuestion(question.q)} autoCode /></h2>
+        <SpeakButton
+          label="Read the question and answers aloud"
+          text={[cleanQuestion(question.q), question.code ? 'There is a code example.' : '', ...question.options.map((o, i) => `${LETTERS[i]}. ${o}.`)].join(' ')}
+        />
+      </div>
       {question.code && <CodeBlock code={question.code} lang={question.lang} />}
       <motion.div
         className="options"

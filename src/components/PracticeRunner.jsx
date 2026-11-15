@@ -19,6 +19,7 @@ import { fiftyFifty, HELPERS } from '../game/economy.js';
 import { lessonById } from '../data/index.js';
 import { zapSays } from '../game/mascot.js';
 import { Icon } from './icons/Icon.jsx';
+import { SpeakButton } from './SpeakButton.jsx';
 
 const PRAISE = ['Nailed it!', 'Yes!', 'Boom!', 'Correct!', 'Sharp!', 'You got it!', 'Brain on fire!', 'Clean!'];
 const KIND = ['Not quite', 'Not yet', 'Good try'];
@@ -92,12 +93,15 @@ export function PracticeRunner({ questions, onDone, onExit, topRight, requeue = 
     setChosen((c) => (multi ? (c.includes(i) ? c.filter((x) => x !== i) : [...c, i]) : [i]));
   };
 
-  const check = () => {
+  const askConfidence = useStore((st) => st.settings.askConfidence !== false);
+  const [confidence, setConfidence] = useState(null); // 'sure' | 'guess' for the question just checked
+  const check = (conf = null) => {
+    setConfidence(conf);
     const right = isCorrect(q, chosen);
     const firstTime = right && !(getState().items[q.id]?.right > 0);
     const nextCombo = right ? combo + 1 : 0;
     const xp = answerXp(right, nextCombo, firstTime);
-    answerQuestion(q.id, right, nextCombo, Date.now(), { helped: hidden.length > 0 || !!hint });
+    answerQuestion(q.id, right, nextCombo, Date.now(), { helped: hidden.length > 0 || !!hint, confidence: conf });
     earn(xp);
 
     const s = stats.current;
@@ -236,12 +240,22 @@ export function PracticeRunner({ questions, onDone, onExit, topRight, requeue = 
           >
             <div className="verdict">
               <Zap mood={lastRight ? 'cheer' : 'sad'} size={38} bounce={false} label="" />
-              <span><span className="verdict-mark"><Icon name={lastRight ? 'ok' : 'wrong'} /></span> {verdict}<br /><span className="small muted" style={{ fontWeight: 400 }}>{zapLine}</span></span>
+              <span className="grow"><span className="verdict-mark"><Icon name={lastRight ? 'ok' : 'wrong'} /></span> {verdict}<br /><span className="small muted" style={{ fontWeight: 400 }}>{zapLine}</span></span>
+              <SpeakButton
+                label="Read the explanation aloud"
+                text={`${lastRight ? 'Correct.' : `Not quite. The answer is ${q.answer.map((i) => `${'ABCDEF'[i]}, ${q.options[i]}`).join(' and ')}.`} ${q.explain}`}
+              />
             </div>
             {!lastRight && (
               <p className="right-answer"><strong>Answer{need > 1 ? 's' : ''}:</strong>{' '}
                 {q.answer.map((i) => <span key={i} className="answer-pill">{'ABCDEF'[i]}. <Rich text={q.options[i]} autoCode /></span>)}
               </p>
+            )}
+            {confidence === 'sure' && !lastRight && (
+              <p className="conf-note"><Icon name="warn" /> You were sure, so this one is worth a closer look. It comes back soon.</p>
+            )}
+            {confidence === 'guess' && lastRight && (
+              <p className="conf-note"><Icon name="info" /> Nice guess! It comes back tomorrow to make it stick.</p>
             )}
             <p><Rich text={q.explain} autoCode /></p>
             {q.wrong?.some(Boolean) && (
@@ -264,9 +278,20 @@ export function PracticeRunner({ questions, onDone, onExit, topRight, requeue = 
       <div style={{ flex: 1 }} />
       <div className="sticky-actions">
         {!revealed ? (
-          <button className="btn primary block big" disabled={chosen.length !== need} onClick={check}>
-            {multi && chosen.length < need ? `Pick ${need - chosen.length} more` : 'Check'}
-          </button>
+          multi && chosen.length < need ? (
+            <button className="btn primary block big" disabled>{`Pick ${need - chosen.length} more`}</button>
+          ) : askConfidence ? (
+            <div className="check-pair" role="group" aria-label="Check your answer: how sure are you?">
+              <button className="btn big check-guess" disabled={chosen.length !== need} onClick={() => check('guess')}>
+                <span className="check-k">Check</span><span className="check-v"><Icon name="info" /> Guessing</span>
+              </button>
+              <button className="btn primary big check-sure" disabled={chosen.length !== need} onClick={() => check('sure')}>
+                <span className="check-k">Check</span><span className="check-v"><Icon name="check" /> Sure</span>
+              </button>
+            </div>
+          ) : (
+            <button className="btn primary block big" disabled={chosen.length !== need} onClick={() => check()}>Check</button>
+          )
         ) : (
           <button className="btn primary block big" onClick={next} autoFocus>
             {heartsLeft === 0 ? 'See result' : idx + 1 >= queue.length ? <>Finish <Icon name="party" /></> : <>Continue <Icon name="next" /></>}

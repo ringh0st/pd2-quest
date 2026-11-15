@@ -47,6 +47,14 @@ export function Settings() {
       <section className="card stack">
         <h2 className="pq-head"><span className="pq-tile"><Icon name="target" /></span><span>Goals</span></h2>
         <Segmented label="Daily goal (XP)" value={s.dailyGoal} onChange={(v) => setState({ dailyGoal: v })} options={[[20, '20'], [50, '50'], [100, '100'], [150, '150']]} />
+        <Switch
+          label="Ask how sure I am" hint="Check · Sure or Check · Guessing in practice. Lucky guesses come back sooner."
+          checked={st.askConfidence !== false} onChange={(v) => updateSettings({ askConfidence: v })}
+        />
+        <Segmented
+          label="Break reminders" value={st.breakMinutes ?? 30} onChange={(v) => updateSettings({ breakMinutes: v })}
+          options={[[0, 'Off'], [25, '25 min'], [30, '30 min'], [45, '45 min']]}
+        />
         <Segmented label="Questions per round" value={st.sprintSize} onChange={(v) => updateSettings({ sprintSize: v })} options={[[3, '3'], [5, '5'], [8, '8'], [10, '10']]} />
         <Segmented label="Focus timer (minutes)" value={st.focusMinutes} onChange={(v) => updateSettings({ focusMinutes: v })} options={[[0, 'Off'], [5, '5'], [10, '10'], [15, '15'], [25, '25']]} />
         <div className="field">

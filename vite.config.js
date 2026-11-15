@@ -13,7 +13,8 @@ export default defineConfig({
   plugins: [
     react(),
     VitePWA({
-      registerType: 'autoUpdate',
+      registerType: 'prompt',
+      injectRegister: false, // registered in src/lib/updates.js (update during the splash, else a banner)
       includeAssets: ['icon.svg', 'apple-touch-icon.png'],
       manifest: {
         name: 'PD2 Quest: Salesforce PD2 Prep',

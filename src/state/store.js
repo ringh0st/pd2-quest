@@ -16,7 +16,9 @@ export const DEFAULT_SETTINGS = {
   motion: 'system',       // system | full | reduced
   sound: true,
   music: true,           // soft background music in study screens (needs sound on)
-  codeWrap: true,        // code blocks wrap long lines (the Wrap/Scroll button switches it everywhere)
+  codeWrap: true,
+  askConfidence: true,
+  breakMinutes: 30,      // suggest a short break after this much active study (0 = off)   // Check · Sure / Check · Guessing in practice (not in mock exams)        // code blocks wrap long lines (the Wrap/Scroll button switches it everywhere)
   haptics: true,
   font: 'atkinson',       // atkinson | lexend
   textScale: 1,           // 0.9 .. 1.3
@@ -56,6 +58,7 @@ export function initialState() {
     boltCount: 0,
     parkedEver: 0,
     placements: {},       // world id -> { score 0..1, at }
+    calibration: { sureRight: 0, sureWrong: 0, guessRight: 0, guessWrong: 0 }, // how often 'sure' is right
     events: [],           // transient celebrations queue (not persisted)
   };
 }
@@ -99,6 +102,7 @@ export function sanitizeState(saved) {
     stars: cleanMap(s.stars, 'number'),
     badges: cleanMap(s.badges, 'number'),
     placements: cleanMap(s.placements, 'object'),
+    calibration: sameShape(s.calibration, base.calibration),
     history: cleanMap(s.history, 'number'),
     streak: sameShape(s.streak, base.streak),
     today: sameShape(s.today, base.today),
@@ -222,13 +226,20 @@ export function bumpDay(patch) {
   setState((s) => bump(s, patch));
 }
 
-export function answerQuestion(id, correct, combo, now = Date.now(), { helped = false } = {}) {
+/**
+ * Record an answer. `confidence` ('sure' | 'guess' | null): a right guess counts as practice but isn't
+ * promoted (it comes back tomorrow); calibration counts how often "sure" answers are right.
+ */
+export function answerQuestion(id, correct, combo, now = Date.now(), { helped = false, confidence = null } = {}) {
   setState((prev) => {
     const s = bump(prev, { answered: 1, right: correct ? 1 : 0, bestCombo: combo });
     const r = rollDay(s, now);
+    const cal = { ...initialState().calibration, ...s.calibration };
+    if (confidence) cal[`${confidence}${correct ? 'Right' : 'Wrong'}`] += 1;
     return {
       ...s,
-      items: { ...s.items, [id]: review(s.items[id] || newItem(), correct ? 'good' : 'again', now, { noPromote: helped }) },
+      calibration: cal,
+      items: { ...s.items, [id]: review(s.items[id] || newItem(), correct ? 'good' : 'again', now, { noPromote: helped || confidence === 'guess' }) },
       today: { ...r.today, answered: r.today.answered + 1 },
       bestCombo: Math.max(s.bestCombo, combo),
     };

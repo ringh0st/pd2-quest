@@ -20,7 +20,7 @@ import { sfx } from '../audio/sfx.js';
 import { haptic } from '../audio/haptics.js';
 import { Icon } from '../components/icons/Icon.jsx';
 import { BossArt } from '../components/art/BossArt.jsx';
-import { useStudyMusic } from '../hooks/useStudyMusic.js';
+import { useStudyScreen } from '../hooks/useStudyScreen.js';
 
 /** A row of filled hearts, read out as a number. */
 function HeartRow({ count }) {
@@ -38,7 +38,8 @@ function ThreeStars() {
 
 function pickQuestions(level) {
   const sec = sectionById[level.world];
-  const pool = level.kind === 'hard' ? sec.questions.filter((q) => level.covers.includes(q.lesson)) : sec.questions;
+  const practice = sec.questions.filter((q) => !q.mockOnly); // mock-only questions stay fresh for mocks
+  const pool = level.kind === 'hard' ? practice.filter((q) => level.covers.includes(q.lesson)) : practice;
   // Version-specific items (e.g. "API version 67.0") never open a fight.
   const late = (q) => /API version \d/.test(q.q);
   const ramp = (list) => list.sort((a, b) => (a.difficulty ?? 2) - (b.difficulty ?? 2) || late(a) - late(b));
@@ -54,7 +55,7 @@ function pickQuestions(level) {
 }
 
 export function Play({ id }) {
-  useStudyMusic();
+  useStudyScreen();
   const level = levelById[id];
   const [phase, setPhase] = useState('intro');
   const [run, setRun] = useState(0);

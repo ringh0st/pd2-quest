@@ -15,7 +15,8 @@ import { isDue } from '../engine/srs.js';
 import { useHoldCelebrations } from '../hooks/useFocusMode.js';
 import { Icon } from '../components/icons/Icon.jsx';
 import { HeroArt } from '../components/art/HeroArt.jsx';
-import { useStudyMusic } from '../hooks/useStudyMusic.js';
+import { useStudyScreen } from '../hooks/useStudyScreen.js';
+import { BreakCard } from '../components/BreakCard.jsx';
 
 function makeRound(query) {
   const s = getState();
@@ -28,7 +29,7 @@ function makeRound(query) {
 }
 
 export function Sprint({ query }) {
-  useStudyMusic();
+  useStudyScreen();
   const [round, setRound] = useState(() => ({ n: 1, questions: makeRound(query) }));
   const [result, setResult] = useState(null);
   const [totals, setTotals] = useState({ right: 0, answered: 0, xp: 0 });
@@ -112,6 +113,7 @@ export function Sprint({ query }) {
           {result.sprintOver
             ? <p className="muted small">Sprint complete! A 3-minute break helps it stick. <Icon name="coffee" /></p>
             : <p className="muted small">{perfect ? 'Your brain is on fire. One more?' : 'Missed ones will come back soon. That’s how it sticks.'}</p>}
+          <BreakCard />
           <button className="btn primary block big" autoFocus onClick={again}>Keep going <Icon name="bolt" fill /></button>
           <button className="btn block" onClick={() => go('/')}>Done for now <Icon name="check" /></button>
         </motion.div>

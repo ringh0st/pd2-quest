@@ -20,7 +20,7 @@ const ok = (name, pass, info = '') => results.push(`${pass ? 'PASS' : 'FAIL'}  $
   const n = await page.locator('.choose-n').count() ? Number((await page.locator('.choose-n').innerText()).match(/\d/)[0]) : 1;
   // choose options until we get a wrong answer or give up
   for (let k = 0; k < n; k++) await opts.nth(k).click();
-  await page.getByRole('button', { name: 'Check' }).click();
+  await page.getByRole('button', { name: /^Check( Sure)?$/ }).first().click();
   await page.waitForTimeout(700);
   const vis = await page.evaluate(() => {
     const f = document.querySelector('.feedback'); const s = document.querySelector('.sticky-actions');
@@ -112,7 +112,7 @@ const ok = (name, pass, info = '') => results.push(`${pass ? 'PASS' : 'FAIL'}  $
       const multi = await page.locator('.choose-n').count();
       await page.locator('.option').nth(0).click();
       if (multi) await page.locator('.option').nth(1).click();
-      await page.getByRole('button', { name: 'Check' }).click();
+      await page.getByRole('button', { name: /^Check( Sure)?$/ }).first().click();
       await page.getByRole('button', { name: /Continue|See result|Finish/ }).click();
       await page.waitForTimeout(200);
     }
@@ -135,7 +135,7 @@ const ok = (name, pass, info = '') => results.push(`${pass ? 'PASS' : 'FAIL'}  $
     const multi = await page.locator('.choose-n').count();
     await page.locator('.option').nth(0).click();
     if (multi) await page.locator('.option').nth(1).click();
-    await page.getByRole('button', { name: 'Check' }).click();
+    await page.getByRole('button', { name: /^Check( Sure)?$/ }).first().click();
     await page.getByRole('button', { name: /Continue|Finish/ }).click();
     await page.waitForTimeout(120);
   }

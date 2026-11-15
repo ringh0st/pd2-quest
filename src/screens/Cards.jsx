@@ -15,7 +15,7 @@ import { haptic } from '../audio/haptics.js';
 import { useFocusMode } from '../hooks/useFocusMode.js';
 import { ParkIt } from '../components/ParkIt.jsx';
 import { Icon } from '../components/icons/Icon.jsx';
-import { useStudyMusic } from '../hooks/useStudyMusic.js';
+import { useStudyScreen } from '../hooks/useStudyScreen.js';
 
 const NEW_PER_DECK = 10;
 
@@ -28,7 +28,7 @@ function buildDeck(sectionId) {
 }
 
 export function Cards({ query }) {
-  useStudyMusic();
+  useStudyScreen();
   const [sectionId, setSectionId] = useState(query.section || '');
   const [deck, setDeck] = useState(null);
   const [i, setI] = useState(0);

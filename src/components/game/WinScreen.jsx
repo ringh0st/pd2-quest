@@ -13,6 +13,7 @@ import { routeForLevel } from '../../state/gameSelectors.js';
 import { useHoldCelebrations } from '../../hooks/useFocusMode.js';
 import { Icon } from '../icons/Icon.jsx';
 import { BossArt } from '../art/BossArt.jsx';
+import { BreakCard } from '../BreakCard.jsx';
 
 export function WinScreen({ kind, title, stars, prevStars = 0, coins = 0, xp = 0, detail, next, worldId, onRetry }) {
   const reduced = useReducedMotion();
@@ -68,6 +69,7 @@ export function WinScreen({ kind, title, stars, prevStars = 0, coins = 0, xp = 0
           </motion.div>
         )}
         <p className="muted small">“{zapSays(!won ? 'lose' : stars === 3 ? 'win' : 'okwin')}”</p>
+        <BreakCard />
         {won && next && (
           <button className="btn primary block big" autoFocus onClick={() => { sfx.tap(); go(routeForLevel(next)); }}>
             {next.kind === 'boss' ? <BossArt world={next.world} size={30} /> : next.kind === 'hard' ? <Icon name="skull" /> : null}
