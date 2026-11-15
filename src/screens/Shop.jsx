@@ -190,7 +190,7 @@ function TryOn({ entry, s, titleId, onBuy, onUse, onTakeOff, onCancel }) {
 
       <div className="stack-s">
         {needsBuying && short === 0 && (
-          <button className="btn gold block" data-autofocus onClick={() => onBuy(entry)} aria-label={`Buy ${entry.name} for ${entry.price} coins`}>Buy for 🪙 {entry.price}</button>
+          <button className="btn gold block" onClick={() => onBuy(entry)} aria-label={`Buy ${entry.name} for ${entry.price} coins`}>Buy for 🪙 {entry.price}</button>
         )}
         {needsBuying && short > 0 && (
           <>
@@ -208,7 +208,7 @@ function TryOn({ entry, s, titleId, onBuy, onUse, onTakeOff, onCancel }) {
             {entry.kind === 'outfit' && <button className="btn block" onClick={onTakeOff}>Take it off</button>}
           </>
         )}
-        <button className="btn ghost block" onClick={onCancel}>{needsBuying ? 'Cancel' : 'Close'}</button>
+        <button className="btn ghost block" data-autofocus={needsBuying || undefined} onClick={onCancel}>{needsBuying ? 'Cancel' : 'Close'}</button>
       </div>
     </div>
   );
