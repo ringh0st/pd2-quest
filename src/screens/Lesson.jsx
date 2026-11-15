@@ -129,7 +129,7 @@ export function Lesson({ id }) {
         <AnimatePresence mode="popLayout" initial={false} custom={dir}>
           <motion.article
             key={i}
-            className={`lesson-card ${card.type}`}
+            className={`lesson-card is-${card.type}`}
             custom={dir}
             initial={reduced ? { opacity: 0 } : { opacity: 0, x: dir * 80, rotate: dir * 3 }}
             animate={{ opacity: 1, x: 0, rotate: 0 }}
