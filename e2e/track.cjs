@@ -23,4 +23,10 @@ function launchForTrack(chromium, options) {
   });
 }
 
-module.exports = { TRACK, launchForTrack };
+/** The current exam's section ids, in order (from src/lib/track.js, the app's own list). */
+async function trackSections() {
+  const { TRACKS } = await import('../src/lib/track.js');
+  return TRACKS[TRACK].sections;
+}
+
+module.exports = { TRACK, launchForTrack, trackSections };

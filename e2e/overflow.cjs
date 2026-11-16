@@ -1,16 +1,19 @@
 // Overflow sweep: every route at 320px × text sizes × fonts; reports pages wider than the screen.
 // Run against `npm run preview` (E2E_BASE overrides the URL).
 const { chromium } = require('playwright');
-const { launchForTrack } = require('./track.cjs');
+const { launchForTrack, trackSections } = require('./track.cjs');
 const BASE = process.env.E2E_BASE || 'http://localhost:4173/';
-const ROUTES = ['', 'map', 'world/fund', 'world/auto', 'world/test', 'lesson/fund-1', 'play/fund-hard-1', 'play/fund-boss', 'sprint', 'sprint?section=auto', 'sprint?section=test', 'sprint?hard=1', 'cards', 'exam', 'me', 'settings', 'resources', 'shop', 'bolt', 'plan', 'placement/fund', 'placement/lesson/fund-2'];
-const seed = (scale, font) => ({
+// Routes for the current exam (TRACK=pd1|pd2|pab): its first world in depth, two more worlds and their sprints.
+const routesFor = ([first, second, , fourth]) => ['', 'map', `world/${first}`, `world/${second}`, `world/${fourth}`, `lesson/${first}-1`, `play/${first}-hard-1`, `play/${first}-boss`, 'sprint', `sprint?section=${second}`, `sprint?section=${fourth}`, 'sprint?hard=1', 'cards', 'exam', 'me', 'settings', 'resources', 'shop', 'bolt', 'plan', `placement/${first}`, `placement/lesson/${first}-2`];
+const seed = (scale, font, sections) => ({
   v: 1, onboarded: true, name: 'Sam', xp: 900, coins: 400, stars: { 'fund-1': 3, 'fund-2': 2, 'fund-3': 3, 'fund-hard-1': 2 }, lessons: {},
   settings: { theme: 'light', calm: false, motion: 'reduced', sound: false, haptics: false, font, textScale: scale, sprintSize: 5, focusMinutes: 10 },
-  unlockedWorlds: ['auto', 'ui', 'test', 'perf'], helpers: { fifty: 2, hint: 2, heart: 1 },
+  unlockedWorlds: sections.slice(1), helpers: { fifty: 2, hint: 2, heart: 1 },
 });
 (async () => {
   const browser = await launchForTrack(chromium);
+  const sections = await trackSections();
+  const ROUTES = routesFor(sections);
   const bad = [];
   for (const [w, h] of [[320, 568], [390, 844]]) {
     for (const scale of [1, 1.15, 1.3]) {
@@ -20,7 +23,7 @@ const seed = (scale, font) => ({
         const page = await ctx.newPage();
         page.on('pageerror', (e) => bad.push(`JS error ${w}/${scale}/${font}: ${e.message}`));
         await page.goto(BASE);
-        await page.evaluate((s) => localStorage.setItem('pd2quest.v1', JSON.stringify(s)), seed(scale, font));
+        await page.evaluate((s) => localStorage.setItem('pd2quest.v1', JSON.stringify(s)), seed(scale, font, sections));
         for (const r of ROUTES) {
           // sprints vary by question: load each a few times
           const tries = r.startsWith('sprint') || r.startsWith('play') ? 3 : 1;
