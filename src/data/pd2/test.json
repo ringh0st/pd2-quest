@@ -255,7 +255,7 @@
         {
           "type": "text",
           "title": "`System.runAs(user)`",
-          "body": "`System.runAs` enforces **record sharing** only. It does **not** enforce **object or field permissions** for code in system mode (code that ignores the user's permissions). To test permissions, the code must check them: `WITH USER_MODE`, `AccessLevel.USER_MODE` or `stripInaccessible`."
+          "body": "`System.runAs` always applies the user's **record sharing**. Their **object and field permissions** count only where the code checks them. Code in system mode (code that ignores the user's permissions) still reads every field. To test permissions, use `WITH USER_MODE`, `AccessLevel.USER_MODE` or `stripInaccessible`."
         },
         {
           "type": "list",
@@ -286,7 +286,7 @@
         {
           "type": "tip",
           "title": "Remember it",
-          "body": "`runAs` = \"**Records, not Rights.**\" It changes whose records you can see, not what you're allowed to do."
+          "body": "`runAs` = \"**Records, not Rights.**\" Sharing always applies. Rights count only where the code checks them."
         }
       ],
       "terms": [
@@ -297,7 +297,7 @@
             "System.runAs()",
             "runAs"
           ],
-          "say": "Lets a test act as another user for a block of code. It only changes which records you can see, not what you're allowed to do."
+          "say": "Lets a test act as another user for a block of code. Their record sharing always applies. Their permissions count only where the code checks them."
         },
         {
           "term": "assert",
@@ -1096,7 +1096,7 @@
     {
       "id": "test-f11",
       "front": "What does `System.runAs` enforce?",
-      "back": "Only the user's record sharing. It doesn't enforce object or field permissions for code running in system mode."
+      "back": "Always the user's record sharing. Object and field permissions count only where the code checks them (user mode, `stripInaccessible`)."
     },
     {
       "id": "test-f12",
