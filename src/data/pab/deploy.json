@@ -1,0 +1,2277 @@
+{
+  "id": "deploy",
+  "title": "App Deployment",
+  "weight": 13,
+  "summary": "Build in a sandbox, test, then move it safely: sandboxes, change sets, packages and a release plan that never surprises your users.",
+  "lessons": [
+    {
+      "id": "deploy-1",
+      "title": "The life of a change",
+      "minutes": 3,
+      "objective": "Given a set of business requirements, recommend a solution for managing the application lifecycle, including sandbox types.",
+      "cards": [
+        {
+          "type": "text",
+          "title": "In plain words",
+          "body": "The **application lifecycle** is the path every change takes: plan, build, test, release, then repeat. You never build straight in **production**, the live org your users work in. You build in a **sandbox**, a safe copy of production. Then you test it there and move it over."
+        },
+        {
+          "type": "tip",
+          "title": "Think of it like…",
+          "body": "A restaurant tries a new dish in a test kitchen first. Diners never taste the experiments. Only the finished recipe goes on the menu. Where it stops: the test kitchen is a separate org, so you need a deployment tool to carry the recipe across."
+        },
+        {
+          "type": "list",
+          "title": "A classic path",
+          "items": [
+            "Build alone in a **Developer sandbox** (no production data)",
+            "Combine everyone's work in a Developer Pro sandbox",
+            "Run **user acceptance testing** (UAT: real users try it) in a Partial Copy sandbox",
+            "Stage the release and train users in a Full sandbox",
+            "Release to production, watch it, and start again"
+          ]
+        },
+        {
+          "type": "text",
+          "title": "Change set development",
+          "body": "In **change set development**, production is the **source of truth**: the one place that holds the real, current version. Admins move setup changes between connected orgs with **change sets**, all with clicks. It suits small teams and simple orgs."
+        },
+        {
+          "type": "text",
+          "title": "Source-driven development",
+          "body": "In the **org development model**, **source control** is the source of truth. Source control is a shared history of every change, like Git. Teams deploy from it with a **manifest**, a file named `package.xml` that lists what to move. It suits bigger teams who work on the same things."
+        },
+        {
+          "type": "text",
+          "title": "DevOps Center",
+          "body": "**DevOps Center** (now renamed Lifecycle Center) gives admins source control with clicks. It tracks each change, manages the branches for you and moves work through the release path. No command line needed. Pick it when a team wants source control but works mostly with clicks."
+        },
+        {
+          "type": "trap",
+          "body": "\"Just fix it in production, it's faster\" is never the exam answer. Untested changes can break live work. And the next release from a sandbox can quietly overwrite that fix, because the sandbox never had it."
+        },
+        {
+          "type": "tip",
+          "title": "Remember it",
+          "body": "**Build in a box, test in a box, ship to the house.** Few admins and simple org: change sets. Big team, same files: source control."
+        }
+      ],
+      "check": [
+        "deploy-q1",
+        "deploy-q2",
+        "deploy-x1"
+      ],
+      "terms": [
+        {
+          "term": "application lifecycle",
+          "say": "The steps every change goes through: plan it, build it, test it, release it. Then you start again with the next change."
+        },
+        {
+          "term": "production",
+          "say": "The real, live org where your users do their daily work. Mistakes here hurt real people, so you don't experiment here.",
+          "match": [
+            "production org"
+          ]
+        },
+        {
+          "term": "sandbox",
+          "say": "A safe copy of your production org. You can build and break things there, and production never feels it."
+        },
+        {
+          "term": "Developer sandbox",
+          "say": "The smallest sandbox. It copies your setup but none of your records, so you can build something by yourself."
+        },
+        {
+          "term": "user acceptance testing",
+          "say": "Real users try the new feature before it goes live. They check it really does what they asked for.",
+          "match": [
+            "UAT"
+          ]
+        },
+        {
+          "term": "source of truth",
+          "say": "The one place everyone trusts to hold the real, latest version of something."
+        },
+        {
+          "term": "change sets",
+          "say": "Bundles of setup changes you send between your production org and its sandboxes, using only clicks.",
+          "match": [
+            "change set"
+          ]
+        },
+        {
+          "term": "source control",
+          "say": "A shared history of every change to your files, like Git. You can see who changed what and go back to older versions."
+        },
+        {
+          "term": "manifest",
+          "say": "A list of the parts you want to deploy. In Salesforce it's a file called package.xml.",
+          "match": [
+            "package.xml"
+          ]
+        },
+        {
+          "term": "DevOps Center",
+          "say": "A Salesforce tool for moving changes with clicks while it keeps them in source control for you. Its newer name is Lifecycle Center."
+        }
+      ]
+    },
+    {
+      "id": "deploy-2",
+      "title": "Sandbox types: which one when",
+      "minutes": 3,
+      "objective": "Given a set of business requirements, recommend a solution for managing the application lifecycle, including sandbox types.",
+      "cards": [
+        {
+          "type": "text",
+          "title": "In plain words",
+          "body": "A **sandbox** is a copy of your production org in a separate place. It's fully isolated: nothing you do there touches production. There are four types. They differ in how much data they copy, how much they can hold, and how often you can **refresh** them (copy production again)."
+        },
+        {
+          "type": "tip",
+          "title": "Think of it like…",
+          "body": "Practice rooms for a band. A tiny room for one player and a bigger one for a few. Then a hall with part of the audience, and a full copy of the concert stage. Where it stops: a refresh wipes the room and rebuilds it from today's production."
+        },
+        {
+          "type": "text",
+          "title": "Metadata or data?",
+          "body": "**Metadata** is your setup: objects, fields, page layouts, flows. **Data** means the records, like accounts and cases. Every sandbox copies all of the metadata. Only Partial Copy and Full sandboxes also copy records."
+        },
+        {
+          "type": "list",
+          "title": "The four types",
+          "items": [
+            "**Developer sandbox**: metadata only, 200 MB data, refresh every 1 day",
+            "**Developer Pro sandbox**: metadata only, 1 GB data, refresh every 1 day",
+            "**Partial Copy sandbox**: metadata plus sample data, 5 GB data, refresh every 5 days",
+            "**Full sandbox**: metadata and all data, same storage as production, refresh every 29 days"
+          ]
+        },
+        {
+          "type": "text",
+          "title": "Sandbox templates",
+          "body": "A **sandbox template** picks which objects' records get copied. A Partial Copy sandbox **requires** one. A Full sandbox can use one to copy less, or copy everything. Developer and Developer Pro sandboxes can't use templates, because they copy no records."
+        },
+        {
+          "type": "text",
+          "title": "Which one when",
+          "body": "Build and test alone: Developer or Developer Pro. Test with realistic sample records, or run UAT: Partial Copy. Load testing, final staging and training: Full, the only type with all of production's data."
+        },
+        {
+          "type": "trap",
+          "body": "Need every production record? Only a **Full sandbox** has them. Partial Copy holds a sample picked by a template. And Developer Pro has more storage than Developer, but still copies no records at all."
+        },
+        {
+          "type": "tip",
+          "title": "Remember it",
+          "body": "**1, 1, 5, 29.** Developer, Developer Pro, Partial Copy, Full. The more a sandbox copies, the longer you wait between refreshes."
+        }
+      ],
+      "check": [
+        "deploy-q7",
+        "deploy-q8",
+        "deploy-x3"
+      ],
+      "terms": [
+        {
+          "term": "sandbox",
+          "say": "A safe copy of your production org. You can build and break things there, and production never feels it."
+        },
+        {
+          "term": "refresh",
+          "say": "Throwing away a sandbox's contents and copying production into it again, so it matches today's setup."
+        },
+        {
+          "term": "Metadata",
+          "say": "Your setup: the objects, fields, layouts and flows. It's the shape of your org, not the records inside it."
+        },
+        {
+          "term": "Data",
+          "say": "The records people save, like each account, contact or case."
+        },
+        {
+          "term": "Developer sandbox",
+          "say": "The smallest sandbox: setup only, no records, 200 MB of space. You can refresh it every day."
+        },
+        {
+          "term": "Developer Pro sandbox",
+          "say": "Like a Developer sandbox, but with 1 GB of space. Still setup only, no records. Refresh every day."
+        },
+        {
+          "term": "Partial Copy sandbox",
+          "say": "A sandbox with your setup plus a sample of records picked by a template. You can refresh it every 5 days.",
+          "match": [
+            "Partial Copy"
+          ]
+        },
+        {
+          "term": "Full sandbox",
+          "say": "A complete copy of production: all setup and all records. You can refresh it only every 29 days.",
+          "match": [
+            "Full"
+          ]
+        },
+        {
+          "term": "sandbox template",
+          "say": "A list of which objects' records to copy into a sandbox. Partial Copy needs one; Full can use one."
+        }
+      ]
+    },
+    {
+      "id": "deploy-3",
+      "title": "Change sets: send and receive",
+      "minutes": 3,
+      "objective": "Given a use case, demonstrate knowledge, viability, and troubleshooting when using change sets.",
+      "cards": [
+        {
+          "type": "text",
+          "title": "In plain words",
+          "body": "A **change set** is a bundle of setup changes that you send from one org to another, all with clicks. You build an **outbound change set** in the org that has the changes and upload it. The other org sees it as an **inbound change set** and deploys it."
+        },
+        {
+          "type": "tip",
+          "title": "Think of it like…",
+          "body": "Mail between branches of one company. One branch packs a box and sends it. The other branch receives it and unpacks it. You can't mail it to a different company. Where it stops: the box holds setup only, never records."
+        },
+        {
+          "type": "text",
+          "title": "Deployment connections",
+          "body": "Change sets only travel between orgs tied to the same production org: production and its sandboxes. A **deployment connection** links each pair automatically. But an admin in the **target org** (the one receiving) must authorize it to accept inbound changes first. That keeps changes on an approved path."
+        },
+        {
+          "type": "list",
+          "title": "The steps",
+          "items": [
+            "In the target org: authorize the connection for inbound changes",
+            "In the source org: create the outbound change set and add components",
+            "Add the dependent components it needs",
+            "Upload it to the target org",
+            "In the target org: validate it (optional), then deploy"
+          ]
+        },
+        {
+          "type": "text",
+          "title": "What travels",
+          "body": "Change sets move **metadata** only: custom objects, fields, page layouts, flows, permission sets and more. They never move records. Load records with a data tool such as **Data Loader**. An inbound change set **deploys as a whole**: you can't pick single components."
+        },
+        {
+          "type": "text",
+          "title": "Who can do it",
+          "body": "To build and send: the **Create and Upload Change Sets** permission. To receive: **Deploy Change Sets** plus **Modify Metadata Through Metadata API Functions**. Different steps, different permissions."
+        },
+        {
+          "type": "trap",
+          "body": "Two separate companies, each with its own production org? Change sets can't connect them, even with authorization. They only link orgs from the same production org. Use a package or the Metadata API instead."
+        },
+        {
+          "type": "tip",
+          "title": "Remember it",
+          "body": "**Pack it out, unpack it in.** Outbound in the source, inbound in the target. The target says yes first."
+        }
+      ],
+      "check": [
+        "deploy-q12",
+        "deploy-q13",
+        "deploy-x6"
+      ],
+      "terms": [
+        {
+          "term": "change set",
+          "say": "A box of setup changes, sent with clicks from one org to a related org, like a sandbox to production."
+        },
+        {
+          "term": "outbound change set",
+          "say": "The change set you build and send from the org that has the new changes."
+        },
+        {
+          "term": "inbound change set",
+          "say": "A change set that arrived in your org. You can check it, test it and then deploy it."
+        },
+        {
+          "term": "deployment connection",
+          "say": "The link between two related orgs that lets change sets travel. Each org must allow incoming changes."
+        },
+        {
+          "term": "target org",
+          "say": "The org that receives the changes.",
+          "match": [
+            "target"
+          ]
+        },
+        {
+          "term": "metadata",
+          "say": "Your setup: objects, fields, layouts and flows. It's the shape of your org, not the records inside it."
+        },
+        {
+          "term": "Data Loader",
+          "say": "A Salesforce tool for loading, updating or exporting lots of records at once."
+        },
+        {
+          "term": "deploys as a whole",
+          "say": "You deploy every part of the change set together. You can't pick only some parts."
+        },
+        {
+          "term": "Deploy Change Sets",
+          "say": "A permission that lets a user deploy change sets that arrived in their org."
+        }
+      ]
+    },
+    {
+      "id": "deploy-4",
+      "title": "When change sets fail",
+      "minutes": 3,
+      "objective": "Given a use case, demonstrate knowledge, viability, and troubleshooting when using change sets.",
+      "cards": [
+        {
+          "type": "text",
+          "title": "In plain words",
+          "body": "Most change set problems come from two things. Something the change needs is missing. Or you asked a change set to do something it simply can't. Learn both lists and you can fix almost any failure."
+        },
+        {
+          "type": "tip",
+          "title": "Think of it like…",
+          "body": "Flat-pack furniture. If the box is missing the screws, you can't build the shelf. Where it stops: Salesforce checks the whole box first. If one part fails, it builds nothing at all."
+        },
+        {
+          "type": "text",
+          "title": "Dependencies",
+          "body": "Add every **dependent component** the target doesn't already have: a flow's fields, a layout's fields, a field's object. Watch out: adding only a custom object deploys it **without its fields**. It doesn't fail, it's just empty. Use View/Add Dependencies to find what's missing."
+        },
+        {
+          "type": "text",
+          "title": "All or nothing",
+          "body": "A deployment is **one transaction**. If any part fails, the whole thing **rolls back** and nothing changes. Once it succeeds, it can't be rolled back. To undo it, make a new change. A failed deployment also doesn't restart by itself."
+        },
+        {
+          "type": "list",
+          "title": "What change sets can't do",
+          "items": [
+            "Delete or rename components (do it by hand in the target)",
+            "Include **standard objects**, so no action overrides on them",
+            "Change after upload: **clone** it, add parts, upload again",
+            "Hold more than **10,000 files** (split it up)",
+            "Move records"
+          ]
+        },
+        {
+          "type": "text",
+          "title": "Validate and tests",
+          "body": "**Validate** is a test deployment: you see the errors without changing anything. The org is locked for setup changes while it runs, but people can still read and save records. Deploying Apex to production runs all **local tests** and needs 75% **code coverage**. Sandbox targets don't run tests automatically."
+        },
+        {
+          "type": "trap",
+          "body": "\"Open the uploaded change set and add the missing field.\" You can't. An uploaded change set is locked. Clone it, add the field and upload the clone."
+        },
+        {
+          "type": "tip",
+          "title": "Remember it",
+          "body": "**Clone to add, delete by hand, validate before you land.**"
+        }
+      ],
+      "check": [
+        "deploy-q17",
+        "deploy-q18",
+        "deploy-x9"
+      ],
+      "terms": [
+        {
+          "term": "dependent component",
+          "say": "A part that another part needs to work. A flow that uses a field needs that field to arrive too.",
+          "match": [
+            "dependent components"
+          ]
+        },
+        {
+          "term": "one transaction",
+          "say": "One all-or-nothing step. Either every part succeeds, or none of it counts."
+        },
+        {
+          "term": "rolls back",
+          "say": "Undoes everything from a failed step, so the org looks exactly as it did before.",
+          "match": [
+            "rolled back"
+          ]
+        },
+        {
+          "term": "standard objects",
+          "say": "Objects Salesforce gives you, like Account or Case. Change sets can't carry the object itself."
+        },
+        {
+          "term": "clone",
+          "say": "Make a copy of the change set that you can still edit, then add what was missing."
+        },
+        {
+          "term": "10,000 files",
+          "say": "The most files one change set can hold. Bigger releases must be split into more change sets."
+        },
+        {
+          "term": "Validate",
+          "say": "A practice deployment. It shows what would fail, but changes nothing in the org."
+        },
+        {
+          "term": "local tests",
+          "say": "The Apex tests that live in your org, not the ones inside installed managed packages."
+        },
+        {
+          "term": "code coverage",
+          "say": "How much of your Apex code the tests actually run. Production needs at least 75%."
+        }
+      ]
+    },
+    {
+      "id": "deploy-5",
+      "title": "Unmanaged vs managed packages",
+      "minutes": 3,
+      "objective": "Describe the use cases and considerations when using unmanaged and managed packages.",
+      "cards": [
+        {
+          "type": "text",
+          "title": "In plain words",
+          "body": "A **package** is a container of setup parts you can install in another org, even one you have no connection to. That's how AgentExchange apps reach you. AgentExchange is Salesforce's app marketplace, once called AppExchange. The two classic kinds are unmanaged and managed."
+        },
+        {
+          "type": "tip",
+          "title": "Think of it like…",
+          "body": "An unmanaged package is a printed recipe. You can change it any way you like, but the chef can't update your copy. A managed package is a sealed appliance that gets updates from its maker. Where it stops: you can still set up a managed app, like assigning its permission sets."
+        },
+        {
+          "type": "text",
+          "title": "Unmanaged packages",
+          "body": "An **unmanaged package** gives you parts you can edit freely. They **count** against your org's app, tab and object limits. The provider can't upgrade them. To get a new version, you **uninstall** it and install the new one. Good for templates, samples and one-time sharing."
+        },
+        {
+          "type": "text",
+          "title": "Managed packages",
+          "body": "A **managed package** hides its code and metadata: you can't see or change them. The provider can **upgrade** it for you. Its contents **don't count** against your app, tab and object limits. Its parts carry a **namespace prefix**, a unique tag like `acme__`. Most AgentExchange apps are managed."
+        },
+        {
+          "type": "code",
+          "title": "Side by side",
+          "lang": "text",
+          "code": "                   Unmanaged             Managed\nEdit the parts     Yes                   No\nSee the code       Yes                   No\nGet new versions   Uninstall, reinstall  Provider upgrades it\nCounts on limits   Yes                   No",
+          "body": "Read it as: unmanaged is yours to change, managed stays the provider's."
+        },
+        {
+          "type": "trap",
+          "body": "\"We want the vendor's fixes to arrive automatically\" points to managed. \"We need to change the code ourselves\" points to unmanaged. A managed package won't let you edit its code, and an unmanaged one never gets upgrades."
+        },
+        {
+          "type": "tip",
+          "title": "Remember it",
+          "body": "**Managed = Maintained by the maker.** **Unmanaged = yoU maintain it.**"
+        }
+      ],
+      "check": [
+        "deploy-q22",
+        "deploy-q23",
+        "deploy-x13"
+      ],
+      "terms": [
+        {
+          "term": "package",
+          "say": "A box of setup parts, like objects, flows and code, that you can install into another org."
+        },
+        {
+          "term": "AgentExchange",
+          "say": "Salesforce's online store of apps and parts you can install. It used to be called AppExchange.",
+          "match": [
+            "AppExchange"
+          ]
+        },
+        {
+          "term": "unmanaged package",
+          "say": "A package whose parts become yours to edit. It never gets upgrades from the maker.",
+          "match": [
+            "unmanaged"
+          ]
+        },
+        {
+          "term": "uninstall",
+          "say": "Remove an installed package and its parts from your org."
+        },
+        {
+          "term": "managed package",
+          "say": "A package the maker keeps control of. You can't change its code, and the maker can send upgrades.",
+          "match": [
+            "managed"
+          ]
+        },
+        {
+          "term": "upgrade",
+          "say": "Install a newer version over the old one, keeping your org's setup of it."
+        },
+        {
+          "term": "limits",
+          "say": "Caps on how many apps, tabs and objects your org may have."
+        },
+        {
+          "term": "namespace prefix",
+          "say": "A short, unique tag added to a managed package's parts, like acme__. It shows who they belong to.",
+          "match": [
+            "acme__"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "deploy-6",
+      "title": "Unlocked and 2GP packages; installing",
+      "minutes": 3,
+      "objective": "Describe the use cases and considerations when using unmanaged and managed packages.",
+      "cards": [
+        {
+          "type": "text",
+          "title": "In plain words",
+          "body": "Newer packages are built from source control with the **Salesforce CLI**, a command-line tool. An **unlocked package** is for your own company's apps. A **second-generation managed package** (2GP) is for apps you sell or share with other companies."
+        },
+        {
+          "type": "tip",
+          "title": "Think of it like…",
+          "body": "An unlocked package is your store's own house brand: staff can tweak it on the shelf, but the next delivery replaces the tweaks. A managed 2GP is a sealed brand product shipped to other stores. Where it stops: both get new versions as upgrades."
+        },
+        {
+          "type": "text",
+          "title": "Unlocked packages",
+          "body": "Unlocked packages split your org's setup into tidy modules. Each **version** is a fixed snapshot you can install as an upgrade. Admins **can change** an unlocked package's metadata in production, for example in an emergency. But the next version can overwrite that change, so add it to source control too."
+        },
+        {
+          "type": "text",
+          "title": "Managed 2GP",
+          "body": "For new apps you distribute, Salesforce recommends **2GP** over **first-generation** (1GP) managed packages. 2GP is source-driven and built with the Salesforce CLI. A managed package's **namespace** can't change once it's set."
+        },
+        {
+          "type": "list",
+          "title": "Installing a package",
+          "items": [
+            "Test it first in a sandbox or a **Developer Edition** org, never straight in production",
+            "Choose who gets it: **Admins Only**, All Users or Specific Profiles (unsure? Admins Only)",
+            "If it has Apex, its tests and your org's tests run",
+            "Assign its permission sets to the users who need them"
+          ]
+        },
+        {
+          "type": "trap",
+          "body": "A managed package's **permission set** is almost right, so you edit it? You can't. Permission sets inside a managed package are locked. Clone it, or make your own, and assign that."
+        },
+        {
+          "type": "tip",
+          "title": "Remember it",
+          "body": "**Unlocked = Us. Managed = Market.** Unlocked for your own apps, managed for apps that go out to others."
+        }
+      ],
+      "check": [
+        "deploy-q27",
+        "deploy-q28",
+        "deploy-x16"
+      ],
+      "terms": [
+        {
+          "term": "Salesforce CLI",
+          "say": "A tool you type commands into. Developers use it to build packages and move setup between orgs."
+        },
+        {
+          "term": "unlocked package",
+          "say": "A package for your own company's apps. Admins can still change its parts after it's installed.",
+          "match": [
+            "unlocked packages"
+          ]
+        },
+        {
+          "term": "second-generation managed package",
+          "say": "The newer kind of managed package, built from source control with the Salesforce CLI.",
+          "match": [
+            "2GP"
+          ]
+        },
+        {
+          "term": "version",
+          "say": "One fixed snapshot of a package. A newer version can be installed as an upgrade."
+        },
+        {
+          "term": "first-generation",
+          "say": "The older kind of managed package, built inside a special org. Salesforce suggests 2GP for new apps.",
+          "match": [
+            "1GP"
+          ]
+        },
+        {
+          "term": "namespace",
+          "say": "A short, unique tag on a managed package's parts that shows who made them. It can't change once set."
+        },
+        {
+          "term": "Developer Edition",
+          "say": "A free Salesforce org for building and trying things. It isn't connected to your production org."
+        },
+        {
+          "term": "Admins Only",
+          "say": "An install choice that gives the new package only to admins, so others don't see it before it's ready."
+        },
+        {
+          "term": "permission set",
+          "say": "A bundle of extra access you can give to users, on top of their profile."
+        }
+      ]
+    },
+    {
+      "id": "deploy-7",
+      "title": "Choosing a deployment plan",
+      "minutes": 3,
+      "objective": "Given a scenario, determine the appropriate deployment plan.",
+      "cards": [
+        {
+          "type": "text",
+          "title": "In plain words",
+          "body": "A **deployment plan** is your checklist for getting changes into production safely. It says what goes, which tool moves it, when it moves, and what you must do by hand afterward. A good plan means no surprises on release day."
+        },
+        {
+          "type": "tip",
+          "title": "Think of it like…",
+          "body": "Moving house. You label the boxes, check the truck is big enough, move on a quiet day, then set up the internet by hand. Where it stops: if one box won't fit, the whole move is cancelled, because deployments are all or nothing."
+        },
+        {
+          "type": "list",
+          "title": "A solid plan",
+          "items": [
+            "Build and test in sandboxes, ending with UAT",
+            "Include every dependency, plus profiles or permission sets",
+            "**Validate** first, ahead of the release window",
+            "Deploy in **low-use hours**, away from **maintenance windows**",
+            "Do the **post-deploy steps** by hand: records, deletes, renames",
+            "Tell users and train them"
+          ]
+        },
+        {
+          "type": "text",
+          "title": "Pick the tool",
+          "body": "**Change sets**: simple releases between production and its sandboxes. **Packages**: modular apps, or apps for unrelated orgs. **Salesforce CLI** or the **Metadata API**: source control and scripted, repeatable deployments. **DevOps Center**: source control with clicks."
+        },
+        {
+          "type": "code",
+          "title": "A tiny release plan",
+          "lang": "text",
+          "code": "Release 4.2\n1. Build in Developer sandboxes\n2. UAT in Partial Copy sandbox \"uat\"\n3. Validate change set in production: Wednesday\n4. Deploy: Saturday 7 am (low use)\n5. By hand: delete old field, load new records",
+          "body": "Validate early, deploy when few people work, and list the by-hand jobs."
+        },
+        {
+          "type": "trap",
+          "body": "\"We'll roll it back if something breaks\" isn't a plan. A finished deployment can't be rolled back. Validate first, and keep a fix ready to deploy instead."
+        },
+        {
+          "type": "tip",
+          "title": "Remember it",
+          "body": "**Build, test, validate, deploy, then do the by-hand bits.**"
+        }
+      ],
+      "check": [
+        "deploy-q32",
+        "deploy-q33",
+        "deploy-x20"
+      ],
+      "terms": [
+        {
+          "term": "deployment plan",
+          "say": "A checklist for moving changes into production safely: what moves, how, when, and what to do after."
+        },
+        {
+          "term": "UAT",
+          "say": "User acceptance testing: real users try the change before it goes live.",
+          "match": [
+            "user acceptance testing"
+          ]
+        },
+        {
+          "term": "Validate",
+          "say": "A practice deployment. It shows what would fail, but changes nothing."
+        },
+        {
+          "term": "low-use hours",
+          "say": "Times when few people use the org, like early weekend mornings."
+        },
+        {
+          "term": "maintenance windows",
+          "say": "Planned times when Salesforce updates its systems. Some deployment steps don't work then.",
+          "match": [
+            "maintenance window"
+          ]
+        },
+        {
+          "term": "post-deploy steps",
+          "say": "Jobs you do by hand after a deployment, like loading records or deleting an old field."
+        },
+        {
+          "term": "Packages",
+          "say": "Boxes of setup parts you can install in other orgs, even ones you aren't connected to.",
+          "match": [
+            "package"
+          ]
+        },
+        {
+          "term": "Metadata API",
+          "say": "The way tools talk to Salesforce to read and deploy setup, used by the Salesforce CLI."
+        },
+        {
+          "term": "DevOps Center",
+          "say": "A Salesforce tool for moving changes with clicks while it keeps them in source control. Its newer name is Lifecycle Center."
+        },
+        {
+          "term": "Salesforce CLI",
+          "say": "A tool you type commands into to move setup between orgs and build packages."
+        }
+      ]
+    }
+  ],
+  "flashcards": [
+    {
+      "id": "deploy-f1",
+      "front": "Why don't you build changes directly in production?",
+      "back": "Production is the live org people work in. Untested changes can break their work. Build in a sandbox, test, then deploy."
+    },
+    {
+      "id": "deploy-f2",
+      "front": "What is the source of truth in change set development?",
+      "back": "Production. Changes move between production and its sandboxes with change sets. In the org development model, source control is the source of truth instead."
+    },
+    {
+      "id": "deploy-f3",
+      "front": "What does DevOps Center give an admin team?",
+      "back": "Click-based releases backed by source control. It tracks changes and manages branches for you. It's now called Lifecycle Center."
+    },
+    {
+      "id": "deploy-f4",
+      "front": "What are the refresh intervals of the four sandbox types?",
+      "back": "Developer: 1 day. Developer Pro: 1 day. Partial Copy: 5 days. Full: 29 days."
+    },
+    {
+      "id": "deploy-f5",
+      "front": "Which sandboxes copy records, not just metadata?",
+      "back": "Only Partial Copy (a sample, picked by a required sandbox template) and Full (all data, template optional). Developer and Developer Pro copy metadata only."
+    },
+    {
+      "id": "deploy-f6",
+      "front": "How much data can Developer and Developer Pro sandboxes hold?",
+      "back": "Developer: 200 MB data and 200 MB files. Developer Pro: 1 GB data and 1 GB files. Both copy metadata only."
+    },
+    {
+      "id": "deploy-f7",
+      "front": "Which sandbox fits load testing, staging and training?",
+      "back": "A Full sandbox. It copies all production data and metadata, and has the same storage as production."
+    },
+    {
+      "id": "deploy-f8",
+      "front": "Between which orgs can change sets travel?",
+      "back": "Only orgs tied to the same production org: production and its sandboxes. Never between unrelated orgs."
+    },
+    {
+      "id": "deploy-f9",
+      "front": "Who must authorize a deployment connection?",
+      "back": "An admin in the receiving (target) org, so it accepts inbound changes from that org."
+    },
+    {
+      "id": "deploy-f10",
+      "front": "Can a change set move records?",
+      "back": "No. Change sets move metadata only. Load records with a data tool such as Data Loader."
+    },
+    {
+      "id": "deploy-f11",
+      "front": "Which permissions deploy an inbound change set?",
+      "back": "Deploy Change Sets plus Modify Metadata Through Metadata API Functions. Creating and sending needs Create and Upload Change Sets."
+    },
+    {
+      "id": "deploy-f12",
+      "front": "How do you add a missing part to an uploaded change set?",
+      "back": "You can't edit it. Clone the change set, add the missing component, then upload the clone."
+    },
+    {
+      "id": "deploy-f13",
+      "front": "What happens when one component in a change set fails to deploy?",
+      "back": "Everything rolls back. A deployment is one transaction: all or nothing. A finished deployment can't be rolled back."
+    },
+    {
+      "id": "deploy-f14",
+      "front": "What does Validate do on an inbound change set?",
+      "back": "It runs a test deployment and shows the results, changing nothing. Setup changes are locked while it runs; records can still be edited."
+    },
+    {
+      "id": "deploy-f15",
+      "front": "Which jobs can a change set never do?",
+      "back": "Delete or rename components, include standard objects, move records, or hold more than 10,000 files."
+    },
+    {
+      "id": "deploy-f16",
+      "front": "How do you get a new version of an unmanaged package?",
+      "back": "Uninstall it, then install the new version. The provider can't upgrade it for you."
+    },
+    {
+      "id": "deploy-f17",
+      "front": "Do managed package objects count against your org's limits?",
+      "back": "No. Managed package contents don't count against app, tab and object limits. Unmanaged package contents do."
+    },
+    {
+      "id": "deploy-f18",
+      "front": "Can you edit the code in a managed package?",
+      "back": "No. You can't see or change its code or metadata. The provider owns it and can upgrade it."
+    },
+    {
+      "id": "deploy-f19",
+      "front": "What is an unlocked package for?",
+      "back": "Your own company's apps, built from source control. It's versioned and upgradeable, and admins can still change its metadata in production."
+    },
+    {
+      "id": "deploy-f20",
+      "front": "Which managed package type does Salesforce recommend for new apps?",
+      "back": "Second-generation managed packages (2GP), built with the Salesforce CLI. Their namespace can't change once set."
+    },
+    {
+      "id": "deploy-f21",
+      "front": "What runs when you install a package with Apex?",
+      "back": "The package's tests and all of your org's tests. You can choose to install even if some fail."
+    },
+    {
+      "id": "deploy-f22",
+      "front": "Can you edit a permission set from a managed package?",
+      "back": "No. Clone it, or create your own. Your clones aren't changed by package upgrades."
+    },
+    {
+      "id": "deploy-f23",
+      "front": "When should a big release be deployed?",
+      "back": "In low-use hours, planned around maintenance windows for both production and sandboxes."
+    },
+    {
+      "id": "deploy-f24",
+      "front": "What goes on the by-hand list after a change set deploys?",
+      "back": "Anything change sets can't do: loading records, deleting or renaming components, and other manual setup."
+    },
+    {
+      "id": "deploy-f25",
+      "front": "Which tool fits a team that uses source control and wants scripted deployments?",
+      "back": "The Salesforce CLI with the Metadata API. Change sets are manual and don't use source control."
+    }
+  ],
+  "questions": [
+    {
+      "id": "deploy-q1",
+      "lesson": "deploy-1",
+      "difficulty": 1,
+      "q": "An admin at Harbor Bikes must add a new field and a flow. Users work in the org all day. Where should the admin build and test the change first?",
+      "options": [
+        "In production during low-use hours, so few users notice",
+        "In production, with the field hidden by field-level security",
+        "In a sandbox, then deploy it to production after testing",
+        "In a Developer Edition org, then send it by change set"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "Changes are built and tested in a sandbox, a safe copy of production. Only tested work is deployed to the live org.",
+      "wrong": [
+        "Building in production skips testing, whatever the hour.",
+        "Hiding a field doesn't make an untested flow safe.",
+        "",
+        "A Developer Edition org isn't tied to production, so change sets can't connect them."
+      ],
+      "source": "Trailhead: Org Development Model"
+    },
+    {
+      "id": "deploy-q2",
+      "lesson": "deploy-1",
+      "difficulty": 1,
+      "q": "In the org development model, what job does source control do?",
+      "options": [
+        "It keeps a shared history of every change and is the source of truth",
+        "It copies production records into a sandbox for testing",
+        "It locks production so nobody can make setup changes",
+        "It moves changes between orgs with no other tool needed"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "Source control keeps every change in one shared history. In the org development model it is the source of truth, not production.",
+      "wrong": [
+        "",
+        "Copying records is what a sandbox refresh or template does.",
+        "Source control stores changes. It doesn't lock any org.",
+        "A deployment tool, like the Salesforce CLI, still moves the changes."
+      ],
+      "source": "Trailhead: Org Development Model"
+    },
+    {
+      "id": "deploy-q3",
+      "lesson": "deploy-1",
+      "difficulty": 2,
+      "q": "Northwind Clinics has two admins who make every change with clicks. The org is simple, and they release a few times a year. Which development approach fits best?",
+      "options": [
+        "Package development with second-generation managed packages",
+        "Org development with Git and command-line deployments",
+        "Building straight in production after business hours",
+        "Change set development, with production as the source of truth"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "Change sets fit small, clicks-only teams with simple orgs. Source-driven models pay off for bigger teams working on the same things.",
+      "wrong": [
+        "Managed packages are for apps you distribute to other companies.",
+        "It works, but adds command-line tools this small team doesn't need.",
+        "Building in production skips testing and risks live work.",
+        ""
+      ],
+      "source": "Trailhead: Org Development Model"
+    },
+    {
+      "id": "deploy-q4",
+      "lesson": "deploy-1",
+      "difficulty": 2,
+      "q": "Which two statements describe the org development model? (Choose 2)",
+      "options": [
+        "Changes move between orgs only with change sets",
+        "Source control, not production, is the source of truth",
+        "Production is the source of truth for every change",
+        "Changes are deployed with a manifest such as `package.xml`",
+        "Every change must be shipped as a managed package"
+      ],
+      "answer": [
+        1,
+        3
+      ],
+      "explain": "In the org development model, source control holds the truth. Teams deploy from it with a manifest that lists what to move.",
+      "wrong": [
+        "That describes change set development.",
+        "",
+        "That's also change set development. Here source control holds the truth.",
+        "",
+        "Packages belong to the package development model, and managed ones are for distribution."
+      ],
+      "source": "Trailhead: Org Development Model"
+    },
+    {
+      "id": "deploy-q5",
+      "lesson": "deploy-1",
+      "difficulty": 2,
+      "q": "A team plans this path for every change. Developers need more storage than a Developer sandbox, but no production records. Which sandbox type fits step 2?",
+      "code": "1. Build alone:        Developer sandbox\n2. Combine all work:   ?\n3. UAT:                Partial Copy sandbox\n4. Stage and train:    Full sandbox\n5. Release:            production",
+      "lang": "text",
+      "options": [
+        "Full sandbox",
+        "Developer Pro sandbox",
+        "Partial Copy sandbox",
+        "A second production org"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "Developer Pro sandboxes copy metadata only and hold 1 GB of data. That fits combining everyone's work without production records.",
+      "wrong": [
+        "Full copies all production data, which this step doesn't need, and refreshes only every 29 days.",
+        "",
+        "Partial Copy copies sample production records, which this step doesn't need. The plan uses it for UAT.",
+        "Work is combined in a sandbox, never in another production org."
+      ],
+      "source": "Trailhead: Org Development Model"
+    },
+    {
+      "id": "deploy-x1",
+      "lesson": "deploy-1",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "Lakeside Insurance has five admins and two developers. Changes keep overwriting each other, so the team wants every change tracked in source control. Most admins never use a command line. Which tool fits best?",
+      "options": [
+        "Change sets between the team's sandboxes",
+        "DevOps Center",
+        "The Salesforce CLI with one manifest per admin",
+        "Unmanaged packages built in production"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "DevOps Center gives click-based releases backed by source control. It suits admins who want tracking without a command line. Its newer name is Lifecycle Center.",
+      "wrong": [
+        "Change sets don't use source control, so overwrites stay hidden.",
+        "",
+        "It tracks changes, but needs the command line these admins don't use.",
+        "Unmanaged packages can't be upgraded and don't track changes."
+      ],
+      "source": "Trailhead: Lifecycle Center: Centralize DevOps Change Management"
+    },
+    {
+      "id": "deploy-x2",
+      "lesson": "deploy-1",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "At Pine Ridge Foods, an admin fixed a validation rule straight in production. A week later, a release from the team's sandbox overwrote the fix. Which practice would have prevented this?",
+      "code": "Mon  Admin edits rule in production\n     (sandbox still has the old rule)\nSat  Release deployed from sandbox\n     -> old rule is back",
+      "lang": "text",
+      "options": [
+        "Validating the change set before deploying it",
+        "Deploying every release on a weekend morning",
+        "Assigning the admin a muting permission set",
+        "Making the fix in a sandbox first"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "Every change should follow the same path from sandbox to production. A fix made only in production is missing from the sandbox, so the next release overwrites it.",
+      "wrong": [
+        "Validation checks that the release deploys. It doesn't spot an untracked fix.",
+        "The release time doesn't stop it from overwriting the fix.",
+        "Muting permission sets turn off permissions in a group. They don't protect metadata.",
+        ""
+      ],
+      "source": "Trailhead: Org Development Model"
+    },
+    {
+      "id": "deploy-q6",
+      "lesson": "deploy-1",
+      "difficulty": 2,
+      "q": "Copper Kettle is planning the lifecycle for a new app. Which two steps belong in a sound plan? (Choose 2)",
+      "options": [
+        "Let real users test it in a sandbox before release",
+        "Run user acceptance testing in production, then delete the test records",
+        "Skip sandbox testing for changes made only with clicks",
+        "Build every change in a Full sandbox, since it refreshes daily",
+        "Train users in a sandbox that matches production"
+      ],
+      "answer": [
+        0,
+        4
+      ],
+      "explain": "Test and train in sandboxes before anything reaches production. User acceptance testing and training both happen there.",
+      "wrong": [
+        "",
+        "Testing in production risks real data and live users.",
+        "Click changes can break things too, so they get tested.",
+        "Full sandboxes refresh every 29 days, not daily.",
+        ""
+      ],
+      "source": "Trailhead: Org Development Model"
+    },
+    {
+      "id": "deploy-q7",
+      "lesson": "deploy-2",
+      "difficulty": 1,
+      "q": "Which sandbox type copies all of production's data?",
+      "options": [
+        "Full",
+        "Partial Copy",
+        "Developer Pro",
+        "Developer"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "Only a Full sandbox copies all production data, plus all metadata.",
+      "wrong": [
+        "",
+        "Partial Copy copies only a sample, picked by a sandbox template.",
+        "Developer Pro copies metadata only.",
+        "Developer copies metadata only."
+      ],
+      "source": "Sandbox Licenses and Storage Limits by Type"
+    },
+    {
+      "id": "deploy-q8",
+      "lesson": "deploy-2",
+      "difficulty": 1,
+      "q": "How often can a Developer sandbox be refreshed?",
+      "options": [
+        "Every 5 days",
+        "Every 29 days",
+        "Once a day",
+        "Every 7 days"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "Developer and Developer Pro sandboxes can be refreshed every day.",
+      "wrong": [
+        "5 days is the Partial Copy interval.",
+        "29 days is the Full sandbox interval.",
+        "",
+        "No sandbox type uses a 7-day interval."
+      ],
+      "source": "Sandbox Licenses and Storage Limits by Type"
+    },
+    {
+      "id": "deploy-q9",
+      "lesson": "deploy-2",
+      "difficulty": 2,
+      "q": "Silverline Travel wants to test a new flow with a realistic sample of accounts and opportunities. It has no Full sandbox. What should the admin set up?",
+      "options": [
+        "A Developer Pro sandbox with a template for those objects",
+        "A Developer sandbox that is refreshed every day",
+        "A Partial Copy sandbox with no template, to copy every object",
+        "A Partial Copy sandbox with a template for those objects"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "A Partial Copy sandbox copies a sample of records. A sandbox template picks the objects, and Partial Copy requires one.",
+      "wrong": [
+        "Developer Pro copies metadata only and can't use a template.",
+        "Refreshing a Developer sandbox still copies no records.",
+        "Partial Copy can't be created without a template.",
+        ""
+      ],
+      "source": "Sandbox Licenses and Storage Limits by Type"
+    },
+    {
+      "id": "deploy-q10",
+      "lesson": "deploy-2",
+      "difficulty": 2,
+      "q": "Which two statements about Partial Copy sandboxes are true? (Choose 2)",
+      "options": [
+        "They copy all of production's records",
+        "Their data storage matches production's",
+        "A sandbox template is required",
+        "They can be refreshed every 5 days",
+        "They copy metadata only, never records"
+      ],
+      "answer": [
+        2,
+        3
+      ],
+      "explain": "Partial Copy sandboxes copy metadata plus sample records picked by a required template. They refresh every 5 days and hold 5 GB of data.",
+      "wrong": [
+        "Only a Full sandbox copies all records.",
+        "Partial Copy has 5 GB of data storage. Full matches production.",
+        "",
+        "",
+        "That describes Developer and Developer Pro sandboxes."
+      ],
+      "source": "Sandbox Licenses and Storage Limits by Type"
+    },
+    {
+      "id": "deploy-q11",
+      "lesson": "deploy-2",
+      "difficulty": 2,
+      "q": "A project lead gives the admin these needs for a new sandbox. Which type meets them?",
+      "code": "Purpose:   load testing a new process\nData:      every record in production\nRefresh:   about once a month is fine",
+      "lang": "text",
+      "options": [
+        "Partial Copy sandbox",
+        "Full sandbox",
+        "Developer Pro sandbox",
+        "Developer sandbox"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "Only a Full sandbox copies every production record. Its 29-day refresh fits a monthly cycle.",
+      "wrong": [
+        "Partial Copy copies only a sample of records.",
+        "",
+        "Developer Pro copies no records.",
+        "Developer copies no records."
+      ],
+      "source": "Sandbox Licenses and Storage Limits by Type"
+    },
+    {
+      "id": "deploy-x3",
+      "lesson": "deploy-2",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "At Bluefin Labs, an admin refreshed the team's Partial Copy sandbox on Monday. On Wednesday, a tester asks for another refresh to get the newest production records. What happens?",
+      "options": [
+        "The refresh runs, because Partial Copy refreshes daily",
+        "The refresh runs, but copies only metadata until day 5",
+        "The refresh isn't allowed until 5 days after the last one",
+        "The admin must delete it and create a Full sandbox"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "Each sandbox type has a refresh interval. A Partial Copy sandbox can be refreshed only every 5 days.",
+      "wrong": [
+        "Daily refresh is for Developer and Developer Pro.",
+        "There's no metadata-only refresh of a Partial Copy sandbox.",
+        "",
+        "No new sandbox is needed. The tester just waits until day 5."
+      ],
+      "source": "Sandbox Licenses and Storage Limits by Type"
+    },
+    {
+      "id": "deploy-x4",
+      "lesson": "deploy-2",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A developer at Greenway Energy will build a component alone. She will load about 700 MB of her own test records. She needs no production data. Which is the smallest sandbox type that fits?",
+      "options": [
+        "Developer Pro",
+        "Developer",
+        "Partial Copy",
+        "Full"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "Developer Pro holds 1 GB of data and copies metadata only. 700 MB fits, and no production records come along.",
+      "wrong": [
+        "",
+        "A Developer sandbox holds 200 MB of data, or 400 MB with an upgrade.",
+        "Partial Copy copies production records she doesn't need.",
+        "Full copies all production data and refreshes only every 29 days."
+      ],
+      "source": "Sandbox Licenses and Storage Limits by Type"
+    },
+    {
+      "id": "deploy-x5",
+      "lesson": "deploy-2",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "Maple Bank uses a Full sandbox for staging. Which two statements about it are true? (Choose 2)",
+      "options": [
+        "It can copy all data, or use a template to copy less",
+        "After a refresh, the next one waits 29 days",
+        "Records changed in it also change in production",
+        "It must use a sandbox template to be created",
+        "Its data storage is capped at 5 GB"
+      ],
+      "answer": [
+        0,
+        1
+      ],
+      "explain": "A Full sandbox copies all metadata and data, and a template is optional. It refreshes every 29 days.",
+      "wrong": [
+        "",
+        "",
+        "Sandboxes are isolated. Nothing there touches production.",
+        "Templates are required only for Partial Copy.",
+        "The 5 GB cap is Partial Copy's. Full matches production storage."
+      ],
+      "source": "Sandbox Licenses and Storage Limits by Type"
+    },
+    {
+      "id": "deploy-q12",
+      "lesson": "deploy-3",
+      "difficulty": 1,
+      "q": "What can a change set move from a sandbox to production?",
+      "options": [
+        "Records, such as accounts, contacts and cases",
+        "Metadata and records together in one bundle",
+        "Metadata, such as custom fields, page layouts and flows",
+        "Field history and Chatter feeds from the sandbox"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "Change sets move metadata, meaning setup, and never records.",
+      "wrong": [
+        "Records need a data tool, like Data Loader.",
+        "Change sets can't carry records at all.",
+        "",
+        "Field history and Chatter feeds are data, so change sets can't move them."
+      ],
+      "source": "Change Sets Implementation Tips"
+    },
+    {
+      "id": "deploy-q13",
+      "lesson": "deploy-3",
+      "difficulty": 1,
+      "q": "In which org does an admin create an outbound change set?",
+      "options": [
+        "The source org that holds the changes",
+        "The target org that will receive them",
+        "Always production, wherever the changes are",
+        "Any Developer Edition org the admin owns"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "You build an outbound change set in the org that has the changes. The receiving org sees it as inbound.",
+      "wrong": [
+        "",
+        "The target org deploys the inbound change set. It doesn't build it.",
+        "Any connected org can send, not only production.",
+        "Change sets only connect production and its own sandboxes."
+      ],
+      "source": "Deployment Connections for Change Sets"
+    },
+    {
+      "id": "deploy-q14",
+      "lesson": "deploy-3",
+      "difficulty": 2,
+      "q": "A sandbox admin's upload to production fails. The connection settings in production look like this. What must happen first?",
+      "code": "Deployment Connections (in production)\nSandbox: qa\n  Allow Inbound Changes: [ ]",
+      "lang": "text",
+      "options": [
+        "An admin in the sandbox allows inbound changes from production",
+        "Salesforce Support creates a deployment connection between the two orgs",
+        "The sandbox is refreshed so its metadata matches production",
+        "An admin in production allows inbound changes from that sandbox"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "The receiving org must authorize the deployment connection. Here production must allow inbound changes from the sandbox.",
+      "wrong": [
+        "That lets production send to the sandbox, not the other way round.",
+        "Connections between production and its sandboxes are created automatically.",
+        "A refresh isn't needed to send a change set.",
+        ""
+      ],
+      "source": "Change Sets Implementation Tips"
+    },
+    {
+      "id": "deploy-q15",
+      "lesson": "deploy-3",
+      "difficulty": 2,
+      "q": "Harbor Hotels has production, a Dev sandbox and a QA sandbox. Every connection is authorized. Which two change set paths are possible? (Choose 2)",
+      "options": [
+        "From the QA sandbox to a partner company's production",
+        "From a Developer Edition org to the Dev sandbox",
+        "From the Dev sandbox to the QA sandbox",
+        "From production to another company's sandbox",
+        "From production to the Dev sandbox"
+      ],
+      "answer": [
+        2,
+        4
+      ],
+      "explain": "Change sets travel between production and its sandboxes, including sandbox to sandbox. Orgs outside that family can't connect.",
+      "wrong": [
+        "A partner's org belongs to a different production org.",
+        "A Developer Edition org isn't tied to this production org.",
+        "",
+        "Another company's sandbox belongs to a different production org.",
+        ""
+      ],
+      "source": "Deployment Connections for Change Sets"
+    },
+    {
+      "id": "deploy-q16",
+      "lesson": "deploy-3",
+      "difficulty": 2,
+      "q": "Juniper Health's admin created a custom object in QA, with its fields and 30 records of reference data. She deploys a change set with the object and fields. What does production have afterward?",
+      "options": [
+        "The object, its fields and the 30 records",
+        "The object and its fields, with no records",
+        "Nothing, because change sets can't move custom objects",
+        "The object only; fields need a second change set"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "Change sets carry metadata, never records. The object and fields arrive empty, and the records need a data tool.",
+      "wrong": [
+        "Records never travel in a change set.",
+        "",
+        "Custom objects can be deployed by change set.",
+        "Fields can go in the same change set as their object."
+      ],
+      "source": "Change Sets Implementation Tips"
+    },
+    {
+      "id": "deploy-x6",
+      "lesson": "deploy-3",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "An admin can create and upload outbound change sets. In production, she gets a permissions error when she tries to deploy an inbound one. Which two permissions does she need there? (Choose 2)",
+      "options": [
+        "Create and Upload Change Sets",
+        "Deploy Change Sets",
+        "Manage Sandboxes",
+        "Author Apex",
+        "Modify Metadata Through Metadata API Functions"
+      ],
+      "answer": [
+        1,
+        4
+      ],
+      "explain": "Deploying an inbound change set needs Deploy Change Sets plus Modify Metadata Through Metadata API Functions.",
+      "wrong": [
+        "That permission is for building and sending outbound change sets.",
+        "",
+        "That permission is for creating and refreshing sandboxes.",
+        "That permission is for writing Apex code.",
+        ""
+      ],
+      "source": "Deployment Connections for Change Sets"
+    },
+    {
+      "id": "deploy-x7",
+      "lesson": "deploy-3",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "This inbound change set is waiting in production. The admin wants to deploy only the 3 flows now and the rest next week. What should she do?",
+      "code": "Inbound change set: Release_12\nFrom: uat sandbox\nComponents: 40 (3 flows, 37 other)\nStatus: ready",
+      "lang": "text",
+      "options": [
+        "Open the change set, select the 3 flows and deploy only those three",
+        "Have the source org send a new change set with just the 3 flows",
+        "Validate the 3 flows, then quick deploy only those",
+        "Deploy it all, then delete the other 37 parts by hand"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "An inbound change set deploys as a whole, never part by part. To send fewer parts, the source org must send a smaller change set.",
+      "wrong": [
+        "You can't deploy single components from an inbound change set.",
+        "",
+        "Validation and quick deploy also cover the whole change set.",
+        "That puts unwanted changes into production first."
+      ],
+      "source": "Deploy a Change Set"
+    },
+    {
+      "id": "deploy-x8",
+      "lesson": "deploy-3",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "Orbit Media was bought by Atlas Group. Each company keeps its own production org. Orbit's admin wants to send custom objects and flows to Atlas's org. What should the admin do?",
+      "options": [
+        "Use Data Loader, since change sets can't move flows",
+        "Refresh an Atlas sandbox from Orbit's production org first",
+        "Authorize a deployment connection to Orbit in Atlas's production org",
+        "Use a package, since change sets need orgs from one production"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "Change sets only link production and its own sandboxes. Unrelated orgs need a package or the Metadata API.",
+      "wrong": [
+        "Flows can go by change set. Data Loader moves records, not setup.",
+        "A sandbox is always copied from its own production org.",
+        "No connection can exist between orgs of two different productions.",
+        ""
+      ],
+      "source": "Deployment Connections for Change Sets"
+    },
+    {
+      "id": "deploy-q17",
+      "lesson": "deploy-4",
+      "difficulty": 1,
+      "q": "An admin uploaded a change set, then noticed a field was missing. How can she add it?",
+      "options": [
+        "Clone the change set, add the field, then upload the clone",
+        "Edit the uploaded change set and upload it again",
+        "Add the field to the inbound change set in the target",
+        "Delete the upload, since change sets can't be cloned"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "An uploaded change set can't be changed. Clone it, add the missing part and upload the clone.",
+      "wrong": [
+        "",
+        "Uploaded change sets are locked.",
+        "The target org can't add parts to an inbound change set.",
+        "Change sets can be cloned. That's the fix."
+      ],
+      "source": "Change Sets Best Practices"
+    },
+    {
+      "id": "deploy-q18",
+      "lesson": "deploy-4",
+      "difficulty": 2,
+      "q": "A change set deployed a new custom object to production. In Object Manager, the object has none of its custom fields. What most likely happened?",
+      "options": [
+        "Field-level security hides the fields from every profile",
+        "The deployment partly failed and kept only the object",
+        "Only the object was added; its fields weren't included",
+        "Change sets can deploy custom fields only to sandboxes"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "Adding only a custom object deploys it without its fields. Each field must be added to the change set too.",
+      "wrong": [
+        "Field-level security controls user access. Object Manager still lists the fields.",
+        "Deployments are all or nothing. They never keep part of the work.",
+        "",
+        "Custom fields deploy to production by change set just fine."
+      ],
+      "source": "Change Sets Best Practices"
+    },
+    {
+      "id": "deploy-q19",
+      "lesson": "deploy-4",
+      "difficulty": 2,
+      "q": "Which two tasks can't be done with a change set? (Choose 2)",
+      "options": [
+        "Deleting a custom field in the target org",
+        "Adding a new page layout to the target org",
+        "Renaming a custom object in the target org",
+        "Moving a new flow to the target org",
+        "Adding a new permission set to the target org"
+      ],
+      "answer": [
+        0,
+        2
+      ],
+      "explain": "Change sets can't delete or rename components. Do those by hand in the target org.",
+      "wrong": [
+        "",
+        "Page layouts can be deployed by change set.",
+        "",
+        "Flows can be deployed by change set.",
+        "Permission sets can be deployed by change set."
+      ],
+      "source": "Change Sets Best Practices"
+    },
+    {
+      "id": "deploy-q20",
+      "lesson": "deploy-4",
+      "difficulty": 2,
+      "q": "This inbound change set failed while it deployed to production. What is the state of production now?",
+      "code": "Deploy inbound change set: Spring_Release\nComponents: 120\nError: component 118 (flow Route_Cases)\nStatus: Failed",
+      "lang": "text",
+      "options": [
+        "117 components deployed; the last 3 are missing",
+        "Every component deployed except number 118",
+        "The deployment restarts itself after the error",
+        "Nothing changed; the whole deployment rolled back"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "A change set deploys in one transaction. If any part fails, everything rolls back.",
+      "wrong": [
+        "Deployments never keep the parts that worked.",
+        "One failure undoes the whole deployment.",
+        "A failed deployment doesn't restart. You restart it by hand.",
+        ""
+      ],
+      "source": "Change Sets Implementation Tips"
+    },
+    {
+      "id": "deploy-x9",
+      "lesson": "deploy-4",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "An admin plans this outbound change set from a sandbox to production. Which item can't travel in a change set?",
+      "code": "Outbound change set: Sales_Ops\n- Custom field: Opportunity.Region__c\n- Flow: Assign_Region_Owner (uses Region__c)\n- Lightning page: Opportunity_Record_Page\n- Action override: Opportunity \"New\" button",
+      "lang": "text",
+      "options": [
+        "The custom field on Opportunity",
+        "The override of Opportunity's New button",
+        "The flow that assigns owners using the new field",
+        "The Lightning record page"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "Change sets can't include standard objects. So an action override on a standard object, like Opportunity, can't go by change set.",
+      "wrong": [
+        "Custom fields on standard objects can be deployed.",
+        "",
+        "Flows can be deployed by change set.",
+        "Lightning pages can be deployed by change set."
+      ],
+      "source": "Change Sets Implementation Tips"
+    },
+    {
+      "id": "deploy-x10",
+      "lesson": "deploy-4",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "An admin validates an inbound change set in production at 10 am. While it runs, a teammate tries to add a picklist value, and a sales rep edits an opportunity. What happens?",
+      "options": [
+        "Both are blocked until the validation finishes",
+        "Both save, because validation changes nothing",
+        "The picklist change is blocked; the rep's edit saves",
+        "The rep's edit is blocked; the picklist change saves"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "While a change set validates or deploys, the org is locked for setup changes. Records can still be read and saved.",
+      "wrong": [
+        "Records aren't locked, so the rep's edit saves.",
+        "Adding a picklist value is a setup change, so it's blocked.",
+        "",
+        "It's the other way round: setup is locked, records aren't."
+      ],
+      "source": "Change Sets Best Practices"
+    },
+    {
+      "id": "deploy-q21",
+      "lesson": "deploy-4",
+      "difficulty": 2,
+      "q": "A change set with two Apex classes and a trigger is deployed to production with the default settings. What is true?",
+      "options": [
+        "All local Apex tests run, and coverage must reach 75%",
+        "No tests run, since tests run only in sandbox targets",
+        "Only the change set's own tests run, with no coverage check",
+        "No tests run, because change sets carry metadata only"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "Deploying Apex to production runs all local tests by default. Production also needs at least 75% code coverage.",
+      "wrong": [
+        "",
+        "It's the reverse: sandbox targets don't run tests automatically.",
+        "By default all local tests run, and coverage is checked.",
+        "Apex is metadata, and production still runs tests for it."
+      ],
+      "source": "Change Sets Best Practices"
+    },
+    {
+      "id": "deploy-x11",
+      "lesson": "deploy-4",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "Cedar Retail's admin can't upload this change set to production. What should she do?",
+      "code": "Outbound change set: Q4_Reports\nFiles: 14,000\nMostly: reports, dashboards, email templates\nUpload: failed",
+      "lang": "text",
+      "options": [
+        "Ask Salesforce Support to raise her org's change set limit to 20,000 files",
+        "Zip the change set first so it counts as fewer files",
+        "Put reports, dashboards and templates in separate change sets",
+        "Send it from production to the sandbox, then back again"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "A change set holds at most 10,000 files. Reports, dashboards and email templates are numerous and have few dependencies, so split them out.",
+      "wrong": [
+        "The 10,000-file limit is fixed.",
+        "Zipping doesn't change how many files a change set holds.",
+        "",
+        "The same limit applies whichever way it travels."
+      ],
+      "source": "Change Sets Best Practices"
+    },
+    {
+      "id": "deploy-x12",
+      "lesson": "deploy-4",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A dashboard in the sandbox named uat runs as this user. The dashboard is deployed to production by change set. Who is the running user there?",
+      "code": "Dashboard: Regional Pipeline\nRunning user: ana@cedar.com.uat\nSandbox name: uat",
+      "lang": "text",
+      "options": [
+        "ana@cedar.com, matched by username without the suffix",
+        "The admin who deployed the change set",
+        "No one; it must be set by hand after deployment",
+        "A new user, ana@cedar.com.uat, made during deployment"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "Deployments match users by username. The sandbox name added to sandbox usernames is ignored, so ana@cedar.com is found.",
+      "wrong": [
+        "",
+        "Deployment doesn't swap in the deploying admin.",
+        "The user reference is kept, so no manual step is needed.",
+        "Deployments never create users."
+      ],
+      "source": "Change Sets Implementation Tips"
+    },
+    {
+      "id": "deploy-q22",
+      "lesson": "deploy-5",
+      "difficulty": 1,
+      "q": "Which kind of package can its provider upgrade for you?",
+      "options": [
+        "Unmanaged package",
+        "Change set",
+        "Sandbox template",
+        "Managed package"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "The provider can upgrade a managed package. An unmanaged one must be uninstalled and reinstalled.",
+      "wrong": [
+        "Unmanaged packages get no upgrades from the provider.",
+        "A change set is a one-time bundle of setup, not a package.",
+        "A sandbox template picks records to copy into a sandbox.",
+        ""
+      ],
+      "source": "Trailhead: AgentExchange Basics"
+    },
+    {
+      "id": "deploy-q23",
+      "lesson": "deploy-5",
+      "difficulty": 1,
+      "q": "An admin installed an unmanaged package. The provider has released a new version. How does she get it?",
+      "code": "Installed Packages\nName: Event Kit   Type: Unmanaged\nInstalled: v1.0   Available: v2.0",
+      "lang": "text",
+      "options": [
+        "Click Upgrade on the Installed Packages page",
+        "Uninstall the package, then install the new version",
+        "Wait for the provider to push the upgrade to her org",
+        "Run the old install link again to update in place"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "Unmanaged packages can't be upgraded. To get a new version, you uninstall, then install the new one.",
+      "wrong": [
+        "There's no upgrade for an unmanaged package.",
+        "",
+        "Providers can push upgrades only for managed packages.",
+        "Installing over an unmanaged package doesn't upgrade it."
+      ],
+      "source": "Trailhead: AgentExchange Basics"
+    },
+    {
+      "id": "deploy-q24",
+      "lesson": "deploy-5",
+      "difficulty": 2,
+      "q": "Riverbend Schools is close to its custom object limit. It wants an AgentExchange app with 40 custom objects. Which kind of package keeps those objects off the limit?",
+      "options": [
+        "An unmanaged package",
+        "A managed package",
+        "Either kind, since package objects never count",
+        "Neither, since every installed object counts"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "Managed package contents don't count against app, tab and object limits. Unmanaged package contents do.",
+      "wrong": [
+        "Unmanaged package contents count against the limits.",
+        "",
+        "Only managed package contents are left off the limits.",
+        "Managed package contents don't count."
+      ],
+      "source": "Trailhead: AgentExchange Basics"
+    },
+    {
+      "id": "deploy-q25",
+      "lesson": "deploy-5",
+      "difficulty": 2,
+      "q": "Which two are true of managed packages? (Choose 2)",
+      "options": [
+        "You must uninstall them to get a new version",
+        "Their contents count against your object limit",
+        "You can edit their Apex directly in production",
+        "You can't view or change the provider's code",
+        "Their parts carry the provider's namespace prefix"
+      ],
+      "answer": [
+        3,
+        4
+      ],
+      "explain": "A managed package's code and metadata are hidden, and its parts carry a namespace prefix. The provider upgrades it.",
+      "wrong": [
+        "That's how unmanaged packages work.",
+        "Managed contents don't count against app, tab and object limits.",
+        "You can't change a managed package's code.",
+        "",
+        ""
+      ],
+      "source": "Trailhead: AgentExchange Basics"
+    },
+    {
+      "id": "deploy-q26",
+      "lesson": "deploy-5",
+      "difficulty": 2,
+      "q": "A consultant built a starter kit of objects and reports. Each client should own it and change it freely. No updates will follow. What is the best way to share it?",
+      "options": [
+        "A managed package",
+        "A change set to each client's org",
+        "A sandbox template for each client",
+        "An unmanaged package"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "An unmanaged package gives clients parts they can edit freely. It suits templates and one-time sharing with no upgrades.",
+      "wrong": [
+        "A managed package locks its parts so clients can't change them.",
+        "Change sets can't reach unrelated orgs.",
+        "A sandbox template picks records to copy into a sandbox.",
+        ""
+      ],
+      "source": "Trailhead: AgentExchange Basics"
+    },
+    {
+      "id": "deploy-x13",
+      "lesson": "deploy-5",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A software company writes these needs for its HR app. Which option meets all three?",
+      "code": "HR app needs\n- Customers get fixes automatically\n- Customers can't see our Apex code\n- Installs in any customer's org",
+      "lang": "text",
+      "options": [
+        "A managed package",
+        "An unmanaged package",
+        "An unlocked package",
+        "Change sets from the company's sandbox"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "Managed packages hide their code, get upgrades from the provider and install in any org.",
+      "wrong": [
+        "",
+        "Unmanaged packages show their code and get no upgrades.",
+        "Unlocked packages are for internal apps, and their metadata can be changed.",
+        "Change sets can't reach other companies' orgs."
+      ],
+      "source": "Trailhead: AgentExchange Basics"
+    },
+    {
+      "id": "deploy-x14",
+      "lesson": "deploy-5",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "Bright Paws Vet installed an unmanaged package and edited three of its fields. The provider then released version 2. What must the admin expect if she wants version 2?",
+      "options": [
+        "Version 2 installs over version 1 and keeps all three of her edits",
+        "The provider pushes version 2 and merges her edits",
+        "She uninstalls and installs version 2, then redoes her edits",
+        "She clones the package and merges version 2 into it"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "Unmanaged packages can't be upgraded. She must uninstall, install version 2 and make her edits again.",
+      "wrong": [
+        "An unmanaged package can't be installed over as an upgrade.",
+        "Providers can't push upgrades to unmanaged packages.",
+        "",
+        "Installed packages can't be cloned or merged."
+      ],
+      "source": "Trailhead: AgentExchange Basics"
+    },
+    {
+      "id": "deploy-x15",
+      "lesson": "deploy-5",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "Pacific Grove wants a free Event Planner app and plans to rework its flows heavily. The admin picks the unmanaged version. Which two results should she expect? (Choose 2)",
+      "options": [
+        "The provider will push fixes into her edited copy",
+        "She can edit its components freely",
+        "Its objects and tabs count against org limits",
+        "Its Apex code stays hidden from her",
+        "It can be upgraded in place, keeping her edits"
+      ],
+      "answer": [
+        1,
+        2
+      ],
+      "explain": "Unmanaged parts are fully editable, and they count against app, tab and object limits. No upgrades ever reach them.",
+      "wrong": [
+        "Providers can't push fixes to unmanaged packages.",
+        "",
+        "",
+        "Unmanaged packages show their code.",
+        "Unmanaged packages can't be upgraded in place."
+      ],
+      "source": "Trailhead: AgentExchange Basics"
+    },
+    {
+      "id": "deploy-q27",
+      "lesson": "deploy-6",
+      "difficulty": 1,
+      "q": "Which package type is meant for a company's own internal apps, built from source control?",
+      "options": [
+        "Unmanaged package",
+        "First-generation managed package",
+        "Outbound change set",
+        "Unlocked package"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "Unlocked packages suit internal business apps. They're built from source control and can be upgraded.",
+      "wrong": [
+        "Unmanaged packages can't be upgraded.",
+        "Managed packages are for apps you distribute to others.",
+        "A change set isn't a package and isn't built from source control.",
+        ""
+      ],
+      "source": "Trailhead: Unlocked Packages for Customers"
+    },
+    {
+      "id": "deploy-q28",
+      "lesson": "deploy-6",
+      "difficulty": 2,
+      "q": "An admin installs an AgentExchange package that contains Apex. What happens to tests during the install?",
+      "code": "Install package: Smart Scheduler\nIncludes: 12 Apex classes, 3 triggers\nInstalling in: production",
+      "lang": "text",
+      "options": [
+        "No tests run; the provider tested it already",
+        "The package's tests and the org's tests run",
+        "Only the package's own tests are run",
+        "Tests run only if the org is a sandbox"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "Installing a package with Apex runs its unit tests and all of the org's unit tests. You can choose to install even if some fail.",
+      "wrong": [
+        "Tests do run during an install with Apex.",
+        "",
+        "The org's own tests run too.",
+        "Tests run in production installs too."
+      ],
+      "source": "Install a Managed Package"
+    },
+    {
+      "id": "deploy-q29",
+      "lesson": "deploy-6",
+      "difficulty": 2,
+      "q": "A managed package's permission set is almost right, but users need one more object permission. What should the admin do?",
+      "options": [
+        "Edit the package's permission set directly",
+        "Ask the provider to unlock it in her org",
+        "Clone the package's permission set and edit the clone",
+        "Edit the permission set in a sandbox, then deploy it by change set"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "Permission sets in a managed package can't be edited. Clone one, or make your own, and assign that instead.",
+      "wrong": [
+        "Packaged permission sets are locked.",
+        "Providers can't unlock a packaged permission set in one org.",
+        "",
+        "It's still the locked packaged permission set, wherever it's edited."
+      ],
+      "source": "Install a Managed Package"
+    },
+    {
+      "id": "deploy-q30",
+      "lesson": "deploy-6",
+      "difficulty": 2,
+      "q": "Which two are true of unlocked packages? (Choose 2)",
+      "options": [
+        "Their metadata can be changed in the org they're installed in",
+        "They hide their code, just like managed packages",
+        "They must be listed on AgentExchange to be installed",
+        "They are versioned, so a new version installs as an upgrade",
+        "They can only be built in production, with clicks"
+      ],
+      "answer": [
+        0,
+        3
+      ],
+      "explain": "Unlocked packages are versioned and upgradeable. Admins can still change their metadata where they're installed.",
+      "wrong": [
+        "",
+        "Unlocked package metadata isn't hidden.",
+        "They're for internal apps and don't need AgentExchange.",
+        "",
+        "They're built from source control with the Salesforce CLI."
+      ],
+      "source": "Trailhead: Unlocked Packages for Customers"
+    },
+    {
+      "id": "deploy-q31",
+      "lesson": "deploy-6",
+      "difficulty": 2,
+      "q": "During an install, an admin isn't yet sure who should use the new app. Which choice is best?",
+      "code": "Install for:\n( ) Admins Only\n( ) All Users\n( ) Specific Profiles",
+      "lang": "text",
+      "options": [
+        "Admins Only",
+        "All Users",
+        "Specific Profiles",
+        "All Users, with the tabs hidden"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "Install for Admins Only when unsure. Then give access once the app is set up and tested.",
+      "wrong": [
+        "",
+        "All Users gives everyone access before it's ready.",
+        "Specific Profiles needs her to know who should get it.",
+        "Hidden tabs don't remove the access users are given."
+      ],
+      "source": "Trailhead: AgentExchange Basics"
+    },
+    {
+      "id": "deploy-x16",
+      "lesson": "deploy-6",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "Summit Software sells an app to many customers. It's starting a brand-new app and wants a source-driven process with the Salesforce CLI. Which package type does Salesforce recommend?",
+      "options": [
+        "First-generation managed package",
+        "Unlocked package",
+        "Second-generation managed package",
+        "Unmanaged package"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "For new apps you distribute, Salesforce recommends managed 2GP. It's source-driven and built with the Salesforce CLI.",
+      "wrong": [
+        "2GP is recommended over 1GP for new apps.",
+        "Unlocked packages are for internal apps and don't hide code.",
+        "",
+        "Unmanaged packages can't be upgraded and expose all the code."
+      ],
+      "source": "Trailhead: Explore the Benefits of Second-Generation Managed Packages"
+    },
+    {
+      "id": "deploy-x17",
+      "lesson": "deploy-6",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A team ships its HR app as an unlocked package. During an outage, an admin fixes a field's help text directly in production. What should the team know?",
+      "options": [
+        "The fix is allowed, but a later version can overwrite it",
+        "The fix is blocked, since packaged metadata is always locked in production",
+        "The fix becomes part of the next version by itself",
+        "The fix removes the package's version history"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "Unlocked package metadata can be changed in production. But source control is the source of truth, so the next version can overwrite the fix.",
+      "wrong": [
+        "",
+        "That's how managed packages behave, not unlocked ones.",
+        "Versions come from source control, not from changes made in production.",
+        "Changing metadata doesn't touch the package's versions."
+      ],
+      "source": "Trailhead: Unlocked Packages for Customers"
+    },
+    {
+      "id": "deploy-x18",
+      "lesson": "deploy-6",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "An admin plans to install a managed package from AgentExchange in production. Which two steps are best practice? (Choose 2)",
+      "options": [
+        "Install it for All Users so testers can try it",
+        "Install and test it in a sandbox first",
+        "Edit its permission sets before users log in",
+        "Install it for Admins Only until it's set up",
+        "Remove the org's own tests so it installs faster"
+      ],
+      "answer": [
+        1,
+        3
+      ],
+      "explain": "Test a package in a sandbox or Developer Edition org first. Then install for Admins Only until it's ready.",
+      "wrong": [
+        "All Users gives everyone access before it's ready.",
+        "",
+        "Packaged permission sets can't be edited. Clone them.",
+        "",
+        "Deleting your org's tests is never the fix, and they help find problems."
+      ],
+      "source": "Install a Managed Package"
+    },
+    {
+      "id": "deploy-x19",
+      "lesson": "deploy-6",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A team created a managed 2GP with the namespace `ptl`. After a rebrand, it wants `nova` as the namespace for the same package. What is true?",
+      "options": [
+        "It can be changed in Setup before the next version",
+        "It can be changed in the next version's settings",
+        "Each customer can rename it when they install",
+        "The namespace can't change once it's set"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "A managed package's namespace is permanent. Once it's set, it can't be changed.",
+      "wrong": [
+        "Setup can't change a package's namespace.",
+        "A new version keeps the same namespace.",
+        "Customers can't rename a package's namespace.",
+        ""
+      ],
+      "source": "Trailhead: Explore the Benefits of Second-Generation Managed Packages"
+    },
+    {
+      "id": "deploy-q32",
+      "lesson": "deploy-7",
+      "difficulty": 1,
+      "q": "When is the best time to deploy a large change to production?",
+      "options": [
+        "At peak hours, so users report problems fast",
+        "In low-use hours, away from maintenance windows",
+        "During a scheduled Salesforce maintenance window",
+        "Right after a sandbox refresh has started"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "Deploy when few people are working, and plan around maintenance schedules.",
+      "wrong": [
+        "Peak hours put the most users at risk.",
+        "",
+        "Uploads and some steps don't work during maintenance.",
+        "A sandbox refresh has nothing to do with production timing."
+      ],
+      "source": "Change Sets Best Practices"
+    },
+    {
+      "id": "deploy-q33",
+      "lesson": "deploy-7",
+      "difficulty": 2,
+      "q": "A change set has just deployed to production. Which job must the admin's plan cover by hand?",
+      "options": [
+        "Moving the new custom fields and their help text",
+        "Loading the new records the release needs",
+        "Moving the new record-triggered flow",
+        "Moving the new page layouts and record pages"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "Change sets move metadata, not records. Loading data is a by-hand step after the deployment.",
+      "wrong": [
+        "Custom fields travel in the change set.",
+        "",
+        "Flows travel in the change set.",
+        "Page layouts travel in the change set."
+      ],
+      "source": "Change Sets Implementation Tips"
+    },
+    {
+      "id": "deploy-q34",
+      "lesson": "deploy-7",
+      "difficulty": 2,
+      "q": "An admin is writing a deployment plan for a change set release. Which two items belong in it? (Choose 2)",
+      "options": [
+        "Validate the change set before the release window",
+        "Deploy at peak hours so support staff are available",
+        "Add the needed records to the change set",
+        "Plan to roll back in Setup if users report problems",
+        "Include permission sets so users can reach new features"
+      ],
+      "answer": [
+        0,
+        4
+      ],
+      "explain": "Validate ahead of time and include permissions so users can use the new features.",
+      "wrong": [
+        "",
+        "Low-use hours are the safe time to deploy.",
+        "Change sets can't carry records.",
+        "A finished deployment can't be rolled back.",
+        ""
+      ],
+      "source": "Change Sets Best Practices"
+    },
+    {
+      "id": "deploy-q35",
+      "lesson": "deploy-7",
+      "difficulty": 2,
+      "q": "Orbit Labs wants to give one app to 50 unrelated customer orgs. Which tool fits?",
+      "options": [
+        "Change sets sent from one sandbox",
+        "A Full sandbox for each customer",
+        "Data Loader exports of the app",
+        "A managed package"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "Packages can install in any org. Managed packages suit apps given to many unrelated customers.",
+      "wrong": [
+        "Change sets can't reach unrelated orgs.",
+        "Sandboxes copy your own production org. They can't deliver an app to customers.",
+        "Data Loader moves records, not setup.",
+        ""
+      ],
+      "source": "Trailhead: AgentExchange Basics"
+    },
+    {
+      "id": "deploy-x20",
+      "lesson": "deploy-7",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "Review this release plan for a change set deployment. Which two steps should change? (Choose 2)",
+      "code": "Q3 Service release\n1. Build in Developer sandboxes\n2. UAT in Partial Copy \"uat\"\n3. Deploy change set: Saturday 7 am\n4. Validate the change set after deploying\n5. Delete Case.Legacy_Code__c in the change set",
+      "lang": "text",
+      "options": [
+        "Step 1: build everything in the Full sandbox",
+        "Step 2: run the UAT in production instead",
+        "Step 4: validate before deploying, not after",
+        "Step 5: delete the field by hand, not in the change set",
+        "Step 3: deploy during business hours instead"
+      ],
+      "answer": [
+        2,
+        3
+      ],
+      "explain": "Validate before you deploy to catch errors early. Change sets can't delete components, so deletions happen by hand.",
+      "wrong": [
+        "Developer sandboxes are the right place to build.",
+        "UAT belongs in a sandbox, not production.",
+        "",
+        "",
+        "An early Saturday is a good low-use time."
+      ],
+      "source": "Change Sets Best Practices"
+    },
+    {
+      "id": "deploy-q36",
+      "lesson": "deploy-7",
+      "difficulty": 2,
+      "q": "Six developers use Git and want scripted, repeatable deployments to several sandboxes and production. Which tool fits best?",
+      "options": [
+        "The Salesforce CLI, deploying from source control",
+        "Change sets built by hand and uploaded to each target org",
+        "Unmanaged packages installed in each org",
+        "A Full sandbox refresh before each release"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "The Salesforce CLI uses the Metadata API to deploy from source control. Scripts make it repeatable.",
+      "wrong": [
+        "",
+        "Change sets are manual and don't use source control.",
+        "Unmanaged packages can't be upgraded.",
+        "A refresh copies production down. It doesn't deploy changes up."
+      ],
+      "source": "Trailhead: Org Development Model"
+    },
+    {
+      "id": "deploy-x21",
+      "lesson": "deploy-7",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "This is how a release went at Fernhill Foods. What should the admin do before Saturday?",
+      "code": "Tue  Change set validated in production: success\nThu  Admin edits a field the change set depends on\nSat  Planned deployment, 7 am",
+      "lang": "text",
+      "options": [
+        "Nothing, since Tuesday's validation guarantees success",
+        "Refresh the uat sandbox to undo Thursday's change",
+        "Validate the change set again, since production changed",
+        "Delete Thursday's change, since validations can't be repeated"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "A validation only shows how the org looked at that moment. After production changes, validate again.",
+      "wrong": [
+        "Thursday's change can make the earlier result out of date.",
+        "A refresh changes the sandbox, not production.",
+        "",
+        "You can validate as often as you like."
+      ],
+      "source": "Change Sets Best Practices"
+    },
+    {
+      "id": "deploy-x22",
+      "lesson": "deploy-7",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A deployment last night broke a page layout in production. The admin wants to undo it. What is true?",
+      "options": [
+        "Click Roll Back on the Deployment Status page",
+        "Deploy the previous change set; it removes the new parts",
+        "Refresh production from the sandbox it came from",
+        "It can't be rolled back; deploy a fix or edit it by hand"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "A finished deployment is committed and can't be rolled back. Fix it with a new change.",
+      "wrong": [
+        "There's no roll back button for a finished deployment.",
+        "Change sets can't delete components.",
+        "Production can't be refreshed from a sandbox.",
+        ""
+      ],
+      "source": "Change Sets Implementation Tips"
+    }
+  ]
+}
