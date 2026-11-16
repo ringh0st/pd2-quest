@@ -143,7 +143,7 @@
           "type": "code",
           "title": "One page, three jobs",
           "lang": "html",
-          "code": "<apex:page standardController=\"Account\" extensions=\"AccountExt\">\n  <apex:outputField value=\"{!Account.Name}\"/>\n  <apex:commandButton action=\"{!save}\" value=\"Save\"/>\n</apex:page>",
+          "code": "<apex:page standardController=\"Account\" extensions=\"AccountExt\">\n  <apex:form>\n    <apex:outputField value=\"{!Account.Name}\"/>\n    <apex:commandButton action=\"{!save}\" value=\"Save\"/>\n  </apex:form>\n</apex:page>",
           "body": "The markup is the View. The Account record is the Model. The standard controller plus `AccountExt` is the Controller."
         },
         {
@@ -449,7 +449,7 @@
           "items": [
             "Up to **3,900 characters** in the formula",
             "Up to **1,300** characters shown after it runs",
-            "Save size and **compile size**: each up to **15,000 bytes**",
+            "**Compile size** up to **15,000 bytes**, counting everything the formula uses",
             "Can't use **long text area**, encrypted or Description fields"
           ]
         },
@@ -873,7 +873,7 @@
         {
           "type": "text",
           "title": "Trust and data",
-          "body": "Prompts go through the **Einstein Trust Layer**, which can mask personal data before it reaches the AI model. Salesforce says your code isn't used to train its model. Still, never paste passwords, tokens or real customer data into a prompt."
+          "body": "You choose what goes into a prompt, so you're responsible for it. Never paste passwords, API tokens or real customer data. Share only the code and context the AI needs. Check your company's rules for AI tools before you start."
         },
         {
           "type": "list",
@@ -935,10 +935,6 @@
         {
           "term": "code review",
           "say": "A careful read of code by a person, looking for bugs and risks before it ships."
-        },
-        {
-          "term": "Einstein Trust Layer",
-          "say": "A safety filter between you and the AI. It can hide personal data, like names and phone numbers, before your prompt reaches the model."
         },
         {
           "term": "FLS",
@@ -1026,7 +1022,7 @@
     {
       "id": "fund-f16",
       "front": "What are the main formula field size limits?",
-      "back": "3,900 characters in the formula, 1,300 displayed characters, and 15,000 bytes each for save size and compile size."
+      "back": "3,900 characters in the formula and 1,300 characters displayed. Compile size, which counts every field and formula it references, can be at most 15,000 bytes."
     },
     {
       "id": "fund-f17",
@@ -1242,19 +1238,19 @@
       "lesson": "fund-1",
       "difficulty": 3,
       "pack": "hard",
-      "q": "A developer runs this code synchronously to total contacts for 120 accounts. A teammate wrapped it in try/catch \"so a limit error can't break the update.\" What happens?",
-      "code": "try {\n  for (Account a : accts) { // 120 accounts\n    Integer n = [SELECT COUNT() FROM Contact WHERE AccountId = :a.Id];\n    summaries.add(new Summary__c(Account__c = a.Id, Contacts__c = n));\n  }\n} catch (Exception e) {\n  System.debug('Limit hit, saving partial totals');\n}\nupdate summaries;",
+      "q": "A developer runs this code synchronously to total contacts for 120 accounts. A teammate wrapped it in try/catch \"so a limit error can't break the save.\" What happens?",
+      "code": "try {\n  for (Account a : accts) { // 120 accounts\n    Integer n = [SELECT COUNT() FROM Contact WHERE AccountId = :a.Id];\n    summaries.add(new Summary__c(Account__c = a.Id, Contacts__c = n));\n  }\n} catch (Exception e) {\n  System.debug('Limit hit, saving partial totals');\n}\ninsert summaries;",
       "lang": "apex",
       "options": [
         "The catch block can't catch the limit error, so the transaction stops and nothing is saved",
-        "The catch block logs the error and execution continues, so `update summaries` saves the partial totals",
+        "The catch block logs the error and execution continues, so `insert summaries` saves the partial totals",
         "Salesforce switches the job to async limits, so all 120 queries succeed",
-        "The loop skips the extra accounts, and `update summaries` saves the first 100"
+        "The loop skips the extra accounts, and `insert summaries` saves the first 100"
       ],
       "answer": [
         0
       ],
-      "explain": "A `LimitException` can't be caught. Query 101 ends the transaction at once, so the catch block and the update never run.",
+      "explain": "A `LimitException` can't be caught. Query 101 ends the transaction at once, so the catch block and the insert never run.",
       "wrong": [
         "",
         "The catch block never runs for a limit error.",
@@ -1666,7 +1662,7 @@
       "lesson": "fund-2",
       "difficulty": 3,
       "pack": "hard",
-      "q": "A team maps an LWC feature to MVC. The component shows a list of open orders and has a Cancel button that calls Apex. Which two mappings are correct? (Choose 2)",
+      "q": "A team maps an LWC feature to MVC. The component shows a list of open `Order__c` records and has a Cancel button that calls Apex. Which two mappings are correct? (Choose 2)",
       "code": "import { LightningElement, wire } from 'lwc';\nimport getOpenOrders from '@salesforce/apex/OrderController.getOpenOrders';\nimport cancelOrder from '@salesforce/apex/OrderController.cancelOrder';\n\nexport default class OpenOrders extends LightningElement {\n  @wire(getOpenOrders) orders;\n  handleCancel(event) {\n    cancelOrder({ orderId: event.target.dataset.id });\n  }\n}",
       "lang": "js",
       "options": [
@@ -2870,7 +2866,7 @@
       "lesson": "fund-7",
       "difficulty": 3,
       "pack": "hard",
-      "q": "`Expense__c` already holds 5,000 records. An admin tries to add a master-detail field to `Expense_Report__c` and Salesforce blocks it. What should the developer do?",
+      "q": "`Expense__c` already holds 5,000 records. An admin tries to add a master-detail field on `Expense__c` that points to `Expense_Report__c`, and Salesforce blocks it. What should the developer do?",
       "options": [
         "Add the master-detail field through Apex instead of Setup",
         "Create a lookup, fill it on every record, then convert it to master-detail",
@@ -2894,7 +2890,7 @@
       "lesson": "fund-7",
       "difficulty": 3,
       "pack": "hard",
-      "q": "A developer creates `Course_Enrollment__c`. The first master-detail field points to `Student__c`, and the second to `Course__c`. Later both masters are kept. Who is the owner of an enrollment record?",
+      "q": "A developer creates the junction object `Course_Enrollment__c`. The first master-detail field points to `Student__c`, and the second to `Course__c`. Neither field is ever deleted. Who is the owner of an enrollment record?",
       "options": [
         "The user who created the enrollment",
         "The owner of the related `Course__c` record",
@@ -3322,7 +3318,7 @@
       ],
       "explain": "Each child-to-parent path in a query can go up to five levels.",
       "wrong": [
-        "Two was the old limit for parent-to-child subqueries.",
+        "Two isn't a SOQL limit. A path can go up to five levels.",
         "Three is just this example's depth, not the limit.",
         "",
         "Ten is the limit for cross-object formulas, not SOQL."
@@ -3490,7 +3486,7 @@
       "answer": [
         0
       ],
-      "explain": "AI code can miss bulkification. A query per record fails once a load passes 100 records, so query once outside the loop.",
+      "explain": "AI code can miss bulkification. A query and an update per record fail once a load passes 100 records, so query once and update a list outside the loop.",
       "wrong": [
         "",
         "`AccountId` can be read in after triggers too.",
@@ -3607,7 +3603,7 @@
       "code": "public static void assignDefaultPartner(Opportunity o) {\n  Account partner = new Account(Id = '001Dn00000AbCdEIAV');\n  o.Partner_Account__c = partner.Id;\n  o.Review_Date__c = Date.today().addDays(7);\n}",
       "lang": "apex",
       "options": [
-        "The method should be `global` so the AI can reuse it later",
+        "The method must be `global` because it sets a lookup field",
         "The `Account` sObject can't be created with a constructor",
         "`Date.today()` can't be used in Apex",
         "The hard-coded record Id won't exist in other orgs"
@@ -3617,7 +3613,7 @@
       ],
       "explain": "Record Ids differ between orgs. AI code can contain hard-coded Ids that only work where they came from, so review catches them.",
       "wrong": [
-        "Access modifiers have nothing to do with the AI tool.",
+        "Setting a lookup field doesn't need a `global` method.",
         "Creating an sObject with a constructor is valid.",
         "`Date.today()` is valid Apex.",
         ""
