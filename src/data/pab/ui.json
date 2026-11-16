@@ -1,0 +1,2879 @@
+{
+  "id": "ui",
+  "title": "User Interface",
+  "weight": 17,
+  "summary": "Apps, page layouts, Lightning pages, buttons and actions: shape what people see and tap, on desktop and on the phone, mostly with clicks.",
+  "lessons": [
+    {
+      "id": "ui-1",
+      "title": "Apps, tabs and navigation",
+      "minutes": 3,
+      "objective": "Describe the user interface customization options.",
+      "cards": [
+        {
+          "type": "text",
+          "title": "In plain words",
+          "body": "A **Lightning app** is a named set of tabs and tools for one job, like Sales or Finance. Users switch apps in the **App Launcher**. Each app has a **navigation bar** with items such as objects (tables of data, like Account), pages and dashboards. You build apps in **App Manager** in Setup."
+        },
+        {
+          "type": "tip",
+          "title": "Think of it like…",
+          "body": "A toolbox for each trade. The plumber and the electrician share one garage, but each grabs a box with the right tools. Where it stops: an app only groups things. It never decides who can see the data."
+        },
+        {
+          "type": "list",
+          "title": "What the app wizard sets",
+          "items": [
+            "Name, logo and primary color",
+            "**Standard** or **console** navigation",
+            "Form factors: desktop, phone or both",
+            "Navigation items, in order: the top one is the landing page",
+            "A **utility bar** of always-there tools",
+            "Which **profiles** can use the app"
+          ]
+        },
+        {
+          "type": "text",
+          "title": "The utility bar",
+          "body": "A **utility bar** is a fixed footer in a Lightning app. It gives one-click tools such as Notes, Recent Items or a Dialer. Each tool opens in a small panel, so users never leave the record they are on."
+        },
+        {
+          "type": "list",
+          "title": "Custom tab types",
+          "items": [
+            "**Custom object tab**: lists a custom object's records",
+            "**Web tab**: shows an outside web page",
+            "**Visualforce tab**: shows a Visualforce page",
+            "**Lightning component tab**: shows a custom Lightning component",
+            "**Lightning page tab**: adds a Lightning app page to the navigation bar"
+          ]
+        },
+        {
+          "type": "text",
+          "title": "Console navigation",
+          "body": "A **console app** opens each record as a **workspace tab** and related records as subtabs. Agents can juggle many records on one screen. **Standard navigation** opens one record at a time. Pick console for busy desks, like customer support."
+        },
+        {
+          "type": "trap",
+          "body": "Taking an app away from a profile hides the app, not the data. Users can still reach records through search or links. To block records, change object permissions and sharing. An app is a menu, not a lock."
+        },
+        {
+          "type": "tip",
+          "title": "Remember it",
+          "body": "App = which toolbox. Tab = one door. Utility bar = the pocket that is always there."
+        }
+      ],
+      "check": [
+        "ui-q1",
+        "ui-q2",
+        "ui-x1"
+      ],
+      "terms": [
+        {
+          "term": "Lightning app",
+          "match": [
+            "Lightning apps"
+          ],
+          "say": "A named bundle of tabs and tools for one kind of work, like a Sales app. You pick it from the App Launcher."
+        },
+        {
+          "term": "App Launcher",
+          "say": "The grid of squares where you pick which app to open. It lists every app you are allowed to use."
+        },
+        {
+          "term": "navigation bar",
+          "say": "The row of items across the top of an app. Each item opens a list, a page or a dashboard."
+        },
+        {
+          "term": "App Manager",
+          "say": "The Setup page where admins create and edit apps."
+        },
+        {
+          "term": "utility bar",
+          "say": "A strip of handy tools at the bottom of an app, like Notes. Click one and it pops up without leaving your page."
+        },
+        {
+          "term": "profiles",
+          "match": [
+            "profile"
+          ],
+          "say": "A settings card for a group of users. It says what they can open and do. Every user has exactly one."
+        },
+        {
+          "term": "Web tab",
+          "say": "A tab that shows another website inside Salesforce. No code needed."
+        },
+        {
+          "term": "Lightning page tab",
+          "say": "A tab that puts a page you built in Lightning App Builder into an app's navigation bar."
+        },
+        {
+          "term": "console app",
+          "match": [
+            "console"
+          ],
+          "say": "An app style that opens records as tabs side by side. Good when people handle lots of records at once."
+        },
+        {
+          "term": "workspace tab",
+          "say": "In a console app, the main tab for one record. Related records open as smaller subtabs under it."
+        }
+      ]
+    },
+    {
+      "id": "ui-2",
+      "title": "Page layouts, record types, compact layouts",
+      "minutes": 4,
+      "objective": "Describe the user interface customization options.",
+      "cards": [
+        {
+          "type": "text",
+          "title": "In plain words",
+          "body": "A **page layout** decides which **fields** (single facts, like Phone), buttons and related lists show on a **record** page. A record is one row of data, like one customer. The layout also sets their order and can make a field required or read-only on that layout."
+        },
+        {
+          "type": "tip",
+          "title": "Think of it like…",
+          "body": "One form, printed in different versions for different teams. Same filing cabinet, different paper. Where it stops: leaving a field off the paper doesn't lock the cabinet. **Field-level security** is the lock."
+        },
+        {
+          "type": "text",
+          "title": "Who gets which layout",
+          "body": "A user's page layout comes from their **profile** plus the record's **record type**. A record type can offer different **picklist** values (the choices in a drop-down) and a different layout. For opportunities, cases, leads and solutions it also picks a **business process**, like the sales stages."
+        },
+        {
+          "type": "code",
+          "title": "The layout grid",
+          "lang": "text",
+          "code": "Profile      Record type   Page layout\nSales Rep    Retail        Retail Sales Layout\nSales Rep    Wholesale     Wholesale Layout\nSupport      Retail        Support Layout\nSupport      Wholesale     Support Layout",
+          "body": "Each profile and record type pair gets exactly one page layout."
+        },
+        {
+          "type": "list",
+          "title": "Record type rules",
+          "items": [
+            "The name \"Master\" is reserved",
+            "One record type for a profile? Users are never asked to choose",
+            "Users can still view and edit records of other record types they have access to",
+            "Professional Edition needs the Record Types add-on"
+          ]
+        },
+        {
+          "type": "text",
+          "title": "Compact layouts",
+          "body": "A **compact layout** picks the key fields shown at the top of a record, in the **highlights panel**. Lightning Experience shows up to the first 7. The mobile app's highlights show up to 10. Set one as the **primary compact layout**; each record type can have its own."
+        },
+        {
+          "type": "trap",
+          "body": "Removing a field from a page layout only hides it on that page. Users may still see it in reports, list views or the API. To truly hide a field, use **field-level security**."
+        },
+        {
+          "type": "tip",
+          "title": "Remember it",
+          "body": "Profile + record type = layout. Compact layout = the headline. Field-level security = the lock."
+        }
+      ],
+      "check": [
+        "ui-q7",
+        "ui-q8",
+        "ui-x3"
+      ],
+      "terms": [
+        {
+          "term": "page layout",
+          "match": [
+            "page layouts"
+          ],
+          "say": "The plan for a record page: which fields, buttons and lists show, and in what order."
+        },
+        {
+          "term": "fields",
+          "match": [
+            "field"
+          ],
+          "say": "One fact on a record, like a phone number. Like one box on a paper form."
+        },
+        {
+          "term": "record",
+          "match": [
+            "records"
+          ],
+          "say": "One saved item, like one customer or one order. Like one filled-in paper form."
+        },
+        {
+          "term": "record type",
+          "match": [
+            "record types"
+          ],
+          "say": "A label that sorts records into kinds, like Retail or Wholesale. Each kind can get its own layout and drop-down choices."
+        },
+        {
+          "term": "picklist",
+          "say": "A drop-down field. You pick from a set list of choices instead of typing."
+        },
+        {
+          "term": "business process",
+          "say": "The list of steps a record moves through, like sales stages. Only opportunities, cases, leads and solutions have one."
+        },
+        {
+          "term": "compact layout",
+          "match": [
+            "compact layouts"
+          ],
+          "say": "A short list of a record's most important fields. They show at the top of the record page and in the mobile app."
+        },
+        {
+          "term": "highlights panel",
+          "match": [
+            "highlights"
+          ],
+          "say": "The box at the top of a record page that shows its key fields and buttons."
+        },
+        {
+          "term": "primary compact layout",
+          "say": "The compact layout an object uses by default, unless a record type has its own."
+        },
+        {
+          "term": "field-level security",
+          "say": "The real lock on a field. It decides if a user can see or edit that field anywhere: pages, reports and the API."
+        }
+      ]
+    },
+    {
+      "id": "ui-3",
+      "title": "Lightning App Builder and page types",
+      "minutes": 3,
+      "objective": "Given a scenario, determine the declarative options available for incorporating Lightning components in an application.",
+      "cards": [
+        {
+          "type": "text",
+          "title": "In plain words",
+          "body": "**Lightning App Builder** is a drag-and-drop tool for **Lightning pages**. You pick a **template**, which sets the page's regions and columns. Then you drop **components** into it. A component is a ready-made building block, like a chart, a list or a set of tabs. No code needed."
+        },
+        {
+          "type": "tip",
+          "title": "Think of it like…",
+          "body": "LEGO. The template is the baseplate, the components are the bricks. Where it stops: some bricks are filled from somewhere else. The **Record Detail** component still takes its fields from the page layout."
+        },
+        {
+          "type": "list",
+          "title": "Main page types",
+          "items": [
+            "**App page**: a home page for an app, on desktop and phone. It supports only global actions",
+            "**Home page**: the Lightning Experience home, desktop only",
+            "**Record page**: the page for a record, on desktop and phone",
+            "A page's type can't be changed after you create it"
+          ]
+        },
+        {
+          "type": "text",
+          "title": "Who sees which page",
+          "body": "You **activate** a page to give it to users. A record page can be the **org default**, an **app default**, or assigned by app, record type and profile. You can also pick the **form factor**: desktop or phone. The most specific assignment wins."
+        },
+        {
+          "type": "text",
+          "title": "App Builder or page layout?",
+          "body": "Only Lightning pages can be assigned by app or form factor. Only they hold custom components and tabs of components. But with the Record Detail component, field placement still comes from the page layout. App Builder doesn't touch Salesforce Classic pages."
+        },
+        {
+          "type": "trap",
+          "body": "Changing a page's template or activation never moves fields inside Record Detail. Those fields come from the page layout. Edit the layout, or upgrade the page to Dynamic Forms."
+        },
+        {
+          "type": "tip",
+          "title": "Remember it",
+          "body": "Template = the plate. Components = the bricks. Activation = who gets it. Most specific wins."
+        }
+      ],
+      "check": [
+        "ui-q13",
+        "ui-q14",
+        "ui-x6"
+      ],
+      "terms": [
+        {
+          "term": "Lightning App Builder",
+          "match": [
+            "App Builder"
+          ],
+          "say": "A drag-and-drop page maker in Setup. You build pages from blocks instead of writing code."
+        },
+        {
+          "term": "Lightning pages",
+          "match": [
+            "Lightning page"
+          ],
+          "say": "A page built in Lightning App Builder from a template and blocks."
+        },
+        {
+          "term": "template",
+          "say": "The page's skeleton. It decides how many regions and columns the page has."
+        },
+        {
+          "term": "components",
+          "match": [
+            "component"
+          ],
+          "say": "A ready-made block you drop on a page, like a chart, a list or a set of tabs."
+        },
+        {
+          "term": "Record Detail",
+          "say": "A block that shows a record's fields in one big chunk. The fields inside come from the page layout."
+        },
+        {
+          "term": "App page",
+          "say": "A Lightning page that is a home base for an app. It works on desktop and phone."
+        },
+        {
+          "term": "Home page",
+          "say": "The first page people see in Lightning Experience on a computer. You can give different teams different ones."
+        },
+        {
+          "term": "Record page",
+          "say": "The page that shows one record, like one account, with its details and related lists."
+        },
+        {
+          "term": "org default",
+          "say": "The page everyone gets when nothing more specific is set for them."
+        },
+        {
+          "term": "form factor",
+          "say": "The kind of screen: a computer (desktop) or a phone."
+        }
+      ]
+    },
+    {
+      "id": "ui-4",
+      "title": "Dynamic Forms and dynamic actions",
+      "minutes": 4,
+      "objective": "Given a scenario, determine the declarative options available for incorporating Lightning components in an application.",
+      "cards": [
+        {
+          "type": "text",
+          "title": "In plain words",
+          "body": "**Dynamic Forms** puts each field and field section on a Lightning record page as its own component. Then you can show or hide each one with a **visibility rule**. **Dynamic actions** do the same for the buttons and actions on the page."
+        },
+        {
+          "type": "tip",
+          "title": "Think of it like…",
+          "body": "A smart paper form that says \"skip this part if you have no car.\" People only see questions that apply. Where it stops: hiding a field is about tidiness, not security. **Field-level security** still decides who may read it."
+        },
+        {
+          "type": "text",
+          "title": "Visibility rules",
+          "body": "A **visibility rule** shows a component only when its filter is true. Filters can use record fields, the **user** (like their profile or role), permissions and the **device**. App and Home pages have no record, so they filter on user, permission or device only."
+        },
+        {
+          "type": "list",
+          "title": "Why Dynamic Forms helps",
+          "items": [
+            "Place fields anywhere, across columns and tabs",
+            "Fewer page layouts and record types to manage",
+            "Create, edit and clone use the fields on the page, not the page layout",
+            "Make a field required or read-only on this page only",
+            "Works on most **LWC-enabled** objects (not Events or Tasks)"
+          ]
+        },
+        {
+          "type": "code",
+          "title": "Two rules",
+          "lang": "text",
+          "code": "Field Section: Shipping Details\n  Show when: Record > Status equals Shipped\n\nAction: Approve Discount\n  Show when: Record > Discount__c greater than 20\n         AND User > Profile > Name equals Sales Manager",
+          "body": "The section and the action appear only while their rules are true."
+        },
+        {
+          "type": "text",
+          "title": "Dynamic actions",
+          "body": "Turn them on in the **Highlights Panel** component, then add actions in App Builder with filters. Users then see these actions, not the ones from the page layout. The switch applies only to that one record page."
+        },
+        {
+          "type": "trap",
+          "body": "A field set to Required in App Builder but hidden by a visibility rule can be saved empty. And a hidden field is still readable in reports and the API. Use **field-level security** to protect data."
+        },
+        {
+          "type": "tip",
+          "title": "Remember it",
+          "body": "Dynamic Forms = fields that come and go. Dynamic actions = buttons that come and go. Visibility rule = the when."
+        }
+      ],
+      "check": [
+        "ui-q18",
+        "ui-q19",
+        "ui-x9"
+      ],
+      "terms": [
+        {
+          "term": "Dynamic Forms",
+          "say": "A way to place each field on a page as its own block, so it can appear or hide depending on the situation."
+        },
+        {
+          "term": "visibility rule",
+          "match": [
+            "visibility rules"
+          ],
+          "say": "A \"show only when\" setting on a block. Example: show this field only when Status is Closed."
+        },
+        {
+          "term": "Dynamic actions",
+          "say": "Buttons on a record page that appear only when you say so, set up in Lightning App Builder."
+        },
+        {
+          "term": "field section",
+          "match": [
+            "field sections"
+          ],
+          "say": "A group of fields under one heading on a page."
+        },
+        {
+          "term": "user",
+          "say": "The person looking at the page. Rules can check things about them, like their profile."
+        },
+        {
+          "term": "device",
+          "say": "What the person uses to look at the page: a computer or a phone."
+        },
+        {
+          "term": "LWC-enabled",
+          "say": "Objects whose record pages are built with Salesforce's newer page technology. Dynamic Forms works on most of them."
+        },
+        {
+          "term": "Highlights Panel",
+          "say": "The block at the top of a record page with key fields and the action buttons."
+        },
+        {
+          "term": "field-level security",
+          "say": "The real lock on a field. It decides if a user can see or edit it everywhere, not just on one page."
+        }
+      ]
+    },
+    {
+      "id": "ui-5",
+      "title": "Custom buttons and links",
+      "minutes": 3,
+      "objective": "Demonstrate the capabilities and use cases for custom buttons, links, and actions.",
+      "cards": [
+        {
+          "type": "text",
+          "title": "In plain words",
+          "body": "A **custom button** or **custom link** sends users somewhere from a record or a list. It can open a website, a **Visualforce page**, or a web address with record data filled in. Links sit in the record's links area. Buttons sit next to the standard buttons."
+        },
+        {
+          "type": "tip",
+          "title": "Think of it like…",
+          "body": "A speed-dial button with the number already saved. The **merge fields** fill in the right number for each record. Where it stops: a button is a shortcut, not a permission. Hiding it doesn't stop anyone."
+        },
+        {
+          "type": "list",
+          "title": "Display types",
+          "items": [
+            "**Detail Page Link**: a link on a record page",
+            "**Detail Page Button**: a button on a record page",
+            "**List Button**: a button on a list view or related list. It can act on the records users tick"
+          ]
+        },
+        {
+          "type": "list",
+          "title": "What it runs",
+          "items": [
+            "**URL**: opens a web address, with merge fields",
+            "**Visualforce page**: must use the **standard controller** of the same object (list buttons: the standard list controller)",
+            "**OnClick JavaScript**: Classic only. Not in Lightning Experience or the mobile app"
+          ]
+        },
+        {
+          "type": "code",
+          "title": "A URL button",
+          "lang": "text",
+          "code": "https://maps.example.com/?q={!Account.BillingStreet},{!Account.BillingCity}",
+          "body": "When clicked, the merge fields fill in this account's street and city."
+        },
+        {
+          "type": "text",
+          "title": "Replace or override",
+          "body": "To swap a standard button on a record page, create your custom button, then swap them on the page layout. To change a standard action like New or Edit everywhere, **override** it with a Visualforce page or Lightning component."
+        },
+        {
+          "type": "text",
+          "title": "In the Salesforce mobile app",
+          "body": "Custom links, list view buttons and OnClick JavaScript buttons don't show in the **Salesforce mobile app**. URL and Visualforce buttons on the page layout do."
+        },
+        {
+          "type": "trap",
+          "body": "Hiding the Delete button doesn't stop deleting. Users can still reach the action another way. To stop an action, remove the permission, like Delete on that object."
+        },
+        {
+          "type": "tip",
+          "title": "Remember it",
+          "body": "Link = words. Button = box. List button = many records. JavaScript button = Classic only."
+        }
+      ],
+      "check": [
+        "ui-q24",
+        "ui-q25",
+        "ui-x13"
+      ],
+      "terms": [
+        {
+          "term": "custom button",
+          "match": [
+            "custom buttons"
+          ],
+          "say": "A button an admin adds. Clicking it opens a web address or a page, often with the record's data filled in."
+        },
+        {
+          "term": "custom link",
+          "match": [
+            "custom links"
+          ],
+          "say": "Like a custom button, but shown as a text link on the record."
+        },
+        {
+          "term": "Visualforce page",
+          "say": "A custom page built with Salesforce's older page language. A developer writes it."
+        },
+        {
+          "term": "merge fields",
+          "match": [
+            "merge field"
+          ],
+          "say": "Placeholders like {!Account.Name}. When clicked, they turn into the real values from the record."
+        },
+        {
+          "term": "Detail Page Button",
+          "say": "A custom button that sits on one record's page."
+        },
+        {
+          "term": "List Button",
+          "say": "A custom button on a list of records. It can work on the records you tick."
+        },
+        {
+          "term": "standard controller",
+          "say": "Built-in logic that lets a Visualforce page show and save one kind of record. A record button's page must use the same object's one."
+        },
+        {
+          "term": "OnClick JavaScript",
+          "say": "An old button type that runs browser code. It works only in Salesforce Classic."
+        },
+        {
+          "term": "override",
+          "say": "Replace a built-in action, like New, with your own page everywhere it appears."
+        },
+        {
+          "term": "Salesforce mobile app",
+          "say": "The Salesforce app for phones and tablets."
+        }
+      ]
+    },
+    {
+      "id": "ui-6",
+      "title": "Quick actions: global or object-specific",
+      "minutes": 4,
+      "objective": "Demonstrate the capabilities and use cases for custom buttons, links, and actions.",
+      "cards": [
+        {
+          "type": "text",
+          "title": "In plain words",
+          "body": "A **quick action** opens a small form so users can do one task fast: create a record, update this record, log a call or send an email. There are two kinds: **global actions** work anywhere, and **object-specific actions** work on one object's records."
+        },
+        {
+          "type": "tip",
+          "title": "Think of it like…",
+          "body": "Sticky notes. A global action is a notepad in your pocket: you can write anywhere, but the note isn't stuck to anything. An object-specific action is a note stuck right onto one folder. Where it stops: both kinds are set up once by an admin, not by each user."
+        },
+        {
+          "type": "text",
+          "title": "Global actions",
+          "body": "Global actions live on the **global publisher layout** and in the header's global actions menu. They don't know the page you are on. They can't prefill fields from it, and a record they create has no relationship to the current record."
+        },
+        {
+          "type": "text",
+          "title": "Object-specific actions",
+          "body": "These live on one object's page layout and know the record. Create a Record links the new record to it automatically. **Update a Record** edits it. **Log a Call** logs against it. Custom ones can run a flow, a Lightning component, a Visualforce page or a canvas app."
+        },
+        {
+          "type": "list",
+          "title": "Rules the exam loves",
+          "items": [
+            "Creating a child in a **master-detail** relationship needs an object-specific action",
+            "A Visualforce object-specific action needs that object's standard controller; a global one can't use any standard controller",
+            "**Predefined field values** set defaults when the action opens",
+            "Each action has its own **action layout**: just the fields you add"
+          ]
+        },
+        {
+          "type": "code",
+          "title": "One action, set up",
+          "lang": "text",
+          "code": "Action: New Site Visit  (object-specific, on Account)\n  Type: Create a Record\n  Target object: Site_Visit__c\n  Action layout: Visit Date, Purpose\n  Predefined value: Status = Planned",
+          "body": "Each new visit links to the account by itself and starts as Planned."
+        },
+        {
+          "type": "trap",
+          "body": "A global Create action can't link the new record to the record you are on. Even placed on an account page, it makes an unrelated record. If the link matters, use an object-specific action."
+        },
+        {
+          "type": "tip",
+          "title": "Remember it",
+          "body": "Global = anywhere, knows nothing. Object-specific = right here, knows this record."
+        }
+      ],
+      "check": [
+        "ui-q29",
+        "ui-q30",
+        "ui-x16"
+      ],
+      "terms": [
+        {
+          "term": "quick action",
+          "match": [
+            "quick actions"
+          ],
+          "say": "A shortcut button that opens a small form to do one job fast, like logging a call."
+        },
+        {
+          "term": "global actions",
+          "match": [
+            "global action"
+          ],
+          "say": "Quick actions you can use from almost anywhere. They don't know which record you are looking at."
+        },
+        {
+          "term": "object-specific actions",
+          "match": [
+            "object-specific action"
+          ],
+          "say": "Quick actions for one kind of record. They know which record you are on and can link to it."
+        },
+        {
+          "term": "global publisher layout",
+          "say": "The special layout that holds the global actions. It isn't tied to any object."
+        },
+        {
+          "term": "Update a Record",
+          "say": "An action that lets you change a few fields of the record you are looking at, quickly."
+        },
+        {
+          "term": "Log a Call",
+          "say": "An action that saves a note about a phone call or meeting as a task."
+        },
+        {
+          "term": "master-detail",
+          "say": "A strong parent and child link between records. The child can't exist without its parent, and deleting the parent deletes the children."
+        },
+        {
+          "term": "Predefined field values",
+          "say": "Values an action fills in by itself, so users don't have to type them."
+        },
+        {
+          "term": "action layout",
+          "say": "The short list of fields shown in a quick action's little form."
+        }
+      ]
+    },
+    {
+      "id": "ui-7",
+      "title": "Custom Lightning components on pages",
+      "minutes": 3,
+      "objective": "Describe the programmatic customizations available for incorporating custom Lightning components in an application.",
+      "cards": [
+        {
+          "type": "text",
+          "title": "In plain words",
+          "body": "When no standard component does the job, a developer can build a **custom component**. Today that means **Lightning Web Components** (LWC); the older framework is **Aura**. Once it's set up, admins drag it onto pages in App Builder like any other block."
+        },
+        {
+          "type": "tip",
+          "title": "Think of it like…",
+          "body": "A custom LEGO brick made in a workshop. It fits the same baseplate as the shop bricks. Where it stops: someone must make it (code), and stamp it \"fits App Builder\" (configuration)."
+        },
+        {
+          "type": "text",
+          "title": "Not automatic",
+          "body": "A custom component doesn't appear in App Builder by itself. The developer configures it. For LWC, the component's config file sets `isExposed` to true and lists **targets**: the page types it may go on, like `lightning__RecordPage`."
+        },
+        {
+          "type": "code",
+          "title": "An LWC config file",
+          "lang": "xml",
+          "code": "<LightningComponentBundle xmlns=\"http://soap.sforce.com/2006/04/metadata\">\n  <isExposed>true</isExposed>\n  <targets>\n    <target>lightning__RecordPage</target>\n    <target>lightning__AppPage</target>\n  </targets>\n</LightningComponentBundle>",
+          "body": "This component can go on record pages and app pages, but not on Home pages."
+        },
+        {
+          "type": "text",
+          "title": "Settings for admins",
+          "body": "A developer can add **properties** (design attributes) that admins fill in on the page, like a title or a number of rows. A component can also be limited to phone or desktop. Aura components use interfaces such as `flexipage:availableForAllPageTypes`."
+        },
+        {
+          "type": "text",
+          "title": "Clicks before code",
+          "body": "Try standard components, Dynamic Forms and **AgentExchange** components first. AgentExchange is Salesforce's marketplace, formerly AppExchange. Build a custom component only for look, logic or data no standard block gives."
+        },
+        {
+          "type": "trap",
+          "body": "Custom **container components**, like your own tabs or accordion, aren't supported in App Builder. They show on the canvas, but you can't drop anything inside. Use the standard Tabs or Accordion component."
+        },
+        {
+          "type": "tip",
+          "title": "Remember it",
+          "body": "Expose it, target it, then drag it."
+        }
+      ],
+      "check": [
+        "ui-q36",
+        "ui-q37",
+        "ui-x19"
+      ],
+      "terms": [
+        {
+          "term": "custom component",
+          "say": "A page block a developer writes in code, for jobs the ready-made blocks can't do."
+        },
+        {
+          "term": "Lightning Web Components",
+          "match": [
+            "LWC"
+          ],
+          "say": "Salesforce's modern way to build page blocks with web code. LWC for short."
+        },
+        {
+          "term": "Aura",
+          "say": "Salesforce's older way to build page blocks. It still works, but new ones usually use LWC."
+        },
+        {
+          "term": "isExposed",
+          "say": "A setting in the component's file. When it is true, admins may use the block in App Builder."
+        },
+        {
+          "term": "targets",
+          "say": "The list of page types a component is allowed on, like record pages or app pages."
+        },
+        {
+          "term": "lightning__RecordPage",
+          "say": "The target name that lets a component go on record pages."
+        },
+        {
+          "term": "properties",
+          "match": [
+            "design attributes"
+          ],
+          "say": "Little settings a component offers, like a title. Admins fill them in on the page, no code."
+        },
+        {
+          "term": "flexipage:availableForAllPageTypes",
+          "say": "A tag an Aura component wears so App Builder lets it go on any Lightning page."
+        },
+        {
+          "term": "AgentExchange",
+          "match": [
+            "AppExchange"
+          ],
+          "say": "Salesforce's app store. You can install ready-made apps and page blocks from it. It used to be called AppExchange."
+        },
+        {
+          "term": "container components",
+          "say": "Blocks that hold other blocks, like tabs. App Builder only lets you fill the standard ones."
+        }
+      ]
+    },
+    {
+      "id": "ui-8",
+      "title": "Making it great on mobile",
+      "minutes": 3,
+      "objective": "Given a set of requirements, determine the appropriate global, object-specific actions and layouts to optimize the Salesforce mobile user experience.",
+      "cards": [
+        {
+          "type": "text",
+          "title": "In plain words",
+          "body": "The **Salesforce mobile app** shows the same data on a small screen. People there want the key facts fast, with few taps. Optimizing means showing less, but the right things first."
+        },
+        {
+          "type": "tip",
+          "title": "Think of it like…",
+          "body": "A pocket guidebook next to a big encyclopedia. Same facts, but the pocket book puts the useful ones up front. Where it stops: there is no separate mobile database. You only choose what shows first."
+        },
+        {
+          "type": "list",
+          "title": "Layout tips",
+          "items": [
+            "Put the most important fields in the **compact layout**: they show in the record highlights",
+            "Use **sections**, with the most important at the top",
+            "Keep **required fields** few",
+            "Use **default values** and record types, so fewer fields show",
+            "Phones show fields in one column"
+          ]
+        },
+        {
+          "type": "text",
+          "title": "Actions on mobile",
+          "body": "The mobile **action bar** shows actions from the layout's \"Salesforce Mobile and Lightning Experience Actions\" section, or from dynamic actions. Put the few that mobile users need first, like Log a Call or New Task."
+        },
+        {
+          "type": "text",
+          "title": "Mobile pages",
+          "body": "Build an **App page** in Lightning App Builder, activate it and add it to the **mobile navigation**. Good standard blocks: Report Chart, List View, Recent Items and **Launchpad**, a grid of one-tap shortcuts. Preview in App Builder, then test in the real app."
+        },
+        {
+          "type": "text",
+          "title": "Phone or desktop",
+          "body": "Lightning record pages can be assigned by **form factor**, so phones get a lighter page. A single component can also show on phones only, with a device visibility rule."
+        },
+        {
+          "type": "trap",
+          "body": "Custom links, list view buttons and JavaScript buttons don't show in the mobile app. A link desktop users love is missing on phones. Rebuild it as a URL button or a quick action."
+        },
+        {
+          "type": "tip",
+          "title": "Remember it",
+          "body": "Mobile = must-see first: compact layout up top, few fields, the right actions in reach."
+        }
+      ],
+      "check": [
+        "ui-q40",
+        "ui-q41",
+        "ui-x23"
+      ],
+      "terms": [
+        {
+          "term": "Salesforce mobile app",
+          "say": "The Salesforce app for phones and tablets. It shows the same data as on a computer."
+        },
+        {
+          "term": "compact layout",
+          "say": "A short list of a record's most important fields, shown at the top of the record."
+        },
+        {
+          "term": "sections",
+          "say": "Groups of fields under a heading, so people can jump to the part they need."
+        },
+        {
+          "term": "required fields",
+          "say": "Fields that must be filled in before you can save. Fewer is easier on a phone."
+        },
+        {
+          "term": "default values",
+          "say": "A value a field fills in by itself on new records, so nobody has to type it."
+        },
+        {
+          "term": "action bar",
+          "say": "The row of action buttons on a record in the mobile app, like Log a Call."
+        },
+        {
+          "term": "App page",
+          "say": "A Lightning page that works as a home base for an app, on desktop and phone."
+        },
+        {
+          "term": "mobile navigation",
+          "say": "The menu of places you can go in the mobile app."
+        },
+        {
+          "term": "Launchpad",
+          "say": "A page block with a grid of big shortcut tiles. One tap opens each place."
+        },
+        {
+          "term": "form factor",
+          "say": "The kind of screen: a computer (desktop) or a phone."
+        }
+      ]
+    }
+  ],
+  "flashcards": [
+    {
+      "id": "ui-f1",
+      "front": "How do you build a Lightning app?",
+      "back": "In Setup, open **App Manager** and click New Lightning App. The wizard sets branding, navigation style, items, utility bar and profiles."
+    },
+    {
+      "id": "ui-f2",
+      "front": "Which custom tab shows an outside website?",
+      "back": "A **web tab**. It shows an external web page inside Salesforce, no code needed."
+    },
+    {
+      "id": "ui-f3",
+      "front": "When do you pick console navigation?",
+      "back": "When users juggle many records at once, like a support desk. Records open as workspace tabs with subtabs."
+    },
+    {
+      "id": "ui-f4",
+      "front": "Does hiding an app stop users from seeing its records?",
+      "back": "No. An app is a menu. Data access comes from object permissions and sharing."
+    },
+    {
+      "id": "ui-f5",
+      "front": "What decides which page layout a user sees?",
+      "back": "Their **profile** plus the record's **record type**. Each pair maps to one layout."
+    },
+    {
+      "id": "ui-f6",
+      "front": "What does a compact layout control?",
+      "back": "The key fields at the top of a record: up to the first 7 in the Lightning Experience highlights panel, up to 10 in the mobile highlights."
+    },
+    {
+      "id": "ui-f7",
+      "front": "Which objects get a business process on their record types?",
+      "back": "Opportunity (sales process), Case (support process), Lead (lead process) and Solution (solution process)."
+    },
+    {
+      "id": "ui-f8",
+      "front": "How do you truly hide a field from some users?",
+      "back": "Use **field-level security**. Removing it from a layout only hides it on that page."
+    },
+    {
+      "id": "ui-f9",
+      "front": "Can you change a Lightning page's type later?",
+      "back": "No. A page's type is fixed. Create a new page of the right type."
+    },
+    {
+      "id": "ui-f10",
+      "front": "How can a Lightning record page be assigned?",
+      "back": "As the org default, an app default, or by app, record type and profile. You can also pick desktop or phone. Most specific wins."
+    },
+    {
+      "id": "ui-f11",
+      "front": "Where do fields in the Record Detail component come from?",
+      "back": "From the object's **page layout**. Edit the layout, or upgrade the page to Dynamic Forms."
+    },
+    {
+      "id": "ui-f12",
+      "front": "What do Dynamic Forms give you?",
+      "back": "Each field and section as its own component, with **visibility rules**. Fewer page layouts, one assignment model."
+    },
+    {
+      "id": "ui-f13",
+      "front": "What can a visibility rule filter on?",
+      "back": "Record fields, the user, permissions and the device. App and Home pages have no record, so no record filters."
+    },
+    {
+      "id": "ui-f14",
+      "front": "Where do you turn on dynamic actions?",
+      "back": "In Lightning App Builder, on the **Highlights Panel** component of that record page."
+    },
+    {
+      "id": "ui-f15",
+      "front": "Which custom button types don't show in the mobile app?",
+      "back": "Custom links, list view buttons and OnClick JavaScript buttons. URL and Visualforce buttons on the layout do show."
+    },
+    {
+      "id": "ui-f16",
+      "front": "What must a Visualforce page use to be a detail page button?",
+      "back": "The **standard controller** of the same object. A list button page uses the standard list controller."
+    },
+    {
+      "id": "ui-f17",
+      "front": "Does hiding a standard button stop the action?",
+      "back": "No. Users can still reach it another way. Remove the permission instead."
+    },
+    {
+      "id": "ui-f18",
+      "front": "What replaces OnClick JavaScript buttons in Lightning Experience?",
+      "back": "Quick actions, such as a flow or Lightning component action, or a URL button."
+    },
+    {
+      "id": "ui-f19",
+      "front": "Global or object-specific: which links a new record to the current one?",
+      "back": "**Object-specific.** A global create action makes a record with no relationship to the page you are on."
+    },
+    {
+      "id": "ui-f20",
+      "front": "How do you create a master-detail child with an action?",
+      "back": "With an **object-specific** action on the parent. Global actions can't create detail records."
+    },
+    {
+      "id": "ui-f21",
+      "front": "What are predefined field values?",
+      "back": "Defaults an action fills in when it opens, like Status = Planned."
+    },
+    {
+      "id": "ui-f22",
+      "front": "Where do Lightning and mobile actions come from on a page layout?",
+      "back": "The \"Salesforce Mobile and Lightning Experience Actions\" section. Not customized? They come from the global publisher layout."
+    },
+    {
+      "id": "ui-f23",
+      "front": "How does a custom LWC appear in Lightning App Builder?",
+      "back": "Its config file sets `isExposed` to true and lists **targets**, like `lightning__RecordPage`."
+    },
+    {
+      "id": "ui-f24",
+      "front": "How do admins set options on a custom component?",
+      "back": "Through **properties** (design attributes) the developer adds. Admins fill them in App Builder."
+    },
+    {
+      "id": "ui-f25",
+      "front": "Are custom tab or accordion components supported in App Builder?",
+      "back": "No. Custom containers show, but you can't drop components into them. Use the standard Tabs or Accordion."
+    },
+    {
+      "id": "ui-f26",
+      "front": "What goes in the compact layout for mobile users?",
+      "back": "The most important fields. They show in the record highlights, up to 10 on mobile."
+    },
+    {
+      "id": "ui-f27",
+      "front": "How do you build a mobile home page?",
+      "back": "Create an **App page** in Lightning App Builder, activate it, and add it to the mobile navigation."
+    },
+    {
+      "id": "ui-f28",
+      "front": "How can phone users get a lighter record page?",
+      "back": "Assign the Lightning record page by form factor, phone, or hide components with a device visibility rule."
+    }
+  ],
+  "questions": [
+    {
+      "id": "ui-q1",
+      "lesson": "ui-1",
+      "difficulty": 1,
+      "q": "The finance team at Larkspur Foods wants its own set of tabs, its own logo, and a Notes tool that is always one click away at the bottom of the screen. What should the app builder create?",
+      "options": [
+        "A Home page in Lightning App Builder for the finance profile",
+        "A permission set that grants the finance tabs and a Notes field",
+        "A Lightning app in App Manager with a utility bar",
+        "A record page with a Rich Text component and a list of links"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "A Lightning app bundles tabs, branding and a utility bar. You build it in App Manager, and the utility bar adds the Notes tool as a fixed footer.",
+      "wrong": [
+        "A Home page is one page. It doesn't bring its own tabs, logo or utility bar.",
+        "A permission set grants access. It doesn't build a branded app or a footer tool.",
+        "",
+        "A record page belongs to one object. It can't set the app's tabs or logo."
+      ],
+      "source": "Create Lightning Apps"
+    },
+    {
+      "id": "ui-q2",
+      "lesson": "ui-1",
+      "difficulty": 1,
+      "q": "Brightwave Travel wants its partner booking website to open inside Salesforce from the navigation bar. Nobody on the team writes code. Which tab type fits?",
+      "options": [
+        "A web tab",
+        "A Visualforce tab",
+        "A custom object tab",
+        "A Lightning component tab"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "Web tabs show any outside web page inside Salesforce. They need no code.",
+      "wrong": [
+        "",
+        "A Visualforce tab needs a Visualforce page, which someone must code.",
+        "A custom object tab lists records of a custom object, not a website.",
+        "A Lightning component tab needs a custom component, which is code."
+      ],
+      "source": "Custom Tabs"
+    },
+    {
+      "id": "ui-q3",
+      "lesson": "ui-1",
+      "difficulty": 2,
+      "q": "Agents at Harbor Health handle many cases at once. They want to open a case, then its contact, without losing the case they started on. Which app setting meets this need?",
+      "options": [
+        "Use standard navigation and add a utility bar",
+        "Add the Contact tab to the top of the navigation items",
+        "Assign a separate Lightning app to each support profile",
+        "Use console navigation in the Lightning app"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "Console navigation opens records as workspace tabs, with related records as subtabs. Agents can keep the case open while they look at the contact.",
+      "wrong": [
+        "Standard navigation opens one record at a time, even with a utility bar.",
+        "Tab order doesn't keep several records open side by side.",
+        "More apps don't change how records open inside an app.",
+        ""
+      ],
+      "source": "Create Lightning Apps"
+    },
+    {
+      "id": "ui-q4",
+      "lesson": "ui-1",
+      "difficulty": 2,
+      "q": "An app builder adds a new Lightning app page called Today's Jobs to the Field Service app. Technicians must land on that page every time they open the app. What should the app builder do?",
+      "options": [
+        "Set Today's Jobs as the org default Home page",
+        "Move Today's Jobs to the top of the app's navigation items",
+        "Add Today's Jobs to the app's utility bar as the first item",
+        "Mark the page as the default in each technician's profile"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "The item at the top of an app's navigation list is its landing page, on desktop and mobile.",
+      "wrong": [
+        "Today's Jobs is an app page, not a Home page. App pages aren't assigned as Home pages.",
+        "",
+        "The utility bar is a footer of tools. It doesn't set the landing page.",
+        "Profiles don't pick an app's landing page. The order of items does."
+      ],
+      "source": "Create Lightning Apps"
+    },
+    {
+      "id": "ui-q5",
+      "lesson": "ui-1",
+      "difficulty": 2,
+      "q": "Which two can an app builder set in the New Lightning App wizard? (Choose 2)",
+      "options": [
+        "Field-level security for the fields shown in the app",
+        "A utility bar with tools like Notes and Recent Items",
+        "The org-wide default sharing for the app's objects",
+        "The user profiles that can use the app",
+        "The record types users must choose for each object"
+      ],
+      "answer": [
+        1,
+        3
+      ],
+      "explain": "The wizard sets branding, navigation style, form factors, navigation items, the utility bar and the assigned profiles. It never changes data access.",
+      "wrong": [
+        "Field-level security is set on profiles and permission sets, not in an app.",
+        "",
+        "Sharing settings are separate from apps. An app never changes record access.",
+        "",
+        "Record types are assigned through profiles and permission sets, not apps."
+      ],
+      "source": "Create Lightning Apps"
+    },
+    {
+      "id": "ui-x1",
+      "lesson": "ui-1",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "At Pinecrest Realty, an app builder removed the Sales app from the Contractor profile shown here. Contractors still open opportunities from global search. They must have no access to opportunities. What should the app builder do?",
+      "code": "Contractor profile\n  Assigned apps: Field Ops (Sales app removed)\n  Object settings: Opportunity  Read: yes  Edit: no\n  Tab settings: Opportunities  Default Off",
+      "lang": "text",
+      "options": [
+        "Also remove the Opportunities tab from every other app contractors can open",
+        "Remove Read access to Opportunity from the Contractor profile and their permission sets",
+        "Set the Opportunities tab to Tab Hidden so search skips the object",
+        "Create a second Sales app without opportunities and assign it to contractors"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "Apps and tabs only group things; they never control data access. Object permissions decide if a user can read opportunities at all.",
+      "wrong": [
+        "Tabs and apps are menus. Search still finds records the user can read.",
+        "",
+        "Hiding a tab removes it from menus. It doesn't take away access to the object.",
+        "A new app is still just a menu. It doesn't change what contractors can read."
+      ],
+      "source": "Control Who Sees What"
+    },
+    {
+      "id": "ui-x2",
+      "lesson": "ui-1",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "Users of the Operations app shown here say they can't add or reorder their own items in the navigation bar. What explains this?",
+      "code": "Operations app (Lightning app)\n  Navigation style: Standard\n  Default navigation items: 55\n  Utility bar: Notes, Recent Items\n  Assigned profiles: Operations User",
+      "lang": "text",
+      "options": [
+        "Console apps never let users personalize navigation items",
+        "Personalization needs the Customize Application permission",
+        "Navigation items only allow personal changes on the phone app",
+        "With more than 50 default navigation items, users can't personalize the bar"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "If an app has more than 50 default navigation items, users can't personalize its navigation bar. Trim the list to 50 or fewer.",
+      "wrong": [
+        "This app uses standard navigation, and the cause is the item count.",
+        "Users don't need an admin permission to personalize the navigation bar.",
+        "Desktop users can personalize too, as long as the app has 50 or fewer default items.",
+        ""
+      ],
+      "source": "Create Lightning Apps"
+    },
+    {
+      "id": "ui-q6",
+      "lesson": "ui-1",
+      "difficulty": 2,
+      "q": "An app builder at Cobalt Labs built a Lightning app page in Lightning App Builder. It must appear as an item in the Lab app's navigation bar on desktop and phone. Which tab type does this use?",
+      "options": [
+        "A Lightning page tab",
+        "A Lightning component tab",
+        "A web tab pointing at the page's URL",
+        "A Visualforce tab that embeds the page"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "Lightning page tabs add Lightning app pages to the navigation bar of Lightning Experience and the mobile app. Activating an app page in App Builder sets one up for you.",
+      "wrong": [
+        "",
+        "That tab type shows one custom component, not a page built in App Builder.",
+        "A web tab shows an outside web page, not a Lightning app page.",
+        "A Visualforce tab shows a Visualforce page, which needs code."
+      ],
+      "source": "Custom Tabs"
+    },
+    {
+      "id": "ui-q7",
+      "lesson": "ui-2",
+      "difficulty": 1,
+      "q": "Renewal deals and new-business deals at Tidewater Supply need different Stage values and different fields on the page. What should the app builder use?",
+      "options": [
+        "Two page layouts assigned to the same profile",
+        "A dependent picklist that filters Stage by deal type",
+        "Two opportunity record types, each with its own sales process and page layout",
+        "A validation rule that blocks the wrong Stage for each deal type"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "Record types give one object different picklist values, business processes and page layouts. On opportunities, the business process is the sales process with its stages.",
+      "wrong": [
+        "A profile gets one layout per record type, and layouts can't change Stage values.",
+        "This wouldn't change which fields show on the page.",
+        "",
+        "A validation rule blocks saves. It doesn't change the choices or the layout."
+      ],
+      "source": "Create Record Types"
+    },
+    {
+      "id": "ui-q8",
+      "lesson": "ui-2",
+      "difficulty": 1,
+      "q": "Users want Account Number and Rating at the top of every account record, in the highlights panel. What should the app builder edit?",
+      "options": [
+        "The account's page layout",
+        "The account's search layout",
+        "The account's compact layout",
+        "The account list view filters"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "The compact layout picks the fields in a record's highlights panel. In Lightning Experience, up to the first 7 show there.",
+      "wrong": [
+        "The page layout controls the details area, not the highlights panel fields.",
+        "Search layouts set the columns in search results.",
+        "",
+        "List views show lists of records, not the top of one record."
+      ],
+      "source": "Compact Layouts"
+    },
+    {
+      "id": "ui-q9",
+      "lesson": "ui-2",
+      "difficulty": 2,
+      "q": "An app builder set this compact layout. Desktop users don't see Open House or Lockbox Code in the highlights panel, but mobile users see all 9 fields. Why?",
+      "code": "Primary compact layout: Property__c\n  1 Name          6 Agent\n  2 Address       7 List Date\n  3 Price         8 Open House\n  4 Status        9 Lockbox Code\n  5 Bedrooms",
+      "lang": "text",
+      "options": [
+        "Lightning Experience shows up to the first 7 compact layout fields in the highlights panel",
+        "The compact layout needs a record type before all fields show on desktop",
+        "Desktop highlights panels show only fields that are also on the page layout",
+        "Field-level security hides the extra fields from desktop users"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "In Lightning Experience the highlights panel shows up to the first 7 compact layout fields. The mobile app's highlights show up to 10.",
+      "wrong": [
+        "",
+        "Record types are optional. The desktop limit is the first 7 fields.",
+        "The highlights panel reads the compact layout, not the page layout.",
+        "Field-level security is the same on every device, so mobile would hide them too."
+      ],
+      "source": "Compact Layouts"
+    },
+    {
+      "id": "ui-q10",
+      "lesson": "ui-2",
+      "difficulty": 1,
+      "q": "Support agents at Meadowlark Insurance must never see the Claim Reserve field on claims, including in reports. What should the app builder do?",
+      "options": [
+        "Remove the field from every page layout that support agents use",
+        "Hide the field with a visibility rule on the claim record page",
+        "Move the field into a collapsed section at the bottom of the layout",
+        "Remove read access to the field with field-level security for support users"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "Field-level security decides if a user can see a field anywhere: pages, reports, list views and the API. Layouts and visibility rules only tidy one page.",
+      "wrong": [
+        "A layout only hides the field on that page. Reports and the API still show it.",
+        "A visibility rule only hides it on that page. Reports still show it.",
+        "A collapsed section still shows the field to anyone who opens it.",
+        ""
+      ],
+      "source": "Control Who Sees What"
+    },
+    {
+      "id": "ui-q11",
+      "lesson": "ui-2",
+      "difficulty": 2,
+      "q": "When creating a new record type, which two objects ask the app builder to pick a business process? (Choose 2)",
+      "options": [
+        "Opportunity",
+        "Account",
+        "Case",
+        "Contact",
+        "A custom object"
+      ],
+      "answer": [
+        0,
+        2
+      ],
+      "explain": "Only opportunity, case, lead and solution record types use a business process. Opportunities have sales processes and cases have support processes.",
+      "wrong": [
+        "",
+        "Account record types don't have a business process.",
+        "",
+        "Contact record types don't have a business process.",
+        "Custom object record types don't have a business process."
+      ],
+      "source": "Create Record Types"
+    },
+    {
+      "id": "ui-q12",
+      "lesson": "ui-2",
+      "difficulty": 2,
+      "q": "Installation work orders and repair work orders at Northgate need different key fields at the top of the record. Both use record types. What should the app builder do?",
+      "options": [
+        "Create one compact layout per profile and assign it on the profile",
+        "Create two compact layouts and assign one to each record type",
+        "Set both compact layouts as primary on the object",
+        "Put all key fields in one compact layout and hide some by record type"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "Each record type can have its own compact layout, which overrides the object's primary one. Each record type gets only one.",
+      "wrong": [
+        "Compact layouts are assigned to record types, not to profiles.",
+        "",
+        "An object has only one primary compact layout.",
+        "Compact layouts have no rules to hide fields by record type."
+      ],
+      "source": "Compact Layouts"
+    },
+    {
+      "id": "ui-x3",
+      "lesson": "ui-2",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "At Quill Books, the Sales Rep profile has only the Retail account record type available. Which two statements are true for sales reps? (Choose 2)",
+      "options": [
+        "They can't open any Wholesale account, even ones they own",
+        "The Retail record type also limits which accounts they can see",
+        "They aren't asked to pick a record type when creating accounts",
+        "They must choose Retail from a list each time they create an account",
+        "They can still view and edit Wholesale accounts they have access to"
+      ],
+      "answer": [
+        2,
+        4
+      ],
+      "explain": "If a profile has only one record type, users are never asked to choose. Record types don't control access, so users can still work on records of other types they can see.",
+      "wrong": [
+        "Record types don't block access. Users can view and edit other record types they have access to.",
+        "Sharing settings decide record access, not record types.",
+        "",
+        "With one record type available, users aren't prompted to choose.",
+        ""
+      ],
+      "source": "Create Record Types"
+    },
+    {
+      "id": "ui-x4",
+      "lesson": "ui-2",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A Sales Manager opens a Wholesale account. A Sales Rep opens a Retail account. Which page layouts do they see?",
+      "code": "Page layout assignment: Account\n\nProfile        Retail              Wholesale\nSales Rep      Retail Sales        Wholesale Sales\nSupport        Support Basic       Support Basic\nSales Manager  Retail Sales        Manager Wholesale",
+      "lang": "text",
+      "options": [
+        "Retail Sales for both, because the manager shares the rep's layout",
+        "Manager Wholesale for the manager, Retail Sales for the rep",
+        "Wholesale Sales for the manager, Retail Sales for the rep",
+        "Support Basic for both, because it is the first layout in the list"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "The page layout comes from the user's profile plus the record's record type. Read the row for the profile and the column for the record type.",
+      "wrong": [
+        "The manager is opening a Wholesale record, so the Wholesale column applies.",
+        "",
+        "Wholesale Sales is the Sales Rep row. The manager's row says Manager Wholesale.",
+        "Order doesn't matter. Each profile and record type pair has its own layout."
+      ],
+      "source": "Create Record Types"
+    },
+    {
+      "id": "ui-x5",
+      "lesson": "ui-2",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "Retail users must fill in Store Region when they edit accounts on the Retail layout. Nightly data loads through the API create accounts without that value and must keep working. What should the app builder do?",
+      "options": [
+        "Make Store Region a required field in its field settings",
+        "Add a validation rule that requires Store Region for all users",
+        "Add Store Region to the Retail compact layout",
+        "Mark Store Region as required on the Retail page layout"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "Required on a page layout applies only when users edit with that layout. Required on the field itself, or a validation rule, also applies to the API.",
+      "wrong": [
+        "A field that is required everywhere would make the API loads fail.",
+        "A validation rule also runs for API loads, so they would fail.",
+        "A compact layout only shows fields. It can't make one required.",
+        ""
+      ],
+      "source": "Require Field Input to Ensure Data Quality"
+    },
+    {
+      "id": "ui-q13",
+      "lesson": "ui-3",
+      "difficulty": 1,
+      "q": "Sales managers at Ridgeway want one page that shows a pipeline report chart and a list of open deals, opened from the Sales app's navigation bar. There is no budget for code. What should the app builder create?",
+      "options": [
+        "An App page in Lightning App Builder",
+        "A Visualforce tab with a chart",
+        "A record page for the Opportunity object",
+        "A custom report type with a chart"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "An App page is a Lightning page that works as a home base in an app. Drag in the Report Chart and List View components, then add it to the navigation.",
+      "wrong": [
+        "",
+        "Visualforce needs code, and standard components can already do this.",
+        "A record page shows one record, not a team overview.",
+        "A report type defines report data. It doesn't build a page."
+      ],
+      "source": "Lightning Page Types"
+    },
+    {
+      "id": "ui-q14",
+      "lesson": "ui-3",
+      "difficulty": 2,
+      "q": "Sales Reps at Fernhill must get one opportunity record page, and Sales Managers another, but only in the Sales app. Other apps keep the current page. How should the app builder assign the new pages?",
+      "options": [
+        "Set each page as the org default for its profile",
+        "Assign each page in the profile's page layout settings",
+        "Assign each page by app, record type and profile in Lightning App Builder",
+        "Set each page as the app default for the Sales app"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "Lightning record pages can be assigned by app, record type and profile. That is the most specific level, so it wins over app and org defaults.",
+      "wrong": [
+        "The org default applies to everyone, not to one profile.",
+        "Page layout assignment chooses layouts, not Lightning pages.",
+        "",
+        "An app default goes to everyone in the app, not one profile."
+      ],
+      "source": "Lightning Page Types"
+    },
+    {
+      "id": "ui-q15",
+      "lesson": "ui-3",
+      "difficulty": 2,
+      "q": "An app builder created a Lightning Home page by mistake. It should have been a record page for accounts. What should the app builder do?",
+      "options": [
+        "Change the page type in the page properties",
+        "Change the template to a record page template",
+        "Create a new record page for accounts",
+        "Activate the Home page on the account object"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "A Lightning page's type is fixed when you create it. To get a record page, make a new one.",
+      "wrong": [
+        "A Lightning page's type can't be changed after it is created.",
+        "Templates set the layout of regions. They don't change the page type.",
+        "",
+        "A Home page can't be assigned to an object."
+      ],
+      "source": "Lightning Page Types"
+    },
+    {
+      "id": "ui-q16",
+      "lesson": "ui-3",
+      "difficulty": 2,
+      "q": "Field technicians at Brightline should get a simpler work order record page on phones, while desktop users keep the full page. What should the app builder use?",
+      "options": [
+        "A Lightning record page assigned for the phone form factor",
+        "A separate page layout assigned to a mobile profile",
+        "A compact layout with fewer fields",
+        "A second record type for mobile work orders"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "Only Lightning pages can be assigned by form factor. Activate one page for desktop and another for phone.",
+      "wrong": [
+        "",
+        "Page layouts can't be assigned by device, and the users have one profile.",
+        "A compact layout changes the highlights, not the whole page.",
+        "Record types sort records, not devices."
+      ],
+      "source": "Deciding When to Use Lightning App Builder or the Page Layout Editor"
+    },
+    {
+      "id": "ui-x6",
+      "lesson": "ui-3",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A Lightning record page for Invoice__c shows fields with the Record Detail component. The app builder wants to reorder those fields. Which two options work? (Choose 2)",
+      "options": [
+        "Edit the invoice page layout that the users are assigned",
+        "Switch the page to a template with more columns",
+        "Activate the page again with a phone form factor",
+        "Upgrade the page to Dynamic Forms and arrange the fields in App Builder",
+        "Edit the invoice compact layout"
+      ],
+      "answer": [
+        0,
+        3
+      ],
+      "explain": "Fields inside Record Detail come from the page layout. To arrange fields in App Builder instead, upgrade the page to Dynamic Forms.",
+      "wrong": [
+        "",
+        "A new template moves components, not the fields inside Record Detail.",
+        "Activation decides who sees the page, not the field order.",
+        "",
+        "The compact layout sets the highlights panel, not Record Detail."
+      ],
+      "source": "Deciding When to Use Lightning App Builder or the Page Layout Editor"
+    },
+    {
+      "id": "ui-x7",
+      "lesson": "ui-3",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A Sales Rep opens a Wholesale account in the Sales app. Which page does the rep see?",
+      "code": "Account record page activations\n  Org default:            Account Basic\n  App default (Sales):    Account Sales\n  App, record type, profile:\n    Sales app + Retail + Sales Rep -> Account Retail Rep",
+      "lang": "text",
+      "options": [
+        "Account Retail Rep",
+        "Account Basic",
+        "The system default account page",
+        "Account Sales"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "The most specific assignment that matches wins. No rule matches Wholesale, so the Sales app default applies.",
+      "wrong": [
+        "That assignment is only for Retail records. This account is Wholesale.",
+        "The Sales app has its own default, which is more specific than the org default.",
+        "Custom pages are assigned here, so the system default isn't used.",
+        ""
+      ],
+      "source": "Lightning Page Types"
+    },
+    {
+      "id": "ui-x8",
+      "lesson": "ui-3",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "An app builder wants to add the object-specific action Update Status to a Lightning App page for the warehouse team. What happens?",
+      "options": [
+        "It works once the action is added to the page layout",
+        "It can't be done, because App pages support only global actions",
+        "It works if the page is activated for the phone form factor",
+        "It works after Dynamic Forms is turned on for the page"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "App pages aren't tied to a record, so they support only global actions. Object-specific actions need a record page.",
+      "wrong": [
+        "App pages have no object, so they don't use object page layouts.",
+        "",
+        "Form factor doesn't change which actions an App page supports.",
+        "Dynamic Forms is for record pages. App pages still take only global actions."
+      ],
+      "source": "Lightning Page Types"
+    },
+    {
+      "id": "ui-q17",
+      "lesson": "ui-3",
+      "difficulty": 2,
+      "q": "Mobile users at Sunpath ask for a custom Lightning Home page in the Salesforce mobile app, like the one desktop users have. What should the app builder tell them?",
+      "options": [
+        "Activate the Home page for the phone form factor in Lightning App Builder",
+        "Home pages are for Lightning Experience only; build an App page and add it to mobile navigation",
+        "Assign the Home page to the mobile app by profile",
+        "Copy the Home page into a record page for the User object"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "Lightning Home pages work in Lightning Experience only. For phones, build an App page and add it to the mobile navigation.",
+      "wrong": [
+        "Lightning Home pages aren't available in the mobile app.",
+        "",
+        "Home pages can be assigned by app and profile, but only in Lightning Experience.",
+        "A record page shows one record, so it isn't a home base."
+      ],
+      "source": "Lightning Page Types"
+    },
+    {
+      "id": "ui-q18",
+      "lesson": "ui-4",
+      "difficulty": 1,
+      "q": "The Cancellation Reason field on orders should only show when Status equals Cancelled. What should the app builder use?",
+      "options": [
+        "A record type for cancelled orders",
+        "A validation rule on the Status field",
+        "A separate page layout section for cancellations",
+        "Dynamic Forms with a visibility rule on the field"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "Dynamic Forms makes each field its own component. A visibility rule then shows it only when Status equals Cancelled.",
+      "wrong": [
+        "Record types need users to switch type. They don't react to Status.",
+        "A validation rule blocks bad saves. It doesn't show or hide fields.",
+        "A layout section always shows. It can't react to Status.",
+        ""
+      ],
+      "source": "Break Up Your Record Details with Dynamic Forms"
+    },
+    {
+      "id": "ui-q19",
+      "lesson": "ui-4",
+      "difficulty": 2,
+      "q": "Which feature meets this requirement for the Quote__c record page?",
+      "code": "Requirement: Approve Discount action on Quote__c records\n  Show it only when:\n    Discount__c is greater than 20\n    AND the user's profile is Sales Manager",
+      "lang": "text",
+      "options": [
+        "Dynamic actions with visibility filters on the action",
+        "A page layout for managers that includes the action",
+        "A validation rule that blocks other users from approving",
+        "A global action on the global publisher layout"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "Dynamic actions let you add actions in App Builder and filter them by record fields, user and device.",
+      "wrong": [
+        "",
+        "A layout can't check the discount value.",
+        "A validation rule can't hide an action from the page.",
+        "Global actions don't know the record, so they can't check its discount."
+      ],
+      "source": "Create Dynamic Actions in Lightning App Builder"
+    },
+    {
+      "id": "ui-q20",
+      "lesson": "ui-4",
+      "difficulty": 2,
+      "q": "Clearwater Bank has 6 case page layouts that differ only by a few fields for each region. The app builder wants fewer layouts to maintain. What is the best option?",
+      "options": [
+        "One record type per region, each with its own page layout",
+        "One compact layout per region",
+        "One Dynamic Forms page with visibility rules on the regional fields",
+        "One permission set per region that hides the extra fields"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "Dynamic Forms with visibility rules reduces the number of page layouts and record types you need.",
+      "wrong": [
+        "This keeps several layouts and adds record types too.",
+        "Compact layouts set the highlights panel, not the record details.",
+        "",
+        "Permission sets grant access. Using them to tidy pages is the wrong tool."
+      ],
+      "source": "Break Up Your Record Details with Dynamic Forms"
+    },
+    {
+      "id": "ui-q21",
+      "lesson": "ui-4",
+      "difficulty": 2,
+      "q": "On a Lightning App page, which two filters can a component visibility rule use? (Choose 2)",
+      "options": [
+        "Fields of the current record",
+        "Fields of the current user",
+        "The record type of the current record",
+        "Fields of the record's parent account",
+        "The device form factor"
+      ],
+      "answer": [
+        1,
+        4
+      ],
+      "explain": "App and Home pages aren't tied to an object, so visibility filters use the user, permissions or the device.",
+      "wrong": [
+        "App pages aren't tied to a record, so there is no record to filter on.",
+        "",
+        "An App page has no current record.",
+        "An App page has no record, so it has no parent either.",
+        ""
+      ],
+      "source": "Visibility Rules on Lightning Pages"
+    },
+    {
+      "id": "ui-q22",
+      "lesson": "ui-4",
+      "difficulty": 2,
+      "q": "An app builder hides the Salary__c field from interns with a visibility rule on the Dynamic Forms page. Interns still see salaries in a report. Why?",
+      "options": [
+        "Reports ignore visibility rules unless the report is in a public folder",
+        "The rule needs the device filter set to desktop",
+        "Visibility rules only control the page; field-level security still grants access",
+        "The field must also be removed from the compact layout"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "Visibility rules tidy one page; they don't secure data. Remove read access with field-level security to hide it everywhere.",
+      "wrong": [
+        "Report folders control who sees the report, not field access.",
+        "Device has nothing to do with reports.",
+        "",
+        "A compact layout is another page part. Reports don't use it."
+      ],
+      "source": "Visibility Rules on Lightning Pages"
+    },
+    {
+      "id": "ui-x9",
+      "lesson": "ui-4",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "On a Dynamic Forms page, Region is set to Required in App Builder. A visibility rule hides Region for partner users. Partners now save records with Region empty. Why?",
+      "options": [
+        "A field hidden by a visibility rule at run time can be saved empty",
+        "Partner users skip all Required settings made in App Builder",
+        "Required in App Builder only works on records created by the API",
+        "The field needs to be required on the page layout too"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "If a field set to Required is hidden by a visibility rule, users can save without it. Make the field universally required or use a validation rule if it must always be filled.",
+      "wrong": [
+        "",
+        "There is no partner exception. Hidden fields simply aren't checked.",
+        "Required in App Builder is a page setting. It doesn't apply to the API at all.",
+        "Dynamic Forms pages use the page's fields, not the layout's."
+      ],
+      "source": "Visibility Rules on Lightning Pages"
+    },
+    {
+      "id": "ui-x10",
+      "lesson": "ui-4",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "At which step does the Return Details section first appear, and why?",
+      "code": "Field Section: Return Details\n  Show when: Record > Status equals Returned\n\nStep 1: user clicks Edit (Status = Shipped)\nStep 2: user changes Status to Returned\nStep 3: user clicks Save",
+      "lang": "text",
+      "options": [
+        "At step 2, because visibility rules react as soon as a field value changes",
+        "At step 1, because edit mode shows every section whatever its rule says",
+        "Never, because Status filters can't be used on field sections at all",
+        "After step 3, because section rules are checked only after a save"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "Visibility rules on single fields react while the user edits. Rules on field sections are evaluated only after the record is saved.",
+      "wrong": [
+        "Only rules on single fields react while editing. Section rules wait for the save.",
+        "Edit mode still applies the rule. The section stays hidden until the save.",
+        "Status is a supported filter field for sections.",
+        ""
+      ],
+      "source": "Visibility Rules on Lightning Pages"
+    },
+    {
+      "id": "ui-x11",
+      "lesson": "ui-4",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "The app builder can't save this visibility filter. What is the problem?",
+      "code": "Component: Escalation Banner (on a Case record page)\nShow when:\n  Record.Account.Owner.Manager.Manager.Manager.LastName\n  equals \"Ortiz\"",
+      "lang": "text",
+      "options": [
+        "Visibility filters can't use fields from related objects",
+        "The filter crosses six relationship spans, and filters allow at most five",
+        "Text fields aren't supported in visibility filters",
+        "Case record pages can only filter on the user, not the record"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "Visibility filter field values can't span more than five fields. This path has six spans, so it isn't supported.",
+      "wrong": [
+        "Related object fields are allowed, up to five spans.",
+        "",
+        "Text fields are a supported filter type.",
+        "Record pages can filter on record and related fields."
+      ],
+      "source": "Visibility Rules on Lightning Pages"
+    },
+    {
+      "id": "ui-q23",
+      "lesson": "ui-4",
+      "difficulty": 2,
+      "q": "An app builder enables dynamic actions on the Account Sales record page and filters the actions there. Users on the Account Service record page still see the page layout's actions. Why?",
+      "options": [
+        "Dynamic actions need a page layout change before they apply",
+        "Enabling dynamic actions applies only to the record page being edited",
+        "Service users need a permission set to see dynamic actions",
+        "Dynamic actions work only on custom objects, not on Account"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "When you enable dynamic actions, it applies only to the record page you're working on. Repeat it on the Account Service page.",
+      "wrong": [
+        "Once on, the page uses its own actions, not the layout's.",
+        "",
+        "No special permission is needed to see dynamic actions.",
+        "Dynamic actions work for standard and custom objects."
+      ],
+      "source": "Create Dynamic Actions in Lightning App Builder"
+    },
+    {
+      "id": "ui-x12",
+      "lesson": "ui-4",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "An app builder opens the Event record page in Lightning App Builder and finds no Fields tab to drag fields from. What is the best next step?",
+      "options": [
+        "Turn on Dynamic Forms on Mobile in Salesforce Mobile App setup",
+        "Switch the page to a custom template that supports Dynamic Forms",
+        "Create a record type so the Fields tab appears",
+        "Manage the event fields in the page layout, since Events don't support Dynamic Forms"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "Dynamic Forms isn't supported on objects that aren't LWC-enabled, like Events and Tasks. Their record pages use the page layout.",
+      "wrong": [
+        "That setting is for mobile. Events still don't support Dynamic Forms.",
+        "Custom templates don't add Dynamic Forms for unsupported objects.",
+        "Record types don't turn on Dynamic Forms.",
+        ""
+      ],
+      "source": "Break Up Your Record Details with Dynamic Forms"
+    },
+    {
+      "id": "ui-q24",
+      "lesson": "ui-5",
+      "difficulty": 1,
+      "q": "Reps want a button on account pages that opens a mapping website for that account's billing address. What should the app builder create?",
+      "options": [
+        "A custom detail page button with a URL and merge fields",
+        "A global quick action that creates a map record",
+        "A list button on the Accounts list view",
+        "A web tab that points at the mapping website"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "A URL custom button can use merge fields like `{!Account.BillingCity}`, which fill in the record's values when clicked.",
+      "wrong": [
+        "",
+        "A global action doesn't know which account is open.",
+        "A list button acts on a list, not one record's address.",
+        "A web tab can't fill in the account's address."
+      ],
+      "source": "Custom Button and Link Considerations"
+    },
+    {
+      "id": "ui-q25",
+      "lesson": "ui-5",
+      "difficulty": 1,
+      "q": "Managers at Oakmont want to tick several leads in a list view and send them all to a review page at once. Which custom button setup fits?",
+      "options": [
+        "A Detail Page Button on the lead page layout",
+        "A Detail Page Link in the Custom Links section",
+        "A List Button with Display Checkboxes selected",
+        "A List Button with Display Checkboxes cleared"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "List Buttons appear on list views and related lists. Select Display Checkboxes when users must pick individual records.",
+      "wrong": [
+        "A detail page button works on one record at a time.",
+        "A link on a record page can't act on records ticked in a list.",
+        "",
+        "Without checkboxes, users can't select individual records."
+      ],
+      "source": "Custom Button and Link Considerations"
+    },
+    {
+      "id": "ui-q26",
+      "lesson": "ui-5",
+      "difficulty": 2,
+      "q": "Aspen Logistics is moving to Lightning Experience. Several OnClick JavaScript buttons stopped showing. What should the app builder do?",
+      "options": [
+        "Turn on JavaScript buttons for Lightning in Session Settings",
+        "Move the buttons to the page layout's Custom Links section",
+        "Rebuild them as quick actions, such as flow or Lightning component actions",
+        "Add the buttons to the compact layout of each object"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "OnClick JavaScript buttons work only in Salesforce Classic. In Lightning Experience, replace them with quick actions or other supported options.",
+      "wrong": [
+        "No such setting exists. JavaScript buttons aren't supported in Lightning.",
+        "Moving them doesn't change the unsupported button type.",
+        "",
+        "Compact layouts hold fields, not buttons."
+      ],
+      "source": "Custom Button and Link Considerations"
+    },
+    {
+      "id": "ui-q27",
+      "lesson": "ui-5",
+      "difficulty": 2,
+      "q": "Interns at Galeworks must not delete opportunities. The app builder already removed the Delete button from their page layout, yet an intern still deleted one. What should the app builder do?",
+      "options": [
+        "Remove the Delete permission on Opportunity for interns",
+        "Also remove Delete from the opportunity compact layout",
+        "Override the Delete button with a blank Visualforce page",
+        "Add a validation rule that blocks deletes by interns"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "Hiding a button removes it from one page, but users can still reach the action. Take away the permission to really stop it.",
+      "wrong": [
+        "",
+        "Compact layouts hold fields. Actions there don't control permissions.",
+        "An override is a workaround, not security. Users may find other ways.",
+        "Validation rules run on save, not on delete."
+      ],
+      "source": "Custom Button and Link Considerations"
+    },
+    {
+      "id": "ui-q28",
+      "lesson": "ui-5",
+      "difficulty": 1,
+      "q": "An app builder wants a link to the company's policy page shown in the links area of every case record. Which display type fits?",
+      "options": [
+        "List Button",
+        "Detail Page Button",
+        "Web tab",
+        "Detail Page Link"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "A Detail Page Link is a custom link shown on the record page. Detail Page Buttons and List Buttons are buttons.",
+      "wrong": [
+        "A list button goes on lists, not on a record's links area.",
+        "A button shows with the buttons, not in the links area.",
+        "A web tab is a navigation item, not part of the record page.",
+        ""
+      ],
+      "source": "Custom Button and Link Considerations"
+    },
+    {
+      "id": "ui-x13",
+      "lesson": "ui-5",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "Which two custom buttons and links on a page layout appear for users in the Salesforce mobile app? (Choose 2)",
+      "options": [
+        "A detail page button with a URL content source",
+        "A detail page link that opens a website",
+        "A list button on the Accounts list view",
+        "A detail page button that runs OnClick JavaScript",
+        "A detail page button that opens a Visualforce page"
+      ],
+      "answer": [
+        0,
+        4
+      ],
+      "explain": "In the mobile app, URL and Visualforce buttons from the page layout show. Custom links, list view buttons and JavaScript buttons don't.",
+      "wrong": [
+        "",
+        "Custom links aren't available in the mobile app.",
+        "List view buttons aren't available in the mobile app.",
+        "JavaScript buttons aren't supported in the mobile app.",
+        ""
+      ],
+      "source": "Custom Button and Link Considerations"
+    },
+    {
+      "id": "ui-x14",
+      "lesson": "ui-5",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A developer wrote this Visualforce page to print labels for Shipment__c records. The app builder wants a detail page button on Shipment__c that opens it, but the page isn't in the content list. Why?",
+      "code": "<apex:page standardController=\"Account\">\n  <!-- prints a shipping label -->\n</apex:page>",
+      "lang": "html",
+      "options": [
+        "Visualforce buttons can only open pages that use custom controllers",
+        "A detail page button's page must use the standard controller of Shipment__c",
+        "Visualforce pages can be used only as list buttons, not detail buttons",
+        "The page must be added to a Visualforce tab before it can be a button"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "Visualforce pages used as detail page buttons or links must use the standard controller of the same object. This page uses Account.",
+      "wrong": [
+        "It is the other way round: the object's standard controller is required.",
+        "",
+        "Visualforce pages work as detail buttons when the controller matches.",
+        "A tab isn't needed. The controller is the problem."
+      ],
+      "source": "Custom Button and Link Considerations"
+    },
+    {
+      "id": "ui-x15",
+      "lesson": "ui-5",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "Whenever a user clicks New on Project__c, from the tab, a list view or a related list, they must see a custom guided page. What should the app builder do?",
+      "options": [
+        "Create a custom detail page button and swap it in on the page layout",
+        "Override the standard New action on Project__c with a Lightning component",
+        "Hide the New button on every Project__c list view",
+        "Add a global action named New Project to the publisher layout"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "Overriding a standard action replaces it everywhere it appears. Swapping buttons on a page layout only changes that layout's buttons.",
+      "wrong": [
+        "Layout buttons appear on one record page. New appears on tabs and lists.",
+        "",
+        "Hiding New stops nothing and shows no new page.",
+        "The standard New button would still open the old page."
+      ],
+      "source": "Custom Button and Link Considerations"
+    },
+    {
+      "id": "ui-q29",
+      "lesson": "ui-6",
+      "difficulty": 1,
+      "q": "Reps at Saltmarsh want to log a Site Visit from an account page, and each visit must link to that account automatically. What should the app builder create?",
+      "options": [
+        "A global Create a Record action for Site Visit",
+        "A custom list button on the Site Visit list view",
+        "A web tab that opens the Site Visit page",
+        "An object-specific Create a Record action on Account"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "Object-specific create actions know the record you're on. The new record is linked to it automatically.",
+      "wrong": [
+        "Global actions create records with no link to the current record.",
+        "A list button doesn't open a quick form linked to the account.",
+        "A web tab shows a web page. It can't link records.",
+        ""
+      ],
+      "source": "Object-Specific Actions"
+    },
+    {
+      "id": "ui-q30",
+      "lesson": "ui-6",
+      "difficulty": 1,
+      "q": "Employees at Kestrel Media want to create an Expense record from anywhere in Salesforce. The expense isn't tied to any other record. What should the app builder create?",
+      "options": [
+        "A global Create a Record action",
+        "An object-specific action on Account",
+        "A custom detail page button",
+        "A Lightning record page for Expense"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "Global actions work from almost anywhere and create records with no relationship to other records. That fits a stand-alone expense.",
+      "wrong": [
+        "",
+        "This only appears on account pages, and expenses aren't tied to accounts.",
+        "A detail button appears on one object's record pages, not everywhere.",
+        "A record page shows an existing expense. It doesn't create one from anywhere."
+      ],
+      "source": "Global Quick Actions"
+    },
+    {
+      "id": "ui-q31",
+      "lesson": "ui-6",
+      "difficulty": 2,
+      "q": "What should the app builder add to this action to meet the requirement?",
+      "code": "Action: New Site Visit  (on Account)\n  Type: Create a Record\n  Target object: Site_Visit__c\n  Action layout: Visit Date, Purpose\n  Requirement: Status must start as Planned,\n               and users never pick it",
+      "lang": "text",
+      "options": [
+        "A visibility rule on the Status field",
+        "A validation rule that requires Planned",
+        "A predefined field value for Status on the action",
+        "Status as the first field in the compact layout"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "Predefined field values fill in fields when a quick action runs. Users don't have to type them.",
+      "wrong": [
+        "Visibility rules show or hide fields. They don't set values.",
+        "A validation rule blocks saves. It doesn't fill the value.",
+        "",
+        "The compact layout shows fields. It doesn't set defaults."
+      ],
+      "source": "Object-Specific Actions"
+    },
+    {
+      "id": "ui-q32",
+      "lesson": "ui-6",
+      "difficulty": 2,
+      "q": "Which two statements about object-specific actions are true? (Choose 2)",
+      "options": [
+        "They live on the global publisher layout",
+        "A Create a Record action links the new record to the current record",
+        "An Update a Record action can edit the record the user is viewing",
+        "One action can be added to the layouts of any object",
+        "They can't launch a flow or a Lightning component"
+      ],
+      "answer": [
+        1,
+        2
+      ],
+      "explain": "Object-specific actions work in the context of one record. They create linked records, update the record, log calls and more.",
+      "wrong": [
+        "That layout holds global actions. Object-specific actions go on the object's layouts.",
+        "",
+        "",
+        "Object-specific actions are only available on that object's layouts.",
+        "Custom object-specific actions can run flows and Lightning components."
+      ],
+      "source": "Object-Specific Actions"
+    },
+    {
+      "id": "ui-q33",
+      "lesson": "ui-6",
+      "difficulty": 2,
+      "q": "An app builder set up this action. Reps notice the new contacts aren't linked to the account they were viewing. Why?",
+      "code": "Global action: New Contact\n  Type: Create a Record\n  Target object: Contact\n  Placed on: Account page layout (Mobile and Lightning actions)",
+      "lang": "text",
+      "options": [
+        "The action needs a predefined value for Account Name",
+        "The Contact object must be in a master-detail relationship with Account",
+        "Global actions aren't context-aware, so the new record has no relationship",
+        "Global actions only link records in the mobile app"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "Global actions don't know the current page, so they create unrelated records. Use an object-specific action on Account instead.",
+      "wrong": [
+        "Global actions can't prefill fields from the current page.",
+        "The link fails because the action is global, not because of the relationship.",
+        "",
+        "Global actions don't link records on any device."
+      ],
+      "source": "Global Quick Actions"
+    },
+    {
+      "id": "ui-x16",
+      "lesson": "ui-6",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "An app builder wants users to add invoice lines with a quick action. What should the app builder do?",
+      "code": "Invoice__c (master)\n  Invoice_Line__c (detail)\n    Invoice__c: Master-Detail(Invoice__c)\n\nNew global action > Create a Record > Target object:\n  Invoice_Line__c  (not in the list)",
+      "lang": "text",
+      "options": [
+        "Create an object-specific Create a Record action on Invoice__c",
+        "Use a global Log a Call action that mentions the invoice line",
+        "Add the global action to the global publisher layout first",
+        "Grant users Create on Invoice_Line__c through a permission set"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "Actions that create a detail record in a master-detail relationship must be object-specific, not global. Put the action on the master, Invoice__c.",
+      "wrong": [
+        "",
+        "Log a Call creates a task, not an invoice line record.",
+        "Layout placement doesn't matter. The object can't be a global target.",
+        "Permissions don't make the object available to global actions."
+      ],
+      "source": "Global Quick Actions"
+    },
+    {
+      "id": "ui-x17",
+      "lesson": "ui-6",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A developer built this page to use as a global custom action that works from anywhere, with no specific record. The action can't be created with this page. What must change?",
+      "code": "<apex:page standardController=\"Account\">\n  <!-- address lookup: map, local time, weather -->\n</apex:page>",
+      "lang": "html",
+      "options": [
+        "The page must use the standard controller of User",
+        "The page must use a standard list controller instead",
+        "The action must be added to the Account page layout first",
+        "The page must not use a standard controller"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "Visualforce pages used as global custom actions can't use standard controllers. Object-specific ones must use the object's standard controller.",
+      "wrong": [
+        "Global Visualforce actions can't use any standard controller.",
+        "A standard list controller is still a standard controller.",
+        "Layout placement doesn't fix the controller rule.",
+        ""
+      ],
+      "source": "Global Quick Actions"
+    },
+    {
+      "id": "ui-x18",
+      "lesson": "ui-6",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "Contract__c has never had actions customized on its page layout. Users see a set of actions on Contract__c records anyway. Where do those actions come from?",
+      "options": [
+        "The page layout of the parent account",
+        "The global publisher layout",
+        "The Contract__c compact layout",
+        "The org default Home page"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "If an object's page layout isn't customized with actions, its record pages inherit actions from the global publisher layout.",
+      "wrong": [
+        "Actions don't come from a parent object's layout.",
+        "",
+        "Compact layouts hold fields, not actions.",
+        "Home pages don't supply actions to record pages."
+      ],
+      "source": "Global Quick Actions"
+    },
+    {
+      "id": "ui-q34",
+      "lesson": "ui-6",
+      "difficulty": 2,
+      "q": "Technicians at Polar Air want to change a work order's Status and Next Visit fields in two taps on their phones, without opening the full edit page. What should the app builder create?",
+      "options": [
+        "A global action that updates work orders from anywhere",
+        "An object-specific Update a Record action with just those two fields",
+        "A compact layout with Status and Next Visit first",
+        "A custom detail page link to the work order edit page"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "Update a Record actions let users edit chosen fields of the current record fast. The action layout shows only the fields you add.",
+      "wrong": [
+        "Global actions don't know which work order is open.",
+        "",
+        "A compact layout shows fields. It can't edit them.",
+        "Custom links don't show in the mobile app, and it opens the full edit page."
+      ],
+      "source": "Object-Specific Actions"
+    },
+    {
+      "id": "ui-q35",
+      "lesson": "ui-6",
+      "difficulty": 2,
+      "q": "Users at Tallgrass want a Log a Call action available on the Home page and the Chatter tab, not tied to a specific record. Where should the app builder add it?",
+      "options": [
+        "To the Account page layout as an object-specific action",
+        "To the Contact page layout as an object-specific action",
+        "To the compact layout of the Task object",
+        "To the global publisher layout as a global action"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "Global Log a Call actions go on the global publisher layout. They appear on global pages, like Home and Chatter.",
+      "wrong": [
+        "That action only shows on account record pages.",
+        "That action only shows on contact record pages.",
+        "Compact layouts hold fields, not actions.",
+        ""
+      ],
+      "source": "Global Quick Actions"
+    },
+    {
+      "id": "ui-q36",
+      "lesson": "ui-7",
+      "difficulty": 2,
+      "q": "A developer deployed a Lightning web component with this config file. The app builder can't find it in the Lightning App Builder component list. What should the developer change?",
+      "code": "<LightningComponentBundle xmlns=\"http://soap.sforce.com/2006/04/metadata\">\n  <isExposed>false</isExposed>\n  <targets>\n    <target>lightning__RecordPage</target>\n  </targets>\n</LightningComponentBundle>",
+      "lang": "xml",
+      "options": [
+        "Set `isExposed` to true",
+        "Add `lightning__HomePage` to the targets",
+        "Rewrite the component in Aura",
+        "Add the component to a permission set"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "An LWC appears in App Builder only when `isExposed` is true and it lists targets. Here it isn't exposed.",
+      "wrong": [
+        "",
+        "More targets won't help while the component isn't exposed.",
+        "LWC components work in App Builder once they're configured.",
+        "Permission sets don't make components appear in App Builder."
+      ],
+      "source": "Custom Lightning Page Components"
+    },
+    {
+      "id": "ui-q37",
+      "lesson": "ui-7",
+      "difficulty": 2,
+      "q": "The app builder can add this component to record pages but not to the sales Home page. What change makes it available on Home pages?",
+      "code": "<LightningComponentBundle xmlns=\"http://soap.sforce.com/2006/04/metadata\">\n  <isExposed>true</isExposed>\n  <targets>\n    <target>lightning__RecordPage</target>\n  </targets>\n</LightningComponentBundle>",
+      "lang": "xml",
+      "options": [
+        "Add a `lightning__AppPage` target",
+        "Add a `lightning__RecordAction` target",
+        "Add a `lightning__HomePage` target",
+        "Add a `lightning__Tab` target"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "Targets list the page types a component may go on. `lightning__HomePage` adds Home pages.",
+      "wrong": [
+        "That target is for App pages, not Home pages.",
+        "That target is for quick actions, not Home pages.",
+        "",
+        "That target is for component tabs, not Home pages."
+      ],
+      "source": "Lightning Web Components Developer Guide: XML Configuration File Elements"
+    },
+    {
+      "id": "ui-q38",
+      "lesson": "ui-7",
+      "difficulty": 1,
+      "q": "Which two statements about custom Lightning components in Lightning App Builder are true? (Choose 2)",
+      "options": [
+        "They appear in App Builder as soon as they are deployed",
+        "They can be placed on Salesforce Classic page layouts",
+        "Custom tab containers let admins drop components inside",
+        "They can be built with Aura or Lightning Web Components",
+        "They must be configured before they show in App Builder"
+      ],
+      "answer": [
+        3,
+        4
+      ],
+      "explain": "App Builder supports custom components made with Aura or LWC. They show in App Builder only when configured for it.",
+      "wrong": [
+        "Custom components must be configured for App Builder first.",
+        "App Builder customizes Lightning pages, not Classic layouts.",
+        "Custom container components aren't supported in App Builder.",
+        "",
+        ""
+      ],
+      "source": "Custom Lightning Page Components"
+    },
+    {
+      "id": "ui-q39",
+      "lesson": "ui-7",
+      "difficulty": 1,
+      "q": "Rosewood Energy wants a record page widget that shows live meter readings from an outside system and lets users pick a date range. No standard component or AgentExchange app does this. What is the right approach?",
+      "options": [
+        "Use a Report Chart component with a date filter",
+        "Use Dynamic Forms with visibility rules on date fields",
+        "Have a developer build a custom Lightning web component",
+        "Use a Rich Text component with a link to the system"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "Use clicks first, but when no standard or AgentExchange component fits, a custom component is the right tool.",
+      "wrong": [
+        "Report charts show Salesforce report data, not live outside data.",
+        "Dynamic Forms shows record fields. It can't call an outside system.",
+        "",
+        "A link isn't live data in the page."
+      ],
+      "source": "Custom Lightning Page Components"
+    },
+    {
+      "id": "ui-x19",
+      "lesson": "ui-7",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A developer built a custom Tabs component. In Lightning App Builder it shows on the canvas, but the app builder can't drop other components into its tabs. What should the app builder do?",
+      "options": [
+        "Use the standard Tabs component instead",
+        "Set `isExposed` to true in the component's config",
+        "Add a `lightning__AppPage` target to the component",
+        "Switch the page to a template with more regions"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "Custom container components, like tabs or accordions, aren't supported in App Builder. You can't place components in them, so use the standard ones.",
+      "wrong": [
+        "",
+        "The component is already exposed, since it shows on the canvas.",
+        "More targets don't make a custom container hold components.",
+        "The problem is the custom container, not the template."
+      ],
+      "source": "Custom Lightning Page Components"
+    },
+    {
+      "id": "ui-x20",
+      "lesson": "ui-7",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A component must be available only on phones when placed on record pages. What value goes in the blank?",
+      "code": "<targetConfigs>\n  <targetConfig targets=\"lightning__RecordPage\">\n    <supportedFormFactors>\n      <supportedFormFactor type=\"____\"/>\n    </supportedFormFactors>\n  </targetConfig>\n</targetConfigs>",
+      "lang": "xml",
+      "options": [
+        "`Large`",
+        "`Phone`",
+        "`Mobile`",
+        "`Small`"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "In `supportedFormFactors`, `Small` means phone and `Large` means desktop.",
+      "wrong": [
+        "`Large` means desktop.",
+        "Form factor types are `Small` and `Large`, not device names.",
+        "There is no `Mobile` type. Phones are `Small`.",
+        ""
+      ],
+      "source": "Lightning Web Components Developer Guide: XML Configuration File Elements"
+    },
+    {
+      "id": "ui-x21",
+      "lesson": "ui-7",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "Admins want to type a different heading for the same custom component on each Lightning page, without asking the developer each time. What should the developer add?",
+      "options": [
+        "A visibility rule that picks a heading for each page",
+        "A design property in the component's config file for admins to fill in",
+        "A separate copy of the component for each page",
+        "A custom label that admins edit in the page layout"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "Properties (design attributes) let admins set values for a component in App Builder, like a heading, with no code change.",
+      "wrong": [
+        "Visibility rules show or hide a component. They don't set its text.",
+        "",
+        "Copies double the code to maintain. A property does it with clicks.",
+        "Page layouts don't configure Lightning components."
+      ],
+      "source": "Lightning Web Components Developer Guide: XML Configuration File Elements"
+    },
+    {
+      "id": "ui-x22",
+      "lesson": "ui-7",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A developer must make an older Aura component available on any type of Lightning page in App Builder. Which interface should the component implement?",
+      "options": [
+        "`force:appHostable`",
+        "`flexipage:availableForAllPageTypes`",
+        "`force:lightningQuickAction`",
+        "`lightning:isUrlAddressable`"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "Aura components implement `flexipage:availableForAllPageTypes` to be used on any Lightning page in App Builder.",
+      "wrong": [
+        "That interface lets a component be used as a Lightning component tab.",
+        "",
+        "That interface makes the component a quick action.",
+        "That interface lets the component open from a URL."
+      ],
+      "source": "Custom Lightning Page Components"
+    },
+    {
+      "id": "ui-q40",
+      "lesson": "ui-8",
+      "difficulty": 1,
+      "q": "Field reps at Juniper Seeds want an account's key facts the moment they open it on their phones, without scrolling. What should the app builder change?",
+      "options": [
+        "The account search layout",
+        "The org-wide default for accounts",
+        "The account list view filters",
+        "The account compact layout"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "The compact layout drives record highlights in the mobile app, up to 10 fields. Put the key fields there.",
+      "wrong": [
+        "Search layouts set columns in search results.",
+        "Org-wide defaults control record access, not what shows first.",
+        "List views filter lists, not a record's top section.",
+        ""
+      ],
+      "source": "Tips for Optimizing Page Layouts for the Salesforce Mobile App"
+    },
+    {
+      "id": "ui-q41",
+      "lesson": "ui-8",
+      "difficulty": 2,
+      "q": "Which two changes make a page layout friendlier in the Salesforce mobile app? (Choose 2)",
+      "options": [
+        "Put phone and email fields at the top of contacts",
+        "Add OnClick JavaScript buttons for common tasks",
+        "Keep required fields to a minimum",
+        "Use default values so users type less",
+        "Add custom links so users can jump to tools"
+      ],
+      "answer": [
+        2,
+        3
+      ],
+      "explain": "Mobile users want fewer fields. Keep required fields few and use default values to cut typing.",
+      "wrong": [
+        "The action bar already gives call and email icons for contacts.",
+        "JavaScript buttons don't work in the mobile app.",
+        "",
+        "",
+        "Custom links don't show in the mobile app."
+      ],
+      "source": "Tips for Optimizing Page Layouts for the Salesforce Mobile App"
+    },
+    {
+      "id": "ui-q42",
+      "lesson": "ui-8",
+      "difficulty": 2,
+      "q": "Sales reps want a phone screen with their open tasks, a pipeline chart and their recent records. What should the app builder do?",
+      "options": [
+        "Build an App page with standard components, activate it and add it to mobile navigation",
+        "Build a Home page and activate it for the phone form factor",
+        "Add the components to the opportunity compact layout",
+        "Create a global action that opens a Visualforce page"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "For a mobile home base, build an App page in App Builder with standard components like Report Chart and Recent Items. Then activate it and add it to the mobile navigation.",
+      "wrong": [
+        "",
+        "Home pages are for Lightning Experience only, not mobile.",
+        "Compact layouts hold fields, not page components.",
+        "This needs code when standard components already do the job."
+      ],
+      "source": "Tips for Creating Mobile App Pages in Lightning App Builder"
+    },
+    {
+      "id": "ui-q43",
+      "lesson": "ui-8",
+      "difficulty": 2,
+      "q": "A large Report Chart on the opportunity record page should show on desktop only. Phone users and desktop users use the same record page. What should the app builder use?",
+      "options": [
+        "A page layout that removes the chart for mobile users",
+        "A separate record type for mobile opportunities",
+        "A visibility rule on the chart that filters by device form factor",
+        "A compact layout without the chart"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "Visibility rules can use the Device context to show a component only on desktop or only on phone.",
+      "wrong": [
+        "Report charts aren't on page layouts, and layouts don't filter by device.",
+        "Record types sort records, not devices.",
+        "",
+        "Compact layouts hold fields, not components."
+      ],
+      "source": "Visibility Rules on Lightning Pages"
+    },
+    {
+      "id": "ui-q44",
+      "lesson": "ui-8",
+      "difficulty": 2,
+      "q": "Mobile users at Wrenfield want Log a Call as the first action in the action bar. Dynamic actions aren't used. Where does the app builder reorder it?",
+      "code": "Account page layout\n  Quick Actions in the Salesforce Classic Publisher:\n    Log a Call, New Task, New Event\n  Salesforce Mobile and Lightning Experience Actions:\n    Edit, New Contact, Log a Call, New Task",
+      "lang": "text",
+      "options": [
+        "In the account compact layout",
+        "In the mobile navigation menu",
+        "In the page layout's Salesforce Mobile and Lightning Experience Actions section",
+        "In the Quick Actions in the Salesforce Classic Publisher section"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "Without dynamic actions, the mobile action bar follows the Salesforce Mobile and Lightning Experience Actions section of the page layout, in order.",
+      "wrong": [
+        "Compact layouts hold fields, not actions.",
+        "Navigation lists places to go, not record actions.",
+        "",
+        "That section is for Classic, not the mobile app."
+      ],
+      "source": "Tips for Optimizing Page Layouts for the Salesforce Mobile App"
+    },
+    {
+      "id": "ui-x23",
+      "lesson": "ui-8",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "Desktop users at Hollowbrook use a custom link on accounts to open a credit-check site with the account's tax ID. Mobile users can't find it. What should the app builder do?",
+      "options": [
+        "Recreate it as a URL detail page button on the page layout",
+        "Set the custom link to open in a new window",
+        "Add the custom link to the mobile navigation menu",
+        "Add the custom link to the account compact layout"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "Custom links aren't available in the mobile app, but URL buttons on the page layout are. A URL button can use the same merge fields.",
+      "wrong": [
+        "",
+        "Window settings don't make custom links show in the mobile app.",
+        "Custom links can't be added as navigation items.",
+        "Compact layouts hold fields, not links."
+      ],
+      "source": "Custom Button and Link Considerations"
+    },
+    {
+      "id": "ui-x24",
+      "lesson": "ui-8",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "An opportunity page uses Dynamic Forms with visibility rules on fields. Desktop users see the rules work, but phone users don't see the Dynamic Forms fields as designed. What should the app builder do?",
+      "options": [
+        "Recreate the rules in the page layout for mobile users",
+        "Assign the page again for the phone form factor",
+        "Move the fields into the compact layout",
+        "Enable Dynamic Forms on Mobile in Salesforce Mobile App setup"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "Field and Field Section components are desktop-only until you enable Dynamic Forms on Mobile. Then phone users get the same experience.",
+      "wrong": [
+        "Page layouts can't hold visibility rules.",
+        "Assigning it to phones doesn't turn on Dynamic Forms for mobile.",
+        "The compact layout has no visibility rules.",
+        ""
+      ],
+      "source": "Visibility Rules on Lightning Pages"
+    },
+    {
+      "id": "ui-x25",
+      "lesson": "ui-8",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "Dynamic actions work for mobile users on a custom object's record page. On the Account record page they don't show on mobile. What is missing?",
+      "options": [
+        "Add the actions to the global publisher layout",
+        "Enable Dynamic Actions on Mobile in the Salesforce Mobile App setup",
+        "Rebuild the actions as custom buttons",
+        "Assign the Account page to the phone form factor only"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "Dynamic actions work on mobile by default for custom objects. For standard objects like Account, turn on Enable Dynamic Actions on Mobile.",
+      "wrong": [
+        "The global layout doesn't switch on dynamic actions for mobile.",
+        "",
+        "Custom buttons don't fix a mobile setting for dynamic actions.",
+        "Assignment doesn't turn on dynamic actions for mobile."
+      ],
+      "source": "Create Dynamic Actions in Lightning App Builder"
+    },
+    {
+      "id": "ui-q45",
+      "lesson": "ui-8",
+      "difficulty": 2,
+      "q": "Service managers want one phone screen with big tiles that open their contacts, a key dashboard and a custom page with one tap each. Which standard component fits?",
+      "options": [
+        "Recent Items",
+        "Launchpad",
+        "Rich Text",
+        "List View"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "The Launchpad component shows a grid of navigation items that users open with one tap.",
+      "wrong": [
+        "Recent Items lists records you opened, not chosen tiles.",
+        "",
+        "Rich Text shows formatted text, not one-tap tiles.",
+        "A List View shows one list of records, not a grid of places."
+      ],
+      "source": "Tips for Creating Mobile App Pages in Lightning App Builder"
+    },
+    {
+      "id": "ui-q46",
+      "lesson": "ui-1",
+      "difficulty": 2,
+      "q": "Which two settings in the Lightning app meet these requirements? (Choose 2)",
+      "code": "Requirements: Support desk app\n  1. Agents keep a case open while they check its contact\n  2. A phone dialer is always one click away, on every page",
+      "lang": "text",
+      "options": [
+        "Console navigation",
+        "A utility bar with a Dialer item",
+        "Standard navigation with tab favorites",
+        "A custom Home page with a dialer link on it",
+        "A separate record type for support cases"
+      ],
+      "answer": [
+        0,
+        1
+      ],
+      "explain": "Console navigation keeps records open as workspace tabs and subtabs. A utility bar keeps tools like a Dialer in a footer on every page.",
+      "wrong": [
+        "",
+        "",
+        "Standard navigation opens one record at a time.",
+        "A Home page is one page, not a tool on every page.",
+        "Record types change fields and picklists, not navigation."
+      ],
+      "source": "Create Lightning Apps"
+    },
+    {
+      "id": "ui-q47",
+      "lesson": "ui-3",
+      "difficulty": 2,
+      "q": "Which two things can a Lightning record page do that a page layout can't? (Choose 2)",
+      "options": [
+        "Make a field required for users of that page",
+        "Be assigned to users by app",
+        "Be assigned by profile and record type",
+        "Be assigned by form factor",
+        "Show the custom links defined for the object"
+      ],
+      "answer": [
+        1,
+        3
+      ],
+      "explain": "Only Lightning pages can be assigned by app and by form factor. Both tools can use profile and record type and make fields required.",
+      "wrong": [
+        "Page layouts can make fields required too.",
+        "",
+        "Page layouts are assigned by profile and record type too.",
+        "",
+        "Custom links are a page layout feature."
+      ],
+      "source": "Deciding When to Use Lightning App Builder or the Page Layout Editor"
+    },
+    {
+      "id": "ui-q48",
+      "lesson": "ui-4",
+      "difficulty": 2,
+      "q": "Which two are benefits of Dynamic Forms on a Lightning record page? (Choose 2)",
+      "options": [
+        "Fewer page layouts to maintain",
+        "Support for every object, including Events and Tasks",
+        "Fields that show or hide by visibility rules",
+        "Fields hidden on the page are also hidden in reports",
+        "No more need for field-level security on the object"
+      ],
+      "answer": [
+        0,
+        2
+      ],
+      "explain": "Dynamic Forms lets you place fields as components with visibility rules. That cuts the number of page layouts and record types you need.",
+      "wrong": [
+        "",
+        "Events and Tasks aren't LWC-enabled, so they don't support Dynamic Forms.",
+        "",
+        "Visibility rules only affect the page. Reports still show the field.",
+        "Field-level security still controls who can read a field."
+      ],
+      "source": "Break Up Your Record Details with Dynamic Forms"
+    },
+    {
+      "id": "ui-q49",
+      "lesson": "ui-5",
+      "difficulty": 2,
+      "q": "Which two content sources can a custom button use and still work in Lightning Experience? (Choose 2)",
+      "options": [
+        "OnClick JavaScript",
+        "An Apex trigger",
+        "A URL",
+        "A saved report filter",
+        "A Visualforce page"
+      ],
+      "answer": [
+        2,
+        4
+      ],
+      "explain": "Custom buttons can open a URL or a Visualforce page. OnClick JavaScript buttons aren't supported in Lightning Experience.",
+      "wrong": [
+        "JavaScript buttons work only in Salesforce Classic.",
+        "Triggers run when records save. A button can't point to one.",
+        "",
+        "A report filter isn't a content source for buttons.",
+        ""
+      ],
+      "source": "Custom Button and Link Considerations"
+    },
+    {
+      "id": "ui-q50",
+      "lesson": "ui-6",
+      "difficulty": 2,
+      "q": "Which two statements about global actions are true? (Choose 2)",
+      "options": [
+        "They can be used from pages like Home and Chatter",
+        "They can prefill fields from the record shown on the page",
+        "They can create the detail records in a master-detail relationship",
+        "Records they create have no link to the current record",
+        "A Visualforce global action must use a standard controller"
+      ],
+      "answer": [
+        0,
+        3
+      ],
+      "explain": "Global actions work from almost anywhere, but they don't know the current page. So they create records with no relationship to it.",
+      "wrong": [
+        "",
+        "Global actions aren't context-aware, so they can't read the page.",
+        "Detail records need an object-specific action.",
+        "",
+        "Global Visualforce actions can't use standard controllers."
+      ],
+      "source": "Global Quick Actions"
+    },
+    {
+      "id": "ui-q51",
+      "lesson": "ui-8",
+      "difficulty": 2,
+      "q": "Which two changes meet these needs? (Choose 2)",
+      "code": "Mobile needs for account records (no dynamic actions)\n  1. See Rating without scrolling\n  2. Log a Call is the first action in the action bar",
+      "lang": "text",
+      "options": [
+        "Add a custom link that opens the call log page",
+        "Add Rating to the account compact layout",
+        "Make Rating a required field on the page layout",
+        "Add Rating as a column on the account search layout",
+        "Move Log a Call first in the layout's mobile actions section"
+      ],
+      "answer": [
+        1,
+        4
+      ],
+      "explain": "The compact layout drives the record highlights on mobile. The action bar follows the Salesforce Mobile and Lightning Experience Actions section, in order.",
+      "wrong": [
+        "Custom links don't show in the mobile app.",
+        "",
+        "Required doesn't move a field to the top.",
+        "Search layouts set the columns in search results.",
+        ""
+      ],
+      "source": "Tips for Optimizing Page Layouts for the Salesforce Mobile App"
+    }
+  ]
+}

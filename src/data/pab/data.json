@@ -1,0 +1,3107 @@
+{
+  "id": "data",
+  "title": "Data Modeling and Management",
+  "weight": 20,
+  "summary": "Choose the right objects, relationships and field types, and move data in, out or keep it outside with Salesforce Connect.",
+  "lessons": [
+    {
+      "id": "data-1",
+      "title": "Objects, fields and Schema Builder",
+      "minutes": 3,
+      "objective": "Given a scenario, determine the appropriate data model.",
+      "cards": [
+        {
+          "type": "text",
+          "title": "In plain words",
+          "body": "Salesforce keeps data in **objects**. An object is a table for one kind of thing, like accounts or invoices. Each **record** is one row in it. Each **field** is one column, like a name or a date. Your **data model** is the set of objects and the links between them."
+        },
+        {
+          "type": "tip",
+          "title": "Think of it like…",
+          "body": "A filing cabinet. Each drawer is an object. Each folder in a drawer is a record. Each line on the form inside is a field. Where it stops: Salesforce folders can point at folders in other drawers. Those links are relationships."
+        },
+        {
+          "type": "list",
+          "title": "Kinds of objects",
+          "items": [
+            "**Standard objects** come with Salesforce: Account, Contact, Opportunity, Case.",
+            "**Custom objects** are ones you build. Their API names end in `__c`.",
+            "**External objects** show data that lives outside Salesforce. Their API names end in `__x`.",
+            "Platform events and big objects are special kinds for messages and huge archives."
+          ]
+        },
+        {
+          "type": "text",
+          "title": "Reuse first",
+          "body": "Before you build, check the **standard objects**. If Case already fits support tickets, use Case and add fields. Build a **custom object** only when nothing standard fits what you track. Standard objects come with ready features, like lead conversion or case queues."
+        },
+        {
+          "type": "text",
+          "title": "Schema Builder",
+          "body": "**Schema Builder** draws your objects and their links as a diagram. You can also create objects and fields right there, including relationship and formula fields. Dragging a box around the canvas only moves the picture. It never changes the data model."
+        },
+        {
+          "type": "text",
+          "title": "How many fields fit?",
+          "body": "Each object has a **custom field limit** set by the edition. Professional allows 100, Enterprise 500, Unlimited and Performance 800, Developer 500. A **geolocation** field counts as 3 fields. A custom address field counts as 9."
+        },
+        {
+          "type": "trap",
+          "body": "Moving objects around in Schema Builder doesn't rearrange page layouts or change relationships. It's only the view. Also, don't build a custom object for something a standard object already does well."
+        },
+        {
+          "type": "tip",
+          "title": "Remember it",
+          "body": "Object = drawer. Record = folder. Field = line on the form. Schema Builder = the map on the wall."
+        }
+      ],
+      "check": [
+        "data-q1",
+        "data-q2",
+        "data-x1"
+      ],
+      "terms": [
+        {
+          "term": "objects",
+          "say": "Tables that hold one kind of thing, like accounts or invoices.",
+          "match": [
+            "object"
+          ]
+        },
+        {
+          "term": "record",
+          "say": "One row in an object. One account, one invoice, one person.",
+          "match": [
+            "records"
+          ]
+        },
+        {
+          "term": "field",
+          "say": "One column in an object, like Name or Close Date. Every record has a spot for it.",
+          "match": [
+            "fields"
+          ]
+        },
+        {
+          "term": "data model",
+          "say": "The plan of all your objects and how they connect to each other."
+        },
+        {
+          "term": "standard objects",
+          "say": "Objects that come with Salesforce, like Account and Contact. You can add fields to them.",
+          "match": [
+            "standard object"
+          ]
+        },
+        {
+          "term": "custom object",
+          "say": "An object you build yourself for something Salesforce doesn't track yet. Its API name ends in __c.",
+          "match": [
+            "custom objects"
+          ]
+        },
+        {
+          "term": "external objects",
+          "say": "Objects that show data still stored in another system. Salesforce reads it, it doesn't keep a copy.",
+          "match": [
+            "external object"
+          ]
+        },
+        {
+          "term": "Schema Builder",
+          "say": "A Setup tool that draws your objects and their links as a picture. You can add objects and fields there too."
+        },
+        {
+          "term": "custom field limit",
+          "say": "The most custom fields one object can have. It depends on your Salesforce edition."
+        },
+        {
+          "term": "geolocation",
+          "say": "A field that stores a spot on the map as latitude and longitude. It counts as 3 fields."
+        }
+      ]
+    },
+    {
+      "id": "data-2",
+      "title": "Lookup or master-detail?",
+      "minutes": 4,
+      "objective": "Given a scenario, explain the capabilities of the various relationship types and the implications of each on record access, user interface, and reporting.",
+      "cards": [
+        {
+          "type": "text",
+          "title": "In plain words",
+          "body": "A **relationship field** links a record to a parent record. There are two main kinds. A **lookup** is a loose link: the child can live on its own. A **master-detail** is a tight link: the child (the **detail**) can't exist without its parent (the **master**)."
+        },
+        {
+          "type": "tip",
+          "title": "Think of it like…",
+          "body": "A lookup is a sticky note saying \"see this file\". Remove the file and the note just goes blank. Master-detail is a page stapled into a binder. Throw away the binder and its pages go too. Where it stops: you can choose other lookup delete options too."
+        },
+        {
+          "type": "list",
+          "title": "Master-detail rules",
+          "items": [
+            "Delete the master and its details are deleted. Undelete it and they come back.",
+            "Details have **no Owner field**. The master's owner owns them.",
+            "Details get the master's sharing and security.",
+            "The master field is **required** on the detail.",
+            "Reparenting is off unless you tick **Allow reparenting**."
+          ]
+        },
+        {
+          "type": "list",
+          "title": "Lookup rules",
+          "items": [
+            "Can be optional or required.",
+            "If optional and the parent is deleted: **Clear the value** (default), **Don't allow deletion**, or **Delete this record also**.",
+            "Delete this record also is a **cascade delete**. It's off by default, Salesforce must turn it on, and it skips security.",
+            "A link from an object to itself must be a lookup."
+          ]
+        },
+        {
+          "type": "text",
+          "title": "Limits",
+          "body": "Each custom object can have **2 master-detail** fields and **40 relationships** in total. Standard objects can't be the detail of a custom object. You can't add a master-detail field to an object that **already has data**. Build a lookup, fill it on every record, then convert it."
+        },
+        {
+          "type": "trap",
+          "body": "Picking lookup when the child must vanish with its parent, or must share its parent's security. Only master-detail gives both built in. And a third parent link? It must be a lookup: the master-detail limit is 2."
+        },
+        {
+          "type": "tip",
+          "title": "Remember it",
+          "body": "Lookup = sticky note: loose, own owner. Master-detail = staple: tight, shared fate, shared owner."
+        }
+      ],
+      "check": [
+        "data-q8",
+        "data-q9",
+        "data-x3"
+      ],
+      "terms": [
+        {
+          "term": "relationship field",
+          "say": "A field that points to another record, so the two are linked.",
+          "match": [
+            "relationship fields"
+          ]
+        },
+        {
+          "term": "lookup",
+          "say": "A loose link to another record. The child keeps its own owner and lives on its own.",
+          "match": [
+            "lookups",
+            "lookup relationship"
+          ]
+        },
+        {
+          "term": "master-detail",
+          "say": "A tight link. The child belongs to its parent, shares its owner and security, and is deleted with it.",
+          "match": [
+            "master-detail relationship"
+          ]
+        },
+        {
+          "term": "detail",
+          "say": "The child side of a master-detail link. It can't exist without its master.",
+          "match": [
+            "details"
+          ]
+        },
+        {
+          "term": "master",
+          "say": "The parent side of a master-detail link. It controls its details."
+        },
+        {
+          "term": "No Owner field",
+          "say": "Detail records don't have their own owner. Whoever owns the master owns them too."
+        },
+        {
+          "term": "Allow reparenting",
+          "say": "A setting that lets you move a detail record to a different master. It's off by default."
+        },
+        {
+          "term": "cascade delete",
+          "say": "Deleting a parent also deletes its children. For lookups it's off until Salesforce turns it on.",
+          "match": [
+            "cascade-delete"
+          ]
+        },
+        {
+          "term": "Clear the value",
+          "say": "The default lookup choice. If the parent is deleted, the child's link just goes blank."
+        },
+        {
+          "term": "already has data",
+          "say": "An object with records in it. You can't add a master-detail field straight away; use a lookup first."
+        }
+      ]
+    },
+    {
+      "id": "data-3",
+      "title": "Many-to-many: junction objects",
+      "minutes": 3,
+      "objective": "Given a scenario, determine the appropriate data model.",
+      "cards": [
+        {
+          "type": "text",
+          "title": "In plain words",
+          "body": "Sometimes both sides have many. A student takes many courses, and a course has many students. Salesforce models this **many-to-many** link with a **junction object**: a custom object in the middle with **two master-detail fields**, one to each side."
+        },
+        {
+          "type": "tip",
+          "title": "Think of it like…",
+          "body": "A class sign-up sheet. Each line pairs one student with one course. The sheet is the junction object. Each line is a junction record. Where it stops: a junction record can also hold its own fields, like a grade or a sign-up date."
+        },
+        {
+          "type": "code",
+          "title": "A junction object",
+          "lang": "text",
+          "code": "Enrollment__c (junction)\n  Course__c   master-detail -> Course__c   (created first: primary)\n  Student__c  master-detail -> Student__c  (created second: secondary)\n  Grade__c    picklist",
+          "body": "One enrollment record links one student to one course."
+        },
+        {
+          "type": "list",
+          "title": "Junction rules",
+          "items": [
+            "The **first** master-detail you create is the **primary**. It sets the look, like color and icon.",
+            "Delete the primary field, and the **secondary** becomes primary.",
+            "Delete either master, and its junction records are deleted.",
+            "Seeing a junction record needs access to **both masters**.",
+            "Roll-up summaries can go on both masters."
+          ]
+        },
+        {
+          "type": "text",
+          "title": "Limits",
+          "body": "A junction object can't be the master of another master-detail. Both masters can't be the same object. And you can't delete a parent with more than **200** junction records if the junction rolls up to the other parent."
+        },
+        {
+          "type": "trap",
+          "body": "Two lookups on the middle object is not the same thing. Lookups give no roll-up summaries, no shared delete and no inherited sharing. The exam's junction object uses two master-detail fields."
+        },
+        {
+          "type": "tip",
+          "title": "Remember it",
+          "body": "Many-to-many? Put a junction in the middle, with two masters. First one created leads."
+        }
+      ],
+      "check": [
+        "data-q15",
+        "data-q16",
+        "data-x8"
+      ],
+      "terms": [
+        {
+          "term": "many-to-many",
+          "say": "When one record on each side can link to many on the other. Many students, many courses."
+        },
+        {
+          "term": "junction object",
+          "say": "A middle object that links two others. Each of its records pairs one record from each side.",
+          "match": [
+            "junction"
+          ]
+        },
+        {
+          "term": "two master-detail fields",
+          "say": "The two tight links a junction object needs, one to each parent object."
+        },
+        {
+          "term": "primary",
+          "say": "The first master-detail on a junction. It decides the junction's look, like its color and icon."
+        },
+        {
+          "term": "secondary",
+          "say": "The second master-detail on a junction. It becomes primary if the first one is deleted."
+        },
+        {
+          "term": "both masters",
+          "say": "To see a junction record, you need access to the parent records on both sides."
+        },
+        {
+          "term": "Roll-up summaries",
+          "say": "Fields on a parent that count or add up its children, like the number of enrollments.",
+          "match": [
+            "roll-up summary"
+          ]
+        },
+        {
+          "term": "200",
+          "say": "Over 200 junction records plus a roll-up to the other parent? Then you can't delete that parent until there are fewer."
+        }
+      ]
+    },
+    {
+      "id": "data-4",
+      "title": "Hierarchical, external and indirect lookups",
+      "minutes": 3,
+      "objective": "Given a scenario, explain the capabilities of the various relationship types and the implications of each on record access, user interface, and reporting.",
+      "cards": [
+        {
+          "type": "text",
+          "title": "In plain words",
+          "body": "Besides lookup and master-detail, Salesforce has three special links. A **hierarchical** relationship links one user to another user. An **external lookup** and an **indirect lookup** link to or from **external objects**: data that stays in another system."
+        },
+        {
+          "type": "tip",
+          "title": "Think of it like…",
+          "body": "Hierarchical is an org chart: each person points to their boss. External links are like a library card that points to a book in another library. Where it stops: the other library has to agree on which number identifies each book."
+        },
+        {
+          "type": "text",
+          "title": "Hierarchical",
+          "body": "A **hierarchical** relationship exists **only on the User object**. A common example is a Manager field that points to another user. A user can't point to themselves, directly or through others."
+        },
+        {
+          "type": "list",
+          "title": "External and indirect lookups",
+          "items": [
+            "**External lookup**: the child is any object; the parent is an **external object**. It matches on the parent's **External ID**.",
+            "**Indirect lookup**: the child is an **external object**; the parent is a standard or custom object. It matches on a custom field marked **unique** and **External ID**."
+          ]
+        },
+        {
+          "type": "code",
+          "title": "Pick the link",
+          "lang": "text",
+          "code": "Child: Order__x (external)  -> Parent: Account (in Salesforce)\n   = indirect lookup, matched on Account.Customer_Number__c\n\nChild: Case (in Salesforce) -> Parent: Shipment__x (external)\n   = external lookup, matched on Shipment__x External ID",
+          "body": "The direction decides the type. Ask: where is the parent?"
+        },
+        {
+          "type": "trap",
+          "body": "Indirect and external sound alike. Check the parent. Parent outside Salesforce: external lookup. Parent inside Salesforce, child outside: indirect lookup. And external objects can't use master-detail at all."
+        },
+        {
+          "type": "tip",
+          "title": "Remember it",
+          "body": "External lookup: looking OUT to an external parent. Indirect lookup: an outside child finding its way IN, by a unique external ID."
+        }
+      ],
+      "check": [
+        "data-q21",
+        "data-q22",
+        "data-x11"
+      ],
+      "terms": [
+        {
+          "term": "hierarchical",
+          "say": "A special link from one user to another user, like an employee to their manager."
+        },
+        {
+          "term": "only on the User object",
+          "say": "Hierarchical links can be built on users and nothing else."
+        },
+        {
+          "term": "external lookup",
+          "say": "A link from any record to a parent that lives outside Salesforce, as an external object."
+        },
+        {
+          "term": "indirect lookup",
+          "say": "A link from an outside record to a parent inside Salesforce, matched on a unique ID field."
+        },
+        {
+          "term": "external objects",
+          "say": "Objects that show data still kept in another system. Their API names end in __x.",
+          "match": [
+            "external object"
+          ]
+        },
+        {
+          "term": "External ID",
+          "say": "A field that holds the record's ID from another system, so records can be matched up."
+        },
+        {
+          "term": "unique",
+          "say": "No two records may have the same value in this field."
+        }
+      ]
+    },
+    {
+      "id": "data-5",
+      "title": "What a relationship changes",
+      "minutes": 3,
+      "objective": "Given a scenario, explain the capabilities of the various relationship types and the implications of each on record access, user interface, and reporting.",
+      "cards": [
+        {
+          "type": "text",
+          "title": "In plain words",
+          "body": "Your relationship choice changes three things. **Record access**: who can see the child. **The UI**: required fields and related lists. **Reporting**: which records show up together in a report."
+        },
+        {
+          "type": "tip",
+          "title": "Think of it like…",
+          "body": "Choosing between a roommate and a guest. A guest (lookup) keeps their own key. A roommate on the lease (master-detail) shares the house key and the rules. Where it stops: an admin can still give a guest extra keys with sharing."
+        },
+        {
+          "type": "list",
+          "title": "Access",
+          "items": [
+            "Master-detail: the detail **inherits** the master's sharing. Its org-wide default is **Controlled by Parent**.",
+            "Lookup: the child keeps its own owner and its own sharing settings."
+          ]
+        },
+        {
+          "type": "list",
+          "title": "UI and reports",
+          "items": [
+            "Both kinds can add a **related list** to the parent's page layout.",
+            "Master-detail makes the field required on the detail.",
+            "A **custom report type** can follow the relationship, like \"Projects with Tasks\".",
+            "Master-detail allows **roll-up summary** fields on the master."
+          ]
+        },
+        {
+          "type": "text",
+          "title": "Converting",
+          "body": "**Master-detail to lookup** sets the child's org-wide default to Public Read/Write. It's blocked while the master has roll-up summary fields. **Lookup to master-detail** needs a value in every record, and sets the default to Controlled by Parent."
+        },
+        {
+          "type": "trap",
+          "body": "After converting master-detail to lookup, the child is suddenly Public Read/Write. Check its sharing before users notice. And delete the roll-up summaries first, or the conversion is blocked."
+        },
+        {
+          "type": "tip",
+          "title": "Remember it",
+          "body": "A relationship decides three things: who sees, what shows, what reports. Access, UI, reports."
+        }
+      ],
+      "check": [
+        "data-q27",
+        "data-q28",
+        "data-x13"
+      ],
+      "terms": [
+        {
+          "term": "Record access",
+          "say": "Who is allowed to see or edit a record."
+        },
+        {
+          "term": "inherits",
+          "say": "Gets its settings from the parent, instead of having its own."
+        },
+        {
+          "term": "Controlled by Parent",
+          "say": "A sharing default for details: if you can see the master, you get that access to its details."
+        },
+        {
+          "term": "org-wide default",
+          "say": "The baseline access everyone has to records of an object they don't own.",
+          "match": [
+            "org-wide defaults"
+          ]
+        },
+        {
+          "term": "related list",
+          "say": "A list on a record's page that shows its linked child records."
+        },
+        {
+          "term": "custom report type",
+          "say": "A recipe that tells reports which objects to show together, following their links."
+        },
+        {
+          "term": "roll-up summary",
+          "say": "A field on a master that counts or adds up its detail records.",
+          "match": [
+            "roll-up summary fields"
+          ]
+        },
+        {
+          "term": "Public Read/Write",
+          "say": "Everyone can see and edit every record of that object."
+        }
+      ]
+    },
+    {
+      "id": "data-6",
+      "title": "Picking field types and picklists",
+      "minutes": 3,
+      "objective": "Given a scenario, determine the considerations when selecting or changing a field data type.",
+      "cards": [
+        {
+          "type": "text",
+          "title": "In plain words",
+          "body": "Every field has a **data type**. It decides what can go in: text, a number, a date, a yes/no checkbox, a choice from a list. The right type keeps data clean, makes reports easy and lets formulas work."
+        },
+        {
+          "type": "tip",
+          "title": "Think of it like…",
+          "body": "Boxes on a paper form. A box with tick marks only takes yes or no. A date box only takes a date. A list of options keeps spellings the same. Where it stops: Salesforce checks the type for you on every save."
+        },
+        {
+          "type": "list",
+          "title": "Picklist choices",
+          "items": [
+            "**Restricted picklist**: only listed values save, even through the API.",
+            "**Global value set**: one list of values shared by many picklist fields. It's always restricted.",
+            "**Dependent picklist**: its choices are filtered by a controlling picklist or checkbox.",
+            "**Multi-select picklist**: many values at once. Harder to report and filter on."
+          ]
+        },
+        {
+          "type": "text",
+          "title": "Text sizes",
+          "body": "A Text field holds up to 255 characters. A **long text area** holds 32,768 by default, and you can set 256 to 131,072. Each object holds 1,638,400 characters across its long and rich text fields. An **auto number** gives each record a unique number, up to 30 characters."
+        },
+        {
+          "type": "text",
+          "title": "Record types",
+          "body": "A **record type** can show a subset of a picklist's values to different users. All values live in the **master picklist**. Each record type picks the values it offers."
+        },
+        {
+          "type": "trap",
+          "body": "Reaching for a multi-select picklist when one value per record would do. It's harder to filter, report and change later. In reports and formulas you need `includes` instead of a plain equals."
+        },
+        {
+          "type": "tip",
+          "title": "Remember it",
+          "body": "Pick the narrowest box that fits the data. Clean in, clean out."
+        }
+      ],
+      "check": [
+        "data-q33",
+        "data-q34",
+        "data-x16"
+      ],
+      "terms": [
+        {
+          "term": "data type",
+          "say": "What kind of value a field holds: text, number, date, checkbox and so on.",
+          "match": [
+            "data types"
+          ]
+        },
+        {
+          "term": "Restricted picklist",
+          "say": "A pick list that refuses any value an admin didn't add, even from imports or the API."
+        },
+        {
+          "term": "Global value set",
+          "say": "One shared list of choices that many picklist fields can use."
+        },
+        {
+          "term": "Dependent picklist",
+          "say": "A pick list whose choices change based on what you picked in another field."
+        },
+        {
+          "term": "Multi-select picklist",
+          "say": "A pick list where you can choose more than one value at once."
+        },
+        {
+          "term": "long text area",
+          "say": "A big text box for long notes, up to 131,072 characters."
+        },
+        {
+          "term": "auto number",
+          "say": "A field that gives each new record the next number by itself, like INV-0042."
+        },
+        {
+          "term": "record type",
+          "say": "A way to give different users different picklist values, page layouts and processes for one object.",
+          "match": [
+            "record types"
+          ]
+        },
+        {
+          "term": "master picklist",
+          "say": "The full list of a picklist's values. Each record type shows only some of them."
+        }
+      ]
+    },
+    {
+      "id": "data-7",
+      "title": "Changing a field's type safely",
+      "minutes": 3,
+      "objective": "Given a scenario, determine the considerations when selecting or changing a field data type.",
+      "cards": [
+        {
+          "type": "text",
+          "title": "In plain words",
+          "body": "You can change a custom field's type after it holds data. But some changes **lose data**, and some aren't allowed at all. Check the list first, and back up the data before you change it."
+        },
+        {
+          "type": "tip",
+          "title": "Think of it like…",
+          "body": "Pouring water from a jug into a smaller cup. Some pours fit fine, some spill. Where it stops: Salesforce doesn't warn about every record that will spill. Plan before you pour."
+        },
+        {
+          "type": "list",
+          "title": "Changes that can lose data",
+          "items": [
+            "To or from Date or Date/Time",
+            "To Number, Percent or Currency, from any type",
+            "From Checkbox, or from a multi-select picklist",
+            "To a multi-select picklist: values not in the list are dropped",
+            "From Auto Number, or to Auto Number from anything but Text",
+            "Text to Picklist; Long Text Area to most types"
+          ]
+        },
+        {
+          "type": "list",
+          "title": "Not allowed",
+          "items": [
+            "Changing **to or from a formula** field",
+            "Changing a field mapped for **lead conversion**",
+            "Changing a field used by Apex, Visualforce, processes or flows",
+            "Changing an encrypted field"
+          ]
+        },
+        {
+          "type": "text",
+          "title": "Safe moves",
+          "body": "**Picklist to checkbox** lets you map which values become checked. Picklist to multi-select keeps the value. Text to Auto Number keeps the data. An External ID stays one only as Text, Number or Email."
+        },
+        {
+          "type": "trap",
+          "body": "If data is lost, list views that use the field are deleted. And you can't \"just switch\" a number field into a formula. Make a new formula field instead."
+        },
+        {
+          "type": "tip",
+          "title": "Remember it",
+          "body": "Formula fields never convert. Dates, numbers and checkboxes spill. Back up first."
+        }
+      ],
+      "check": [
+        "data-q40",
+        "data-q41",
+        "data-x19"
+      ],
+      "terms": [
+        {
+          "term": "lose data",
+          "say": "Some values get cut or wiped when the field changes type.",
+          "match": [
+            "data loss"
+          ]
+        },
+        {
+          "term": "to or from a formula",
+          "say": "A formula field can't become another type, and no field can become a formula."
+        },
+        {
+          "term": "lead conversion",
+          "say": "Turning a lead into an account, contact and opportunity. Fields mapped for it can't change type."
+        },
+        {
+          "term": "Picklist to checkbox",
+          "say": "A safe change. You choose which picklist values become a checked box."
+        },
+        {
+          "term": "External ID",
+          "say": "A field holding a record's ID from another system. It only stays one as Text, Number or Email."
+        },
+        {
+          "term": "list views",
+          "say": "Saved filtered lists of records, like \"My open cases\".",
+          "match": [
+            "list view"
+          ]
+        },
+        {
+          "term": "Back up",
+          "say": "Save a copy of the data first, so you can bring it back if something goes wrong."
+        }
+      ]
+    },
+    {
+      "id": "data-8",
+      "title": "Importing and exporting data",
+      "minutes": 4,
+      "objective": "Given a scenario, determine the options and considerations when importing and exporting data, including the capabilities of external data sources.",
+      "cards": [
+        {
+          "type": "text",
+          "title": "In plain words",
+          "body": "Importing means loading records into Salesforce from a file. Exporting means getting them out. The two main tools are the **Data Import Wizard**, which runs in your browser, and **Data Loader**, an app you install."
+        },
+        {
+          "type": "tip",
+          "title": "Think of it like…",
+          "body": "The Data Import Wizard is a shopping basket: easy, but it only holds so much. Data Loader is a delivery truck: more setup, carries far more, and drives both ways. Where it stops: the basket also can't carry some items at all."
+        },
+        {
+          "type": "list",
+          "title": "Data Import Wizard",
+          "items": [
+            "Up to **50,000** records at a time",
+            "Accounts, contacts, leads, solutions, campaign members and custom objects",
+            "**Can't** import opportunities, cases, campaigns, contracts, assets, documents or products",
+            "Import only: **no export**",
+            "Can match to prevent duplicates, and choose whether to fire workflow rules and processes"
+          ]
+        },
+        {
+          "type": "list",
+          "title": "Data Loader",
+          "items": [
+            "Up to **5 million** records",
+            "Insert, update, **upsert**, delete and **export**",
+            "Works with standard and custom objects, including opportunities",
+            "Has a command line for scheduled jobs (Windows only)"
+          ]
+        },
+        {
+          "type": "text",
+          "title": "Backups and duplicates",
+          "body": "The **Data Export Service** in Setup makes backup files of your data, weekly or monthly. **Matching rules** decide what counts as a duplicate. **Duplicate rules** decide what happens: warn the user or block the save. Clean the file before you import."
+        },
+        {
+          "type": "trap",
+          "body": "Picking the Data Import Wizard for opportunities or for 200,000 records. It can't do either. That's a Data Loader job. Also, the wizard can't export."
+        },
+        {
+          "type": "tip",
+          "title": "Remember it",
+          "body": "Wizard: small, simple, in. Loader: big, any object, in and out."
+        }
+      ],
+      "check": [
+        "data-q45",
+        "data-q46",
+        "data-x23"
+      ],
+      "terms": [
+        {
+          "term": "Data Import Wizard",
+          "say": "A simple import tool inside Salesforce. It loads up to 50,000 records of common objects."
+        },
+        {
+          "term": "Data Loader",
+          "say": "An app you install to load, change, delete or export up to 5 million records."
+        },
+        {
+          "term": "upsert",
+          "say": "Update the record if it already exists, insert it if it doesn't. Matching uses an ID or External ID."
+        },
+        {
+          "term": "no export",
+          "say": "The import wizard only brings data in. It can't take data out."
+        },
+        {
+          "term": "Data Export Service",
+          "say": "A Setup tool that packs your data into backup files, weekly or monthly."
+        },
+        {
+          "term": "Matching rules",
+          "say": "Rules that decide when two records count as the same person or company.",
+          "match": [
+            "matching rule"
+          ]
+        },
+        {
+          "term": "Duplicate rules",
+          "say": "Rules that decide what happens with a duplicate: warn the user or block the save.",
+          "match": [
+            "duplicate rule"
+          ]
+        },
+        {
+          "term": "export",
+          "say": "Copy records out of Salesforce into a file, like a CSV."
+        }
+      ]
+    },
+    {
+      "id": "data-9",
+      "title": "External data with Salesforce Connect",
+      "minutes": 3,
+      "objective": "Given a scenario, determine the options and considerations when importing and exporting data, including the capabilities of external data sources.",
+      "cards": [
+        {
+          "type": "text",
+          "title": "In plain words",
+          "body": "Sometimes data should stay where it is, in another system. **Salesforce Connect** shows that data inside Salesforce as **external objects**. It reads the data **in real time**, without copying it in."
+        },
+        {
+          "type": "tip",
+          "title": "Think of it like…",
+          "body": "A window into the shop next door. You see their shelves live, but the goods stay in their shop. Where it stops: if their shop is closed (the system is down), you see nothing."
+        },
+        {
+          "type": "list",
+          "title": "When to use it",
+          "items": [
+            "Lots of data you don't want to store in Salesforce",
+            "Users need only a few records at a time",
+            "Users need the latest values, in real time"
+          ]
+        },
+        {
+          "type": "text",
+          "title": "What works",
+          "body": "External objects work with global search, lookups, record feeds, the mobile app, Apex, SOQL, change sets and packages. They're **read-only by default**. They can be writable if the data source allows it. Salesforce Connect is included in Developer Edition and costs extra in Enterprise, Performance and Unlimited."
+        },
+        {
+          "type": "text",
+          "title": "External Services",
+          "body": "Need to call another system's actions, not show its tables? **External Services** reads an **OpenAPI** description of a REST service. It turns each operation into an action you can use in Flow, with no code."
+        },
+        {
+          "type": "trap",
+          "body": "Picking a nightly import when users need the latest values and storage is tight. Salesforce Connect is the no-copy, real-time answer. And external objects only use lookup, external lookup and indirect lookup links. No master-detail."
+        },
+        {
+          "type": "tip",
+          "title": "Remember it",
+          "body": "Connect = look, don't copy. External Services = call, don't code."
+        }
+      ],
+      "check": [
+        "data-q51",
+        "data-q52",
+        "data-x27"
+      ],
+      "terms": [
+        {
+          "term": "Salesforce Connect",
+          "say": "A feature that shows data from another system inside Salesforce, live, without copying it."
+        },
+        {
+          "term": "external objects",
+          "say": "Objects that show outside data. The records stay in the other system.",
+          "match": [
+            "external object"
+          ]
+        },
+        {
+          "term": "in real time",
+          "say": "Right now, the latest values, fetched when you look."
+        },
+        {
+          "term": "read-only by default",
+          "say": "At first you can only look. Editing works only if the data source is set up to allow it."
+        },
+        {
+          "term": "External Services",
+          "say": "A tool that turns another system's web actions into Flow actions, with no code."
+        },
+        {
+          "term": "OpenAPI",
+          "say": "A standard file that describes what a web service can do and what it needs."
+        },
+        {
+          "term": "global search",
+          "say": "The search bar at the top of Salesforce that looks across many objects at once."
+        }
+      ]
+    }
+  ],
+  "flashcards": [
+    {
+      "id": "data-f1",
+      "front": "What is an object, a record and a field?",
+      "back": "An **object** is a table for one kind of thing. A **record** is one row in it. A **field** is one column, like Name."
+    },
+    {
+      "id": "data-f2",
+      "front": "What does dragging objects around in Schema Builder change?",
+      "back": "Nothing in the org. It only moves the diagram. Creating objects or fields there does save to the org."
+    },
+    {
+      "id": "data-f3",
+      "front": "How many custom fields can one object have?",
+      "back": "Professional 100, Enterprise 500, Unlimited and Performance 800, Developer 500. A geolocation field counts as 3; a custom address field counts as 9."
+    },
+    {
+      "id": "data-f4",
+      "front": "What happens to detail records when the master is deleted?",
+      "back": "They're deleted too. Undelete the master and they come back."
+    },
+    {
+      "id": "data-f5",
+      "front": "Who owns a detail record in master-detail?",
+      "back": "The master's owner. Details have **no Owner field**, so no sharing rules, manual sharing or queues."
+    },
+    {
+      "id": "data-f6",
+      "front": "How many master-detail relationships can a custom object have?",
+      "back": "**2** master-detail, and **40** relationships in total."
+    },
+    {
+      "id": "data-f7",
+      "front": "How do you add master-detail to an object that already has data?",
+      "back": "Create a lookup, fill it on every record, then convert it to master-detail."
+    },
+    {
+      "id": "data-f8",
+      "front": "How do you model a many-to-many relationship?",
+      "back": "A **junction object** with **two master-detail** fields, one to each side."
+    },
+    {
+      "id": "data-f9",
+      "front": "Which master-detail on a junction is the primary?",
+      "back": "The **first** one created. It sets the junction's look and feel. Delete it, and the secondary becomes primary."
+    },
+    {
+      "id": "data-f10",
+      "front": "What access does a user need to see a junction record?",
+      "back": "Access to **both** master records."
+    },
+    {
+      "id": "data-f11",
+      "front": "Where can you create a hierarchical relationship?",
+      "back": "Only on the **User** object. Example: a Manager field pointing to another user."
+    },
+    {
+      "id": "data-f12",
+      "front": "External lookup or indirect lookup: what's the difference?",
+      "back": "**External lookup**: parent is an external object, matched on its External ID. **Indirect lookup**: child is external, parent is in Salesforce, matched on a unique, External ID field."
+    },
+    {
+      "id": "data-f13",
+      "front": "Can an external object use master-detail?",
+      "back": "No. External objects only use lookup, external lookup and indirect lookup."
+    },
+    {
+      "id": "data-f14",
+      "front": "What happens to sharing when you convert master-detail to lookup?",
+      "back": "The child's org-wide default becomes **Public Read/Write**. It's blocked while the master has roll-up summary fields."
+    },
+    {
+      "id": "data-f15",
+      "front": "What happens when you convert a lookup to master-detail?",
+      "back": "Every record needs a value first. The child's org-wide default becomes **Controlled by Parent**."
+    },
+    {
+      "id": "data-f16",
+      "front": "How does a relationship affect reports?",
+      "back": "Custom report types follow relationships, so you can report on a parent with its children."
+    },
+    {
+      "id": "data-f17",
+      "front": "What does a restricted picklist do?",
+      "back": "It only accepts values the admin defined, even through the API."
+    },
+    {
+      "id": "data-f18",
+      "front": "What is a global value set?",
+      "back": "One shared list of picklist values that many fields can use. It's always restricted."
+    },
+    {
+      "id": "data-f19",
+      "front": "How big can a long text area be?",
+      "back": "Up to **131,072** characters. The default is 32,768, and the smallest is 256."
+    },
+    {
+      "id": "data-f20",
+      "front": "How do record types use picklists?",
+      "back": "Each record type offers a subset of the values in the **master picklist**."
+    },
+    {
+      "id": "data-f21",
+      "front": "Can you convert a field to or from a formula?",
+      "back": "No. Formula fields can't be converted, and no field can become one. Create a new formula field instead."
+    },
+    {
+      "id": "data-f22",
+      "front": "Which field type changes can lose data?",
+      "back": "To or from Date; to Number, Percent or Currency; from Checkbox; to or from multi-select; Text to Picklist; most Auto Number and long text changes."
+    },
+    {
+      "id": "data-f23",
+      "front": "When is changing a field's type not allowed?",
+      "back": "When it's mapped for lead conversion, used by Apex, Visualforce, processes or flows, encrypted, or to or from a formula."
+    },
+    {
+      "id": "data-f24",
+      "front": "Data Import Wizard or Data Loader?",
+      "back": "Wizard: in the browser, up to 50,000 records, common objects, no export. Data Loader: installed app, up to 5 million, any object, with export."
+    },
+    {
+      "id": "data-f25",
+      "front": "What can't the Data Import Wizard import?",
+      "back": "Opportunities, cases, campaigns, contracts, assets, documents and products."
+    },
+    {
+      "id": "data-f26",
+      "front": "What does upsert do?",
+      "back": "Updates records that match, and inserts the rest. It matches on a record ID or an External ID field."
+    },
+    {
+      "id": "data-f27",
+      "front": "How do you back up all your data on a schedule?",
+      "back": "Use the **Data Export Service** in Setup. It makes backup files weekly or monthly."
+    },
+    {
+      "id": "data-f28",
+      "front": "What does Salesforce Connect do?",
+      "back": "Shows data from another system as **external objects**, live, without copying it into Salesforce."
+    },
+    {
+      "id": "data-f29",
+      "front": "Can users edit external object records?",
+      "back": "Not by default: they're read-only. They can be writable if the data source allows it."
+    },
+    {
+      "id": "data-f30",
+      "front": "What are External Services for?",
+      "back": "They turn a REST API's OpenAPI description into actions you can use in Flow, with no code."
+    }
+  ],
+  "questions": [
+    {
+      "id": "data-q1",
+      "lesson": "data-1",
+      "difficulty": 1,
+      "q": "An admin rearranges objects on the Schema Builder canvas so the diagram is easier to read. What changes in the org?",
+      "options": [
+        "Nothing in the data model; only the diagram's layout changes",
+        "The relationships between the moved objects are rebuilt to match",
+        "The fields on each object's page layout are reordered",
+        "The order of the object tabs in the app changes"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "Schema Builder's canvas is only a picture. Dragging objects around helps you see the model but doesn't change objects or relationships.",
+      "wrong": [
+        "",
+        "Moving boxes never touches relationships.",
+        "Schema Builder's canvas has nothing to do with page layouts.",
+        "App navigation is set in the App Manager, not Schema Builder."
+      ],
+      "source": "Data Modeling: Work with Schema Builder"
+    },
+    {
+      "id": "data-q2",
+      "lesson": "data-1",
+      "difficulty": 1,
+      "q": "Glenmoor Rentals wants to track the power tools it rents out, with a serial number and a daily rate. No standard object fits. The data will live in Salesforce. What should the app builder create?",
+      "options": [
+        "An external object for rental tools",
+        "A custom object for rental tools",
+        "A platform event for rental tools",
+        "A big object for rental tools"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "When no standard object fits and the data lives in Salesforce, build a custom object. Its API name ends in `__c`.",
+      "wrong": [
+        "External objects show data stored in another system. This data lives in Salesforce.",
+        "",
+        "Platform events carry messages between systems. They don't store records for users to edit.",
+        "Big objects are for huge archives of billions of records, not everyday tracking."
+      ],
+      "source": "Data Modeling: Optimize Customer Data with Standard and Custom Objects"
+    },
+    {
+      "id": "data-q3",
+      "lesson": "data-1",
+      "difficulty": 2,
+      "q": "Brightpath Support wants to track customer support tickets with a status, a priority and the customer who raised them. What should the app builder check first?",
+      "options": [
+        "Whether a big object can store the tickets",
+        "Whether an external object can hold the tickets",
+        "Whether the standard Case object already fits",
+        "Whether the custom field limit allows a new object"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "Reuse standard objects before building custom ones. Case already tracks support tickets, with status, priority, queues and more built in.",
+      "wrong": [
+        "Big objects are for huge archives, not working tickets.",
+        "The tickets will live in Salesforce, so no external object is needed.",
+        "",
+        "The field limit is per object. It doesn't decide whether to build one."
+      ],
+      "source": "Data Modeling: Optimize Customer Data with Standard and Custom Objects"
+    },
+    {
+      "id": "data-q4",
+      "lesson": "data-1",
+      "difficulty": 1,
+      "q": "Which edition allows the most custom fields per object before any managed-package fields?",
+      "options": [
+        "Enterprise Edition, with 800",
+        "Professional Edition, with 500",
+        "Developer Edition, with 800",
+        "Unlimited Edition, with 800"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "The custom field limit depends on the edition. Unlimited and Performance allow 800 per object; Enterprise and Developer allow 500.",
+      "wrong": [
+        "Enterprise allows 500 custom fields per object.",
+        "Professional allows 100 custom fields per object.",
+        "Developer allows 500 custom fields per object.",
+        ""
+      ],
+      "source": "Custom Fields Allowed Per Object"
+    },
+    {
+      "id": "data-q5",
+      "lesson": "data-1",
+      "difficulty": 2,
+      "q": "Which two things can an app builder do directly in Schema Builder? (Choose 2)",
+      "options": [
+        "Create a new custom object",
+        "Import records from a CSV file",
+        "Add a formula field to an object",
+        "Deploy the data model to production",
+        "Run a report on the objects shown"
+      ],
+      "answer": [
+        0,
+        2
+      ],
+      "explain": "Schema Builder can create objects and fields, including relationship and formula fields. It saves them straight into the current org.",
+      "wrong": [
+        "",
+        "Imports use the Data Import Wizard or Data Loader.",
+        "",
+        "Schema Builder works in the current org. It doesn't deploy.",
+        "Reports are built in the Reports tab, not Schema Builder."
+      ],
+      "source": "Data Modeling: Work with Schema Builder"
+    },
+    {
+      "id": "data-x1",
+      "lesson": "data-1",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "Read the org details. How many geolocation fields can Harborline Freight add to `Shipment__c` before it hits the edition limit?",
+      "code": "Org: Harborline Freight, Enterprise Edition\nObject: Shipment__c\nCustom fields today: 485 (none from managed packages)\nPlan: add geolocation fields for pickup, drop-off, depot...",
+      "lang": "text",
+      "options": [
+        "15",
+        "6",
+        "5",
+        "2"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "A geolocation field counts as 3 custom fields. Enterprise allows 500, so 15 slots are left, and 15 / 3 = 5 fields.",
+      "wrong": [
+        "Each geolocation field counts as 3 fields, not 1.",
+        "Six would use 18 slots. Only 15 are left.",
+        "",
+        "Two would use only 6 of the 15 slots left."
+      ],
+      "source": "Custom Fields Allowed Per Object"
+    },
+    {
+      "id": "data-x2",
+      "lesson": "data-1",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "Read the org details. An admin adds one custom address field to `Patient_Visit__c`. What happens?",
+      "code": "Org: Orchard Lane Clinics, Enterprise Edition\nObject: Patient_Visit__c\nCustom fields today: 490 (none from managed packages)\nNew field: Home_Address__c, type Address",
+      "lang": "text",
+      "options": [
+        "It fits: the address field uses 9 of the 10 slots left",
+        "It fails: an address field counts as 10 fields",
+        "It fits: an address field counts as one field",
+        "It fails: custom address fields need Unlimited Edition"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "A custom address field counts as 9 custom fields. 490 + 9 = 499, which is under Enterprise's 500.",
+      "wrong": [
+        "",
+        "A custom address field counts as 9 fields, not 10.",
+        "An address field is compound and counts as 9.",
+        "Address fields aren't tied to Unlimited Edition. The limit here is the field count."
+      ],
+      "source": "Custom Fields Allowed Per Object"
+    },
+    {
+      "id": "data-q6",
+      "lesson": "data-1",
+      "difficulty": 2,
+      "q": "A report lists an object with the API name `Warehouse_Stock__x`. What kind of object is it?",
+      "options": [
+        "A custom object created in this org",
+        "A standard object with a renamed label",
+        "A custom object installed from a managed package in this org",
+        "An external object whose data stays in another system"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "The `__x` suffix marks an external object. Its records stay in the outside system and are read through Salesforce Connect.",
+      "wrong": [
+        "Custom objects end in `__c`.",
+        "Standard objects have no suffix, like Account.",
+        "Package objects add a namespace prefix but still end in `__c`.",
+        ""
+      ],
+      "source": "Salesforce Connect"
+    },
+    {
+      "id": "data-q7",
+      "lesson": "data-1",
+      "difficulty": 2,
+      "q": "An architect reviews a new data model for Pinecrest Events in Schema Builder. Which two statements about Schema Builder are true? (Choose 2)",
+      "options": [
+        "Objects created there must be deployed before users can use them",
+        "You can create a lookup or master-detail field by dragging it onto an object",
+        "It shows only custom objects, never standard ones",
+        "Dragging objects around the canvas doesn't change the data model",
+        "It's the only place where you can create formula fields"
+      ],
+      "answer": [
+        1,
+        3
+      ],
+      "explain": "Schema Builder is a live diagram of the current org. You can drag in objects and fields, including relationship fields, and the layout of boxes is only for viewing.",
+      "wrong": [
+        "Schema Builder saves straight into the current org.",
+        "",
+        "You can pick standard objects like Contact to show too.",
+        "",
+        "Formula fields can also be created in Object Manager."
+      ],
+      "source": "Data Modeling: Work with Schema Builder"
+    },
+    {
+      "id": "data-q8",
+      "lesson": "data-2",
+      "difficulty": 1,
+      "q": "`Expense_Line__c` is the detail in a master-detail relationship with `Expense_Report__c`. A manager deletes an expense report. What happens to its expense lines?",
+      "options": [
+        "They stay, with a blank expense report field",
+        "They're deleted too, and come back if the report is undeleted",
+        "The delete is blocked until the lines are deleted first",
+        "They're moved to another expense report owned by the same manager"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "Deleting a master deletes its detail records. Undeleting the master brings them back too.",
+      "wrong": [
+        "That's a lookup's \"Clear the value\" option. Details can't exist without their master.",
+        "",
+        "Master-detail deletes the details with the master. Nothing blocks it.",
+        "Salesforce never moves details to another master by itself."
+      ],
+      "source": "Object Relationships Overview"
+    },
+    {
+      "id": "data-q9",
+      "lesson": "data-2",
+      "difficulty": 1,
+      "q": "Who owns a record on the detail side of a master-detail relationship?",
+      "options": [
+        "The user who created the detail record",
+        "The owner of its master record",
+        "A queue chosen on the relationship field",
+        "The user named in the detail's Owner field"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "Detail records have no Owner field. They're owned by whoever owns the master record.",
+      "wrong": [
+        "Details have no Owner field, so the creator doesn't own them.",
+        "",
+        "Details can't be owned by queues.",
+        "Details have no Owner field at all."
+      ],
+      "source": "Object Relationships Overview"
+    },
+    {
+      "id": "data-q10",
+      "lesson": "data-2",
+      "difficulty": 2,
+      "q": "Read the requirements from Copperleaf Builders. Which relationship should go on `Invoice_Line__c`?",
+      "code": "1. Every invoice line belongs to exactly one invoice.\n2. Deleting an invoice deletes its lines.\n3. Anyone who can see an invoice can see its lines.\n4. Lines need no owner of their own.",
+      "lang": "text",
+      "options": [
+        "An optional lookup relationship to `Invoice__c`",
+        "A hierarchical relationship to `Invoice__c`",
+        "An indirect lookup relationship to `Invoice__c`",
+        "A master-detail relationship to `Invoice__c`"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "Master-detail gives a required parent, cascade delete and inherited sharing. That matches all three needs.",
+      "wrong": [
+        "An optional lookup lets lines exist alone and keeps their own sharing.",
+        "Hierarchical relationships only exist on the User object.",
+        "Indirect lookups are for child external objects only.",
+        ""
+      ],
+      "source": "Object Relationships Overview"
+    },
+    {
+      "id": "data-q11",
+      "lesson": "data-2",
+      "difficulty": 2,
+      "q": "A project at Sunfield Labs can be linked to a sponsor, but doesn't have to be. If a sponsor is deleted, its projects must stay. Both are custom objects. What should the app builder create on `Project__c`?",
+      "options": [
+        "An optional lookup to `Sponsor__c` set to clear the value",
+        "A master-detail to `Sponsor__c` with Allow reparenting turned on",
+        "A required lookup to `Sponsor__c` that uses Delete this record also",
+        "A master-detail to `Sponsor__c` with sharing set to Read Only"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "An optional lookup lets the child live without a parent. Its default delete option, Clear the value, keeps the child and blanks the link.",
+      "wrong": [
+        "",
+        "Master-detail requires a sponsor and deletes projects with it.",
+        "Delete this record also deletes the projects, and required doesn't fit optional sponsors.",
+        "Master-detail still deletes projects with their sponsor."
+      ],
+      "source": "Object Relationships Overview"
+    },
+    {
+      "id": "data-x3",
+      "lesson": "data-2",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "An app builder at Riverbend Inspections tries to add a master-detail field from `Inspection__c` to `Site__c`. Salesforce won't allow it. What should the app builder do?",
+      "code": "Object: Inspection__c   (12,400 existing records)\nNew field: Site__c, type Master-Detail -> Site__c\nResult: the Master-Detail type isn't available",
+      "lang": "text",
+      "options": [
+        "Create the master-detail field in Schema Builder instead of Object Manager",
+        "Turn on Allow reparenting, then create the master-detail field",
+        "Create a lookup, fill it on every record, then convert it",
+        "Make `Site__c` the detail of `Inspection__c` instead"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "You can't create a master-detail field on an object that already has data. Create a lookup, give every record a value, then convert it.",
+      "wrong": [
+        "The rule about existing data applies in Schema Builder too.",
+        "Allow reparenting is set on a master-detail field. It doesn't help create one.",
+        "",
+        "That reverses the model. Sites aren't children of inspections."
+      ],
+      "source": "Considerations for Object Relationships"
+    },
+    {
+      "id": "data-q12",
+      "lesson": "data-2",
+      "difficulty": 2,
+      "q": "Tracewell Software tracks bugs in a `Bug__c` object. Each bug can point to an older bug that caused it. Which relationship type must the app builder use?",
+      "options": [
+        "A master-detail relationship from `Bug__c` to `Bug__c`",
+        "A hierarchical relationship from `Bug__c` to `Bug__c`",
+        "A junction object with two master-detail fields to `Bug__c`",
+        "A lookup relationship from `Bug__c` to `Bug__c`"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "A relationship from an object to itself must be a lookup. A record also can't point to itself.",
+      "wrong": [
+        "A link from an object to itself must be a lookup.",
+        "Hierarchical relationships exist only on the User object.",
+        "The two masters on a junction can't be the same object.",
+        ""
+      ],
+      "source": "Considerations for Object Relationships"
+    },
+    {
+      "id": "data-q13",
+      "lesson": "data-2",
+      "difficulty": 2,
+      "q": "Which two statements about an optional lookup field are true when its parent record is deleted? (Choose 2)",
+      "options": [
+        "Delete this record also is on by default for every lookup",
+        "The child inherits the parent's sharing until it's deleted",
+        "Clear the value of this field is the default behavior",
+        "The child is reassigned to the parent's owner",
+        "Don't allow deletion blocks deleting a parent that has linked children"
+      ],
+      "answer": [
+        2,
+        4
+      ],
+      "explain": "An optional lookup offers three delete choices. Clear the value is the default, and Don't allow deletion protects the parent.",
+      "wrong": [
+        "Cascade delete is off by default; Salesforce must turn it on.",
+        "Lookups never pass on sharing.",
+        "",
+        "Lookups don't change the child's owner.",
+        ""
+      ],
+      "source": "Object Relationships Overview"
+    },
+    {
+      "id": "data-x4",
+      "lesson": "data-2",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "Read the current model. Each visit must now also link to a `Work_Zone__c` record. What should the app builder use?",
+      "code": "Field_Visit__c (custom)\n  Account__c      master-detail -> Account\n  Technician__c   master-detail -> Technician__c\n  Needed:         link to Work_Zone__c (custom)",
+      "lang": "text",
+      "options": [
+        "A third master-detail relationship to `Work_Zone__c`",
+        "A hierarchical relationship to `Work_Zone__c`",
+        "A lookup relationship to `Work_Zone__c`",
+        "An external lookup relationship to `Work_Zone__c`"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "Each custom object can have 2 master-detail relationships and 40 relationships in total. A third parent link has to be a lookup.",
+      "wrong": [
+        "A custom object can have only 2 master-detail relationships.",
+        "Hierarchical relationships only link users to users.",
+        "",
+        "External lookups point to external objects. `Work_Zone__c` is a custom object."
+      ],
+      "source": "Considerations for Object Relationships"
+    },
+    {
+      "id": "data-x5",
+      "lesson": "data-2",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "Northpeak Realty wants each Contact to belong to a custom `Region__c` record. Deleting a region should not be possible while contacts point to it. What should the app builder do?",
+      "options": [
+        "Create a master-detail on Contact with `Region__c` as the master",
+        "Create a lookup on Contact to `Region__c` and choose Don't allow deletion",
+        "Create a master-detail on `Region__c` with Contact as the master",
+        "Create a lookup on Contact to `Region__c` and choose Delete this record also"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "A standard object like Contact can't be the detail of a custom object. A lookup with Don't allow deletion keeps the region safe.",
+      "wrong": [
+        "Standard objects can't be the detail of a custom object.",
+        "",
+        "That makes regions children of contacts, the reverse of the need.",
+        "That deletes the contacts instead of protecting the region."
+      ],
+      "source": "Considerations for Object Relationships"
+    },
+    {
+      "id": "data-q14",
+      "lesson": "data-2",
+      "difficulty": 2,
+      "q": "At Bluegate Retail, `Order_Line__c` is the detail of `Sales_Order__c` in a master-detail relationship. Sometimes a line is added to the wrong order and must be moved. What should the app builder do?",
+      "options": [
+        "Select Allow reparenting on the master-detail field",
+        "Change the field's sharing setting to Read/Write",
+        "Convert the field to a lookup so lines can move",
+        "Give the order desk team the Modify All Data permission"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "By default, details can't move to another master. Allow reparenting on the field lets users change the master.",
+      "wrong": [
+        "",
+        "The sharing setting controls access, not moving lines.",
+        "Lookups can move, but you'd lose master-detail benefits. Allow reparenting is enough.",
+        "Even admins can't reparent a detail unless reparenting is allowed."
+      ],
+      "source": "Object Relationships Overview"
+    },
+    {
+      "id": "data-x6",
+      "lesson": "data-2",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "Read the requirements from Fernway Grants. Both objects are custom. Which relationship should go on `Payment__c`?",
+      "code": "Grant__c  (parent)    Payment__c  (child)\n- Deleting a grant deletes its payments.\n- Each payment has its own owner.\n- Payments use their own sharing rules.",
+      "lang": "text",
+      "options": [
+        "A lookup with Delete this record also, once Salesforce enables it",
+        "A master-detail relationship from `Payment__c` to `Grant__c`",
+        "A lookup with Clear the value, plus a nightly report of orphan payments",
+        "A lookup with Don't allow deletion on the grant"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "A lookup keeps the child's own owner and sharing. Delete this record also adds cascade delete, but Salesforce must enable it first.",
+      "wrong": [
+        "",
+        "Details have no owner and can't have sharing rules.",
+        "Clear the value keeps the payments instead of deleting them.",
+        "That blocks deleting the grant instead of deleting its payments."
+      ],
+      "source": "Object Relationships Overview"
+    },
+    {
+      "id": "data-x7",
+      "lesson": "data-2",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "Which two statements about master-detail relationships are true? (Choose 2)",
+      "options": [
+        "The master-detail field is required on the detail's page layout",
+        "Each custom object can have up to 3 master-detail relationships",
+        "Detail records keep their own Owner field",
+        "A custom detail object can't have sharing rules or queues",
+        "A standard object can be the detail of a custom object"
+      ],
+      "answer": [
+        0,
+        3
+      ],
+      "explain": "The master field is required on the detail. Details have no owner, so they can't use sharing rules, manual sharing or queues.",
+      "wrong": [
+        "",
+        "The limit is 2 master-detail relationships per custom object.",
+        "Details have no Owner field.",
+        "",
+        "Standard objects can't be on the detail side of a custom object."
+      ],
+      "source": "Object Relationships Overview"
+    },
+    {
+      "id": "data-q15",
+      "lesson": "data-3",
+      "difficulty": 1,
+      "q": "Each author at Quillstone Press can write many books, and each book can have many authors. How should an app builder model this?",
+      "options": [
+        "A lookup field on Book that points to one Author",
+        "A junction object with master-detail fields to Author and Book",
+        "A multi-select picklist of author names on Book",
+        "A master-detail field on Author that points to each Book they wrote"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "A many-to-many link needs a junction object. It has two master-detail fields, one to each side.",
+      "wrong": [
+        "One lookup links each book to only one author.",
+        "",
+        "A picklist holds text values, not real links to author records.",
+        "A master-detail field holds one book, so each author gets only one."
+      ],
+      "source": "Object Relationships Overview"
+    },
+    {
+      "id": "data-q16",
+      "lesson": "data-3",
+      "difficulty": 2,
+      "q": "On the `Enrollment__c` junction object, the master-detail to `Course__c` was created first, then the one to `Student__c`. What does this order decide?",
+      "options": [
+        "Enrollments are deleted only when the Course record is deleted",
+        "Roll-up summary fields are allowed only on Course",
+        "The enrollment pages use the Course object's color and icon",
+        "Users need access only to the Course to see an enrollment"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "The first master-detail on a junction is the primary relationship. It sets the junction's look and feel, like color and icon.",
+      "wrong": [
+        "Deleting either master deletes its junction records.",
+        "Roll-ups from a junction can go on both masters.",
+        "",
+        "Access to a junction record needs access to both masters."
+      ],
+      "source": "Considerations for Object Relationships"
+    },
+    {
+      "id": "data-q17",
+      "lesson": "data-3",
+      "difficulty": 2,
+      "q": "A user can read a `Course__c` record but can't see the related `Student__c` record. Can the user see the `Enrollment__c` junction record that links them?",
+      "options": [
+        "Yes, because the primary master grants access to the junction",
+        "Yes, if the user owns the enrollment record",
+        "No, because junction records are visible only to admins",
+        "No, because a junction record needs access to both masters"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "Sharing on a junction record comes from the user's access to both master records. Missing one blocks the junction record.",
+      "wrong": [
+        "Sharing comes from both masters, not just the primary.",
+        "Junction records have no Owner field of their own.",
+        "Users with access to both masters can see junction records.",
+        ""
+      ],
+      "source": "Considerations for Object Relationships"
+    },
+    {
+      "id": "data-q18",
+      "lesson": "data-3",
+      "difficulty": 2,
+      "q": "Which two statements about junction objects are true? (Choose 2)",
+      "options": [
+        "Both master-detail fields can point to the same object",
+        "Junction records are deleted when either master record is deleted",
+        "A junction object can be the master of another master-detail",
+        "A junction object uses two lookup fields to its parents",
+        "Roll-up summary fields can be created on both master objects"
+      ],
+      "answer": [
+        1,
+        4
+      ],
+      "explain": "Deleting either master deletes its junction records. Roll-ups from the junction can be created on both masters.",
+      "wrong": [
+        "A many-to-many self-relationship isn't allowed.",
+        "",
+        "A junction object can't be on the master side of a master-detail.",
+        "The exam's junction uses two master-detail fields.",
+        ""
+      ],
+      "source": "Considerations for Object Relationships"
+    },
+    {
+      "id": "data-x8",
+      "lesson": "data-3",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "Lakeview Academy's `Course__c` record has 350 enrollments. `Enrollment__c` is a junction between `Course__c` and `Student__c`. An admin tries to delete the course and gets an error. Why?",
+      "code": "Course__c    \"Intro to Pottery\"   350 Enrollment__c records\nStudent__c   roll-up: Total_Courses__c = COUNT(Enrollment__c)\n\nAdmin deletes the course -> error",
+      "lang": "text",
+      "options": [
+        "Courses on the primary side of a junction can never be deleted",
+        "Deleting a master with over 200 details always needs Data Loader",
+        "Over 200 junction records and a roll-up to the other parent block it",
+        "The roll-up on `Student__c` must be deleted before any course is deleted"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "Over 200 junction records plus a roll-up to the other parent blocks the delete. Delete junction records until fewer than 200 remain.",
+      "wrong": [
+        "A master can be deleted. Its junction records are deleted with it.",
+        "No such rule exists. The roll-up to the other parent is the cause.",
+        "",
+        "Courses with fewer than 200 enrollments can still be deleted."
+      ],
+      "source": "Considerations for Object Relationships"
+    },
+    {
+      "id": "data-x9",
+      "lesson": "data-3",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "Read the requirements from Tidewater Conferences. Which solution meets all of them with no code?",
+      "code": "- Each event has many speakers.\n- Each speaker joins many events.\n- Event shows a live count of its speakers.\n- Deleting an event removes its speaker links.",
+      "lang": "text",
+      "options": [
+        "A junction with two master-detail fields, plus a roll-up count on Event",
+        "A junction object with two lookup fields, plus a formula count on Event",
+        "A lookup from Speaker to Event, plus a roll-up summary count on Event",
+        "A multi-select picklist of speakers on Event, plus a formula count"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "A junction object with two master-detail fields models many-to-many. It deletes links with either master and allows a roll-up on Event.",
+      "wrong": [
+        "",
+        "A formula field can't count related records.",
+        "One lookup lets each speaker attend only one event.",
+        "Picklist values aren't linked speaker records."
+      ],
+      "source": "Considerations for Object Relationships"
+    },
+    {
+      "id": "data-x10",
+      "lesson": "data-3",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "Read the plan from Stonebridge Clinics. What should the app builder know?",
+      "code": "Assignment__c (junction)\n  Nurse__c   master-detail -> Nurse__c\n  Shift__c   master-detail -> Shift__c\n\nPlan: Check_In__c  master-detail -> Assignment__c",
+      "lang": "text",
+      "options": [
+        "It works if `Check_In__c` is created before the junction's second master",
+        "It works, but only with Allow reparenting turned on",
+        "It works up to 3 detail levels below the junction",
+        "Junction objects can't be masters, so use a lookup instead"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "Custom junction objects can't have detail objects. Link `Check_In__c` to the junction with a lookup instead.",
+      "wrong": [
+        "The order of creation doesn't lift this rule.",
+        "Reparenting has nothing to do with this rule.",
+        "Junction objects can't have detail objects at all.",
+        ""
+      ],
+      "source": "Considerations for Object Relationships"
+    },
+    {
+      "id": "data-q19",
+      "lesson": "data-3",
+      "difficulty": 2,
+      "q": "On a junction object, an admin deletes the master-detail field that was created first. What happens?",
+      "options": [
+        "The junction object is converted into a standard object",
+        "The other master-detail becomes the primary relationship",
+        "All junction records are deleted at once",
+        "The junction loses its look and feel and falls back to defaults"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "If you delete or convert the primary master-detail, the secondary master becomes primary.",
+      "wrong": [
+        "Deleting a field never changes the object's kind.",
+        "",
+        "Junction records are deleted when a master record is deleted, not a field.",
+        "The secondary master takes over as primary, with its look."
+      ],
+      "source": "Considerations for Object Relationships"
+    },
+    {
+      "id": "data-q20",
+      "lesson": "data-3",
+      "difficulty": 2,
+      "q": "Hollis Consulting needs to track which consultants work on which projects. Each consultant works on many projects, each project has many consultants. They also need the hours per pairing. What fits best?",
+      "options": [
+        "An Hours field on Project and a lookup to Consultant",
+        "A junction object between Consultant and Project, with Hours",
+        "A master-detail from Project to Consultant with an Hours field",
+        "A hierarchical relationship between Consultant and Project"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "A junction object models many-to-many and can hold its own fields. Hours per pairing fits on each junction record.",
+      "wrong": [
+        "A single lookup allows only one consultant per project.",
+        "",
+        "That makes each project belong to one consultant.",
+        "Hierarchical relationships only link users to users."
+      ],
+      "source": "Object Relationships Overview"
+    },
+    {
+      "id": "data-q21",
+      "lesson": "data-4",
+      "difficulty": 1,
+      "q": "An admin wants each user record to show the user's mentor, who is another user. Which relationship type is built for this?",
+      "options": [
+        "Master-detail",
+        "Indirect lookup",
+        "External lookup",
+        "Hierarchical"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "A hierarchical relationship links one user to another user. It exists only on the User object.",
+      "wrong": [
+        "User records can't be the detail in master-detail.",
+        "Indirect lookups link external objects to Salesforce objects.",
+        "External lookups point to external objects.",
+        ""
+      ],
+      "source": "Object Relationships Overview"
+    },
+    {
+      "id": "data-q22",
+      "lesson": "data-4",
+      "difficulty": 2,
+      "q": "Order data stays in an outside ERP and appears in Salesforce as `Order__x`. Each order has a customer number that also lives in a custom, unique External ID field on Account. Which relationship links each order to its account?",
+      "options": [
+        "An indirect lookup on `Order__x` to Account",
+        "An external lookup on `Order__x` to Account",
+        "A master-detail on `Order__x` to Account",
+        "A hierarchical relationship on Account to `Order__x`"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "An indirect lookup links a child external object to a Salesforce parent. It matches on a unique, external ID field on the parent.",
+      "wrong": [
+        "",
+        "External lookups need an external object as the parent.",
+        "External objects can't use master-detail.",
+        "Hierarchical relationships only link users to users."
+      ],
+      "source": "Object Relationships Overview"
+    },
+    {
+      "id": "data-q23",
+      "lesson": "data-4",
+      "difficulty": 2,
+      "q": "Cases in Salesforce must link to shipment records that stay in a logistics system, shown as `Shipment__x`. Which relationship should go on Case?",
+      "options": [
+        "An indirect lookup to `Shipment__x`",
+        "A master-detail to `Shipment__x`",
+        "An external lookup to `Shipment__x`",
+        "A standard lookup to `Shipment__x` matched on the record ID"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "An external lookup links any child to a parent external object. It matches on the parent's External ID field.",
+      "wrong": [
+        "Indirect lookups need the child to be the external object.",
+        "External objects only use lookup, external lookup and indirect lookup.",
+        "",
+        "A parent external object is matched on its External ID, through an external lookup."
+      ],
+      "source": "Object Relationships Overview"
+    },
+    {
+      "id": "data-x11",
+      "lesson": "data-4",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "Read the setup. Which relationship type fits each link?",
+      "code": "Link 1: Invoice__x (external)  -> parent Account\n        matched on Account.ERP_Number__c (unique, External ID)\n\nLink 2: Opportunity             -> parent Contract__x (external)\n        matched on Contract__x External ID",
+      "lang": "text",
+      "options": [
+        "Link 1 is an external lookup, and link 2 is an indirect lookup",
+        "Both links are external lookups",
+        "Both links are indirect lookups",
+        "Link 1 is an indirect lookup; link 2 is an external lookup"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "Look at the parent. A parent external object means an external lookup. A child external object with a Salesforce parent means an indirect lookup.",
+      "wrong": [
+        "This swaps them. Check where the parent lives.",
+        "Link 1's parent is inside Salesforce, so it's an indirect lookup.",
+        "Link 2's parent is external, so it's an external lookup.",
+        ""
+      ],
+      "source": "Object Relationships Overview"
+    },
+    {
+      "id": "data-x12",
+      "lesson": "data-4",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "An app builder creates an indirect lookup from `Payment__x` to Account. What must exist on Account?",
+      "options": [
+        "The standard Account Number field, marked unique",
+        "A custom auto number field",
+        "A custom field marked unique and External ID",
+        "A master-detail field to `Payment__x`"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "An indirect lookup matches the child's value to a custom field on the parent. That field must be unique and an External ID.",
+      "wrong": [
+        "The target must be a custom field marked unique and External ID.",
+        "An auto number field isn't the required unique, external ID target.",
+        "",
+        "Indirect lookups match on a field. They don't need any other relationship."
+      ],
+      "source": "Object Relationships Overview"
+    },
+    {
+      "id": "data-q24",
+      "lesson": "data-4",
+      "difficulty": 2,
+      "q": "Which two statements about hierarchical relationships are true? (Choose 2)",
+      "options": [
+        "They're available only on the User object",
+        "They can link any custom object to itself",
+        "They give the user master-detail rights over linked users",
+        "They need Salesforce Connect to work",
+        "A user can't point to themselves, directly or through other users"
+      ],
+      "answer": [
+        0,
+        4
+      ],
+      "explain": "A hierarchical relationship is a special lookup only on User. A user can't refer to themselves, directly or indirectly.",
+      "wrong": [
+        "",
+        "A self-link on a custom object is a normal lookup.",
+        "A hierarchical field is a special lookup. It isn't master-detail.",
+        "Salesforce Connect is for external data.",
+        ""
+      ],
+      "source": "Object Relationships Overview"
+    },
+    {
+      "id": "data-q25",
+      "lesson": "data-4",
+      "difficulty": 2,
+      "q": "Which two relationship types can an external object use? (Choose 2)",
+      "options": [
+        "Master-detail",
+        "External lookup",
+        "Indirect lookup",
+        "Hierarchical",
+        "Many-to-many through a junction"
+      ],
+      "answer": [
+        1,
+        2
+      ],
+      "explain": "External objects only use lookup, external lookup and indirect lookup relationships.",
+      "wrong": [
+        "External objects don't support master-detail.",
+        "",
+        "",
+        "Hierarchical relationships exist only on User.",
+        "A junction needs master-detail fields, which external objects can't use."
+      ],
+      "source": "Considerations for Object Relationships"
+    },
+    {
+      "id": "data-q26",
+      "lesson": "data-4",
+      "difficulty": 2,
+      "q": "Read the setup at Pemberly Insurance. What lets users see a related list of each contact's policies on the Contact page?",
+      "code": "Policy__x   external object (mainframe data)\n  Customer_No  text, comes from the mainframe\nContact\n  Customer_Number__c  unique, External ID",
+      "lang": "text",
+      "options": [
+        "An external lookup on Contact to `Policy__x`, matched on its External ID",
+        "An indirect lookup on `Policy__x` to Contact, matched on a unique external ID field",
+        "A hierarchical relationship between Contact and `Policy__x`",
+        "A roll-up summary on Contact that counts `Policy__x` rows"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "The child is external and the parent is in Salesforce, so use an indirect lookup. It gives Contact a related list of policies.",
+      "wrong": [
+        "That points each contact to one policy, not policies to a contact.",
+        "",
+        "Hierarchical relationships only link users to users.",
+        "Roll-ups need master-detail, which external objects can't use."
+      ],
+      "source": "Object Relationships Overview"
+    },
+    {
+      "id": "data-q27",
+      "lesson": "data-5",
+      "difficulty": 1,
+      "q": "A custom object is the detail in a master-detail relationship. What is its org-wide default?",
+      "options": [
+        "Controlled by Parent",
+        "Private",
+        "Public Read Only",
+        "Public Read/Write"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "Details inherit their master's sharing. Their org-wide default is Controlled by Parent.",
+      "wrong": [
+        "",
+        "Details can't have their own default. They follow the master.",
+        "Details can't have their own default. They follow the master.",
+        "That's what a detail gets after converting to a lookup."
+      ],
+      "source": "Considerations for Object Relationships"
+    },
+    {
+      "id": "data-q28",
+      "lesson": "data-5",
+      "difficulty": 2,
+      "q": "An admin converts `Task_Item__c` from master-detail to lookup. What happens to its org-wide default?",
+      "options": [
+        "It's set to Public Read/Write",
+        "It stays Controlled by Parent",
+        "It's set to Private",
+        "It copies the old master's default"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "Converting master-detail to lookup sets the child's org-wide default to Public Read/Write. Review sharing right after.",
+      "wrong": [
+        "",
+        "Lookup children can't be Controlled by Parent.",
+        "Salesforce sets it to Public Read/Write.",
+        "Salesforce sets it to Public Read/Write."
+      ],
+      "source": "Considerations for Object Relationships"
+    },
+    {
+      "id": "data-q29",
+      "lesson": "data-5",
+      "difficulty": 2,
+      "q": "An admin tries to convert a master-detail field to a lookup. Salesforce blocks it. What's the likely cause?",
+      "options": [
+        "The detail object has more than 200 records",
+        "The master has roll-up summary fields",
+        "The detail object has a record type",
+        "Allow reparenting is turned off"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "You can't convert master-detail to lookup while roll-up summary fields exist on the master. Delete them first.",
+      "wrong": [
+        "No such limit blocks the conversion.",
+        "",
+        "Record types don't block the conversion.",
+        "Reparenting doesn't affect conversion."
+      ],
+      "source": "Considerations for Object Relationships"
+    },
+    {
+      "id": "data-q30",
+      "lesson": "data-5",
+      "difficulty": 2,
+      "q": "Which two things are needed or happen when converting a lookup to master-detail? (Choose 2)",
+      "options": [
+        "Existing roll-up summary fields on the parent are deleted",
+        "The child keeps its Owner field and sharing rules",
+        "The child's org-wide default becomes Public Read/Write",
+        "Every child record must have a value in the lookup field",
+        "The child's org-wide default becomes Controlled by Parent"
+      ],
+      "answer": [
+        3,
+        4
+      ],
+      "explain": "Every record needs a value before the conversion. After it, the child's default is Controlled by Parent.",
+      "wrong": [
+        "Lookups had no roll-ups to delete.",
+        "Details lose their owner and own sharing.",
+        "That's the master-detail to lookup direction.",
+        "",
+        ""
+      ],
+      "source": "Considerations for Object Relationships"
+    },
+    {
+      "id": "data-x13",
+      "lesson": "data-5",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "Mapleton Health has `Clinic__c` and `Visit__c`. Today `Visit__c` has a lookup to `Clinic__c`, and visits have their own owners. Clinic managers ask for a total visit count on each clinic, kept up to date with no code. The app builder plans to convert the lookup to master-detail. Which two impacts should they expect? (Choose 2)",
+      "options": [
+        "Visits lose their own owners and get access from their clinic",
+        "A roll-up summary field can then count visits on each clinic",
+        "Visits keep their Owner field, but sharing becomes Controlled by Parent",
+        "The conversion deletes visits that already have a clinic",
+        "Users need a permission set to see the new related list"
+      ],
+      "answer": [
+        0,
+        1
+      ],
+      "explain": "Details take the master's owner and sharing. Master-detail allows roll-up summaries on the master.",
+      "wrong": [
+        "",
+        "",
+        "Details have no Owner field at all.",
+        "Every visit must have a clinic, and none are deleted.",
+        "Related lists follow page layouts, not a special permission set."
+      ],
+      "source": "Considerations for Object Relationships"
+    },
+    {
+      "id": "data-q31",
+      "lesson": "data-5",
+      "difficulty": 2,
+      "q": "An admin builds a custom report type to show projects with their tasks. `Task_Item__c` has a master-detail to `Project__c`. What lets the report type link the two?",
+      "options": [
+        "A formula field on `Project__c` listing task names",
+        "A shared record type on both objects",
+        "The master-detail relationship itself",
+        "A matching rule between the two objects"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "Custom report types follow relationships. The master-detail link lets the report show each project with its task items.",
+      "wrong": [
+        "Report types follow relationships, not formula text.",
+        "Record types don't join objects in reports.",
+        "",
+        "Matching rules find duplicates. They don't join objects."
+      ],
+      "source": "Considerations for Object Relationships"
+    },
+    {
+      "id": "data-x14",
+      "lesson": "data-5",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "Read what happened at Quayside Ports. Why can users now see and edit every booking?",
+      "code": "Before: Berth_Booking__c  master-detail -> Port__c\n        users saw bookings only for ports they could access\nChange: Port__c field converted to a lookup\nAfter:  users can see and edit every booking",
+      "lang": "text",
+      "options": [
+        "Lookups always give everyone read access to child records",
+        "The conversion copied the port sharing rules to bookings",
+        "Users got Modify All Data during the conversion",
+        "The conversion set the bookings to Public Read/Write"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "Converting master-detail to lookup sets the child's default to Public Read/Write. Set a tighter default and add sharing as needed.",
+      "wrong": [
+        "The cause is the default set by the conversion, which can be changed.",
+        "Sharing rules aren't copied, and they only add access.",
+        "Converting a field never changes user permissions.",
+        ""
+      ],
+      "source": "Considerations for Converting the Field Type of a Custom Field"
+    },
+    {
+      "id": "data-x15",
+      "lesson": "data-5",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "Read the plan. Which two results will Hollow Creek Farms see after this change? (Choose 2)",
+      "code": "Object: Harvest__c (custom, every record has a Field__c value)\nChange: Field__c lookup -> master-detail to Field__c\nToday:  Harvest__c is Private, and each harvest has its own owner",
+      "lang": "text",
+      "options": [
+        "Harvest owners can still share their own records manually",
+        "`Harvest__c` records get a new Owner field set to the creator",
+        "The `Field__c` field becomes required on the harvest page layout",
+        "Users who can see a Field record get that access to its harvests",
+        "Reports can no longer show harvests with their field"
+      ],
+      "answer": [
+        2,
+        3
+      ],
+      "explain": "As a detail, a harvest must have a value in its master field. It inherits access from its master.",
+      "wrong": [
+        "Details can't use manual sharing.",
+        "Details have no Owner field.",
+        "",
+        "",
+        "Custom report types can follow master-detail."
+      ],
+      "source": "Considerations for Object Relationships"
+    },
+    {
+      "id": "data-q32",
+      "lesson": "data-5",
+      "difficulty": 1,
+      "q": "An app builder creates a master-detail field on `Repair__c` to `Vehicle__c`. What changes on the `Repair__c` page layout?",
+      "options": [
+        "The Vehicle field is hidden from users",
+        "The Vehicle field becomes optional",
+        "The Vehicle field is always required",
+        "The Owner field is added next to it"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "The master-detail field is required on the detail's page layout. A detail can't be saved without its master.",
+      "wrong": [
+        "The master field shows and is required.",
+        "A master-detail field is always required on the detail.",
+        "",
+        "Details have no Owner field at all."
+      ],
+      "source": "Object Relationships Overview"
+    },
+    {
+      "id": "data-q33",
+      "lesson": "data-6",
+      "difficulty": 1,
+      "q": "Sales reps keep typing \"Calif\", \"CA\" and \"California\" into a free-text State field. What field type keeps the values the same?",
+      "options": [
+        "Picklist",
+        "Text Area",
+        "Auto Number",
+        "Checkbox"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "A picklist offers a fixed list of values, so everyone picks the same spelling.",
+      "wrong": [
+        "",
+        "A text area still lets users type anything.",
+        "Auto Number fills itself in. Users can't choose a state.",
+        "A checkbox holds only true or false."
+      ],
+      "source": "Custom Field Types"
+    },
+    {
+      "id": "data-q34",
+      "lesson": "data-6",
+      "difficulty": 2,
+      "q": "An integration loads leads through the API. Some carry values for the custom picklist `Lead_Channel__c` that the admin never created. What setting stops this?",
+      "options": [
+        "Make the field required on the page layout",
+        "Add the field to a record type",
+        "Turn the picklist into a dependent picklist",
+        "Make the picklist a restricted picklist"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "A restricted picklist only accepts values the admin defined, even through the API.",
+      "wrong": [
+        "Page layouts don't affect API loads.",
+        "Record types don't stop other values from the API.",
+        "Dependency filters choices on screen but doesn't stop API values.",
+        ""
+      ],
+      "source": "Picklist Limitations"
+    },
+    {
+      "id": "data-q35",
+      "lesson": "data-6",
+      "difficulty": 2,
+      "q": "Account, Opportunity and a custom `Partner__c` object each need a Region picklist with the same values. When a region is added, all three must get it. What should the app builder use?",
+      "options": [
+        "Three dependent picklists controlled by one checkbox",
+        "A global value set used by all three picklist fields",
+        "One multi-select picklist on Account referenced by formulas",
+        "A record type on each object with the same values"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "A global value set is one shared list of values. Change it once, and every picklist using it gets the change.",
+      "wrong": [
+        "Dependency filters values. It doesn't share them across objects.",
+        "",
+        "Formulas can't give other objects their own picklist.",
+        "Record types pick from each field's own values."
+      ],
+      "source": "Picklist Administration: Share Values with Global Value Sets"
+    },
+    {
+      "id": "data-q36",
+      "lesson": "data-6",
+      "difficulty": 2,
+      "q": "On the Case object, the Sub-Reason values should change based on the chosen Reason. What should the app builder set up?",
+      "options": [
+        "A restricted picklist on Sub-Reason",
+        "A dependent picklist controlled by Reason",
+        "A global value set shared by Reason and Sub-Reason",
+        "A validation rule that lists every valid pair"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "A dependent picklist's values are filtered by a controlling picklist or checkbox.",
+      "wrong": [
+        "Restricted blocks unknown values. It doesn't filter by Reason.",
+        "",
+        "Sharing one list doesn't filter one by the other.",
+        "That works, but a dependent picklist is the built-in tool."
+      ],
+      "source": "Define a Dependent Picklist"
+    },
+    {
+      "id": "data-q37",
+      "lesson": "data-6",
+      "difficulty": 2,
+      "q": "Read the requirement. Which field type should the app builder pick?",
+      "code": "Field: Inspection Notes\n- Free text, often 2-3 pages\n- Can include line breaks\n- No bold, images or links needed",
+      "lang": "text",
+      "options": [
+        "Text",
+        "Text Area",
+        "Picklist (Multi-Select)",
+        "Text Area (Long)"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "A long text area holds up to 131,072 characters, with 32,768 as the default. Plain Text and Text Area stop at 255.",
+      "wrong": [
+        "A Text field holds at most 255 characters.",
+        "A Text Area holds at most 255 characters.",
+        "A picklist holds set values, not free notes.",
+        ""
+      ],
+      "source": "Custom Field Types"
+    },
+    {
+      "id": "data-x16",
+      "lesson": "data-6",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "Sales reps and support agents both use the Case Type picklist. Reps should see only 3 of its 10 values. Agents should see all 10. What should the app builder use?",
+      "options": [
+        "Two record types, each offering part of the master picklist",
+        "Two global value sets on one picklist field",
+        "A dependent picklist controlled by each user's profile name",
+        "A restricted picklist with 3 active values"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "Record types can offer a subset of a picklist's values. Every value lives in the master picklist.",
+      "wrong": [
+        "",
+        "A picklist field can use only one global value set.",
+        "Profiles can't be controlling fields.",
+        "That hides values from agents too."
+      ],
+      "source": "Create Record Types"
+    },
+    {
+      "id": "data-x17",
+      "lesson": "data-6",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "An admin at Willowmere Foods wants managers to choose several product lines on an Account. Which two considerations apply to a multi-select picklist? (Choose 2)",
+      "options": [
+        "Report filters need operators like includes, not a plain equals",
+        "It must use a global value set",
+        "Converting it to another type later can lose data",
+        "It can hold more values than a single-select picklist",
+        "It can be summed in a roll-up summary field"
+      ],
+      "answer": [
+        0,
+        2
+      ],
+      "explain": "Multi-select values are harder to filter: reports use includes or excludes. Changing from multi-select to another type can lose data.",
+      "wrong": [
+        "",
+        "Global value sets are optional for picklists.",
+        "",
+        "Multi-select allows 500 values, fewer than single-select's 1,000.",
+        "Roll-up summaries sum number, currency and percent fields, not picklists."
+      ],
+      "source": "Picklist Limitations"
+    },
+    {
+      "id": "data-q38",
+      "lesson": "data-6",
+      "difficulty": 1,
+      "q": "Each invoice needs a unique number like INV-00042 that users can't edit and that fills in by itself. Which field type fits?",
+      "options": [
+        "Number with a unique setting",
+        "Formula (Text)",
+        "Auto Number",
+        "Text marked as External ID"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "An auto number field gives each record the next number on save. It can add a prefix, up to 30 characters in all.",
+      "wrong": [
+        "Users would still have to type the number.",
+        "A formula can't count up and remember a value.",
+        "",
+        "Users or imports would have to fill it in."
+      ],
+      "source": "Custom Field Types"
+    },
+    {
+      "id": "data-q39",
+      "lesson": "data-6",
+      "difficulty": 2,
+      "q": "Which two statements about global value sets are true? (Choose 2)",
+      "options": [
+        "They can be turned into unrestricted picklists",
+        "They're always restricted picklists",
+        "Each one can be used by one object only",
+        "Many picklist fields, even on different objects, can share one",
+        "They replace record types on every object"
+      ],
+      "answer": [
+        1,
+        3
+      ],
+      "explain": "A global value set is one shared list for many picklist fields across objects. It's always restricted.",
+      "wrong": [
+        "Global value sets are always restricted.",
+        "",
+        "They're shared across objects.",
+        "",
+        "Record types still choose which values to show."
+      ],
+      "source": "Picklist Administration: Share Values with Global Value Sets"
+    },
+    {
+      "id": "data-x18",
+      "lesson": "data-6",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "An admin writes this validation rule to block a save when the multi-select picklist `Product_Lines__c` has Frozen chosen. Salesforce won't save it. Which formula works?",
+      "code": "Product_Lines__c = \"Frozen\"",
+      "lang": "formula",
+      "options": [
+        "`ISPICKVAL(Product_Lines__c, \"Frozen\")`",
+        "`CONTAINS(Product_Lines__c, \"Frozen\")`",
+        "`ISBLANK(Product_Lines__c)`",
+        "`INCLUDES(Product_Lines__c, \"Frozen\")`"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "A multi-select picklist can't be compared with `=`. `INCLUDES` checks whether one value is among the chosen values.",
+      "wrong": [
+        "`ISPICKVAL` is for single-select picklists, not multi-select.",
+        "`CONTAINS` takes text, and a multi-select picklist isn't text.",
+        "That fires when nothing is chosen, not when Frozen is chosen.",
+        ""
+      ],
+      "source": "Formula Operators and Functions by Context"
+    },
+    {
+      "id": "data-q40",
+      "lesson": "data-7",
+      "difficulty": 1,
+      "q": "An admin wants to change a Number field into a formula field. What happens?",
+      "options": [
+        "It works, and old values are kept as the formula's default",
+        "It works only if the field is empty",
+        "It isn't allowed; create a new formula field instead",
+        "It works after removing the field from page layouts"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "You can't convert any field to or from a formula. Create a new formula field instead.",
+      "wrong": [
+        "No field can be converted into a formula.",
+        "Converting to a formula isn't allowed at all.",
+        "",
+        "Layouts aren't the problem. Formula conversions aren't allowed."
+      ],
+      "source": "Considerations for Converting the Field Type of a Custom Field"
+    },
+    {
+      "id": "data-q41",
+      "lesson": "data-7",
+      "difficulty": 2,
+      "q": "A custom picklist Status has the values Yes, No and Maybe. The admin wants a checkbox instead. What does Salesforce offer?",
+      "options": [
+        "Every record becomes unchecked, and the old values are lost",
+        "The admin maps which picklist values become checked boxes",
+        "The change isn't allowed for picklists with three values",
+        "Salesforce checks the box for any non-blank value"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "When converting a picklist to a checkbox, you choose which values map to checked and which to unchecked.",
+      "wrong": [
+        "Picklist to checkbox lets you map values.",
+        "",
+        "There's no such rule.",
+        "You choose the mapping yourself."
+      ],
+      "source": "Considerations for Converting the Field Type of a Custom Field"
+    },
+    {
+      "id": "data-q42",
+      "lesson": "data-7",
+      "difficulty": 2,
+      "q": "Which two field type changes can cause data loss? (Choose 2)",
+      "options": [
+        "Picklist to Picklist (Multi-Select)",
+        "Auto Number to Text",
+        "Text to Number",
+        "Text to Auto Number",
+        "Checkbox to Text"
+      ],
+      "answer": [
+        2,
+        4
+      ],
+      "explain": "Changing to Number from any other type, and changing from Checkbox, can lose data.",
+      "wrong": [
+        "Each record keeps its single value.",
+        "The values stay the same as text.",
+        "",
+        "Text can convert to Auto Number without losing data.",
+        ""
+      ],
+      "source": "Considerations for Converting the Field Type of a Custom Field"
+    },
+    {
+      "id": "data-q43",
+      "lesson": "data-7",
+      "difficulty": 2,
+      "q": "A Text custom field is marked as an External ID. It's used for upserts. An admin wants to change its type. Which type would stop it being an External ID?",
+      "options": [
+        "Picklist",
+        "Number",
+        "Email",
+        "Text with a longer length"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "An External ID survives a type change only as Text, Number or Email. Any other type drops it.",
+      "wrong": [
+        "",
+        "Number fields can stay External IDs.",
+        "Email fields can stay External IDs.",
+        "Text fields can stay External IDs."
+      ],
+      "source": "Considerations for Converting the Field Type of a Custom Field"
+    },
+    {
+      "id": "data-x19",
+      "lesson": "data-7",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "Read the field details. The admin needs this field to become a Picklist. Why is the type change blocked?",
+      "code": "Lead field: Industry_Segment__c (Text, 80)\n- On 3 page layouts\n- Mapped to Account.Industry_Segment__c in Lead Conversion\n- Not used in Apex, Visualforce or flows",
+      "lang": "text",
+      "options": [
+        "The field is mapped for lead conversion",
+        "Text fields can never be converted to Picklist",
+        "The field has more than 255 characters of data",
+        "The field is on more than one page layout"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "You can't change the type of a custom field mapped for lead conversion. Remove the mapping first.",
+      "wrong": [
+        "",
+        "Text to Picklist is allowed, though data can be lost.",
+        "Long values aren't why this is blocked.",
+        "Page layouts never block a type change."
+      ],
+      "source": "Considerations for Converting the Field Type of a Custom Field"
+    },
+    {
+      "id": "data-x20",
+      "lesson": "data-7",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "Read the change at Cobalt Fitness. Some values were lost. What else should the admin expect?",
+      "code": "Field: Member_Tier__c  Text -> Picklist\nList view: \"Gold Members\" filters on Member_Tier__c\nResult: some records' values were lost",
+      "lang": "text",
+      "options": [
+        "The list view keeps working with the old text values",
+        "The list view that uses the field is deleted",
+        "The lost values are saved in a backup field",
+        "The change is undone at the end of the day"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "When a type change loses data, list views based on that field are deleted. Assignment and escalation rules can be affected too.",
+      "wrong": [
+        "When data is lost, list views on the field are deleted.",
+        "",
+        "Salesforce doesn't keep a backup field.",
+        "Type changes aren't undone by themselves."
+      ],
+      "source": "Considerations for Converting the Field Type of a Custom Field"
+    },
+    {
+      "id": "data-x21",
+      "lesson": "data-7",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "An admin must change `Contract_Notes__c` from Text Area (Long) to another type. Which target type is not on the data-loss list for long text?",
+      "options": [
+        "Picklist (Multi-Select)",
+        "Number",
+        "Text Area",
+        "Date"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "Long Text Area to any type except Email, Phone, Text, Text Area or URL can lose data. Text Area is one of the exceptions.",
+      "wrong": [
+        "Changing to a multi-select picklist can lose data.",
+        "Changing to Number from any type can lose data.",
+        "",
+        "Changing to Date can lose data."
+      ],
+      "source": "Considerations for Converting the Field Type of a Custom Field"
+    },
+    {
+      "id": "data-x22",
+      "lesson": "data-7",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "Read the plan. Which two steps are blocked as written? (Choose 2)",
+      "code": "1. Discount_Rate__c  Percent  -> Number     (used in a record-triggered flow)\n2. Region__c         Picklist -> Picklist (Multi-Select)\n3. Score__c          Number   -> Formula (Number)\n4. Ticket_Ref__c     Text     -> Auto Number\n5. Is_VIP__c         Checkbox -> Text",
+      "lang": "text",
+      "options": [
+        "Step 1",
+        "Step 2",
+        "Step 4",
+        "Step 3",
+        "Step 5"
+      ],
+      "answer": [
+        0,
+        3
+      ],
+      "explain": "A field used by a flow can't change type. No field can become a formula.",
+      "wrong": [
+        "",
+        "Picklist to multi-select keeps each record's value.",
+        "Text can convert to Auto Number without losing data.",
+        "",
+        "Checkbox to Text is allowed, though it can lose data."
+      ],
+      "source": "Considerations for Converting the Field Type of a Custom Field"
+    },
+    {
+      "id": "data-q44",
+      "lesson": "data-7",
+      "difficulty": 1,
+      "q": "Before changing the type of a custom field that already holds data, what should an admin do first?",
+      "options": [
+        "Deactivate all users until the change finishes",
+        "Delete the field's page layouts",
+        "Convert the field to a formula first",
+        "Back up its data, for example with an export"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "Some type changes lose data. Export a backup first so you can restore values if needed.",
+      "wrong": [
+        "Users don't need to be locked out.",
+        "Layouts don't need to be deleted.",
+        "Fields can't be converted to formulas.",
+        ""
+      ],
+      "source": "Considerations for Converting the Field Type of a Custom Field"
+    },
+    {
+      "id": "data-q45",
+      "lesson": "data-8",
+      "difficulty": 1,
+      "q": "An admin needs to import 2,000 new leads from a trade show spreadsheet. Which tool is the simplest fit?",
+      "options": [
+        "The Data Loader command line",
+        "The Data Export Service",
+        "The Data Import Wizard",
+        "Salesforce Connect"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "The Data Import Wizard runs in the browser and handles up to 50,000 leads, contacts, accounts and more.",
+      "wrong": [
+        "The command line is for scheduled bulk jobs.",
+        "That makes backups. It doesn't import.",
+        "",
+        "Salesforce Connect shows outside data without importing it."
+      ],
+      "source": "Choosing a Method for Importing Data"
+    },
+    {
+      "id": "data-q46",
+      "lesson": "data-8",
+      "difficulty": 2,
+      "q": "Read the load plan. Which tool should the admin use?",
+      "code": "Org: Kestrel Motors, Enterprise Edition\nFile: opportunities_2019_2025.csv\nRows: 120,000 opportunities\nGoal: insert them once, no code",
+      "lang": "text",
+      "options": [
+        "Data Loader",
+        "The Data Import Wizard",
+        "The Data Export Service",
+        "Schema Builder"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "Data Loader handles up to 5 million records and any object, including opportunities.",
+      "wrong": [
+        "",
+        "The wizard can't import opportunities, and 120,000 is over its 50,000 limit.",
+        "That only exports backup files.",
+        "Schema Builder builds objects. It doesn't load records."
+      ],
+      "source": "Choosing a Method for Importing Data"
+    },
+    {
+      "id": "data-q47",
+      "lesson": "data-8",
+      "difficulty": 2,
+      "q": "Which two kinds of records can't be imported with the Data Import Wizard? (Choose 2)",
+      "options": [
+        "Leads",
+        "Opportunities",
+        "Campaign members",
+        "Custom object records",
+        "Cases"
+      ],
+      "answer": [
+        1,
+        4
+      ],
+      "explain": "The import wizard can't import assets, cases, campaigns, contracts, documents, opportunities or products.",
+      "wrong": [
+        "The wizard imports leads.",
+        "",
+        "The wizard imports campaign members.",
+        "The wizard imports custom objects.",
+        ""
+      ],
+      "source": "Import Limits"
+    },
+    {
+      "id": "data-q48",
+      "lesson": "data-8",
+      "difficulty": 2,
+      "q": "Read the nightly job. Which Data Loader operation should it use?",
+      "code": "Source: ERP price list, sent every night\nSome rows: new products\nOther rows: products already in Salesforce\nKey: ERP_Code__c (External ID on Product2)",
+      "lang": "text",
+      "options": [
+        "Insert, with a duplicate rule to block repeats",
+        "Update, matched on the Salesforce record ID",
+        "Export, then a manual merge in a spreadsheet",
+        "Upsert, matched on the product code External ID"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "Upsert updates matching records and inserts new ones. An External ID field lets it match on the ERP's code.",
+      "wrong": [
+        "Insert can't update existing records.",
+        "Update can't add new products, and the ERP doesn't know Salesforce IDs.",
+        "That's manual and doesn't load anything.",
+        ""
+      ],
+      "source": "Data Loader"
+    },
+    {
+      "id": "data-q49",
+      "lesson": "data-8",
+      "difficulty": 1,
+      "q": "A company wants an automatic copy of all its Salesforce data every week, with no tools to install. It uses Enterprise Edition. What should the admin set up?",
+      "options": [
+        "A weekly Data Import Wizard job",
+        "A weekly schedule in the Data Export Service",
+        "A weekly Salesforce Connect sync",
+        "A weekly report emailed to the admin"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "The Data Export Service makes backup files on a weekly or monthly schedule. Weekly export is in Enterprise, Performance and Unlimited.",
+      "wrong": [
+        "The wizard only imports.",
+        "",
+        "Salesforce Connect reads outside data. It doesn't back up.",
+        "A report isn't a full data backup."
+      ],
+      "source": "Export Backup Data from Salesforce"
+    },
+    {
+      "id": "data-x23",
+      "lesson": "data-8",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "Read the import plan. Which tool should the admin use?",
+      "code": "File 1: contacts.csv  12,000 rows  -> Contact\nFile 2: cases.csv     30,000 rows  -> Case\nNeeds: both loaded in one afternoon, no code",
+      "lang": "text",
+      "options": [
+        "The Data Import Wizard, because each file is under 50,000 records",
+        "Data Loader, because the wizard can't import cases",
+        "The Data Import Wizard for both, run as two jobs",
+        "The Data Export Service, set to import mode"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "The import wizard can't import cases. Data Loader can import both files.",
+      "wrong": [
+        "Size is fine, but the wizard can't import cases.",
+        "",
+        "The wizard can't import cases.",
+        "The export service only exports."
+      ],
+      "source": "Import Limits"
+    },
+    {
+      "id": "data-x24",
+      "lesson": "data-8",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "Sales reps at Amberfield keep creating contacts that already exist. The admin wants Salesforce to warn reps about a likely duplicate, and still let them save. What should the admin set up?",
+      "options": [
+        "A validation rule that compares names with other contacts",
+        "A unique setting on the contact's Last Name field",
+        "A restricted picklist on the Email field",
+        "Matching and duplicate rules that alert but allow the save"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "Matching rules decide what counts as a duplicate. Duplicate rules decide what happens: allow with an alert, or block.",
+      "wrong": [
+        "Validation rules can't search other records for matches.",
+        "That blocks every shared last name, and never just warns.",
+        "Picklists can't hold email addresses.",
+        ""
+      ],
+      "source": "Duplicate Management: Improve Data Quality in Salesforce"
+    },
+    {
+      "id": "data-q50",
+      "lesson": "data-8",
+      "difficulty": 2,
+      "q": "Which two statements about Data Loader are true? (Choose 2)",
+      "options": [
+        "It can export records as well as import them",
+        "It runs entirely in the browser, with nothing to install",
+        "It's available in every edition, including Personal",
+        "Its command line runs on both Windows and macOS",
+        "It can handle up to 5 million records"
+      ],
+      "answer": [
+        0,
+        4
+      ],
+      "explain": "Data Loader is an installed app for bulk import and export, up to 5 million records.",
+      "wrong": [
+        "",
+        "Data Loader is a client app you install.",
+        "It's in Enterprise, Unlimited, Performance, Developer and Database.com.",
+        "The command line is Windows only.",
+        ""
+      ],
+      "source": "Data Loader"
+    },
+    {
+      "id": "data-x25",
+      "lesson": "data-8",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "An admin imports 40,000 contacts with the Data Import Wizard. Each record has 110 columns of data. Some data doesn't arrive. What's the most likely cause?",
+      "options": [
+        "You can import up to 90 fields per record",
+        "The wizard's limit is 25,000 contacts per job",
+        "The wizard can't import contacts",
+        "Import files must be under 10 MB"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "Imports allow up to 90 fields per record. Unmapped columns aren't imported.",
+      "wrong": [
+        "",
+        "The wizard handles up to 50,000 records.",
+        "Contacts are one of the wizard's main objects.",
+        "Import files can be up to 100 MB."
+      ],
+      "source": "Import Limits"
+    },
+    {
+      "id": "data-x26",
+      "lesson": "data-8",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "An admin must import 30,000 accounts with the Data Import Wizard. The admin wants to avoid creating accounts that already exist, and wants the import to skip the org's automation. Which two options help? (Choose 2)",
+      "options": [
+        "Use the Data Export Service to import in one batch",
+        "Choose to add new and update existing records, with a matching field",
+        "Choose not to trigger workflow rules and processes for this import",
+        "Split the file in two, because the wizard stops at 25,000",
+        "Turn on Allow reparenting on the account object"
+      ],
+      "answer": [
+        1,
+        2
+      ],
+      "explain": "The wizard can match existing records to update them instead of adding copies. It also lets you choose whether to trigger workflow rules and processes.",
+      "wrong": [
+        "The export service can't import.",
+        "",
+        "",
+        "The wizard handles up to 50,000 records.",
+        "Reparenting applies to master-detail fields, not imports."
+      ],
+      "source": "Import Data with the Data Import Wizard"
+    },
+    {
+      "id": "data-q51",
+      "lesson": "data-9",
+      "difficulty": 1,
+      "q": "Product inventory lives in a warehouse database with millions of rows. Users need to see live stock levels on Salesforce records, without copying the data in. What should an app builder use?",
+      "options": [
+        "A nightly Data Loader import into a custom object",
+        "The Data Import Wizard",
+        "Salesforce Connect with external objects",
+        "The Data Export Service"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "Salesforce Connect shows outside data as external objects, in real time, without storing it in Salesforce.",
+      "wrong": [
+        "That copies data and isn't live.",
+        "The wizard copies data in, up to 50,000 records.",
+        "",
+        "That only makes backup files."
+      ],
+      "source": "Salesforce Connect"
+    },
+    {
+      "id": "data-q52",
+      "lesson": "data-9",
+      "difficulty": 2,
+      "q": "Which two needs suggest Salesforce Connect instead of importing? (Choose 2)",
+      "options": [
+        "Users must build roll-up summaries on the data",
+        "The data must be edited offline in the mobile app",
+        "The outside system will be shut down next month",
+        "The data set is huge and you don't want to store it in Salesforce",
+        "Users need the latest values each time they look"
+      ],
+      "answer": [
+        3,
+        4
+      ],
+      "explain": "Use Salesforce Connect for large data you don't want to copy, small amounts at a time, and real-time needs.",
+      "wrong": [
+        "Roll-ups need master-detail, which external objects can't use.",
+        "Connect reads live from the outside system.",
+        "Then the data must be copied in before it goes away.",
+        "",
+        ""
+      ],
+      "source": "Salesforce Connect"
+    },
+    {
+      "id": "data-q53",
+      "lesson": "data-9",
+      "difficulty": 1,
+      "q": "An app builder sets up an external object for supplier orders. Users can view the orders but can't edit them. Why?",
+      "options": [
+        "External objects can never be edited",
+        "Users need the Modify All Data permission",
+        "The orders need a master-detail relationship to edit them",
+        "External objects are read-only by default"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "External object records are read-only by default. You can make them writable if the outside system allows it.",
+      "wrong": [
+        "They can be writable if the data source allows it.",
+        "The cause is the default, not a missing permission.",
+        "External objects can't use master-detail.",
+        ""
+      ],
+      "source": "Salesforce Connect"
+    },
+    {
+      "id": "data-q54",
+      "lesson": "data-9",
+      "difficulty": 2,
+      "q": "Ridgeview Bank uses Enterprise Edition and wants Salesforce Connect. What should the admin know about licensing?",
+      "options": [
+        "It's included free in every edition",
+        "It's only available in Developer Edition",
+        "It costs extra in Enterprise Edition",
+        "It needs a Data Loader license first"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "Salesforce Connect is included in Developer Edition and costs extra in Enterprise, Performance and Unlimited.",
+      "wrong": [
+        "It's included in Developer Edition and costs extra in Enterprise.",
+        "It's available for an extra cost in Enterprise, Performance and Unlimited.",
+        "",
+        "Data Loader is a separate, free tool."
+      ],
+      "source": "Considerations for Object Relationships"
+    },
+    {
+      "id": "data-x27",
+      "lesson": "data-9",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "Read the setup. The team wants a flow to call the partner's \"create pickup\" operation, with no Apex. What should the app builder use?",
+      "code": "Partner: shipping company\nAPI: REST, described by an OpenAPI 3.0 file\nOperation: POST /pickups  (creates a pickup)\nCaller: a screen flow in Salesforce",
+      "lang": "text",
+      "options": [
+        "Salesforce Connect, to map the API to an external object",
+        "External Services, to make the operations flow actions",
+        "Data Loader, to send pickup records to the partner",
+        "An indirect lookup from a pickup object to Account"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "External Services reads an OpenAPI description and turns each operation into an invocable action for Flow, with no code.",
+      "wrong": [
+        "Connect shows outside data. It doesn't call actions like this.",
+        "",
+        "Data Loader moves data in and out of Salesforce only.",
+        "A relationship doesn't call another system."
+      ],
+      "source": "External Services (Trailhead)"
+    },
+    {
+      "id": "data-x28",
+      "lesson": "data-9",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "Read the requirement. Which solution fits best?",
+      "code": "Billing system: 40 million invoice rows, updated all day\nUsers: see an account's latest invoices on the Account page\nStorage: don't copy invoices into Salesforce\nMatch: invoice rows carry the Account_Number__c value\n       (unique, External ID on Account)",
+      "lang": "text",
+      "options": [
+        "Salesforce Connect, with an indirect lookup to Account",
+        "A nightly Data Loader upsert into a custom object, linked by lookup",
+        "A weekly Data Export Service job from the billing system",
+        "A custom object with a master-detail to Account, loaded by the wizard"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "Large data, a few records at a time, and real-time needs point to Salesforce Connect. The indirect lookup matches on the account number.",
+      "wrong": [
+        "",
+        "That copies 40 million rows and isn't real time.",
+        "The export service only exports Salesforce data.",
+        "That copies data, and 40 million is far over the wizard's limit."
+      ],
+      "source": "Salesforce Connect"
+    },
+    {
+      "id": "data-q55",
+      "lesson": "data-9",
+      "difficulty": 2,
+      "q": "Which two features work with external objects from Salesforce Connect? (Choose 2)",
+      "options": [
+        "Global search",
+        "Lookup relationships",
+        "Roll-up summary fields on a parent",
+        "Master-detail relationships",
+        "The Data Import Wizard"
+      ],
+      "answer": [
+        0,
+        1
+      ],
+      "explain": "External objects work with global search, lookups, record feeds, the mobile app, SOQL, Apex and change sets.",
+      "wrong": [
+        "",
+        "",
+        "Roll-ups need master-detail, which external objects can't use.",
+        "External objects only use lookup, external lookup and indirect lookup.",
+        "External data isn't imported. It stays in the other system."
+      ],
+      "source": "Salesforce Connect"
+    },
+    {
+      "id": "data-x29",
+      "lesson": "data-9",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "During an outage, the external order system at Larkspur Goods goes offline for an hour. What do users see on Account pages that show related `Order__x` records?",
+      "options": [
+        "The order data can't load until the outside system is back",
+        "The last nightly copy of the orders, stored in Salesforce",
+        "The orders, read from Salesforce's Recycle Bin",
+        "The orders, because external objects cache every record forever"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "Salesforce Connect reads data live and doesn't store a copy. If the outside system is down, the data can't load.",
+      "wrong": [
+        "",
+        "Salesforce Connect doesn't copy the data in.",
+        "External records aren't stored in Salesforce at all.",
+        "External objects read live from the outside system."
+      ],
+      "source": "Salesforce Connect"
+    }
+  ]
+}
