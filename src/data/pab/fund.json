@@ -39,7 +39,7 @@
         {
           "type": "text",
           "title": "Fast field updates",
-          "body": "A **before-save flow** runs before the record is saved. It updates that same record about **10 times faster** than a record-change process. It can use only Assignment, Decision, Get Records and Loop. To change other records, send an email or read the new record's Id, use an **after-save flow**."
+          "body": "A **before-save flow** runs before the record is saved. It updates that same record about **10 times faster** than the old Process Builder tool did. It can use only Assignment, Decision, Get Records and Loop. To change other records, send an email or read the new record's Id, use an **after-save flow**."
         },
         {
           "type": "code",
@@ -416,7 +416,7 @@
         },
         {
           "term": "Private",
-          "say": "Only the owner and people above them in the role hierarchy can see the record."
+          "say": "Only the owner, people above them in the role hierarchy and admins can see the record, unless it is shared."
         },
         {
           "term": "Public Read Only",
@@ -576,7 +576,7 @@
           "items": [
             "**2** active rules per object in Enterprise and Developer Edition",
             "**5** in Performance and Unlimited Edition",
-            "Only one active rule should apply to each user",
+            "On each object, only one active rule should apply to each user",
             "Criteria use **equals** only: no formulas, no AND or OR",
             "Users with View All Records or View All Data skip the rule"
           ]
@@ -878,7 +878,7 @@
     {
       "id": "fund-f3",
       "front": "What can a before-save flow do, and what can't it do?",
-      "back": "It updates the triggering record fast, about 10 times faster than a record-change process. It can't change other records, send emails or read the new record's Id."
+      "back": "It updates the triggering record fast, about 10 times faster than the old Process Builder tool. It can't change other records, send emails or read the new record's Id."
     },
     {
       "id": "fund-f4",
@@ -1039,7 +1039,7 @@
       "answer": [
         1
       ],
-      "explain": "To change a field on the record being saved, use a before-save flow. It updates that same record about 10 times faster than a record-change process, with no code.",
+      "explain": "To change a field on the record being saved, use a before-save flow. It updates that same record about 10 times faster than the old Process Builder tool, with no code.",
       "wrong": [
         "It works, but it saves the record a second time, so it's slower.",
         "",
@@ -2354,7 +2354,7 @@
       "options": [
         "A scoping rule doesn't remove access to any records",
         "Scoping rules are available in Enterprise Edition",
-        "Only one active restriction or scoping rule should apply to a user",
+        "On one object, only one active restriction or scoping rule should apply to a user",
         "Restriction rule criteria can use formulas and OR logic",
         "A restriction rule also restricts the object's child records"
       ],
@@ -2362,7 +2362,7 @@
         0,
         2
       ],
-      "explain": "Scoping rules only set a default view. For both rule types, configure them so only one active rule applies to each user.",
+      "explain": "Scoping rules only set a default view. For each object, set up restriction and scoping rules so only one active rule applies to each user.",
       "wrong": [
         "",
         "Scoping rules come with Performance, Unlimited and Developer Edition.",
@@ -2766,21 +2766,21 @@
       "lesson": "fund-8",
       "difficulty": 3,
       "pack": "hard",
-      "q": "An admin wants a dynamic dashboard refreshed every morning at 7 and emailed to each manager. What should the admin know?",
+      "q": "Each manager wants this dynamic dashboard refreshed every morning at 7 and emailed to them, showing only their own team. What should the admin do?",
       "code": "Dashboard: Team Health\nView Dashboard As: The dashboard viewer\nFolder: Shared Sales Dashboards\nRequest: refresh daily at 7:00, email to managers",
       "lang": "text",
       "options": [
-        "Schedule the refresh under the dashboard's properties",
-        "Subscribe each manager, and the refresh runs as each one",
+        "Schedule the refresh in the dashboard properties",
+        "Subscribe each manager, so the refresh runs as each one",
         "Move it to a private folder first, then schedule it",
-        "Dynamic dashboards can't be scheduled or subscribed to"
+        "Make one copy per manager, run as that manager, then subscribe"
       ],
       "answer": [
         3
       ],
-      "explain": "Dynamic dashboards can't have scheduled refreshes and can't be subscribed to. They must be refreshed by hand.",
+      "explain": "Dynamic dashboards can't be scheduled or subscribed to. A dashboard with a fixed running user can be, so each manager needs a copy that runs as them.",
       "wrong": [
-        "Scheduling isn't available for dynamic dashboards.",
+        "Dynamic dashboards can't have scheduled refreshes.",
         "You can't subscribe to a dynamic dashboard.",
         "Dynamic dashboards can't be saved in private folders.",
         ""

@@ -649,7 +649,7 @@
         {
           "type": "text",
           "title": "Safe moves",
-          "body": "**Picklist to checkbox** lets you map which values become checked. Picklist to multi-select keeps the value. Text to Auto Number keeps the data. An External ID stays one only as Text, Number or Email."
+          "body": "**Picklist to checkbox** lets you map which values become checked. Picklist to multi-select keeps the value. Text to Auto Number keeps the data. An External ID stays one only as Text, Number or Email. Careful: long text to Text or Text Area keeps only the first 255 characters."
         },
         {
           "type": "trap",
@@ -1875,7 +1875,7 @@
       "q": "An app builder creates an indirect lookup from `Payment__x` to Account. What must exist on Account?",
       "options": [
         "The standard Account Number field, marked unique",
-        "A custom auto number field",
+        "A formula field that shows the ERP number",
         "A custom field marked unique and External ID",
         "A master-detail field to `Payment__x`"
       ],
@@ -1885,7 +1885,7 @@
       "explain": "An indirect lookup matches the child's value to a custom field on the parent. That field must be unique and an External ID.",
       "wrong": [
         "The target must be a custom field marked unique and External ID.",
-        "An auto number field isn't the required unique, external ID target.",
+        "Formula fields can't be marked unique or External ID.",
         "",
         "Indirect lookups match on a field. They don't need any other relationship."
       ],
@@ -2008,7 +2008,7 @@
       "explain": "Converting master-detail to lookup sets the child's org-wide default to Public Read/Write. Review sharing right after.",
       "wrong": [
         "",
-        "Lookup children can't be Controlled by Parent.",
+        "Salesforce changes it to Public Read/Write.",
         "Salesforce sets it to Public Read/Write.",
         "Salesforce sets it to Public Read/Write."
       ],
@@ -2151,14 +2151,14 @@
         "Harvest owners can still share their own records manually",
         "`Harvest__c` records get a new Owner field set to the creator",
         "The `Field__c` field becomes required on the harvest page layout",
-        "Users who can see a Field record get that access to its harvests",
+        "Users who can see a Field record can also see its harvests",
         "Reports can no longer show harvests with their field"
       ],
       "answer": [
         2,
         3
       ],
-      "explain": "As a detail, a harvest must have a value in its master field. It inherits access from its master.",
+      "explain": "As a detail, a harvest must have a value in its master field. Who can see a harvest now comes from its master, the Field record.",
       "wrong": [
         "Details can't use manual sharing.",
         "Details have no Owner field.",
@@ -2279,7 +2279,7 @@
         "Restricted blocks unknown values. It doesn't filter by Reason.",
         "",
         "Sharing one list doesn't filter one by the other.",
-        "That works, but a dependent picklist is the built-in tool."
+        "A validation rule only blocks bad pairs on save. It doesn't change the values shown."
       ],
       "source": "Define a Dependent Picklist"
     },
@@ -2486,7 +2486,7 @@
       "difficulty": 2,
       "q": "Which two field type changes can cause data loss? (Choose 2)",
       "options": [
-        "Picklist to Picklist (Multi-Select)",
+        "Number to Text",
         "Auto Number to Text",
         "Text to Number",
         "Text to Auto Number",
@@ -2498,7 +2498,7 @@
       ],
       "explain": "Changing to Number from any other type, and changing from Checkbox, can lose data.",
       "wrong": [
-        "Each record keeps its single value.",
+        "Number to Text isn't on the data-loss list. The numbers are kept as text.",
         "The values stay the same as text.",
         "",
         "Text can convert to Auto Number without losing data.",
@@ -2586,22 +2586,22 @@
       "lesson": "data-7",
       "difficulty": 3,
       "pack": "hard",
-      "q": "An admin must change `Contract_Notes__c` from Text Area (Long) to another type. Which target type is not on the data-loss list for long text?",
+      "q": "An admin changes `Contract_Notes__c` from Text Area (Long) to Text Area. Some notes are 2,000 characters long. What happens to those notes?",
       "options": [
-        "Picklist (Multi-Select)",
-        "Number",
-        "Text Area",
-        "Date"
+        "The change is blocked while any note is over 255 characters",
+        "The full notes are kept, and the field grows to fit them",
+        "Each note is cut down to its first 255 characters",
+        "Notes over 255 characters are deleted from the records"
       ],
       "answer": [
         2
       ],
-      "explain": "Long Text Area to any type except Email, Phone, Text, Text Area or URL can lose data. Text Area is one of the exceptions.",
+      "explain": "A long text area changed to Text, Text Area, Email, Phone or URL keeps its data. But each value is cut to its first 255 characters. Back up the full notes first.",
       "wrong": [
-        "Changing to a multi-select picklist can lose data.",
-        "Changing to Number from any type can lose data.",
+        "Salesforce doesn't block this change. It cuts the long values.",
+        "A Text Area holds at most 255 characters. It can't grow.",
         "",
-        "Changing to Date can lose data."
+        "The notes aren't wiped. Only the part after 255 characters is lost."
       ],
       "source": "Considerations for Converting the Field Type of a Custom Field"
     },
@@ -2627,7 +2627,7 @@
       "explain": "A field used by a flow can't change type. No field can become a formula.",
       "wrong": [
         "",
-        "Picklist to multi-select keeps each record's value.",
+        "Picklist to multi-select is allowed. Each record keeps its value.",
         "Text can convert to Auto Number without losing data.",
         "",
         "Checkbox to Text is allowed, though it can lose data."
@@ -2849,7 +2849,7 @@
       "wrong": [
         "",
         "Data Loader is a client app you install.",
-        "It's in Enterprise, Unlimited, Performance, Developer and Database.com.",
+        "It's in Enterprise, Performance, Unlimited and Developer editions only.",
         "The command line is Windows only.",
         ""
       ],
@@ -2884,7 +2884,7 @@
       "lesson": "data-8",
       "difficulty": 3,
       "pack": "hard",
-      "q": "An admin must import 30,000 accounts with the Data Import Wizard. The admin wants to avoid creating accounts that already exist, and wants the import to skip the org's automation. Which two options help? (Choose 2)",
+      "q": "An admin must import 30,000 accounts with the Data Import Wizard. The admin wants to avoid creating accounts that already exist, and doesn't want the import to fire the org's workflow rules and processes. Which two options help? (Choose 2)",
       "options": [
         "Use the Data Export Service to import in one batch",
         "Choose to add new and update existing records, with a matching field",
@@ -2999,7 +2999,7 @@
         "",
         "Data Loader is a separate, free tool."
       ],
-      "source": "Considerations for Object Relationships"
+      "source": "Salesforce Connect"
     },
     {
       "id": "data-x27",
