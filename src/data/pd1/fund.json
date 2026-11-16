@@ -3697,6 +3697,1339 @@
         "Prompt length says nothing about the code's quality."
       ],
       "source": "Agentforce Vibes Developer Guide: Trust and Verification"
+    },
+    {
+      "id": "fund-q69",
+      "lesson": "fund-1",
+      "difficulty": 1,
+      "q": "A prospect asks what \"multitenant\" means for their Salesforce org. Which statement is accurate?",
+      "options": [
+        "Orgs share the same servers, but each org's data and setup stay private",
+        "Each org gets its own dedicated servers, sized to its license count",
+        "Orgs share one set of tables, so admins can browse other orgs' records",
+        "Each org runs its own copy of the platform code and upgrades when it chooses"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "Multitenant means many orgs share one set of servers and one code base. Each org's data and setup stay separate and private.",
+      "wrong": [
+        "",
+        "Orgs don't get dedicated servers. They share the same infrastructure.",
+        "Orgs share infrastructure, but no org can see another org's data.",
+        "All orgs run the same platform code and get upgrades together."
+      ],
+      "source": "Trailhead: Understand the Salesforce Architecture"
+    },
+    {
+      "id": "fund-q70",
+      "lesson": "fund-1",
+      "difficulty": 2,
+      "q": "A search page runs this code synchronously after a user enters 25 keywords. What happens?",
+      "code": "List<String> keywords = getKeywords(); // 25 keywords\nList<Contact> found = new List<Contact>();\nfor (String k : keywords) {\n  List<List<SObject>> res =\n    [FIND :k IN NAME FIELDS RETURNING Contact(Id, Name)];\n  found.addAll((List<Contact>) res[0]);\n}",
+      "lang": "apex",
+      "options": [
+        "All 25 searches run, because SOSL counts toward the 100-query SOQL limit",
+        "The 21st search throws a `LimitException`, and the transaction stops",
+        "Searches 21 to 25 move to a `Queueable` job and run later",
+        "All 25 searches run, but each one returns at most 200 rows"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "A transaction can run only 20 SOSL queries. The 21st search in the loop goes over that limit, so a `LimitException` stops everything.",
+      "wrong": [
+        "SOSL has its own limit of 20 searches, separate from SOQL.",
+        "",
+        "Salesforce never moves extra queries into a Queueable job.",
+        "The 21st search hits the 20-search limit before any row limit matters."
+      ],
+      "source": "Apex Developer Guide: Execution Governors and Limits"
+    },
+    {
+      "id": "fund-q71",
+      "lesson": "fund-1",
+      "difficulty": 2,
+      "q": "A developer moves a heavy job from synchronous Apex into a Queueable job. Which two per-transaction limits become higher? (Choose 2)",
+      "options": [
+        "SOQL queries issued",
+        "DML statements issued",
+        "Records processed by DML",
+        "Maximum CPU time",
+        "SOSL queries issued"
+      ],
+      "answer": [
+        0,
+        3
+      ],
+      "explain": "Async Apex gets 200 SOQL queries instead of 100, and 60,000 ms of CPU time instead of 10,000 ms. DML statements, DML rows and SOSL queries stay the same.",
+      "wrong": [
+        "",
+        "DML statements stay at 150 in both.",
+        "DML rows stay at 10,000 in both.",
+        "",
+        "SOSL queries stay at 20 in both."
+      ],
+      "source": "Apex Developer Guide: Execution Governors and Limits"
+    },
+    {
+      "id": "fund-x38",
+      "lesson": "fund-1",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A batch job calls this `@future` method from its `execute` method to send each chunk to an ERP. What happens when the batch runs?",
+      "code": "public void execute(Database.BatchableContext bc, List<Order__c> scope) {\n  Set<Id> ids = new Map<Id, Order__c>(scope).keySet();\n  ErpSync.sendOrders(ids); // an @future(callout=true) method\n}",
+      "lang": "apex",
+      "options": [
+        "It works, because each `execute` call gets its own limit of 50 `@future` calls",
+        "It works, but the `@future` calls wait until the whole batch job finishes",
+        "It fails, because batch Apex isn't allowed to call `@future` methods",
+        "It fails only when a chunk holds more than 50 order records"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "In batch and future contexts, the limit on `@future` calls is 0. So calling a future method from `execute` fails. Use a Queueable job instead.",
+      "wrong": [
+        "The `@future` limit in a batch context is 0, not 50.",
+        "The call isn't delayed. It isn't allowed at all.",
+        "",
+        "The method gets one call with a set of Ids. The batch context alone blocks it."
+      ],
+      "source": "Apex Developer Guide: Execution Governors and Limits"
+    },
+    {
+      "id": "fund-x39",
+      "lesson": "fund-1",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "This Queueable job tries to start two follow-up jobs. What happens when it runs?",
+      "code": "public class SyncJob implements Queueable {\n  public void execute(QueueableContext ctx) {\n    // ... sync work ...\n    System.enqueueJob(new InvoiceJob());\n    System.enqueueJob(new EmailJob());\n  }\n}",
+      "lang": "apex",
+      "options": [
+        "Both jobs are queued, because the limit is 50 jobs per transaction",
+        "Only `EmailJob` runs, because the last call replaces the first",
+        "Both jobs are queued, and they run one after the other",
+        "The second `enqueueJob` call throws a `LimitException`"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "An async transaction can add only 1 job with `System.enqueueJob`. The limit of 50 is for synchronous code. So the second call goes over the limit.",
+      "wrong": [
+        "50 is the synchronous limit. A running Queueable is async, so its limit is 1.",
+        "Calls don't replace each other. The second one fails.",
+        "The second job is never queued, so nothing runs in order.",
+        ""
+      ],
+      "source": "Apex Developer Guide: Execution Governors and Limits"
+    },
+    {
+      "id": "fund-q72",
+      "lesson": "fund-2",
+      "difficulty": 1,
+      "q": "In a Lightning web component, which file plays the client-side Controller role in MVC?",
+      "options": [
+        "The `.js` file",
+        "The `.html` template",
+        "The `.js-meta.xml` file",
+        "The `.css` file"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "The `.js` file reacts to clicks and calls Apex, so it's the client-side Controller. The `.html` template is the View.",
+      "wrong": [
+        "",
+        "The template is the View: what the user sees.",
+        "The `.js-meta.xml` file is configuration, like where the component can be used.",
+        "The CSS file only styles the View."
+      ],
+      "source": "LWC Developer Guide: Get Started"
+    },
+    {
+      "id": "fund-q73",
+      "lesson": "fund-2",
+      "difficulty": 1,
+      "q": "A Visualforce page uses the Account standard controller. Which `<apex:page>` attribute adds the developer's own Apex class to it?",
+      "options": [
+        "`controller`",
+        "`extensions`",
+        "`action`",
+        "`recordSetVar`"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "The `extensions` attribute adds one or more extension classes to the page's controller. The standard actions stay available.",
+      "wrong": [
+        "`controller` sets a custom controller and can't be used together with `standardController`.",
+        "",
+        "`action` names a method that runs when the page is requested.",
+        "`recordSetVar` turns on the standard list controller."
+      ],
+      "source": "Visualforce Developer Guide: apex:page"
+    },
+    {
+      "id": "fund-q74",
+      "lesson": "fund-2",
+      "difficulty": 2,
+      "q": "This page uses `<apex:page standardController=\"Case\" extensions=\"CaseExt\">`. Saving the page fails with an error about `CaseExt`. What must change?",
+      "code": "public class CaseExt {\n  private final Case c;\n\n  public CaseExt(Case c) {\n    this.c = c;\n  }\n\n  public String getSummary() {\n    return c.Subject;\n  }\n}",
+      "lang": "apex",
+      "options": [
+        "The class must use `extends ApexPages.StandardController`",
+        "The class must be declared `global` to be used as an extension",
+        "The constructor must take one `ApexPages.StandardController` argument",
+        "The getter must be renamed `summary` so the page can find it"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "An extension needs a constructor that takes a single `ApexPages.StandardController` argument, or the custom controller it extends. It reads the record with `getRecord()`.",
+      "wrong": [
+        "An extension receives the controller in its constructor. It doesn't use `extends`.",
+        "Extensions can be `public`. `global` isn't needed.",
+        "",
+        "Getters follow the `getName` pattern, so `getSummary` is right."
+      ],
+      "source": "Visualforce Developer Guide: Building a Controller Extension"
+    },
+    {
+      "id": "fund-x40",
+      "lesson": "fund-2",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A page lists two extensions, and both define `getBanner()`. What does `{!banner}` show?",
+      "code": "<apex:page standardController=\"Account\" extensions=\"PromoExt,BrandExt\">\n  <apex:outputText value=\"{!banner}\"/>\n</apex:page>\n\n<!-- PromoExt.getBanner() returns 'Spring Sale' -->\n<!-- BrandExt.getBanner() returns 'Acme Corp' -->",
+      "lang": "html",
+      "options": [
+        "`Acme Corp`, because the last extension in the list wins",
+        "Both values, because each extension adds its own output",
+        "Nothing, because the page can't save with two same-named methods",
+        "`Spring Sale`, because the first extension in the list wins"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "With several extensions, the leftmost one wins. `PromoExt` is first in the list, so its `getBanner()` is used.",
+      "wrong": [
+        "The first extension in the list wins, not the last.",
+        "One expression calls one method, so only one value shows.",
+        "Same-named methods are allowed. The leftmost one overrides the others.",
+        ""
+      ],
+      "source": "Visualforce Developer Guide: Building a Controller Extension"
+    },
+    {
+      "id": "fund-q75",
+      "lesson": "fund-2",
+      "difficulty": 2,
+      "q": "A manager wants a Visualforce page that lists cases a page at a time, with Next and Previous buttons. The team wants as little Apex as possible. What should the developer use?",
+      "options": [
+        "A standard list controller, using `recordSetVar` and its `next` and `previous` actions",
+        "A custom controller that runs a new `OFFSET` query each time a button is clicked",
+        "A controller extension that loads every case into a list and slices it in Apex",
+        "A Lightning web component that calls an Apex method to fetch each new page"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "A standard list controller works with a set of records without any Apex. Its `next` and `previous` actions add pagination.",
+      "wrong": [
+        "",
+        "It works, but it's custom Apex for something the list controller already does.",
+        "It's more Apex than needed, and loading every case wastes limits.",
+        "It's more code than a simple list page needs."
+      ],
+      "source": "Visualforce Developer Guide: Standard List Controllers"
+    },
+    {
+      "id": "fund-q76",
+      "lesson": "fund-2",
+      "difficulty": 2,
+      "q": "A team maps an expense app to MVC. Which two pieces belong to the Controller layer? (Choose 2)",
+      "options": [
+        "The `Expense__c` object and its fields",
+        "A controller extension that adds an Approve button's action",
+        "The `.html` template that draws the expense list on the screen",
+        "The `.js` file that handles clicks in the expense list component",
+        "The `<apex:pageBlockTable>` markup that shows expenses in a table"
+      ],
+      "answer": [
+        1,
+        3
+      ],
+      "explain": "Controller pieces react to user actions and run logic. Extensions and component JavaScript do that. Objects are the Model, and markup is the View.",
+      "wrong": [
+        "Objects and fields are the Model.",
+        "",
+        "The template is the View.",
+        "",
+        "Page markup is the View."
+      ],
+      "source": "Visualforce Developer Guide: What are Custom Controllers and Controller Extensions?"
+    },
+    {
+      "id": "fund-q77",
+      "lesson": "fund-2",
+      "difficulty": 2,
+      "q": "This page shows `{!total}`. Which method in `CartCtrl` supplies the value?",
+      "code": "<apex:page controller=\"CartCtrl\">\n  Order total: {!total}\n</apex:page>",
+      "lang": "html",
+      "options": [
+        "`public Decimal total()`",
+        "`public Decimal getTotal()`",
+        "`public Decimal fetchTotal()`",
+        "`public void setTotal(Decimal t)`"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "A `{!name}` expression reads its value through a getter called `getName`. So `{!total}` calls `getTotal()`.",
+      "wrong": [
+        "Without the `get` prefix, the page doesn't use it as a getter.",
+        "",
+        "The page looks for `getTotal`, not other names.",
+        "A setter stores a value from the page. It doesn't supply one."
+      ],
+      "source": "Visualforce Developer Guide: Build a Custom Controller"
+    },
+    {
+      "id": "fund-x41",
+      "lesson": "fund-2",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A developer wants the standard Account actions plus methods from `AcctCtrl`, and writes this page. What happens?",
+      "code": "<apex:page standardController=\"Account\" controller=\"AcctCtrl\">\n  <apex:form>\n    <apex:commandButton action=\"{!save}\" value=\"Save\"/>\n    <apex:commandButton action=\"{!checkCredit}\" value=\"Check credit\"/>\n  </apex:form>\n</apex:page>",
+      "lang": "html",
+      "options": [
+        "It works: `save` comes from the standard controller, and `checkCredit` from `AcctCtrl`",
+        "It works, but `AcctCtrl` quietly replaces the standard `save` action",
+        "It can't be saved. Use `extensions=\"AcctCtrl\"` instead of `controller`",
+        "It can't be saved until `AcctCtrl` is declared `with sharing`"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "The `controller` attribute can't be used together with `standardController`. To keep the standard actions and add your own, list the class in `extensions`.",
+      "wrong": [
+        "A page can't combine both attributes, so it never runs.",
+        "The page fails to save before any action could be replaced.",
+        "",
+        "Sharing keywords don't decide which attributes a page may use."
+      ],
+      "source": "Visualforce Developer Guide: apex:page"
+    },
+    {
+      "id": "fund-q78",
+      "lesson": "fund-3",
+      "difficulty": 1,
+      "q": "A developer opens an old component folder holding `accountPanel.cmp`, `accountPanelController.js` and `accountPanelHelper.js`. What kind of component is it?",
+      "options": [
+        "An Apex class",
+        "A Lightning web component",
+        "A Visualforce component",
+        "An Aura component"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "Aura bundles have a `.cmp` markup file, plus files like `Controller.js` and `Helper.js`. An LWC bundle uses `.html`, `.js` and `.js-meta.xml` files.",
+      "wrong": [
+        "Apex classes are `.cls` files on the server.",
+        "An LWC bundle has no `.cmp` file and no helper file.",
+        "Visualforce components are `.component` files, not bundles.",
+        ""
+      ],
+      "source": "Lightning Aura Components Developer Guide: Component Bundles"
+    },
+    {
+      "id": "fund-q79",
+      "lesson": "fund-3",
+      "difficulty": 2,
+      "q": "Which two files does every Lightning web component bundle need, even one that shows no UI? (Choose 2)",
+      "options": [
+        "The `.html` file",
+        "The `.js` file",
+        "The `.css` file",
+        "The `.svg` icon file",
+        "The `.js-meta.xml` file"
+      ],
+      "answer": [
+        1,
+        4
+      ],
+      "explain": "Every bundle needs a JavaScript file and a configuration file. The HTML template is needed only when the component shows UI.",
+      "wrong": [
+        "A component that shows no UI can leave out the HTML file.",
+        "",
+        "CSS is optional.",
+        "The SVG icon is optional.",
+        ""
+      ],
+      "source": "LWC Developer Guide: Component Folder"
+    },
+    {
+      "id": "fund-q80",
+      "lesson": "fund-3",
+      "difficulty": 2,
+      "q": "An admin can't find this component in Lightning App Builder, even on an app page. What is the fix?",
+      "code": "<LightningComponentBundle xmlns=\"http://soap.sforce.com/2006/04/metadata\">\n  <apiVersion>64.0</apiVersion>\n  <isExposed>false</isExposed>\n  <targets>\n    <target>lightning__AppPage</target>\n  </targets>\n</LightningComponentBundle>",
+      "lang": "xml",
+      "options": [
+        "Set `isExposed` to `true`",
+        "Add `lightning__RecordPage` to the targets",
+        "Add a `targetConfigs` section with properties",
+        "Raise `apiVersion` to the newest release"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "When `isExposed` is false, the component doesn't show in any builder. Set it to true and keep at least one target.",
+      "wrong": [
+        "",
+        "The app page target is already there. `isExposed` is what hides it.",
+        "`targetConfigs` add settings. They don't make a hidden component visible.",
+        "The API version doesn't control whether the builder shows it."
+      ],
+      "source": "LWC Developer Guide: XML Configuration File Elements"
+    },
+    {
+      "id": "fund-q81",
+      "lesson": "fund-3",
+      "difficulty": 2,
+      "q": "A developer builds a component in the folder shown. Which tag adds it to another Lightning web component's template?",
+      "code": "force-app/main/default/lwc/\n  orderSummary/\n    orderSummary.html\n    orderSummary.js\n    orderSummary.js-meta.xml",
+      "lang": "text",
+      "options": [
+        "`<c-orderSummary></c-orderSummary>`",
+        "`<c-order-summary></c-order-summary>`",
+        "`<c:orderSummary></c:orderSummary>`",
+        "`<lightning-order-summary></lightning-order-summary>`"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "Camel-case folder names map to kebab case in markup, after the `c-` namespace. So `orderSummary` becomes `<c-order-summary>`.",
+      "wrong": [
+        "Markup uses kebab case, not camel case.",
+        "",
+        "`c:` with a colon is Aura syntax.",
+        "`lightning-` is the namespace of base components. Custom ones use `c-`."
+      ],
+      "source": "LWC Developer Guide: Component Folder"
+    },
+    {
+      "id": "fund-q82",
+      "lesson": "fund-3",
+      "difficulty": 2,
+      "q": "On a record page, an Aura component in the sidebar and a Lightning web component in the main region must share the selected product. They aren't parent and child. What should the developer use?",
+      "options": [
+        "An `@api` property that the Lightning web component sets on the Aura one",
+        "A custom DOM event dispatched from the Lightning web component",
+        "Lightning message service, with a message channel both components use",
+        "A static variable in an Apex class that both components read"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "Lightning message service sends messages across the DOM of a Lightning page. Aura components, LWCs and Visualforce pages can all use it.",
+      "wrong": [
+        "`@api` passes data from a parent down to its child.",
+        "DOM events only bubble up to the components that contain the sender.",
+        "",
+        "Apex static variables don't last between separate server calls."
+      ],
+      "source": "LWC Developer Guide: Communicate Across the DOM with Lightning Message Service"
+    },
+    {
+      "id": "fund-x42",
+      "lesson": "fund-3",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A Lightning web component inside an Aura wrapper fires this event. Which Aura markup handles it?",
+      "code": "// filterPanel.js (Lightning web component)\nhandleChange() {\n  this.dispatchEvent(new CustomEvent('filterchange', {\n    detail: { filters: this.selected }\n  }));\n}",
+      "lang": "js",
+      "options": [
+        "`<c:filterPanel on-filterchange=\"{!c.handleFilter}\"/>`",
+        "`<c:filterPanel filterchange=\"{!c.handleFilter}\"/>`",
+        "`<aura:handler event=\"c:filterchange\" action=\"{!c.handleFilter}\"/>`",
+        "`<c:filterPanel onfilterchange=\"{!c.handleFilter}\"/>`"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "The enclosing Aura component handles a DOM event with the event name plus an `on` prefix. So `filterchange` is handled by `onfilterchange` on the component's tag.",
+      "wrong": [
+        "There's no hyphen after `on`.",
+        "The handler name needs the `on` prefix.",
+        "`aura:handler` is for Aura events. The LWC fires a DOM event, handled on its tag.",
+        ""
+      ],
+      "source": "LWC Developer Guide: Send Events to an Enclosing Aura Component"
+    },
+    {
+      "id": "fund-x43",
+      "lesson": "fund-3",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "Site builders must be able to drag a Lightning web component onto pages in Experience Builder. Which two settings must its `js-meta.xml` file have? (Choose 2)",
+      "options": [
+        "The `lightning__RecordPage` target",
+        "Only the `lightningCommunity__Default` target",
+        "`<isExposed>true</isExposed>`",
+        "An `<objects>` list naming the site's objects",
+        "The `lightningCommunity__Page` target"
+      ],
+      "answer": [
+        2,
+        4
+      ],
+      "explain": "A builder shows a component only when `isExposed` is true and a matching target is listed. For Experience Builder pages, that target is `lightningCommunity__Page`.",
+      "wrong": [
+        "`lightning__RecordPage` is for record pages in Lightning App Builder.",
+        "`lightningCommunity__Default` only exposes editable properties, next to `lightningCommunity__Page`.",
+        "",
+        "`<objects>` limits record page use. It doesn't apply to Experience Builder.",
+        ""
+      ],
+      "source": "LWC Developer Guide: XML Configuration File Elements"
+    },
+    {
+      "id": "fund-x44",
+      "lesson": "fund-3",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "This component should appear only on Account record pages. Admins can also drag it onto Contact and Case pages. What should the developer add?",
+      "code": "<isExposed>true</isExposed>\n<targets>\n  <target>lightning__RecordPage</target>\n</targets>",
+      "lang": "xml",
+      "options": [
+        "A `targetConfig` for `lightning__RecordPage` with an `<objects>` list holding `Account`",
+        "A second target, `lightning__AccountRecordPage`, in place of the current one",
+        "An `@api objectApiName` property that hides the component on other objects",
+        "A `<masterLabel>` set to Account, so the builder filters it by object"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "Without an `objects` tag, a record page component supports every object. Add a `targetConfig` for `lightning__RecordPage` with `<objects><object>Account</object></objects>`.",
+      "wrong": [
+        "",
+        "There's no Account-only target. Limit the objects inside `targetConfig`.",
+        "The component would still show in the builder for every object.",
+        "`masterLabel` is the name shown in the builder. It doesn't limit objects."
+      ],
+      "source": "LWC Developer Guide: lightning__RecordPage Target"
+    },
+    {
+      "id": "fund-q83",
+      "lesson": "fund-4",
+      "difficulty": 2,
+      "q": "A validation rule on Contact requires an email when Lead Source is Web. Next week, 40,000 contacts will be loaded with Data Loader through the API. What happens to rows that break the rule?",
+      "options": [
+        "They're saved, because validation rules run only in the user interface",
+        "They fail with the rule's error message and aren't saved",
+        "They're saved, but flagged for an admin to fix later",
+        "They're saved, because the email field isn't on the import file"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "Validation rules apply to new and updated records, even from API calls. They also apply when the fields aren't in the API call.",
+      "wrong": [
+        "Validation rules run for API saves too, not just the UI.",
+        "",
+        "Salesforce doesn't save invalid rows with a flag.",
+        "A rule still runs when its fields aren't in the API call."
+      ],
+      "source": "Salesforce Help: Validation Rules"
+    },
+    {
+      "id": "fund-x45",
+      "lesson": "fund-4",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "Reports and searches must use account names stored in capital letters. A teammate wrote this trigger. What is the best declarative replacement?",
+      "code": "trigger AccountUpper on Account (before insert, before update) {\n  for (Account a : Trigger.new) {\n    a.Name = a.Name.toUpperCase();\n  }\n}",
+      "lang": "apex",
+      "options": [
+        "A formula field that shows `UPPER(Name)`",
+        "A validation rule that blocks names with lowercase letters",
+        "A before-save record-triggered flow that sets the name with `UPPER()`",
+        "An after-save record-triggered flow that updates the name with an Update Records element"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "The trigger changes a field on the record being saved. A before-save flow does the same, with no extra save. A formula only shows a copy, so the stored name stays the same.",
+      "wrong": [
+        "A formula shows a new value. It doesn't change the stored name.",
+        "Blocking the save makes users retype. It doesn't fix the value.",
+        "",
+        "It works, but it saves the record a second time. Before-save is faster."
+      ],
+      "source": "Salesforce Help: Before-Save Record-Triggered Flows"
+    },
+    {
+      "id": "fund-x46",
+      "lesson": "fund-4",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A record-triggered flow on Case has one Get Records element, not inside a loop. An admin updates 100 cases at once with Data Loader. How many SOQL queries does that element use?",
+      "options": [
+        "100, one per case, so the 100-query limit is reached",
+        "100, but flow queries have their own separate limit",
+        "None, because flows don't count toward SOQL limits",
+        "One, because the interviews that reach the element are grouped"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "Salesforce creates one interview per record. When the interviews reach the same Get Records element, it runs them as one grouped query. A Get Records inside a loop isn't grouped like this.",
+      "wrong": [
+        "Flow bulkification groups the interviews' queries into one.",
+        "Flows share the transaction's limits with Apex.",
+        "Flow queries count toward the same SOQL limit as Apex.",
+        ""
+      ],
+      "source": "Salesforce Help: Flow Bulkification in Transactions"
+    },
+    {
+      "id": "fund-x47",
+      "lesson": "fund-4",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A developer plans a before-save record-triggered flow on Opportunity. Which two can it do? (Choose 2)",
+      "options": [
+        "Read the parent account with a Get Records element",
+        "Create a follow-up Task for the opportunity owner",
+        "Put the new opportunity's record Id into a field",
+        "Set fields on the opportunity being saved",
+        "Send an email alert to the sales manager"
+      ],
+      "answer": [
+        0,
+        3
+      ],
+      "explain": "Before-save flows support only Assignment, Decision, Get Records and Loop. They can read other records and set fields on the triggering record. A new record's Id exists only after the save.",
+      "wrong": [
+        "",
+        "Creating related records needs an after-save flow.",
+        "A new record gets its Id only after it's saved.",
+        "",
+        "Actions like email alerts need an after-save flow."
+      ],
+      "source": "Salesforce Help: Before-Save Record-Triggered Flows"
+    },
+    {
+      "id": "fund-q84",
+      "lesson": "fund-4",
+      "difficulty": 2,
+      "q": "`Reason_Lost__c` must be filled in when an opportunity's Stage is Closed Lost, also for API updates. Which approach should the developer use?",
+      "options": [
+        "A validation rule that checks Stage and `Reason_Lost__c`",
+        "Mark `Reason_Lost__c` as required in the field's settings",
+        "Make `Reason_Lost__c` required on the page layout",
+        "An after-save flow that resets Stage when the reason is blank"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "A validation rule can require a field only in some cases, and it runs for API saves too. A field marked required must always have a value.",
+      "wrong": [
+        "",
+        "That makes the field required on every opportunity, not only lost ones.",
+        "A layout requirement applies only on that layout, not to the API.",
+        "Undoing the user's change after save is confusing and shows no clear error."
+      ],
+      "source": "Salesforce Help: Validation Rules"
+    },
+    {
+      "id": "fund-q85",
+      "lesson": "fund-5",
+      "difficulty": 1,
+      "q": "A formula must show a contact's department, or the word \"Unassigned\" when the field is empty. Which function fits best?",
+      "options": [
+        "`ISPICKVAL`",
+        "`BLANKVALUE`",
+        "`PRIORVALUE`",
+        "`DATETIMEVALUE`"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "`BLANKVALUE(expression, substitute)` returns the substitute when the expression is blank. Otherwise it returns the expression's value.",
+      "wrong": [
+        "`ISPICKVAL` checks a picklist's value.",
+        "",
+        "`PRIORVALUE` returns a field's old value, and only in some rule types.",
+        "`DATETIMEVALUE` turns a date or text into a date/time value."
+      ],
+      "source": "Salesforce Help: BLANKVALUE"
+    },
+    {
+      "id": "fund-q86",
+      "lesson": "fund-5",
+      "difficulty": 2,
+      "q": "A developer creates a formula field on Opportunity to show the previous Stage with `PRIORVALUE(StageName)`. The formula won't save. Why?",
+      "options": [
+        "`PRIORVALUE` needs field history tracking turned on for the Stage field first",
+        "`PRIORVALUE` works only with custom fields, not standard ones",
+        "Formula fields can't use `PRIORVALUE`; only rules and field updates can",
+        "`StageName` must be wrapped in `TEXT()` before `PRIORVALUE` reads it"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "`PRIORVALUE` works only in assignment rules, validation rules, field updates, workflow rules and Process Builder criteria. A formula field always shows current values.",
+      "wrong": [
+        "It doesn't depend on field history tracking.",
+        "Standard fields work too, in the places where it's allowed.",
+        "",
+        "Wrapping doesn't help. Formula fields can't use `PRIORVALUE` at all."
+      ],
+      "source": "Salesforce Help: PRIORVALUE"
+    },
+    {
+      "id": "fund-q87",
+      "lesson": "fund-5",
+      "difficulty": 2,
+      "q": "An admin tries to delete the custom field `Discount__c` on `Order__c`, and Salesforce blocks it. `Net_Price__c` is a formula that uses `Discount__c`. What must happen first?",
+      "options": [
+        "Turn off field history tracking on `Discount__c`",
+        "Delete every `Order__c` record that has a discount",
+        "Clear the `Discount__c` value on every record",
+        "Remove `Discount__c` from the `Net_Price__c` formula"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "You can't delete a field that a formula references. Remove it from the formula first, then delete the field.",
+      "wrong": [
+        "History tracking isn't what blocks the delete.",
+        "Records don't block the delete. The formula's reference does.",
+        "Clearing values doesn't remove the formula's reference.",
+        ""
+      ],
+      "source": "Salesforce Help: Formula Field Limits and Restrictions"
+    },
+    {
+      "id": "fund-q88",
+      "lesson": "fund-5",
+      "difficulty": 2,
+      "q": "Agents want a clickable link on each case that opens the matching order on the company's ERP site, using the case's `Erp_Order__c` value. What is the simplest solution?",
+      "options": [
+        "A `HYPERLINK()` formula field using the ERP URL and `Erp_Order__c`",
+        "A text formula field that builds an `<a href>` tag around the order number",
+        "An Apex trigger that writes the full link into a URL field",
+        "A Lightning web component that builds the link on the page"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "The UI escapes HTML tags in formula fields, so an `<a>` tag shows as plain text. `HYPERLINK(url, friendly_name)` makes a real link, with no code.",
+      "wrong": [
+        "",
+        "HTML tags in a formula are escaped and show as text.",
+        "It works, but it's code for something a formula does.",
+        "It's more code than a formula field needs."
+      ],
+      "source": "Salesforce Help: Formula Field Limits and Restrictions"
+    },
+    {
+      "id": "fund-x48",
+      "lesson": "fund-5",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "`Status__c` is a picklist on `Permit__c`. A developer tries to save this formula field, and Salesforce shows an error. What is the fix?",
+      "code": "IF(Status__c = \"Approved\", \"Ready\", \"Waiting\")",
+      "lang": "formula",
+      "options": [
+        "Use single quotes, as in `Status__c = 'Approved'`",
+        "Use `IF(ISPICKVAL(Status__c, \"Approved\"), \"Ready\", \"Waiting\")`",
+        "Change the formula's return type from Text to Picklist",
+        "Use `CONTAINS(Status__c, \"Approved\")` for the check"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "A picklist can't be compared with `=` in a formula. Use `ISPICKVAL(field, \"value\")`, or turn it into text with `TEXT()` first.",
+      "wrong": [
+        "The quotes aren't the problem. Picklists need a picklist function.",
+        "",
+        "Formulas can't return the Picklist type.",
+        "`CONTAINS` doesn't take a picklist field."
+      ],
+      "source": "Salesforce Help: ISPICKVAL"
+    },
+    {
+      "id": "fund-x49",
+      "lesson": "fund-5",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "`Size__c` is a formula on Opportunity based on `Amount`. The developer wants the new formula value in memory without saving or querying again. Which line should replace the comment?",
+      "code": "Opportunity opp = [SELECT Id, Amount, Size__c FROM Opportunity WHERE Id = :oppId];\nopp.Amount = 250000;\n// line needed here\nSystem.debug(opp.Size__c);",
+      "lang": "apex",
+      "options": [
+        "`opp.Size__c = opp.Size__c;` to refresh the formula",
+        "`update opp;` and then read `opp.Size__c` again",
+        "`Formula.recalculateFormulas(new List<SObject>{ opp });`",
+        "`opp.recalculateFormulaFields();` on the record itself"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "`Formula.recalculateFormulas` recalculates the formula fields on sObjects in memory. It needs no DML and no query.",
+      "wrong": [
+        "Formula fields can't be set, so this won't compile.",
+        "This saves the record, and the in-memory copy still holds the old value.",
+        "",
+        "sObjects have no `recalculateFormulaFields()` method."
+      ],
+      "source": "Apex Reference Guide: Formula Class"
+    },
+    {
+      "id": "fund-q89",
+      "lesson": "fund-5",
+      "difficulty": 2,
+      "q": "Which two can a formula field on Case do? (Choose 2)",
+      "options": [
+        "Total the amounts of the case's child records",
+        "Show a field from the case's parent account",
+        "Change the case's Status once a date has passed",
+        "Show the text of a Long Text Area field",
+        "Show how many days are left until a due date, using `TODAY()`"
+      ],
+      "answer": [
+        1,
+        4
+      ],
+      "explain": "Formulas can reach up to parent records and use functions like `TODAY()`. They can't reach child records, change fields, or use long text areas.",
+      "wrong": [
+        "Totals of child records need a roll-up summary or automation.",
+        "",
+        "A formula only shows a value. It never changes other fields.",
+        "Formulas can't reference Long Text Area fields.",
+        ""
+      ],
+      "source": "Salesforce Help: Formula Field Limits and Restrictions"
+    },
+    {
+      "id": "fund-q90",
+      "lesson": "fund-6",
+      "difficulty": 1,
+      "q": "An admin builds a roll-up summary with the SUM type. Which kind of detail field can it total?",
+      "options": [
+        "A multi-select picklist field",
+        "A text area field",
+        "A checkbox field",
+        "A currency field"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "SUM works on number, currency and percent fields. MIN and MAX also allow date and date/time fields.",
+      "wrong": [
+        "Multi-select picklists can't be summed or used in the filter.",
+        "Text can't be summed. COUNT can count the records instead.",
+        "Checkboxes can't be summed. Use COUNT with a filter instead.",
+        ""
+      ],
+      "source": "Salesforce Help: Roll-Up Summary Field"
+    },
+    {
+      "id": "fund-q91",
+      "lesson": "fund-6",
+      "difficulty": 2,
+      "q": "Finance wants each account to show the total Amount of its Closed Won opportunities, with no code. What should the developer do?",
+      "options": [
+        "Create a roll-up summary on Account: SUM of Amount, filtered on Closed Won",
+        "Change Opportunity's Account field to a master-detail relationship first",
+        "Build a record-triggered flow on Opportunity to keep the total",
+        "Create a cross-object formula on Account that adds up the opportunities"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "Account can roll up its related opportunities. It's one of the standard pairs that support roll-up summaries without a custom master-detail.",
+      "wrong": [
+        "",
+        "No change is needed. Account already supports roll-ups from opportunities.",
+        "It works, but it's more work than the built-in roll-up.",
+        "Formulas can't reach down to child records."
+      ],
+      "source": "Salesforce Help: Roll-Up Summary Field"
+    },
+    {
+      "id": "fund-x50",
+      "lesson": "fund-6",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "Sales wants each account to show how many of its contacts have `Decision_Maker__c` checked. An admin tries to build a roll-up summary on Account and can't pick Contacts. What should the developer do?",
+      "options": [
+        "Change the Contact–Account lookup to master-detail, then add the roll-up",
+        "Keep the count with a record-triggered flow or trigger on Contact",
+        "Create a cross-object formula on Account that counts the contacts",
+        "Add a roll-up summary on Contact that points up to its account"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "Account can roll up opportunities, but not contacts. So keep the count with automation on Contact, and handle insert, update, delete and undelete.",
+      "wrong": [
+        "Contact's standard Account field can't be turned into a master-detail.",
+        "",
+        "Formulas can't reach down to child records.",
+        "Roll-ups sit on the parent and summarize children, not the other way."
+      ],
+      "source": "Salesforce Help: Roll-Up Summary Field"
+    },
+    {
+      "id": "fund-x51",
+      "lesson": "fund-6",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "`Budget__c` has a SUM roll-up `Spent__c` and a validation rule that blocks saves when `Spent__c` > `Limit__c`. An admin changes the roll-up's filter, and many budgets now go over their limit. What happens?",
+      "options": [
+        "The filter change is rejected, because it would break the validation rule",
+        "The recalculation stops at the first budget that breaks the rule",
+        "The values recalculate, and the validation rule doesn't block it",
+        "Each budget that breaks the rule is locked until a user fixes it"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "Changing a roll-up's definition starts a mass recalculation. That recalculation doesn't trigger workflow rules or field validations. The rule still runs on the next normal save.",
+      "wrong": [
+        "Setup changes aren't checked against validation rules.",
+        "Validations don't run during a mass recalculation.",
+        "",
+        "Salesforce doesn't lock records over a validation rule."
+      ],
+      "source": "Salesforce Help: Roll-Up Summary Field"
+    },
+    {
+      "id": "fund-q92",
+      "lesson": "fund-6",
+      "difficulty": 2,
+      "q": "Which two statements about roll-up summary fields are true? (Choose 2)",
+      "options": [
+        "They can calculate the average of a detail field",
+        "They work between two custom objects joined by a lookup",
+        "MIN and MAX can summarize date fields",
+        "They include detail values that a user can't see because of field-level security",
+        "Users can type over the value on the master record"
+      ],
+      "answer": [
+        2,
+        3
+      ],
+      "explain": "MIN and MAX accept number, currency, percent, date and date/time fields. Detail fields hidden by field-level security still count, so secure the roll-up field too.",
+      "wrong": [
+        "There's no AVG type, only COUNT, SUM, MIN and MAX.",
+        "A lookup between custom objects doesn't support roll-ups.",
+        "",
+        "",
+        "Roll-up summary fields are read-only."
+      ],
+      "source": "Salesforce Help: Roll-Up Summary Field"
+    },
+    {
+      "id": "fund-x52",
+      "lesson": "fund-6",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "`Region__c` is the master of `Store__c`, and `Store__c` is the master of `Sale__c`. Each region must show its total sales. How can roll-up summaries do this?",
+      "options": [
+        "Add a SUM roll-up on `Region__c` that reads `Sale__c` amounts directly",
+        "It can't be done with roll-ups. Three levels always need a trigger",
+        "Add a formula on `Region__c` that reaches down through stores to sales",
+        "Roll up sales onto `Store__c`, then roll up that field onto `Region__c`"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "A master can't roll up subdetail records directly. Give the detail its own roll-up of the subdetails. Then the master rolls up that field.",
+      "wrong": [
+        "A master can only roll up its direct details.",
+        "It works in two steps, one roll-up per level.",
+        "Formulas can't reach down to child records.",
+        ""
+      ],
+      "source": "Salesforce Help: Considerations for Object Relationships"
+    },
+    {
+      "id": "fund-q93",
+      "lesson": "fund-7",
+      "difficulty": 1,
+      "q": "A data model chains master-detail relationships. At most how many custom detail levels can it have below the master?",
+      "options": [
+        "3",
+        "2",
+        "5",
+        "10"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "A multilevel master-detail relationship can have up to 3 custom detail levels.",
+      "wrong": [
+        "",
+        "2 is the most master-detail fields one object can have, not the level count.",
+        "5 is how many levels up a SOQL child-to-parent path can go.",
+        "10 is how far a cross-object formula can reach."
+      ],
+      "source": "Salesforce Help: Considerations for Object Relationships"
+    },
+    {
+      "id": "fund-q94",
+      "lesson": "fund-7",
+      "difficulty": 2,
+      "q": "`Shipment__c` has an optional lookup to `Carrier__c`. A carrier must not be deletable while shipments still point to it. Which lookup option should the developer choose?",
+      "options": [
+        "Clear the value of this field (the default)",
+        "Don't allow deletion of the lookup record",
+        "Delete this record also",
+        "Allow reparenting on the relationship"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "For an optional lookup, you choose what happens when the parent is deleted. \"Don't allow deletion\" blocks deleting a carrier that shipments still use.",
+      "wrong": [
+        "Clearing is the default, and it lets the carrier be deleted.",
+        "",
+        "That deletes the shipments along with the carrier.",
+        "Allow reparenting is a master-detail setting for moving details."
+      ],
+      "source": "Salesforce Help: Object Relationships Overview"
+    },
+    {
+      "id": "fund-x53",
+      "lesson": "fund-7",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "Each `Member__c` must be able to follow many other members, and be followed by many. A developer creates `Follow__c` with two master-detail fields, both pointing to `Member__c`. What happens?",
+      "options": [
+        "It works, and the first master-detail field sets the owner",
+        "It works, but only if Allow reparenting is on for both fields",
+        "Salesforce doesn't allow the second master-detail to the same object",
+        "Salesforce turns both fields into lookups automatically"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "A many-to-many self-relationship isn't allowed. A junction object's two master-detail fields can't have the same master object.",
+      "wrong": [
+        "The two master-detail fields can't point to the same object.",
+        "Reparenting doesn't change which masters are allowed.",
+        "",
+        "Salesforce doesn't change field types on its own."
+      ],
+      "source": "Salesforce Help: Considerations for Object Relationships"
+    },
+    {
+      "id": "fund-x54",
+      "lesson": "fund-7",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "`Enrollment__c` is a junction object between `Student__c` and `Course__c`. Both master-detail fields use the Read/Write sharing setting. Which two statements are true? (Choose 2)",
+      "options": [
+        "Deleting a course leaves its enrollments in place with a blank course field",
+        "To edit an enrollment, a user needs Read/Write access to both the student and the course",
+        "Edit access to just one of the two masters is enough to edit it",
+        "The first master-detail field created is the primary relationship",
+        "`Enrollment__c` can be the master of another custom detail object"
+      ],
+      "answer": [
+        1,
+        3
+      ],
+      "explain": "Junction access depends on access to both masters. With Read/Write on both fields, a user needs Read/Write on both parents. The first master-detail you create is the primary one.",
+      "wrong": [
+        "Deleting either master deletes its junction records.",
+        "",
+        "The user needs access to both masters, not just one.",
+        "",
+        "A junction object can't have detail objects."
+      ],
+      "source": "Salesforce Help: Considerations for Object Relationships"
+    },
+    {
+      "id": "fund-q95",
+      "lesson": "fund-8",
+      "difficulty": 2,
+      "q": "Nightly code finds accounts by `Legacy_Id__c`, a plain text field, across 2 million records. The query is slow. Which change helps most?",
+      "options": [
+        "Move the value into a Long Text Area field so it can hold more",
+        "Change `Legacy_Id__c` into a formula field",
+        "Add `ORDER BY Legacy_Id__c` so the matches come back faster",
+        "Mark `Legacy_Id__c` as an External ID, which indexes it"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "Marking a field as External ID creates an index on it. The query optimizer can then use the index to find matches fast.",
+      "wrong": [
+        "Long text area fields can't be indexed.",
+        "A formula doesn't add an index. Its value is worked out when read.",
+        "Sorting doesn't make the filter faster.",
+        ""
+      ],
+      "source": "Best Practices for Deployments with Large Data Volumes: Indexes"
+    },
+    {
+      "id": "fund-q96",
+      "lesson": "fund-8",
+      "difficulty": 2,
+      "q": "A developer upserts a list of orders with `Database.upsert`, matching on the External ID `Erp_Number__c` and allowing partial success. Which call is correct?",
+      "options": [
+        "`Database.upsert(orders, Order__c.Fields.Erp_Number__c, false);`",
+        "`Database.upsert(orders, 'Order__c.Erp_Number__c', false);`",
+        "`Database.upsert(orders, false, Order__c.Fields.Erp_Number__c);`",
+        "`Database.upsert(orders, Order__c.Fields.Erp_Number__r, false);`"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "The External ID argument is a field token of type `Schema.SObjectField`, like `Order__c.Fields.Erp_Number__c`. The third argument, `false`, allows partial success.",
+      "wrong": [
+        "",
+        "A field name in quotes is a String, not a field token.",
+        "The field token comes second and `allOrNone` third.",
+        "`__r` is a relationship name, not a field token."
+      ],
+      "source": "Apex Reference Guide: Database Class"
+    },
+    {
+      "id": "fund-x55",
+      "lesson": "fund-8",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "`ORD-1` already exists in Salesforce, and `ORD-2` doesn't. `Erp_Number__c` is a unique External ID. What does this code print?",
+      "code": "List<Order__c> orders = new List<Order__c>{\n  new Order__c(Erp_Number__c = 'ORD-1'),\n  new Order__c(Erp_Number__c = 'ORD-2')\n};\nList<Database.UpsertResult> rs =\n  Database.upsert(orders, Order__c.Fields.Erp_Number__c, false);\nfor (Database.UpsertResult r : rs) {\n  System.debug(r.isSuccess() + ' ' + r.isCreated());\n}",
+      "lang": "apex",
+      "options": [
+        "`true true`, then `true false`",
+        "`true false`, then `true true`",
+        "`false false`, then `true true`",
+        "`true true`, then `true true`"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "`isCreated()` is true when upsert inserted the record, and false when it updated one. `ORD-1` is updated, and `ORD-2` is inserted.",
+      "wrong": [
+        "The order is swapped. `ORD-1` is the update.",
+        "",
+        "Matching an existing record is a success, not a failure.",
+        "`ORD-1` matched a record, so it was updated, not created."
+      ],
+      "source": "Apex Reference Guide: UpsertResult Class"
+    },
+    {
+      "id": "fund-x56",
+      "lesson": "fund-8",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A developer creates an account and its opportunity in one `insert`, linking them by the External ID `Sap_Id__c`. The insert fails. Why?",
+      "code": "Opportunity opp = new Opportunity(Name = 'Big Deal',\n  StageName = 'Prospecting', CloseDate = Date.today().addDays(30));\nopp.Account = new Account(Sap_Id__c = 'SAP-42');\n\nAccount acc = new Account(Name = 'Acme', Sap_Id__c = 'SAP-42');\n\ninsert new List<SObject>{ opp, acc };",
+      "lang": "apex",
+      "options": [
+        "Records of different types can't share one `insert`",
+        "The reference account must also set the `Name` field",
+        "The parent must come before the child in the list",
+        "`opp.AccountId` must be set instead of `opp.Account`"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "You can create a parent and its child in one call by linking on an External ID. The parent must come earlier in the list than the child. Here `opp` is first, so it fails.",
+      "wrong": [
+        "One call can create a parent and a child of different types.",
+        "The reference sObject holds only the External ID. The account being inserted has the Name.",
+        "",
+        "Setting the relationship to a reference sObject is how External ID linking works."
+      ],
+      "source": "Apex Developer Guide: Creating Parent and Child Records in a Single Statement Using Foreign Keys"
+    },
+    {
+      "id": "fund-x57",
+      "lesson": "fund-8",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "An integration user upserts contacts on `Hr_Id__c`, an External ID that isn't marked Unique. The user doesn't have View All Data, and the upsert is rejected. Which two changes let the upsert run? (Choose 2)",
+      "options": [
+        "Mark `Hr_Id__c` as case-sensitive",
+        "Switch to `insert` and let duplicates through",
+        "Add `Hr_Id__c` to the contact page layout",
+        "Mark `Hr_Id__c` as Unique",
+        "Give the integration user the View All Data permission"
+      ],
+      "answer": [
+        3,
+        4
+      ],
+      "explain": "An External ID used for upsert must be Unique, or the running user needs View All Data. Unique is the better fix, because it also blocks duplicates.",
+      "wrong": [
+        "Case sensitivity changes matching, not this rule.",
+        "An insert isn't an upsert, and it would create duplicates.",
+        "Page layouts don't affect DML.",
+        "",
+        ""
+      ],
+      "source": "Apex Developer Guide: Upserting Records"
+    },
+    {
+      "id": "fund-q97",
+      "lesson": "fund-9",
+      "difficulty": 1,
+      "q": "Agentforce for Developers shows a gray inline suggestion while a developer types Apex. How does the developer accept the whole suggestion?",
+      "options": [
+        "Run Format Document",
+        "Press Esc",
+        "Press Shift+Enter",
+        "Press Tab"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "Inline suggestions appear as gray ghost text. Tab accepts the whole suggestion, and Esc dismisses it.",
+      "wrong": [
+        "Format Document only reformats existing code.",
+        "Esc dismisses the suggestion.",
+        "Shift+Enter isn't the accept key. Tab is.",
+        ""
+      ],
+      "source": "Agentforce Vibes Developer Guide: Inline Auto Completion"
+    },
+    {
+      "id": "fund-q98",
+      "lesson": "fund-9",
+      "difficulty": 2,
+      "q": "A security officer asks whether code sent to Agentforce for Developers is used to train the AI model. Which answer is accurate?",
+      "options": [
+        "No, Salesforce doesn't use customer code to train the models",
+        "Yes, every prompt improves one shared model for all customers",
+        "Only code from sandboxes and scratch orgs is used for training",
+        "Yes, unless each developer turns off telemetry in VS Code"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "Salesforce treats your code as confidential and doesn't use it to train the global model. You still choose what goes into each prompt.",
+      "wrong": [
+        "",
+        "Customer code isn't used for training.",
+        "No customer code is used for training, from any org.",
+        "Telemetry is separate. Code isn't used for training either way."
+      ],
+      "source": "Agentforce Vibes Developer Guide: FAQ"
+    },
+    {
+      "id": "fund-x58",
+      "lesson": "fund-9",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "Agentforce for Developers drafted this method. The org has no custom Apex utilities. The deployment fails. What is the most likely cause?",
+      "code": "public static List<Contact> keyContacts(Id accountId) {\n  Account acc = [SELECT Id FROM Account WHERE Id = :accountId];\n  return acc.getPrimaryContacts();\n}",
+      "lang": "apex",
+      "options": [
+        "A static method can't return a `List` of sObjects",
+        "The AI made up `getPrimaryContacts()`, which doesn't exist on Account",
+        "A SOQL `WHERE` clause can't use an `Id` bind variable",
+        "Every query on Account needs `WITH SECURITY_ENFORCED` added before it can deploy"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "AI tools can invent method names that don't exist. sObjects have no `getPrimaryContacts()` method, so the code doesn't compile. Always compile and test AI output.",
+      "wrong": [
+        "Static methods can return any type, including lists.",
+        "",
+        "Binding an Id variable with `:` is normal SOQL.",
+        "Security clauses are good practice, but no deployment requires them."
+      ],
+      "source": "Agentforce Vibes Developer Guide: Understand Agentic Development"
+    },
+    {
+      "id": "fund-x59",
+      "lesson": "fund-9",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A team lead explains how Agentforce for Developers protects data. Which two statements are accurate? (Choose 2)",
+      "options": [
+        "The Einstein Trust Layer can mask personal data in prompts before they reach the model",
+        "Thanks to masking, it's safe to paste production API tokens into a prompt",
+        "Because the data is protected, generated code no longer needs review",
+        "The org's records are sent along with every prompt for better answers",
+        "Code that isn't included in a prompt isn't sent to the model"
+      ],
+      "answer": [
+        0,
+        4
+      ],
+      "explain": "Prompts pass through the Einstein Trust Layer, which can mask personal and payment data. Only data you include is sent. Neither protection replaces code review.",
+      "wrong": [
+        "",
+        "The docs say never to put credentials or tokens in prompts.",
+        "Protecting data doesn't make code correct. Review is still required.",
+        "Record data isn't sent unless you include it.",
+        ""
+      ],
+      "source": "Agentforce Vibes Developer Guide: Trust and Verification"
+    },
+    {
+      "id": "fund-q99",
+      "lesson": "fund-9",
+      "difficulty": 2,
+      "q": "A reviewer checks this AI-generated LWC code. The parent's handler never runs. What should the reviewer flag?",
+      "code": "// child.js\nthis.dispatchEvent(new CustomEvent('orderSelected', { detail: this.orderId }));\n\n// parent.html\n// <c-child onorderselected={handleSelect}></c-child>",
+      "lang": "js",
+      "options": [
+        "The parent must listen with `onOrderSelected` instead",
+        "`detail` must hold an object, not a plain record Id value",
+        "The event name `orderSelected` has an uppercase letter",
+        "The event needs `composed: true` to reach its parent"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "Event names should have no uppercase letters. The handler `onorderselected` listens for `orderselected`, which doesn't match `orderSelected`.",
+      "wrong": [
+        "The fix is a lowercase event name, not a different handler name.",
+        "`detail` can hold a plain value like an Id.",
+        "",
+        "A parent hears its child's event without `composed`."
+      ],
+      "source": "LWC Developer Guide: Create and Dispatch Events"
+    },
+    {
+      "id": "fund-x60",
+      "lesson": "fund-9",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "An AI tool drafted this Apex class for an LWC that lists the cases a user may see. What is the most serious problem to fix before deploying?",
+      "code": "public without sharing class CaseListController {\n  @AuraEnabled(cacheable=true)\n  public static List<Case> getCases() {\n    return [SELECT Id, Subject, Status FROM Case LIMIT 200];\n  }\n}",
+      "lang": "apex",
+      "options": [
+        "`@AuraEnabled` methods must be instance methods, not static",
+        "`cacheable=true` isn't allowed on methods that return a list",
+        "`LIMIT 200` makes the query hit the 50,000-row limit",
+        "`without sharing` returns cases the user isn't allowed to see"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "`without sharing` ignores the user's record access, so the LWC could show private cases. Use `with sharing`. AI code needs the same security review as any code.",
+      "wrong": [
+        "`@AuraEnabled` methods called from LWC must be static.",
+        "Cacheable methods can return lists. They just can't change data.",
+        "`LIMIT 200` keeps the rows far under any limit.",
+        ""
+      ],
+      "source": "Apex Developer Guide: Using the with sharing, without sharing, and inherited sharing Keywords"
     }
   ]
 }
