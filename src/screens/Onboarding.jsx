@@ -1,7 +1,7 @@
 // One short screen: pick a daily goal, optionally a name and exam date, then straight into lesson 1.
 import { useState } from 'react';
 import { motion } from 'motion/react';
-import { setState, updateSettings, useStore } from '../state/store.js';
+import { getState, setState, updateSettings, useStore } from '../state/store.js';
 import { FEEL_PRESETS } from '../state/feelPresets.js';
 import { InstallHelpButton } from '../components/InstallHelp.jsx';
 import { Segmented } from '../components/Controls.jsx';
@@ -14,7 +14,7 @@ import { Icon } from '../components/icons/Icon.jsx';
 import { HeroArt } from '../components/art/HeroArt.jsx';
 import { iconOption } from './Settings.jsx';
 import { APP_NAME } from '../lib/appInfo.js';
-import { track } from '../lib/track.js';
+import { TRACKS, TRACK_IDS, switchTrack, track } from '../lib/track.js';
 
 const GOALS = [iconOption(20, 'leaf', '20'), iconOption(50, 'smile', '50'), iconOption(100, 'muscle', '100'), iconOption(150, 'flame', '150')];
 
@@ -28,7 +28,7 @@ const FEATURES = [
 
 export function Onboarding() {
   const [goal, setGoal] = useState(50);
-  const [name, setName] = useState('');
+  const [name, setName] = useState(() => getState().name); // carried over from your other exam, if any
   const [date, setDate] = useState('');
   const [feel, setFeel] = useState('balanced');
   const reduced = useReducedMotion();
@@ -84,6 +84,11 @@ export function Onboarding() {
         <button className="btn block" style={{ marginTop: 10 }} onClick={() => start(`/placement/${sections[0].id}`)}>
           Know Apex? Skip ahead
         </button>
+        {TRACK_IDS.filter((id) => id !== track.id).map((id) => (
+          <button key={id} type="button" className="btn block ghost" style={{ marginTop: 10 }} onClick={() => switchTrack(id)}>
+            Studying for {TRACKS[id].name} instead? Switch <Icon name="next" />
+          </button>
+        ))}
         <p className="small muted center" style={{ marginTop: 14 }}>On iPhone? Add it to your Home Screen first, so your progress lives in the app.</p>
         <div className="center" style={{ marginTop: 6 }}><InstallHelpButton /></div>
       </motion.div>

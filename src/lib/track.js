@@ -43,6 +43,8 @@ const SKIP_SPLASH = 'devquest.skipSplash';
 export function switchTrack(id) {
   if (!chooseTrack(id)) return;
   try { sessionStorage.setItem(SKIP_SPLASH, '1'); } catch { /* ignore */ }
+  // Start the other exam at its Home: the current screen (a lesson, the welcome screen…) belongs to this exam.
+  window.history.replaceState(null, '', `${window.location.pathname}${window.location.search}#/`);
   window.location.reload();
 }
 /** True once, right after a switch: the reload skips the opening screen. */

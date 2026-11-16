@@ -7,7 +7,7 @@ import { levelFor } from '../engine/xp.js';
 import { COINS, HELPERS } from '../game/economy.js';
 import { emptyDayStats, questsFor } from '../game/quests.js';
 import { newBadges } from '../game/badges.js';
-import { track, trackKey } from '../lib/track.js';
+import { TRACKS, track, trackKey } from '../lib/track.js';
 
 // Progress is kept per exam (PD2 keeps its original key); settings are shared by both exams.
 const KEY = trackKey('pd2quest.v1');
@@ -124,11 +124,22 @@ export function sanitizeState(saved) {
   };
 }
 
+/** Saved progress of the other exams on this device (used to carry your name over to a new exam). */
+function otherExams() {
+  return Object.values(TRACKS).filter((t) => t.id !== track.id).map((t) => {
+    try { return JSON.parse(localStorage.getItem(`${t.prefix}.v1`) ?? 'null'); } catch { return null; }
+  }).filter(Boolean);
+}
+
 function load() {
   try {
     const raw = localStorage.getItem(KEY);
-    const loaded = raw ? sanitizeState(JSON.parse(raw)) : initialState();
-    const shared = JSON.parse(localStorage.getItem(SETTINGS_KEY) ?? 'null');
+    const others = otherExams();
+    // A new exam starts fresh but knows your name.
+    const loaded = raw ? sanitizeState(JSON.parse(raw)) : { ...initialState(), name: others.find((o) => typeof o.name === 'string')?.name ?? '' };
+    // Settings are shared. Progress saved before exams existed kept them inside the PD2 progress: share those once.
+    const shared = JSON.parse(localStorage.getItem(SETTINGS_KEY) ?? 'null') ?? others.find((o) => o.settings)?.settings ?? (raw ? loaded.settings : null);
+    if (shared) localStorage.setItem(SETTINGS_KEY, JSON.stringify(shared));
     return shared ? { ...loaded, settings: sameShape(shared, loaded.settings) } : loaded;
   } catch {
     return initialState();
