@@ -24,8 +24,11 @@ import { saveExamSession, loadExamSession, clearExamSession } from '../state/exa
 import { scrollToTop } from '../lib/scroller.js';
 
 const LETTERS = 'ABCDEF';
+// A mini mock is a third of the real exam at the real exam's pace (PD2: 20 questions in 40 min).
+const MINI = Math.round(exam.questions / 3);
+const MINI_MINUTES = Math.round((exam.minutes * MINI) / exam.questions);
 const MODES = [
-  { id: 'mini', label: 'Mini mock', count: 20, minutes: 40, icon: 'bolt', tone: '', blurb: '20 questions · 40 min' },
+  { id: 'mini', label: 'Mini mock', count: MINI, minutes: MINI_MINUTES, icon: 'bolt', tone: '', blurb: `${MINI} questions · ${MINI_MINUTES} min` },
   { id: 'full', label: 'Full mock exam', count: exam.questions, minutes: exam.minutes, icon: 'exam', tone: 'gold', blurb: `${exam.questions} questions · ${exam.minutes} min, like the real thing` },
   { id: 'hard', label: 'Exam-hard mock', count: exam.questions, minutes: exam.minutes, icon: 'flame', tone: 'flame', blurb: `${exam.questions} of the toughest questions · ${exam.minutes} min`, hardOnly: true },
 ];
