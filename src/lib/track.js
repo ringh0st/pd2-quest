@@ -1,4 +1,4 @@
-// Which exam the app is studying for. One app, one track at a time: PD1 Quest or PD2 Quest.
+// Which exam the app is studying for. One app, one track at a time: PD1 Quest, PD2 Quest or App Builder Quest.
 // The track is chosen on the opening screen and kept on this device; switching reloads the app,
 // so every screen and every piece of saved progress belongs to one exam.
 const TRACK_KEY = 'devquest.track';

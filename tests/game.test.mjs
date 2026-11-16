@@ -15,8 +15,8 @@ test('every exam names each of its worlds and Bosses, and every world has a look
   for (const t of Object.values(TRACKS)) {
     const worlds = JSON.parse(readFileSync(`src/data/${t.id}/exam.json`, 'utf8')).worlds;
     for (const id of t.sections) {
-      assert.ok(WORLD_STYLES[id], `${t.id}/${id} has no look`);
       const w = worlds?.[id];
+      assert.ok(WORLD_STYLES[w?.look ?? id], `${t.id}/${id} has no look (worlds.${id}.look must be one of ${Object.keys(WORLD_STYLES)})`);
       assert.ok(w?.name && w.boss?.name && w.boss.taunt && w.boss.defeat, `${t.id}/${id} has no name or Boss in exam.json`);
     }
   }
