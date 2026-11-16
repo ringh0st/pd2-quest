@@ -1,5 +1,5 @@
 import { APP_NAME, APP_VERSION, STUDIO_NAME } from '../lib/appInfo.js';
-import { useRef, useSyncExternalStore } from 'react';
+import { useRef } from 'react';
 import { useStore, updateSettings, setState, resetProgress, exportProgress, importProgress } from '../state/store.js';
 import { FEEL_PRESETS, presetFor } from '../state/feelPresets.js';
 import { InstallHelpButton } from '../components/InstallHelp.jsx';
@@ -8,7 +8,6 @@ import { go } from '../hooks/useRoute.js';
 import { useFeedback } from '../components/Feedback.jsx';
 import { ReminderSettings } from '../components/ReminderSettings.jsx';
 import { VoicePicker } from '../components/VoicePicker.jsx';
-import { screenFitInfo, subscribeScreenFit } from '../lib/screenFit.js';
 import { Icon } from '../components/icons/Icon.jsx';
 import { sfx, setSoundEnabled } from '../audio/sfx.js';
 import { haptic, setHapticsEnabled } from '../audio/haptics.js';
@@ -22,7 +21,6 @@ export function Settings() {
   const { showToast } = useFeedback();
   const fileRef = useRef(null);
   const preset = presetFor(st);
-  const screen = useSyncExternalStore(subscribeScreenFit, screenFitInfo, screenFitInfo);
   const backup = () => {
     const blob = new Blob([exportProgress()], { type: 'application/json' });
     const a = document.createElement('a');
@@ -80,19 +78,6 @@ export function Settings() {
           options={Object.entries(FEEL_PRESETS).map(([k, p]) => iconOption(k, p.icon, p.label))}
         />
         {!preset && <p className="small muted">Custom mix. Tap a preset to reset all of these at once.</p>}
-        {screen.installed && (
-          <div className="stack-s">
-            <Segmented
-              label="Fill the whole screen" value={st.fillScreen || 'off'}
-              onChange={(v) => updateSettings({ fillScreen: v })}
-              options={[['off', 'Off'], ['auto', 'Auto'], ['34', '34'], ['47', '47'], ['59', '59'], ['72', '72']]}
-            />
-            <p className="small muted">
-              For an empty strip at the bottom of the iPhone app. Pick the one where the bottom bar sits right above the
-              home line. Screen {screen.screenH} · page {screen.pageH} · top {screen.safeTop} · strip {screen.measured} · using {screen.extra}
-            </p>
-          </div>
-        )}
         <Segmented label="Theme" value={st.theme} onChange={(v) => updateSettings({ theme: v })} options={[iconOption('system', 'phone', 'Auto'), iconOption('light', 'sun', 'Light'), iconOption('dark', 'moon', 'Dark')]} />
         <Switch label="Calm mode" hint="Quieter colors, no confetti, no idle animations" checked={st.calm} onChange={(v) => updateSettings({ calm: v })} />
         <Segmented label="Motion" value={st.motion} onChange={(v) => updateSettings({ motion: v })} options={[['system', 'Auto'], ['full', 'Full'], ['reduced', 'Reduced']]} />

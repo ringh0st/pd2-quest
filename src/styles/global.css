@@ -1251,24 +1251,22 @@ h1[tabindex='-1']:focus, h2[tabindex='-1']:focus { outline: none; }
 .check-pair { grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr); }
 .check-pair .btn { min-width: 0; padding-inline: 8px; }
 .check-v { flex-wrap: wrap; justify-content: center; text-align: center; }
-/* Floating dock, as in Lumipals: it sits 12px above the bottom edge (or above the home indicator)
-   on the page's own colour. On iPhone home-screen apps iOS can leave a strip under the page that
-   only takes the root background; with the dock floating on page colour that strip is just more page. */
-:root {
-  /* as low as it can go: a hair above the home indicator line on newer iPhones, 4px from the edge otherwise */
-  --nav-gap: max(4px, calc(var(--safe-b) - 26px));
-  /* side margin follows the phone width: 5px on a 320px phone, up to 8px on bigger ones */
-  --nav-side: clamp(4px, 1.6vw, 8px);
-}
-html { background: var(--bg); }
+/* Bottom tab bar, attached to the bottom edge like Instagram's: full width, a hairline on top, and the
+   home-indicator space below the tabs in the bar's own colour. Some iPhone home-screen apps get a viewport
+   that stops short of the real bottom; iOS fills that strip with the root background, so the root takes
+   the bar's colour (the page keeps --bg on body) and the bar always reads as reaching the bottom edge. */
+:root { --nav-gap: var(--safe-b); }
+html { background: var(--surface); }
 .bottom-nav {
-  bottom: var(--nav-gap);
-  width: min(460px, calc(100% - 2 * var(--nav-side)));
-  height: var(--nav-h);
-  padding: 6px clamp(2px, 1vw, 6px);
+  bottom: 0;
+  width: 100%;
+  max-width: none;
+  height: calc(var(--nav-h) + var(--safe-b));
+  padding: 6px max(4px, calc((100% - 560px) / 2)) var(--safe-b);
   border: 0;
-  border-radius: 26px;
-  box-shadow: 0 0 0 1px var(--hairline), var(--shadow-2);
+  border-top: 1px solid var(--hairline);
+  border-radius: 0;
+  box-shadow: 0 -4px 16px rgb(30 27 46 / 0.05);
 }
 /* ===== key terms in lessons: soft highlight + dashed text underline (solid once open); tap shows the meaning under the card ===== */
 .term {
@@ -1311,18 +1309,3 @@ html { background: var(--bg); }
 .voice-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
 .voice-row .input { flex: 1 1 14em; min-width: 0; text-overflow: ellipsis; }
 .voice-picker p { margin: 0; }
-/* ===== "Fill the whole screen" (iPhone home-screen app, Settings) =====
-   Some iOS versions give the page a viewport short of the real bottom; --screen-extra is that strip (lib/screenFit.js).
-   Everything pinned to the bottom of the viewport is stretched or moved down by that much, so the app
-   reaches the real bottom edge; the dock then sits just above the home indicator line. */
-:root[data-screen-fill] { --nav-gap: 14px; }
-:root[data-screen-fill] body,
-:root[data-screen-fill] .overlay,
-:root[data-screen-fill] .scrim,
-:root[data-screen-fill] .confetti,
-:root[data-screen-fill] .splash,
-:root[data-screen-fill] .break-screen { bottom: calc(-1 * var(--screen-extra)); }
-:root[data-screen-fill] .bottom-nav { bottom: calc(var(--nav-gap) - var(--screen-extra)); }
-:root[data-screen-fill] .sheet { bottom: calc(-1 * var(--screen-extra)); padding-bottom: 34px; }
-:root[data-screen-fill] .update-banner { bottom: calc(var(--nav-h) + var(--nav-gap) + 16px - var(--screen-extra)); }
-:root[data-screen-fill] body { height: auto; }

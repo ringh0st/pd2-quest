@@ -35,7 +35,6 @@ import { Onboarding } from './screens/Onboarding.jsx';
 import { scrollToTop } from './lib/scroller.js';
 import { setMusicSettings } from './audio/music.js';
 import { setPreferredVoice } from './lib/speech.js';
-import { setScreenFill } from './lib/screenFit.js';
 import { setSplashUp } from './lib/updates.js';
 import { UpdateBanner } from './components/UpdateBanner.jsx';
 
@@ -67,7 +66,6 @@ function useApplySettings() {
     setMusicSettings({ sound: st.sound, music: st.music });
     setHapticsEnabled(st.haptics);
     setPreferredVoice(st.voice);
-    setScreenFill(st.fillScreen || 'off');
   }, [st, sysDark, reduced, accent]);
   return reduced;
 }
