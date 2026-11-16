@@ -1,28 +1,35 @@
-# PD2 Quest ⚡
+# Dev Quest ⚡
 
-A phone-first study app for the **Salesforce Platform Developer II** exam, designed for people with ADHD, people who get distracted easily, and anyone who learns better with quick wins.
+A phone-first study app for the **Salesforce Platform Developer** exams, designed for people with ADHD, people who get distracted easily, and anyone who learns better with quick wins. One app, two exams: pick **PD1 Quest** (Platform Developer I) or **PD2 Quest** (Platform Developer II) on the opening screen, and switch any time in Settings. Each exam keeps its own progress; settings are shared.
 
 ## It's a game ⚡
 
 - **Zap**, your lightning-bolt study buddy: blinks, bounces, cheers your right answers, comforts the misses, tells Apex jokes and wears the hats you buy.
-- **Adventure map with 5 worlds**, one per exam section: 🏯 Sharing Shrine, ⚙️ Async Forge, 🏝️ Pixel Bay, 🐸 Bug Swamp, 🏔️ Turbo Peaks. Each is a winding path of levels over its own scenery.
-- **Levels with a rhythm**: bite-size lesson levels, a 💀 **Hard level** after every 3 lessons (5 tough questions, 3 hearts), and a **Boss** at the end of each world (The Sharing Sphinx, The Recursion Hydra, The Re-render Kraken, The Flaky Test Toad, The Governor), with a health bar, hits and hearts.
+- **An adventure map with one world per exam section.** PD1: Schema Shrine, Trigger Forge, Component Bay, Debug Swamp. PD2: Sharing Shrine, Async Forge, Pixel Bay, Bug Swamp, Turbo Peaks.
+- **Levels with a rhythm**: bite-size lesson levels, a **Hard level** after every 3 lessons (5 tough questions, 3 hearts), and a **Boss** at the end of each world, with a health bar, hits and hearts.
 - **1–3 stars** per level, a "NEW BEST!" stamp and replays for ★★★. Worlds open with stars, or early with coins.
-- **🪙 Coins** for new stars, Hard levels, Bosses, daily quests and the Daily Bolt. Spend them in the **shop**: outfits for Zap, accent themes (all AA-contrast checked), confetti styles, and capped helpers (✂️ 50/50, 💡 Hint, ❤️ Extra heart). No real money, ever.
-- **⚡ Daily Bolt**: the same 5 surprise questions for everyone each day. **🎯 Daily quests**: 3 small goals a day, with a bonus chest for all three.
-- **🏅 18 badges** for milestones.
-- Celebrations wait until a question flow ends, so rewards never pile up mid-question.
+- **Coins** for new stars, Hard levels, Bosses, daily quests and the Daily Bolt. Spend them in the **shop**: outfits for Zap, accent themes (all AA-contrast checked), confetti styles, and capped helpers (50/50, Hint, Extra heart). No real money, ever.
+- **Daily Bolt**: the same 5 surprise questions for everyone each day. **Daily quests**: 3 small goals a day, with a bonus chest for all three.
+- **18 badges** for milestones. Celebrations wait until a question flow ends, so rewards never pile up mid-question.
 
 ## What's inside
 
-- **50 bite-sized lessons** (2–4 min, one idea per card, swipe through) across all 5 exam sections, weighted like the real exam: Advanced Developer Fundamentals 15%, Process Automation, Logic & Integration 27%, User Interface 20%, Testing, Debugging & Deployment 20%, Performance 18%.
-- **401 scenario-style practice questions**, 236 of them exam-hard and 184 with code to read (Apex, LWC, Aura, Visualforce, SOQL, test classes, debug logs, sf CLI), each with instant feedback, "why not the others?" explanations and the Salesforce doc it was checked against.
-- **160 flashcards** with 3D flips and spaced repetition.
-- **Exam simulator**: full mock (60 questions, 120 min), **Exam-hard mock** (60 of the toughest), mini mock (20 questions, 40 min) and an Exam-hard sprint. Mocks pick questions you've seen least first, so they don't repeat early.
-- **Spaced repetition** (modified Leitner: 0/1/3/7/14/30/60 days; a miss drops 2 boxes, not to zero). Misses come back later in the same round.
-- **Dopamine loop**: XP, levels and ranks, combos (×1.25 / ×1.5 / ×2), a daily goal ring, lucky-drop bonus chests, confetti, haptics and generated sounds.
+| | PD1 Quest | PD2 Quest |
+| --- | --- | --- |
+| Exam sections (weights from the official guide) | Developer Fundamentals 27%, Process Automation and Logic 28%, User Interface 25%, Testing, Debugging, and Deployment 20% | Advanced Developer Fundamentals 15%, Process Automation, Logic & Integration 27%, User Interface 20%, Testing, Debugging & Deployment 20%, Performance 18% |
+| Lessons (2–4 min, one idea per card) | 38 | 49 |
+| Key terms (tap to see a very simple meaning) | 368 | 482 |
+| Practice questions (exam-hard / with code) | 398 (140 / 148) | 602 (386 / 232) |
+| Flashcards | 141 | 172 |
+| Real exam | 60 questions, 105 min, 68% to pass | 60 questions, 120 min, 70% to pass |
+
+- Every question has instant feedback, "why not the others?" explanations and the Salesforce doc it was checked against. Lessons teach in plain words ("In plain words", "Think of it like…", the real rule, an exam trap, "Remember it").
+- **Exam simulator**: full mock and **Exam-hard mock** at the real exam's length and time, a mini mock (a third of the exam at the same pace) and an Exam-hard sprint. About 1 in 5 hard questions is kept for mocks only, so a mock always shows fresh questions.
+- **Spaced repetition** (modified Leitner: 0/1/3/7/14/30/60 days; a miss drops 2 boxes, not to zero). "Sure" or "Guessing" before checking: lucky guesses don't count as learned.
+- **Study plan** from your exam date, **placement / test-out** to skip what you know, **break nudges**, **read aloud** (a free natural voice that runs on the phone, or the phone's own voices).
+- **Dopamine loop**: XP, levels and ranks, combos (×1.25 / ×1.5 / ×2), a daily goal ring, lucky-drop bonus chests, confetti, haptics, generated sounds and music.
 - **Forgiving streaks**: any study counts; freezes (earned every 7 days) cover missed days automatically. No guilt copy.
-- **ADHD helpers**: one big "what's next" button, focus mode (navigation hides during study), a pausable focus timer, and a **🅿️ Park it** button to drop distracting thoughts and get back to work.
+- **ADHD helpers**: one big "what's next" button, focus mode (navigation hides during study), a pausable focus timer, and a **Park it** button to drop distracting thoughts and get back to work.
 - **Accessible**: WCAG 2.2 AA contrast in light and dark, screen-reader announcements, keyboard support, reduced motion, Calm mode, Atkinson Hyperlegible / Lexend fonts, text size up to 130%.
 - **Installable and offline** (PWA). Progress stays on your phone.
 
@@ -34,7 +41,7 @@ Open the GitHub Pages link, then:
   1. Open the link in **Safari** (from another app, tap “Open in Safari” first).
   2. Tap **Share** (the square with an arrow, bottom of the screen; top right on iPad). Only see **⋯**? Tap it, then **Share**.
   3. Scroll down and tap **Add to Home Screen** (not listed? tap **View More** / **Edit Actions** and add it).
-  4. Keep **Open as Web App** on and tap **Add**. Open PD2 Quest from the new ⚡ icon.
+  4. Keep **Open as Web App** on and tap **Add**. Open Dev Quest from the new ⚡ icon.
   5. Studied in Safari before? The home-screen app keeps its own progress: Safari → Settings → **Save backup**, then in the app → Settings → **Restore**.
 
   The app also has a small **📲 Add to Home Screen** button (Home and Settings) with these steps. It disappears once you add the app.
@@ -55,18 +62,24 @@ npm run dev
 ## Project structure
 
 ```
-src/data/        exam.json (facts, resources, study plan) + one JSON per exam section
-src/engine/      pure logic: srs, xp, streak, mastery, session building (unit tested)
-src/state/       persisted store (localStorage) and selectors
-src/components/  QuestionView, PracticeRunner, Confetti, CelebrationLayer, ParkIt, game/ (Zap, Stars, WinScreen, DailyQuests, CoinChip)
-src/game/        game rules: worlds/levels/stars, coins & shop, quests, badges, mascot lines (unit tested)
-src/screens/     Home, WorldMap, World, Lesson, Play (Hard/Boss), Bolt, Shop, Sprint, Cards, Exam, Me, Settings, Resources, Onboarding
-src/audio/       generated sounds and haptics
-research/        ADHD UX spec, content schema, color audit
+src/lib/track.js     the exams (PD1, PD2): name, storage keys, sections in the official guide's order
+src/data/<exam>/     exam.json (facts, objectives, world and Boss names, resources, study plan)
+                     + one JSON per exam section (lessons with key terms, flashcards, questions)
+src/engine/          pure logic: srs, xp, streak, mastery, session building, study plan (unit tested)
+src/state/           persisted store (per exam, shared settings) and selectors
+src/components/      QuestionView, PracticeRunner, CelebrationLayer, ParkIt, splash/, game/, art/, icons/
+src/game/            game rules: worlds/levels/stars, coins & shop, quests, badges, mascot lines (unit tested)
+src/screens/         Home, WorldMap, World, Lesson, Play (Hard/Boss), Bolt, Shop, Sprint, Cards, Exam, Me, Settings…
+src/audio/           generated sounds, music and haptics
+research/            ADHD UX spec, content schema and writing briefs (plain language, code marking, hard pack, PD1)
 ```
+
+### Adding or changing an exam
+
+Everything that differs between exams is data. Add the exam to `TRACKS` in `src/lib/track.js` (name, storage prefix, section ids), then add `src/data/<exam>/exam.json` and one file per section, following `research/CONTENT_SCHEMA.md`. Screens, game rules, tests (`npm test`), content checks (`npm run validate`) and e2e scripts (`TRACK=<exam> node e2e/behavior.cjs`) pick it up from there. A section id chooses its world's look (`WORLD_STYLES` in `src/game/worlds.js`); its name and Boss come from `exam.json`.
 
 ## Content note
 
-The Exam-hard pack (200 questions) was checked against the official Salesforce docs (Apex, LWC, Visualforce, SOQL, Platform Events, DX guides) in November 2026, including two recent changes: heap is now 10 MB sync / 25 MB async, and from API 67.0 classes with no sharing keyword run with sharing in user mode. Lessons teach both the classic and the new behaviour.
+PD1 content was written in November 2026 from the official PD1 exam guide (questions align to Summer '25) and the Trailhead Cert Prep modules, then reviewed independently question by question against the official docs. PD2's Exam-hard pack (200 questions) was checked against the official Salesforce docs (Apex, LWC, Visualforce, SOQL, Platform Events, DX guides) in November 2026, including two recent changes: heap is now 10 MB sync / 25 MB async, and from API 67.0 classes with no sharing keyword run with sharing in user mode. Lessons teach both the classic and the new behaviour.
 
 All questions and lessons are original practice material written from the public exam guide and Salesforce documentation. They are not real exam questions, and the app is not affiliated with Salesforce. Always double-check limits and behaviour against the current docs and release notes.
