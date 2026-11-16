@@ -2272,6 +2272,548 @@
         ""
       ],
       "source": "Change Sets Implementation Tips"
+    },
+    {
+      "id": "deploy-q37",
+      "lesson": "deploy-1",
+      "difficulty": 2,
+      "q": "A validation rule at Alder Outdoor blocks reps from saving orders today. The team's sandboxes hold half-finished work for next month. What is the best way to fix the rule?",
+      "options": [
+        "Edit the rule in production now, then tell the team about it later",
+        "Fix and test it in a fresh Developer sandbox, then deploy the fix",
+        "Deploy the shared sandbox's whole release early to bring the fix",
+        "Wait for next month's release, which replaces the rule anyway"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "Even urgent fixes are built and tested in a sandbox first. A Developer sandbox can be refreshed every day, so a fresh one matches production and holds no unfinished work.",
+      "wrong": [
+        "An untested production edit can break more, and the sandboxes still hold the old rule.",
+        "",
+        "That ships next month's half-finished work along with the fix.",
+        "Reps would stay blocked for a month. An urgent fix can't wait that long."
+      ],
+      "source": "Trailhead: Org Development Model"
+    },
+    {
+      "id": "deploy-x23",
+      "lesson": "deploy-1",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "Clearwater Health's org has grown into one big tangle of setup. Three teams each own an app. Each team wants to release on its own schedule, with versions it can track and upgrade. Which approach fits best?",
+      "options": [
+        "Change set development, with one change set per team",
+        "Org development, with one manifest for the whole org's setup",
+        "Unmanaged packages, reinstalled for each new release",
+        "Package development, with one unlocked package per app"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "The package development model splits an org into packages, each with its own versions. Unlocked packages suit a company's own apps, and each new version installs as an upgrade.",
+      "wrong": [
+        "Change sets have no versions, and production stays the source of truth.",
+        "One org-wide manifest ties all three apps to the same release.",
+        "Unmanaged packages can't be upgraded. Each new release means uninstalling first.",
+        ""
+      ],
+      "source": "Trailhead: Unlocked Packages for Customers"
+    },
+    {
+      "id": "deploy-q38",
+      "lesson": "deploy-1",
+      "difficulty": 1,
+      "q": "In DevOps Center (now Lifecycle Center), what tracks one requested change and shows which pipeline stage it has reached?",
+      "options": [
+        "An outbound change set",
+        "A sandbox template",
+        "A work item",
+        "A deployment connection"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "A work item holds the requirement for a change and tracks it through the release pipeline. You can see which stage each work item has reached.",
+      "wrong": [
+        "Change sets are a separate tool, not how DevOps Center tracks changes.",
+        "A template picks which records a sandbox copies.",
+        "",
+        "A connection only links two orgs for change sets."
+      ],
+      "source": "Trailhead: Lifecycle Center: Centralize DevOps Change Management"
+    },
+    {
+      "id": "deploy-q39",
+      "lesson": "deploy-1",
+      "difficulty": 1,
+      "q": "A growing admin team is moving its changes into source control. Which two benefits does source control give the team? (Choose 2)",
+      "options": [
+        "Several people can work on the same files without losing work",
+        "It copies production records into each sandbox",
+        "Any file can go back to an earlier version",
+        "It removes the need to test changes in a sandbox",
+        "It moves changes into production with no deploy step"
+      ],
+      "answer": [
+        0,
+        2
+      ],
+      "explain": "Source control keeps a shared history of every change. Team members can work on the same files at once, and any file can go back to an earlier version.",
+      "wrong": [
+        "",
+        "Source control holds files, not records. Sandboxes copy records.",
+        "",
+        "Changes still need testing. Source control only tracks them.",
+        "Changes still need a deployment, for example with a manifest."
+      ],
+      "source": "Trailhead: Org Development Model"
+    },
+    {
+      "id": "deploy-x24",
+      "lesson": "deploy-2",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "Lumen Dental just created a Full sandbox. Testers will try a flow that emails patients, who are stored as contacts. The admin set email deliverability to All email. What must she do first to avoid emailing real patients?",
+      "options": [
+        "Change or clear the contacts' emails in the sandbox",
+        "Nothing, since every email address gets `.invalid` added",
+        "Add `.invalid` to the users' email addresses by hand",
+        "Nothing, since a sandbox can't email outside addresses"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "A new or refreshed sandbox adds `.invalid` to user email addresses only. Other addresses, such as contact emails, stay real. Change them to testers' addresses or clear them before testing email.",
+      "wrong": [
+        "",
+        "Only user email addresses get `.invalid`. Contact emails are copied unchanged.",
+        "Sandbox users' addresses already end in `.invalid`. The contacts are the risk.",
+        "With deliverability set to All email, a sandbox can email any address."
+      ],
+      "source": "Users and Contacts"
+    },
+    {
+      "id": "deploy-q40",
+      "lesson": "deploy-2",
+      "difficulty": 2,
+      "q": "An admin refreshes this sandbox. The developer's unfinished work isn't saved anywhere else. What happens to that work when the admin activates the refreshed copy?",
+      "code": "Sandbox: build (Developer Pro)\nRefresh: requested Monday\nUnsaved work: 2 flows, 1 custom object\nNext step: Activate",
+      "lang": "text",
+      "options": [
+        "It's merged into the refreshed copy",
+        "It's moved to production before the old copy is deleted",
+        "It stays, since Developer Pro refreshes copy metadata only",
+        "It's erased, along with the rest of the old sandbox"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "Activating a refreshed sandbox deletes the sandbox it replaces, with all changes made there. Save or deploy work you need before you activate. Production isn't affected.",
+      "wrong": [
+        "A refresh doesn't merge. Activating replaces the old sandbox.",
+        "Activating a sandbox never touches production.",
+        "Copying only metadata still replaces everything in the old sandbox.",
+        ""
+      ],
+      "source": "Activate Your Refreshed Sandbox"
+    },
+    {
+      "id": "deploy-x25",
+      "lesson": "deploy-2",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "An admin builds a sandbox template and selects only Invoice Line. Invoice Line is the detail side of a master-detail relationship to Invoice. What does the template editor do?",
+      "options": [
+        "It saves the template, and the lines copy with no master",
+        "It blocks saving until the admin picks Invoice by hand",
+        "It adds Invoice too, since a detail object needs its master",
+        "It copies every object, since templates can't be that narrow"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "The template editor knows how your objects are related. When you pick an object, it adds the objects that one requires, such as the master of a detail object.",
+      "wrong": [
+        "Detail records can't exist without a master, so the editor adds Invoice.",
+        "The editor adds required objects for you.",
+        "",
+        "Templates exist to copy only the objects you pick."
+      ],
+      "source": "Create or Edit Sandbox Templates"
+    },
+    {
+      "id": "deploy-x26",
+      "lesson": "deploy-3",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "Here is what happened at Kestrel Air. What should the admin expect on Wednesday?",
+      "code": "Mon  qa sandbox uploads change set Release_9 to production\nTue  Admin refreshes the qa sandbox\nWed  Admin opens Release_9 in production to deploy it",
+      "lang": "text",
+      "options": [
+        "It deploys normally, since the upload copied it to production",
+        "Release_9 can't be deployed now, so send a new change set",
+        "Only the parts the refresh didn't change will deploy",
+        "It deploys once the refreshed qa sandbox is activated"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "A change set becomes unavailable once its source sandbox is refreshed or deleted. It may still look available for a while, so assume it isn't and send a new one.",
+      "wrong": [
+        "A change set becomes unavailable once its source sandbox is refreshed or deleted.",
+        "",
+        "Inbound change sets deploy as a whole, never in parts.",
+        "The refresh already made the change set unavailable."
+      ],
+      "source": "When Change Sets Become Unavailable"
+    },
+    {
+      "id": "deploy-q41",
+      "lesson": "deploy-3",
+      "difficulty": 2,
+      "q": "An admin in production wants to send a change set to the training sandbox. Who must allow inbound changes on that connection first?",
+      "options": [
+        "An admin in the training sandbox, the org receiving them",
+        "An admin in production, since production sends the changes",
+        "Admins in both orgs, one for each side of the connection",
+        "No one, since production can always send to its sandboxes"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "Before a change set can be uploaded, an admin in the target org must authorize the connection. Here the target is the sandbox.",
+      "wrong": [
+        "",
+        "The sending org doesn't authorize the connection. The target org does.",
+        "Only the target org authorizes inbound changes.",
+        "Every target org, sandbox or production, must allow inbound changes first."
+      ],
+      "source": "Change Sets Implementation Tips"
+    },
+    {
+      "id": "deploy-q42",
+      "lesson": "deploy-3",
+      "difficulty": 2,
+      "q": "Production is down for scheduled maintenance. An admin is working in a sandbox. Which two change set tasks must wait until maintenance ends? (Choose 2)",
+      "options": [
+        "Creating a new outbound change set",
+        "Uploading the change set to production",
+        "Adding a custom field to an outbound change set",
+        "Building the flow the change set will carry",
+        "Authorizing a deployment connection"
+      ],
+      "answer": [
+        1,
+        4
+      ],
+      "explain": "Uploading and authorizing connections need information from production. During its maintenance, you can still build outbound change sets but can't upload them.",
+      "wrong": [
+        "Building change sets still works. Only uploading must wait.",
+        "",
+        "Adding components is part of building, which still works.",
+        "Building in the sandbox doesn't need production.",
+        ""
+      ],
+      "source": "Change Sets Implementation Tips"
+    },
+    {
+      "id": "deploy-x27",
+      "lesson": "deploy-4",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "An admin deploys this change set to production. It has no profiles in it. Which two results should she expect? (Choose 2)",
+      "code": "Outbound change set: Projects\n- Custom object: Project__c, with all fields\n- Custom tab: Projects\n- Report: Open Projects (folder: Unfiled Public Reports)\n- Report: Project Health (folder: Ops Reports)",
+      "lang": "text",
+      "options": [
+        "The deployment fails because no profile is included",
+        "Project Health isn't deployed, since reports can't travel",
+        "The Projects tab is hidden from all users",
+        "Open Projects isn't deployed, because of its folder",
+        "The Projects tab is visible to every profile"
+      ],
+      "answer": [
+        2,
+        3
+      ],
+      "explain": "Deployed custom tabs are hidden from all users unless the change set has profiles that show them. Reports in Unfiled Public Reports aren't deployed, so move them to another folder first.",
+      "wrong": [
+        "Profiles are optional. Leaving them out doesn't fail the deployment.",
+        "Reports in a regular folder can travel in a change set.",
+        "",
+        "",
+        "Deployed custom tabs are hidden unless profiles in the change set show them."
+      ],
+      "source": "Components Available in Change Sets"
+    },
+    {
+      "id": "deploy-x28",
+      "lesson": "deploy-4",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A change set turns `Order_Line__c.Order__c` from a lookup into a master-detail field. The admin clicks Validate in production, and it fails on that change. What's the best way to test it before the real deployment?",
+      "options": [
+        "Validate again, choosing Run All Tests this time",
+        "Quick deploy it, since quick deploy skips validation",
+        "Move the field into its own change set and validate that",
+        "Do a full deployment to another test sandbox first"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "Validate doesn't support changing a field between lookup and master-detail, to avoid data loss. A full deployment to another test sandbox checks the change instead.",
+      "wrong": [
+        "Validate never supports this field type change, whatever tests run.",
+        "Quick deploy needs a successful validation first.",
+        "The field change still can't be validated on its own.",
+        ""
+      ],
+      "source": "Validate a Change Set"
+    },
+    {
+      "id": "deploy-q43",
+      "lesson": "deploy-4",
+      "difficulty": 2,
+      "q": "An admin adds the Sales profile to a change set to carry field-level security for `Account.Tier__c`. The field already exists in production, so she leaves it out. After the deployment, the field's access hasn't changed. Why?",
+      "options": [
+        "Profiles can't be added to a change set at all",
+        "Field access changes need a sandbox refresh before they apply",
+        "Profile field access deploys only with the field itself",
+        "Profile changes apply only after users log in again"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "Profile settings for custom fields and objects travel only with those components. Add the field to the change set too, even though it already exists.",
+      "wrong": [
+        "Profiles can be added, in the change set's profile setting.",
+        "A refresh copies production into a sandbox. It doesn't apply deployments.",
+        "",
+        "Deployed settings apply right away. Logging in again changes nothing."
+      ],
+      "source": "Permission Sets and Profile Settings in Change Sets"
+    },
+    {
+      "id": "deploy-x29",
+      "lesson": "deploy-5",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "Tidewater Realty plans to uninstall a managed package. The admin once built a formula field on Account that uses one of the package's fields. Which two statements are true? (Choose 2)",
+      "options": [
+        "The uninstall is blocked while her formula uses the package's field",
+        "The package's records stay in the org after the uninstall",
+        "Salesforce rewrites her formula to drop the reference",
+        "The exported copy of package data is kept for 30 days",
+        "She can save an export of the package's data first"
+      ],
+      "answer": [
+        0,
+        4
+      ],
+      "explain": "You can't uninstall a package while your own components refer to it. An uninstall removes the package's data, but you can export a copy first. That copy is kept for two days.",
+      "wrong": [
+        "",
+        "Uninstalling removes the package's components and their data.",
+        "Salesforce never edits your formula. You must remove the reference yourself.",
+        "Export files are deleted two days after the uninstall.",
+        ""
+      ],
+      "source": "Uninstall a Managed Package"
+    },
+    {
+      "id": "deploy-q44",
+      "lesson": "deploy-5",
+      "difficulty": 2,
+      "q": "Pinecrest Legal uses a licensed managed package. A new hire needs the app. What can the admin do?",
+      "code": "Installed Packages > CaseTrack > Manage Licenses\nLicenses purchased: 20\nLicenses used: 20",
+      "lang": "text",
+      "options": [
+        "Reassign a license from another user, or buy more seats",
+        "Give the new hire's profile access, which adds a license",
+        "Install the package again just for the new hire",
+        "Clone the package so the new hire gets a free copy"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "A licensed managed package comes with a set number of seats. When all are used, take one back from another user or buy more from the provider.",
+      "wrong": [
+        "",
+        "Profile access doesn't create licenses. Seats come from the provider.",
+        "A second install doesn't add licenses.",
+        "A managed package can't be cloned or copied."
+      ],
+      "source": "Manage Licenses for Installed Packages"
+    },
+    {
+      "id": "deploy-q45",
+      "lesson": "deploy-5",
+      "difficulty": 2,
+      "q": "Brightwater Co-op installs a managed package listed on AgentExchange. Its custom objects don't count against the edition's object allocation. What does still count?",
+      "options": [
+        "Its custom fields, against the edition's field allocation",
+        "The records saved in its objects, against data storage",
+        "Nothing, since packaged parts and records are all free",
+        "Its tabs, against the edition's tab allocation"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "Objects, fields, tabs and apps from a managed AgentExchange package don't count against your edition's allocation. The records stored in them still count against your data storage.",
+      "wrong": [
+        "Its fields don't count against the edition allocation either.",
+        "",
+        "Records in its objects still use your data storage.",
+        "Its tabs don't count against the edition allocation either."
+      ],
+      "source": "Before You Install an AppExchange Package"
+    },
+    {
+      "id": "deploy-q46",
+      "lesson": "deploy-6",
+      "difficulty": 2,
+      "q": "Before installing an AgentExchange app, an admin wants to try the full working app. She doesn't want to install anything in her company's orgs yet. What should she use?",
+      "options": [
+        "A new Partial Copy sandbox",
+        "An unmanaged copy of the package",
+        "A change set from the provider",
+        "The listing's Test Drive"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "A Test Drive is a working Developer Edition org that already holds the app. It's separate from your orgs, so nothing is installed in them.",
+      "wrong": [
+        "She'd still have to install the app in that sandbox.",
+        "That would still be an install in one of her orgs.",
+        "Change sets can't come from another company's org.",
+        ""
+      ],
+      "source": "Before You Install an AppExchange Package"
+    },
+    {
+      "id": "deploy-q47",
+      "lesson": "deploy-6",
+      "difficulty": 2,
+      "q": "During a package install, this step appears. What does approving it do?",
+      "code": "Install package: RouteMap\nStep: approve third-party access\nWebsite listed: api.routemap.example",
+      "lang": "text",
+      "options": [
+        "It's needed only in sandboxes, so production skips it",
+        "It installs the package without the website part",
+        "It lets the package send and get data from that website",
+        "It confirms that Salesforce has reviewed and checked that website"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "A package with a remote site setting needs your approval to reach a website outside Salesforce. You either grant access or cancel the install. Ask the provider what data it sends first.",
+      "wrong": [
+        "The step appears in any org where the package needs that website.",
+        "Not granting access cancels the install instead.",
+        "",
+        "Salesforce doesn't vouch for the site. Ask the provider what data it sends."
+      ],
+      "source": "Allow Third-Party Access to a Package"
+    },
+    {
+      "id": "deploy-x30",
+      "lesson": "deploy-6",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "Which two are true of both unlocked packages and second-generation managed packages? (Choose 2)",
+      "options": [
+        "Admins can edit their metadata in production",
+        "They're built from source with the Salesforce CLI",
+        "Their code is hidden in the orgs they're installed in",
+        "Each new version installs as an upgrade",
+        "They're meant for selling apps to other companies"
+      ],
+      "answer": [
+        1,
+        3
+      ],
+      "explain": "Both are source-driven packages built with the Salesforce CLI, and both install new versions as upgrades. They differ in who they're for and whether you can see and change the parts.",
+      "wrong": [
+        "Only unlocked packages allow edits in production.",
+        "",
+        "Only managed packages hide their code.",
+        "",
+        "Unlocked packages are meant for a company's own apps."
+      ],
+      "source": "Trailhead: Explore the Benefits of Second-Generation Managed Packages"
+    },
+    {
+      "id": "deploy-q48",
+      "lesson": "deploy-7",
+      "difficulty": 1,
+      "q": "Where can an admin watch a change set deployment in progress, including the Apex tests as they run?",
+      "options": [
+        "The Deployment Status page in Setup",
+        "The Sandboxes page, where refreshes are tracked",
+        "The Setup Audit Trail, which logs setup changes",
+        "The Installed Packages page in Setup"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "Deployment Status shows deployments in progress, queued or finished in the last 30 days. It shows how many components deployed and how many tests ran.",
+      "wrong": [
+        "",
+        "That page manages sandboxes, not deployments.",
+        "The audit trail lists past setup changes, with no live progress.",
+        "That page lists packages installed in the org."
+      ],
+      "source": "Monitor Deployments"
+    },
+    {
+      "id": "deploy-x31",
+      "lesson": "deploy-7",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A change set carries version 7 of this flow to production with the default settings. What must the release plan include?",
+      "code": "Flow: Route_Leads\nSandbox:     version 7 (Active)\nProduction:  version 6 (Active)",
+      "lang": "text",
+      "options": [
+        "Nothing, since version 7 arrives active, as in the sandbox",
+        "Activate version 7 in production once it has deployed",
+        "Deactivate version 6 so version 7 can be deployed",
+        "Refresh the sandbox so production picks up version 7"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "By default, flows that are active in a sandbox deploy to production as inactive. Version 6 keeps running until someone activates version 7. The setting Deploy processes and flows as active changes this.",
+      "wrong": [
+        "By default, flows deploy to production as inactive.",
+        "",
+        "An active version doesn't block deploying a new one.",
+        "A refresh copies production into a sandbox, not the other way."
+      ],
+      "source": "Deploy Processes and Flows as Active"
+    },
+    {
+      "id": "deploy-q49",
+      "lesson": "deploy-7",
+      "difficulty": 2,
+      "q": "On Monday, an admin validated a change set with Apex in production. All tests passed with enough coverage. She wants Friday's deployment to be as short as possible. What should she do?",
+      "options": [
+        "Quick deploy the validation within its 10-day window",
+        "Validate it again on Friday, then deploy it",
+        "Move the Apex to its own change set so no tests run",
+        "Deploy it normally, since validations expire after a day"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "If a validation succeeded in the last 10 days with all tests passing, you can quick deploy it. The tests don't run again, so the deployment is shorter.",
+      "wrong": [
+        "",
+        "Validating again adds another full test run to Friday.",
+        "Apex deployed to production always runs tests.",
+        "A successful validation can be quick deployed for 10 days."
+      ],
+      "source": "Monitor Deployments"
     }
   ]
 }
