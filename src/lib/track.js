@@ -3,11 +3,14 @@
 // so every screen and every piece of saved progress belongs to one exam.
 const TRACK_KEY = 'devquest.track';
 
+// Everything that differs between the exams lives here or in the exam's content folder (src/data/<id>/:
+// exam.json for the exam facts, one file per section). `sections` lists the section files in the
+// official exam guide's order; a section id picks its world look (game/worlds.js) and accent colour.
 export const TRACKS = {
-  pd1: { id: 'pd1', name: 'PD1 Quest', short: 'PD1', exam: 'Salesforce Platform Developer I', prefix: 'pd1quest' },
-  pd2: { id: 'pd2', name: 'PD2 Quest', short: 'PD2', exam: 'Salesforce Platform Developer II', prefix: 'pd2quest' },
+  pd1: { id: 'pd1', name: 'PD1 Quest', short: 'PD1', exam: 'Salesforce Platform Developer I', prefix: 'pd1quest', sections: ['fund', 'auto', 'ui', 'test'] },
+  pd2: { id: 'pd2', name: 'PD2 Quest', short: 'PD2', exam: 'Salesforce Platform Developer II', prefix: 'pd2quest', sections: ['fund', 'auto', 'ui', 'test', 'perf'] },
 };
-export const TRACK_IDS = ['pd1', 'pd2'];
+export const TRACK_IDS = Object.keys(TRACKS);
 
 function readTrack() {
   try {

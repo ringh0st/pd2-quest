@@ -1,7 +1,7 @@
 // Daily Bolt: the same 5 mixed questions all day. Coins the first time each day; replay just for fun.
 import { useMemo, useState } from 'react';
 import { motion } from 'motion/react';
-import { allQuestions } from '../data/index.js';
+import { allQuestions, sections } from '../data/index.js';
 import { useStore, finishBolt, earn, checkBadges, getState } from '../state/store.js';
 import { seeded } from '../game/random.js';
 import { shuffle } from '../engine/session.js';
@@ -20,11 +20,12 @@ import { useHoldCelebrations } from '../hooks/useFocusMode.js';
 import { useStudyScreen } from '../hooks/useStudyScreen.js';
 import { BreakCard } from '../components/BreakCard.jsx';
 
-/** Same 5 for everyone today: 2 warm-ups from the first worlds, then 3 from anywhere, easiest first. */
+/** Same 5 for everyone today: 2 warm-ups from the first two worlds, then 3 from anywhere, easiest first. */
 export function boltQuestions(day) {
   const rand = seeded('bolt-' + day);
   const pool = allQuestions.filter((q) => !q.mockOnly); // mock-only questions stay fresh for mocks
-  const warm = shuffle(pool.filter((q) => ['fund', 'auto'].includes(q.section) && (q.difficulty ?? 2) <= 2), rand).slice(0, 2);
+  const firstWorlds = sections.slice(0, 2).map((s) => s.id);
+  const warm = shuffle(pool.filter((q) => firstWorlds.includes(q.section) && (q.difficulty ?? 2) <= 2), rand).slice(0, 2);
   const rest = shuffle(pool.filter((q) => !warm.includes(q)), rand).slice(0, 3);
   return [...warm, ...rest.sort((a, b) => (a.difficulty ?? 2) - (b.difficulty ?? 2))];
 }

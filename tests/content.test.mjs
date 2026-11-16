@@ -2,12 +2,12 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
+import { TRACKS } from '../src/lib/track.js';
 
 // Every exam's sections, as "exam/section" (e.g. "pd2/fund").
-const SECTIONS = ['pd1', 'pd2']
-  .filter((exam) => fs.existsSync(new URL(`../src/data/${exam}`, import.meta.url)))
-  .flatMap((exam) => fs.readdirSync(new URL(`../src/data/${exam}`, import.meta.url))
-    .filter((f) => f.endsWith('.json') && f !== 'exam.json').map((f) => `${exam}/${f.replace('.json', '')}`));
+const SECTIONS = Object.values(TRACKS)
+  .flatMap((t) => t.sections.map((id) => `${t.id}/${id}`))
+  .filter((id) => fs.existsSync(new URL(`../src/data/${id}.json`, import.meta.url)));
 const load = (id) => JSON.parse(fs.readFileSync(new URL(`../src/data/${id}.json`, import.meta.url)));
 // Length as displayed: `code` and **bold** marks are not shown, so they don't count.
 const shown = (o) => o.replace(/`|\*\*/g, '').length;

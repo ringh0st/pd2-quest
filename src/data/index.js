@@ -1,10 +1,9 @@
 // Loads the chosen exam's facts and every section's content (src/data/<track>/). Order follows the official exam guide.
 // Only the current exam's files are downloaded; switching exams reloads the app (see lib/track.js).
-import { currentTrack } from '../lib/track.js';
+import { currentTrack, track } from '../lib/track.js';
 
-const SECTIONS = { pd1: ['fund', 'auto', 'ui', 'test'], pd2: ['fund', 'auto', 'ui', 'test', 'perf'] };
-const loaders = import.meta.glob('./{pd1,pd2}/*.json', { import: 'default' });
-const ORDER = SECTIONS[currentTrack];
+const loaders = import.meta.glob('./*/*.json', { import: 'default' });
+const ORDER = track.sections;
 const load = (name) => loaders[`./${currentTrack}/${name}.json`]?.() ?? Promise.resolve(null);
 const [exam, ...sectionFiles] = await Promise.all([load('exam'), ...ORDER.map(load)]);
 const files = Object.fromEntries(ORDER.map((id, i) => [`./${id}.json`, sectionFiles[i]]));
