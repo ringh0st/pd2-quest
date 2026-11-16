@@ -1309,3 +1309,12 @@ html { background: var(--surface); }
 .voice-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
 .voice-row .input { flex: 1 1 14em; min-width: 0; text-overflow: ellipsis; }
 .voice-picker p { margin: 0; }
+/* ===== installed app: reach the real bottom of the screen =====
+   iPhone home-screen apps can get a viewport that stops short of the screen (by about the camera area's height),
+   which left an empty strip at the bottom. In an installed app 100vh is the full screen, so everything pinned to
+   the bottom is measured from there: `calc(100% - 100vh)` is minus that strip, and 0 where there is none. */
+@media (display-mode: standalone) {
+  body { height: auto; bottom: calc(100% - 100vh); }
+  .bottom-nav, .sheet, .overlay, .scrim, .confetti, .splash, .break-screen { bottom: calc(100% - 100vh); }
+  .update-banner { bottom: calc(var(--nav-h) + var(--nav-gap) + 16px + 100% - 100vh); }
+}
