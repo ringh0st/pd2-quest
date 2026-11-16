@@ -3157,6 +3157,996 @@
         "Tests run during the deploy; production never runs them later."
       ],
       "source": "Metadata API Developer Guide: deploy()"
+    },
+    {
+      "id": "test-q54",
+      "lesson": "test-1",
+      "difficulty": 1,
+      "q": "A test must check the private static variable `retryCount` in `SyncService`. The team doesn't want other classes to see it. What should the developer do?",
+      "options": [
+        "Mark `SyncService` itself with `@IsTest`",
+        "Change the variable to `protected` for the test",
+        "Annotate the variable with `@TestVisible`",
+        "Run the test with `@IsTest(SeeAllData=true)`"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "`@TestVisible` lets test code reach a private or protected member. Other classes still can't see it.",
+      "wrong": [
+        "An `@IsTest` class can be called only from tests, so the app couldn't use it.",
+        "Tests aren't subclasses, so `protected` still hides the variable.",
+        "",
+        "`SeeAllData` opens org records, not private class members."
+      ],
+      "source": "Apex Developer Guide: TestVisible Annotation"
+    },
+    {
+      "id": "test-q55",
+      "lesson": "test-1",
+      "difficulty": 2,
+      "q": "A new developer asks what makes Apex unit test methods special. Which two statements are true? (Choose 2)",
+      "options": [
+        "They must be `public` so the test framework can find them",
+        "They take no arguments",
+        "They can sit in any class, as long as the method is marked `@IsTest`",
+        "They commit their records when every assert passes",
+        "They send no emails, even when the code under test sends one"
+      ],
+      "answer": [
+        1,
+        4
+      ],
+      "explain": "Unit test methods take no arguments, commit no data and send no emails. Their access level doesn't matter.",
+      "wrong": [
+        "The framework finds test methods whatever their access level.",
+        "",
+        "Test methods must be defined in a test class, a class marked `@IsTest`.",
+        "Test data is never committed, pass or fail.",
+        ""
+      ],
+      "source": "Apex Developer Guide: What Are Apex Unit Tests?"
+    },
+    {
+      "id": "test-x29",
+      "lesson": "test-1",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A package holds only these two classes. The test run reports the line counts shown. What is the overall code coverage?",
+      "code": "CLASS            COVERED   UNCOVERED   PERCENT\nImportService         95           5       95%\nExportService        120          80       60%",
+      "lang": "text",
+      "options": [
+        "77.5%, so the package passes",
+        "About 72%, so it is below 75%",
+        "95%, since the best class sets the total",
+        "60%, since the lowest class sets the total"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "Coverage is covered lines divided by covered plus uncovered lines. Here that's 215 of 300 lines, about 72%. Averaging the two percentages gives the wrong answer.",
+      "wrong": [
+        "77.5% averages the two percentages; coverage counts lines.",
+        "",
+        "The total uses every class's lines, not the best class.",
+        "The total uses every class's lines, not the worst class."
+      ],
+      "source": "Apex Developer Guide: Testing and Code Coverage"
+    },
+    {
+      "id": "test-q56",
+      "lesson": "test-1",
+      "difficulty": 2,
+      "q": "`OrderService.countOpen()` returns 2 in this test. What is the result?",
+      "code": "@IsTest\nstatic void countsOpenOrders() {\n  try {\n    Assert.areEqual(3, OrderService.countOpen(), 'Wrong count');\n  } catch (Exception e) {\n    System.debug('Ignored: ' + e.getMessage());\n  }\n}",
+      "lang": "apex",
+      "options": [
+        "It passes, because the `catch` block handles the error",
+        "It passes, and the log shows the 'Ignored' message",
+        "It fails, because an assert failure can't be caught",
+        "It fails to compile, since asserts can't be in a `try` block"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "An assert failure is a fatal error that stops the code. A `try`/`catch` block can't catch it, so the test fails.",
+      "wrong": [
+        "The `catch` block never runs for an assert failure.",
+        "The `catch` block never runs, so 'Ignored' isn't logged.",
+        "",
+        "Asserts compile fine inside `try` blocks."
+      ],
+      "source": "Apex Reference Guide: Assert Class"
+    },
+    {
+      "id": "test-x30",
+      "lesson": "test-2",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "This test fails with a `MIXED_DML_OPERATION` error. What is the best fix?",
+      "code": "@IsTest\nstatic void assignsOwner() {\n  Profile p = [SELECT Id FROM Profile WHERE Name = 'Standard User'];\n  UserRole r = [SELECT Id FROM UserRole WHERE Name = 'Sales Rep'];\n  User u = TestUsers.build(p.Id, r.Id); // sets every required field\n  insert u;\n  insert new Account(Name = 'Acme', OwnerId = u.Id);\n}",
+      "lang": "apex",
+      "options": [
+        "Insert the Account first, then the User",
+        "Put both inserts inside a `System.runAs` block",
+        "Insert the User with `Database.insert(u, false)`",
+        "Wrap both inserts in one `try`/`catch` block"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "A setup object (a User with a role) and a regular object can't be saved in one transaction. In a test, doing the DML inside `System.runAs` avoids the error.",
+      "wrong": [
+        "The order doesn't matter; the mix itself is the problem.",
+        "",
+        "Partial success doesn't change the mixed DML rule.",
+        "Catching the error doesn't save the records; the test still fails its goal."
+      ],
+      "source": "Apex Developer Guide: Mixed DML Operations in Test Methods"
+    },
+    {
+      "id": "test-q57",
+      "lesson": "test-2",
+      "difficulty": 2,
+      "q": "A test needs a `PricebookEntry` in the standard price book before it adds one to a custom price book. The team never uses `SeeAllData`. How should the test get the standard price book's Id?",
+      "options": [
+        "Query `Pricebook2` where `IsStandard = true`",
+        "Insert a new `Pricebook2` with `IsStandard = true`",
+        "Copy the Id from production into a constant",
+        "Call `Test.getStandardPricebookId()`"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "`Test.getStandardPricebookId()` returns the standard price book's Id, whether or not the test can see org data.",
+      "wrong": [
+        "Without `SeeAllData`, the test can't see the org's price book record.",
+        "A test can't create a new standard price book.",
+        "Ids differ between orgs, so a hard-coded Id breaks.",
+        ""
+      ],
+      "source": "Apex Reference Guide: Test Class"
+    },
+    {
+      "id": "test-q58",
+      "lesson": "test-2",
+      "difficulty": 1,
+      "q": "A developer builds a CSV file to upload as a static resource for `Test.loadData`. What goes on its first line?",
+      "options": [
+        "The API names of the fields",
+        "The object's API name",
+        "The Id of the first record",
+        "The name of the static resource"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "The first line of a `Test.loadData` CSV holds the field names. Each line after it is one record.",
+      "wrong": [
+        "",
+        "The object is passed to `Test.loadData` as its first argument.",
+        "Records get new Ids when they're inserted.",
+        "The resource name is the second argument, not a line in the file."
+      ],
+      "source": "Apex Developer Guide: Loading Test Data"
+    },
+    {
+      "id": "test-x31",
+      "lesson": "test-2",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A developer saves the setup Account's Id in a static variable, as shown. What happens when `usesAccount` runs?",
+      "code": "@IsTest\nprivate class QuoteTest {\n  static Id acctId;\n\n  @TestSetup\n  static void makeData() {\n    Account a = new Account(Name = 'Quote Co');\n    insert a;\n    acctId = a.Id;\n  }\n\n  @IsTest\n  static void usesAccount() {\n    Assert.isNotNull(acctId);\n  }\n}",
+      "lang": "apex",
+      "options": [
+        "It passes; the setup method filled the variable",
+        "It passes, but only if it runs first in the class",
+        "It fails to compile; `@TestSetup` can't set statics",
+        "It fails; the variable is null in the test method"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "Each test method runs as its own transaction, and statics start fresh each time. To reach setup records, query them in the test method.",
+      "wrong": [
+        "The setup method's static values are thrown away when it ends.",
+        "Order doesn't help; statics reset before every test method.",
+        "It compiles; the value just doesn't carry over.",
+        ""
+      ],
+      "source": "Apex Developer Guide: Using Test Setup Methods"
+    },
+    {
+      "id": "test-q59",
+      "lesson": "test-3",
+      "difficulty": 2,
+      "q": "`LeadSync.pushAsync` is a `@future` method that sets `Synced__c` to true. What happens when this test runs?",
+      "code": "@IsTest\nstatic void syncsLead() {\n  Lead l = new Lead(LastName = 'Kim', Company = 'Kim Co');\n  insert l;\n  Test.startTest();\n  LeadSync.pushAsync(l.Id);\n  Test.stopTest();\n  l = [SELECT Synced__c FROM Lead WHERE Id = :l.Id];\n  Assert.isTrue(l.Synced__c);\n}",
+      "lang": "apex",
+      "options": [
+        "It fails; `@future` methods never run in tests",
+        "The assert passes; the method ran at `stopTest`",
+        "It fails; the method runs after the test method ends",
+        "It fails; `@future` calls aren't allowed after `startTest`"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "Async calls made after `Test.startTest()` run synchronously at `Test.stopTest()`. The query after `stopTest` sees the change.",
+      "wrong": [
+        "Future methods do run in tests.",
+        "",
+        "That happens only without a `startTest`/`stopTest` block.",
+        "Calling async code inside the block is the intended pattern."
+      ],
+      "source": "Apex Developer Guide: Using Limits, startTest, and stopTest"
+    },
+    {
+      "id": "test-x32",
+      "lesson": "test-3",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "`CleanupJob` is a schedulable class that deletes every `Import_Log__c` record. The test inserted 3 logs before this code. The test runs at 3 PM. What happens?",
+      "code": "Test.startTest();\nSystem.schedule('Nightly cleanup', '0 0 2 * * ?', new CleanupJob());\nTest.stopTest();\nAssert.areEqual(0, [SELECT COUNT() FROM Import_Log__c]);",
+      "lang": "apex",
+      "options": [
+        "The assert fails; the job waits for 2 AM",
+        "The assert fails; scheduled jobs can't run in tests",
+        "The assert passes; the job ran at `stopTest`",
+        "It throws an error; a test can't call `System.schedule`"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "A job scheduled after `startTest` runs at `stopTest`, whatever its cron time. So the logs are gone before the assert.",
+      "wrong": [
+        "In a test, the cron time doesn't delay the job past `stopTest`.",
+        "Scheduled Apex runs in tests when wrapped in `startTest`/`stopTest`.",
+        "",
+        "Tests may call `System.schedule`; the docs show this pattern."
+      ],
+      "source": "Apex Developer Guide: Apex Scheduler"
+    },
+    {
+      "id": "test-x33",
+      "lesson": "test-3",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "The setup code in this test method ran 30 SOQL queries. What do the two debug lines print?",
+      "code": "// ...30 queries ran above this line\nTest.startTest();\nList<Case> open = [SELECT Id FROM Case WHERE IsClosed = false];\nSystem.debug(Limits.getQueries());\nTest.stopTest();\nSystem.debug(Limits.getQueries());",
+      "lang": "apex",
+      "options": [
+        "1, then 30",
+        "31, then 31",
+        "1, then 31",
+        "31, then 30"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "Code between `startTest` and `stopTest` gets its own set of limits. After `stopTest`, the test is back in its original context, which counted only the setup queries.",
+      "wrong": [
+        "",
+        "The block's limits are separate from the setup's limits.",
+        "The block's query isn't added to the original context.",
+        "Inside the block, counting starts again from zero."
+      ],
+      "source": "Apex Developer Guide: Using Limits, startTest, and stopTest"
+    },
+    {
+      "id": "test-q60",
+      "lesson": "test-3",
+      "difficulty": 2,
+      "q": "A trigger on the platform event `Order_Shipped__e` creates a Task. A test publishes one event with `EventBus.publish` between `Test.startTest()` and `Test.stopTest()`. Where should the test check for the Task?",
+      "options": [
+        "Right after `EventBus.publish`, inside the block",
+        "In a second test method, after the event commits",
+        "After `Test.stopTest()`",
+        "Nowhere, since event triggers don't fire in tests"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "In a test, `EventBus.publish` only queues the event. `Test.stopTest()` delivers it, so check the results after that line.",
+      "wrong": [
+        "The event isn't delivered yet at that point.",
+        "Test methods don't share data, and events aren't committed.",
+        "",
+        "Event triggers do fire in tests once the event is delivered."
+      ],
+      "source": "Platform Events Developer Guide: Deliver Test Event Messages"
+    },
+    {
+      "id": "test-x34",
+      "lesson": "test-3",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A team writes tests for its async Apex. Which two statements are true? (Choose 2)",
+      "options": [
+        "A batch job runs all of its chunks at `stopTest`, however many there are",
+        "Async calls between `startTest` and `stopTest` count toward the queued job limit",
+        "A queueable enqueued with a 5-minute delay still runs at `stopTest`",
+        "An unhandled exception in a batch `execute` keeps `finish` from running",
+        "A future method in a test runs the moment it's called"
+      ],
+      "answer": [
+        2,
+        3
+      ],
+      "explain": "The queueable delay is ignored in tests. An exception during `stopTest` stops the synchronous processing, so `finish` doesn't run.",
+      "wrong": [
+        "A test can run only one `execute` chunk.",
+        "Async calls inside the block don't count toward the queued job limit.",
+        "",
+        "",
+        "It runs at `stopTest`, or after the test method without a block."
+      ],
+      "source": "Apex Developer Guide: Using Limits, startTest, and stopTest"
+    },
+    {
+      "id": "test-x35",
+      "lesson": "test-4",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "This test fails with \"You have uncommitted work pending\". `RateService.refresh()` makes an HTTP callout. What is the fix?",
+      "code": "@IsTest\nstatic void refreshesRates() {\n  Test.setMock(HttpCalloutMock.class, new RatesMock());\n  insert new Currency_Rate__c(Code__c = 'EUR');\n  RateService.refresh();\n  Assert.areEqual(1, [SELECT COUNT() FROM Currency_Rate__c WHERE Rate__c != null]);\n}",
+      "lang": "apex",
+      "options": [
+        "Call `Test.setMock` after the callout instead of before it",
+        "Insert with `Database.insert(rec, false)` instead",
+        "Call `Test.startTest()` after the insert, then set the mock",
+        "Move the insert after `RateService.refresh()` and the asserts"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "A callout can't follow DML in the same transaction. In a test, put the DML before `Test.startTest()` and the callout inside the block, with `Test.setMock` after `startTest`.",
+      "wrong": [
+        "The mock must be set before the callout runs.",
+        "Partial-success DML still leaves uncommitted work.",
+        "",
+        "The refresh needs the record, so it must exist first."
+      ],
+      "source": "Apex Developer Guide: Performing DML Operations and Mock Callouts"
+    },
+    {
+      "id": "test-q61",
+      "lesson": "test-4",
+      "difficulty": 2,
+      "q": "A developer plans tests that use `System.runAs`. Which two statements about it are true? (Choose 2)",
+      "options": [
+        "It commits the records created inside it",
+        "It can be used only in test methods",
+        "It runs the code inside it in system mode",
+        "It switches every class called inside it to `with sharing`",
+        "It ignores user license limits, so tests can create users"
+      ],
+      "answer": [
+        1,
+        4
+      ],
+      "explain": "`runAs` works only in test methods. It ignores license limits, so a test can create users even with no spare licenses.",
+      "wrong": [
+        "Test data is rolled back, inside `runAs` or not.",
+        "",
+        "It runs code as the chosen user, not in system mode.",
+        "Each class keeps the sharing mode where it is defined.",
+        ""
+      ],
+      "source": "Apex Developer Guide: Using the runAs Method"
+    },
+    {
+      "id": "test-q62",
+      "lesson": "test-4",
+      "difficulty": 2,
+      "q": "A controller extension has this `save` action. Which assert proves that `save` sends the user to the order's record page?",
+      "code": "public PageReference save() {\n  upsert ord;\n  return new PageReference('/' + ord.Id);\n}",
+      "lang": "apex",
+      "options": [
+        "`Assert.isTrue(ext.save() != null);`",
+        "`Assert.areEqual('/' + ord.Id, ext.save().getUrl());`",
+        "`Assert.areEqual(Page.OrderView, ext.save());`",
+        "`Assert.isNotNull(ApexPages.currentPage().getUrl());`"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "An action method returns a `PageReference`. Comparing its `getUrl()` to the expected path proves where the user goes.",
+      "wrong": [
+        "Not null proves a page came back, not which page.",
+        "",
+        "The action builds its URL from the record Id, not from `Page.OrderView`.",
+        "That checks the current page, not where `save` goes."
+      ],
+      "source": "Visualforce Developer Guide: Testing Custom Controllers and Controller Extensions"
+    },
+    {
+      "id": "test-q63",
+      "lesson": "test-4",
+      "difficulty": 2,
+      "q": "A flow calls this invocable method. How should an Apex test cover it?",
+      "code": "public with sharing class CaseScorer {\n  @InvocableMethod(label='Score Cases')\n  public static List<Integer> score(List<Id> caseIds) {\n    // ...\n  }\n}",
+      "lang": "apex",
+      "options": [
+        "Insert Cases, then call `CaseScorer.score` with a list of their Ids",
+        "Start the flow with `Flow.Interview`, since invocable methods can't be called from Apex",
+        "Call `CaseScorer.score` with one Case Id, not a list",
+        "Activate the flow and assert on the Cases with `SeeAllData=true`"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "An invocable method is a normal static method, so a test can call it directly. Pass a list, just like the flow does.",
+      "wrong": [
+        "",
+        "Apex can call an invocable method like any other static method.",
+        "The method takes a `List<Id>`, so one Id doesn't compile.",
+        "Tests should make their own data; `SeeAllData` isn't needed."
+      ],
+      "source": "Apex Developer Guide: InvocableMethod Annotation"
+    },
+    {
+      "id": "test-q64",
+      "lesson": "test-4",
+      "difficulty": 1,
+      "q": "A Contact trigger runs only on `before update`. What must a test do to fire it?",
+      "options": [
+        "Insert a Contact, then change it and update it",
+        "Insert a new Contact with every field filled in",
+        "Upsert a new Contact that has no Id",
+        "Call the trigger's handler with `Trigger.isUpdate` set"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "A trigger fires only on the DML it's written for. An update trigger needs an existing record that the test updates.",
+      "wrong": [
+        "",
+        "An insert fires insert triggers, not update triggers.",
+        "Upserting a record with no Id inserts it.",
+        "Context variables like `Trigger.isUpdate` can't be set by a test."
+      ],
+      "source": "Apex Developer Guide: Testing Best Practices"
+    },
+    {
+      "id": "test-q65",
+      "lesson": "test-5",
+      "difficulty": 2,
+      "q": "The developer wants this section in every debug log. Which log category controls it?",
+      "code": "CUMULATIVE_LIMIT_USAGE\nLIMIT_USAGE_FOR_NS|(default)|\n  Number of SOQL queries: 96 out of 100 ******* CLOSE TO LIMIT\n  Number of DML statements: 12 out of 150\n  Maximum CPU time: 2140 out of 10000\nCUMULATIVE_LIMIT_USAGE_END",
+      "lang": "text",
+      "options": [
+        "Apex Code",
+        "Database",
+        "System",
+        "Apex Profiling"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "Cumulative limit usage is logged under the Apex Profiling category.",
+      "wrong": [
+        "Apex Code covers Apex statements and `System.debug` lines.",
+        "Database covers DML and SOQL events, not the limit summary.",
+        "System covers calls to system methods.",
+        ""
+      ],
+      "source": "Salesforce Help: Debug Log Levels"
+    },
+    {
+      "id": "test-q66",
+      "lesson": "test-5",
+      "difficulty": 1,
+      "q": "A user reports an error on a page. Where in Setup can the developer add a trace flag for that user?",
+      "options": [
+        "Apex Jobs",
+        "Debug Logs",
+        "Setup Audit Trail",
+        "Login History"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "Trace flags for users are created on the Debug Logs page in Setup.",
+      "wrong": [
+        "Apex Jobs shows async jobs, not trace flags.",
+        "",
+        "The audit trail lists setup changes, not logs.",
+        "Login History shows logins, not code runs."
+      ],
+      "source": "Salesforce Help: Set Up Debug Logging"
+    },
+    {
+      "id": "test-x36",
+      "lesson": "test-5",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A user trace flag sets Apex Code to `DEBUG`. A class trace flag on `TaxEngine` sets Apex Code to `ERROR`. `TaxEngine` calls `System.debug('rate ' + r)`. The user runs code that calls `TaxEngine`. What is logged?",
+      "options": [
+        "A log is created, and it includes the 'rate' line",
+        "No log is created, because the `TaxEngine` flag stops user logging",
+        "A log is created, but without `TaxEngine`'s 'rate' line",
+        "Two logs are created, one for each trace flag"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "The user flag makes a log. The class flag overrides the level inside `TaxEngine`, and `ERROR` is too quiet for a plain `System.debug` line.",
+      "wrong": [
+        "Inside `TaxEngine`, the class flag's `ERROR` level wins.",
+        "Class flags change levels; they don't stop the user's log.",
+        "",
+        "One transaction makes one log."
+      ],
+      "source": "Apex Developer Guide: Debug Log"
+    },
+    {
+      "id": "test-x37",
+      "lesson": "test-5",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "An org already stores more than 1,000 MB of debug logs. A developer tries to add a trace flag to chase a bug. What happens?",
+      "options": [
+        "It's blocked until some debug logs are deleted",
+        "It works, but each new log is cut to 2 MB",
+        "It's blocked for 15 minutes, then works again",
+        "It works, but only at the `ERROR` level"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "When stored logs pass 1,000 MB, users can't add or edit trace flags. Deleting some logs frees the way.",
+      "wrong": [
+        "",
+        "There's no smaller log size; the per-log limit stays 20 MB.",
+        "The 15-minute wait is for making 1,000 MB within 15 minutes.",
+        "Levels aren't forced to `ERROR`; flags are blocked."
+      ],
+      "source": "Apex Developer Guide: Debug Log"
+    },
+    {
+      "id": "test-q67",
+      "lesson": "test-5",
+      "difficulty": 2,
+      "q": "A developer reads a debug log to understand a slow save. Which two kinds of activity can a debug log record? (Choose 2)",
+      "options": [
+        "Actions from time-based workflow",
+        "HTTP callouts",
+        "Standard controllers used in Visualforce email templates",
+        "Validation rules",
+        "Another user's transactions with no trace flag"
+      ],
+      "answer": [
+        1,
+        3
+      ],
+      "explain": "Debug logs can show callouts, database changes, Apex errors and automation like validation rules. Time-based workflow and email-template controllers aren't included.",
+      "wrong": [
+        "The docs list time-based workflow as not included.",
+        "",
+        "The docs list email-template controllers as not included.",
+        "",
+        "Without a trace flag or console, that user's code makes no log."
+      ],
+      "source": "Apex Developer Guide: Debug Log"
+    },
+    {
+      "id": "test-x38",
+      "lesson": "test-6",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A developer plans to debug a loop with Developer Console checkpoints. Which two statements are true? (Choose 2)",
+      "options": [
+        "Up to five checkpoints can be on at the same time",
+        "They pause the code until the developer clicks Continue",
+        "They can be set in Visualforce markup as well",
+        "They work without the View All Data permission",
+        "A line in a loop is captured once, not on every pass"
+      ],
+      "answer": [
+        0,
+        4
+      ],
+      "explain": "Up to five checkpoints can be active. Each one captures results only once, by default before the first time the line runs.",
+      "wrong": [
+        "",
+        "Checkpoints take a snapshot; they don't pause the code.",
+        "Checkpoints can't be set in Visualforce markup.",
+        "Setting checkpoints needs View All Data.",
+        ""
+      ],
+      "source": "Salesforce Help: Set Checkpoints in Apex Code"
+    },
+    {
+      "id": "test-q68",
+      "lesson": "test-6",
+      "difficulty": 2,
+      "q": "A SOQL query over millions of Cases runs slowly. The developer wants to see its cost and whether an index helps. What should they use in the Developer Console?",
+      "options": [
+        "The Query Plan tool",
+        "The Execution Overview panel",
+        "A checkpoint on the query's line",
+        "The Tests tab"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "The Query Plan tool shows how a query runs over many records. It helps decide when to ask for a custom index.",
+      "wrong": [
+        "",
+        "Execution Overview shows time and limits, not index use.",
+        "A checkpoint captures memory, not the query plan.",
+        "The Tests tab runs tests and shows coverage."
+      ],
+      "source": "Salesforce Help: Developer Console Query Editor"
+    },
+    {
+      "id": "test-q69",
+      "lesson": "test-6",
+      "difficulty": 1,
+      "q": "The Execute Anonymous window holds 20 lines. The developer wants to run only 3 of them. What should they do?",
+      "options": [
+        "Select the 3 lines and click Execute Highlighted",
+        "Comment out the rest and click Execute Last",
+        "Copy the lines into a new class and run its tests",
+        "Set a checkpoint on each of the 3 lines"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "Execute Highlighted runs only the selected lines.",
+      "wrong": [
+        "",
+        "Execute Last reruns the previous code without changes.",
+        "That's far more work, and tests aren't needed.",
+        "Checkpoints capture data; they don't choose lines to run."
+      ],
+      "source": "Salesforce Help: Executing Anonymous Apex Code"
+    },
+    {
+      "id": "test-x39",
+      "lesson": "test-6",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A developer runs this in the Execute Anonymous window. What happens?",
+      "code": "static Integer twice(Integer n) {\n  return n * 2;\n}\nSystem.debug(twice(21));",
+      "lang": "apex",
+      "options": [
+        "It prints 42",
+        "It prints 42 and saves `twice` to the org",
+        "It runs, but prints null",
+        "It fails to compile because of `static`"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "Anonymous Apex can define methods, but they can't use the keyword `static`. So the block doesn't compile.",
+      "wrong": [
+        "The `static` keyword stops it from compiling first.",
+        "Anonymous code is never saved to the org.",
+        "It never runs, so nothing prints.",
+        ""
+      ],
+      "source": "Apex Developer Guide: Anonymous Blocks"
+    },
+    {
+      "id": "test-q70",
+      "lesson": "test-7",
+      "difficulty": 2,
+      "q": "A developer needs a scratch org for a 3-week QA cycle. Which command creates it?",
+      "options": [
+        "`sf org create scratch --definition-file config/project-scratch-def.json --duration-days 45`",
+        "`sf org create sandbox --definition-file config/project-scratch-def.json --duration-days 21`",
+        "`sf org create scratch --definition-file config/project-scratch-def.json --duration-days 21`",
+        "`sf org create scratch --definition-file config/project-scratch-def.json --target-org prod`"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "`sf org create scratch` with `--duration-days 21` gives 21 days. Scratch orgs last 1 to 30 days.",
+      "wrong": [
+        "45 days is over the 30-day maximum.",
+        "Sandboxes don't use a scratch definition file or a duration.",
+        "",
+        "The duration is missing, so it gets the 7-day default."
+      ],
+      "source": "Salesforce CLI Command Reference: org create scratch"
+    },
+    {
+      "id": "test-q71",
+      "lesson": "test-7",
+      "difficulty": 2,
+      "q": "Every new scratch org needs the same 40 sample Accounts with their Contacts. The team wants the data in Git. What should they use?",
+      "options": [
+        "`sf project retrieve start` with the Account object",
+        "`Test.loadData` with a CSV static resource",
+        "A sandbox template for Accounts and Contacts",
+        "`sf data export tree` once, then `sf data import tree`"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "`sf data export tree` writes records to JSON files. `sf data import tree` loads those files into any org.",
+      "wrong": [
+        "Retrieve gets metadata, not records.",
+        "`Test.loadData` inserts data only inside tests.",
+        "Templates work only for Partial Copy and Full sandboxes.",
+        ""
+      ],
+      "source": "Salesforce CLI Command Reference: data Commands"
+    },
+    {
+      "id": "test-x40",
+      "lesson": "test-7",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A teammate edited the same Lightning page directly in the scratch org. The developer wants to keep the org's version and update the local file. What should they run?",
+      "code": "$ sf project deploy start --target-org dev\nError (ConflictsError): There are changes in the org that conflict\nwith the local changes you're trying to deploy.",
+      "lang": "bash",
+      "options": [
+        "`sf project deploy start --ignore-conflicts`",
+        "`sf project retrieve start --ignore-conflicts`",
+        "`sf project deploy start --ignore-errors`",
+        "`sf project deploy preview --ignore-conflicts`"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "`retrieve start --ignore-conflicts` overwrites the local files with the org's version. `deploy start --ignore-conflicts` would do the opposite.",
+      "wrong": [
+        "That overwrites the teammate's change in the org.",
+        "",
+        "`--ignore-errors` skips failed components; it doesn't settle conflicts.",
+        "Preview only lists what would happen; it changes nothing."
+      ],
+      "source": "Salesforce CLI Command Reference: project deploy start"
+    },
+    {
+      "id": "test-x41",
+      "lesson": "test-7",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A team lead explains source tracking to new hires. Which two statements are true? (Choose 2)",
+      "options": [
+        "It keeps a copy of every change to record data",
+        "Scratch orgs have it on by default",
+        "Production orgs never allow it",
+        "It must be turned on by hand in each new scratch org",
+        "`--ignore-conflicts` lets a production deploy overwrite newer changes"
+      ],
+      "answer": [
+        1,
+        2
+      ],
+      "explain": "Source tracking follows metadata changes between a project and an org. It's on by default in scratch orgs, and production never allows it.",
+      "wrong": [
+        "It tracks metadata, not record data.",
+        "",
+        "",
+        "It's on by default, unless turned off with `--no-track-source`.",
+        "That flag has no effect in orgs without source tracking."
+      ],
+      "source": "Salesforce CLI Command Reference: project deploy preview"
+    },
+    {
+      "id": "test-q72",
+      "lesson": "test-8",
+      "difficulty": 2,
+      "q": "In a newly created sandbox, a tester's flow should email her, but nothing arrives. The admin opens the Deliverability page first. Which access level will they most likely find?",
+      "options": [
+        "All email",
+        "System email only",
+        "No access",
+        "The same level as production"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "New and refreshed sandboxes default to System email only. Switch it to All email to test messages from flows and Apex.",
+      "wrong": [
+        "All email must be turned on by hand in a sandbox.",
+        "",
+        "No access isn't the default for a new sandbox.",
+        "The sandbox doesn't copy production's setting; it uses its own default."
+      ],
+      "source": "Salesforce Help: Sandbox Setup Considerations"
+    },
+    {
+      "id": "test-q73",
+      "lesson": "test-8",
+      "difficulty": 1,
+      "q": "Jo's production username is `jo@acme.com`. The new sandbox is named `uat`. How does Jo log in to it?",
+      "options": [
+        "`uat.jo@acme.com`, with a new emailed password",
+        "`jo@acme.com`, with her production password",
+        "`jo@acme.com.uat`, with a password the admin sets",
+        "`jo@acme.com.uat`, with her production password"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "Sandbox usernames get the sandbox name added at the end. The password is the same as in production.",
+      "wrong": [
+        "The name goes at the end, not the start.",
+        "The username needs the sandbox name.",
+        "The production password works; the admin doesn't set one.",
+        ""
+      ],
+      "source": "Salesforce Help: Create a Sandbox"
+    },
+    {
+      "id": "test-x42",
+      "lesson": "test-8",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "After each refresh of the QA sandbox, admins spend an hour masking customer emails and creating test users. What is the best way to automate this?",
+      "options": [
+        "A scheduled flow in production that runs the same steps",
+        "A `@TestSetup` method that builds the users",
+        "An Apex class that implements `SandboxPostCopy`, named on the refresh",
+        "A sandbox template that leaves out the Contact object"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "A `SandboxPostCopy` class runs after each create or refresh. It can create users and clean data.",
+      "wrong": [
+        "A production flow would change real production data.",
+        "`@TestSetup` data exists only during a test and is rolled back.",
+        "",
+        "A template picks which data to copy; it doesn't mask data or add users."
+      ],
+      "source": "Apex Reference Guide: SandboxPostCopy Interface"
+    },
+    {
+      "id": "test-x43",
+      "lesson": "test-8",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "An admin is creating a Full sandbox and wants it to copy faster. Which two choices can they make on the way? (Choose 2)",
+      "options": [
+        "Whether to copy Chatter data",
+        "A refresh interval of 1 day",
+        "A storage upgrade to 2 GB",
+        "Whether to include field tracking history",
+        "An end date when the sandbox deletes itself"
+      ],
+      "answer": [
+        0,
+        3
+      ],
+      "explain": "When creating a Full sandbox, the admin decides on field tracking history and Chatter data. Copying less data speeds up the copy.",
+      "wrong": [
+        "",
+        "A Full sandbox can be refreshed every 29 days.",
+        "Storage upgrades are for Developer and Developer Pro sandboxes.",
+        "",
+        "Admins can't set an end date when creating a sandbox; scratch orgs have one."
+      ],
+      "source": "Salesforce Help: Create a Sandbox"
+    },
+    {
+      "id": "test-q74",
+      "lesson": "test-9",
+      "difficulty": 2,
+      "q": "A developer uploaded an outbound change set, then fixed a bug in one of its Apex classes in the sandbox. How should they send the fix?",
+      "options": [
+        "Edit the uploaded change set and add the class again",
+        "Upload the same change set again; it refreshes",
+        "Deploy the inbound change set, which picks up the fix",
+        "Clone the change set and upload the clone"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "An uploaded change set is closed, and its components don't refresh. A clone includes the latest version of each component.",
+      "wrong": [
+        "An uploaded change set is closed and can't be edited.",
+        "Closed change sets don't refresh their components.",
+        "The inbound copy has the old version of the class.",
+        ""
+      ],
+      "source": "Salesforce Help: Outbound Change Sets"
+    },
+    {
+      "id": "test-x44",
+      "lesson": "test-9",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A script calls `Database.executeBatch` in a loop. The Apex flex queue already holds 100 jobs in Holding status. What happens on the next call?",
+      "options": [
+        "It throws a `LimitException`, and the job isn't added",
+        "The job is added with the Queued status instead",
+        "The oldest Holding job is dropped to make room",
+        "The call waits until `Database.executeBatch` finds a free slot"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "The flex queue holds at most 100 batch jobs. When it's full, `Database.executeBatch` throws a `LimitException`.",
+      "wrong": [
+        "",
+        "Jobs reach Queued only when the system moves them from the flex queue.",
+        "Salesforce never drops waiting jobs to make room.",
+        "Apex doesn't wait; it throws an exception."
+      ],
+      "source": "Apex Developer Guide: Using Batch Apex"
+    },
+    {
+      "id": "test-q75",
+      "lesson": "test-9",
+      "difficulty": 2,
+      "q": "A scheduled job named Nightly cleanup must stop running. The developer has its `CronTrigger` record. Which line stops it?",
+      "code": "CronTrigger ct = [SELECT Id, NextFireTime FROM CronTrigger\n                  WHERE CronJobDetail.Name = 'Nightly cleanup'];",
+      "lang": "apex",
+      "options": [
+        "`ct.NextFireTime = null; update ct;`",
+        "`System.abortJob(ct.Id);`",
+        "`System.schedule('Nightly cleanup', null, null);`",
+        "`Database.executeBatch(ct.Id);`"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "`System.abortJob` with the `CronTrigger` Id stops a scheduled job.",
+      "wrong": [
+        "`NextFireTime` is set by the system and can't be updated.",
+        "",
+        "`System.schedule` creates a job; it doesn't stop one.",
+        "`executeBatch` starts a batch class; it doesn't take an Id."
+      ],
+      "source": "Apex Developer Guide: Apex Scheduler"
+    },
+    {
+      "id": "test-q76",
+      "lesson": "test-9",
+      "difficulty": 2,
+      "q": "A record-triggered flow fails in production. Depending on the org's setting, who can receive the flow error email? (Choose 2)",
+      "options": [
+        "The admin who last modified the flow",
+        "The user whose save started the flow",
+        "The Apex exception email recipients",
+        "Every user with the System Administrator profile",
+        "The person who first created the flow"
+      ],
+      "answer": [
+        0,
+        2
+      ],
+      "explain": "A failed flow sends its error email to the admin who last modified the flow or to the Apex exception email recipients.",
+      "wrong": [
+        "",
+        "The running user sees an error, but the email goes elsewhere.",
+        "",
+        "It isn't sent to every administrator.",
+        "The last modifier gets it, not the original creator."
+      ],
+      "source": "Salesforce Help: Troubleshooting Flow Run Time Errors"
+    },
+    {
+      "id": "test-q77",
+      "lesson": "test-9",
+      "difficulty": 2,
+      "q": "A release manager wants this production deployment to save the components that work and skip the ones with errors. What should they expect?",
+      "code": "sf project deploy start --manifest manifest/package.xml \\\n  --ignore-errors --target-org prod",
+      "lang": "bash",
+      "options": [
+        "It works; the flag skips the failed components",
+        "It works only when no Apex is in the deployment",
+        "It works only with `--test-level NoTestRun`",
+        "It isn't allowed; production deploys are all or nothing"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "A production deployment must roll back completely if anything fails. Partial deploys work only in other orgs, such as sandboxes.",
+      "wrong": [
+        "Production requires a full rollback on any error.",
+        "The all-or-nothing rule covers every production deploy.",
+        "`NoTestRun` isn't allowed in production for Apex, and doesn't change rollback.",
+        ""
+      ],
+      "source": "Metadata API Developer Guide: deploy()"
     }
   ]
 }
