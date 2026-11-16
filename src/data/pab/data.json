@@ -3335,17 +3335,17 @@
       "options": [
         "Yes, because the first master-detail decides access",
         "Yes, because she can edit the course",
-        "Yes, if she's the owner of the enrollment",
+        "Yes, if her profile can edit enrollments",
         "No, because she needs Read/Write on both masters"
       ],
       "answer": [
         3
       ],
-      "explain": "Junction access comes from both masters and the Sharing Setting on each field. With Read/Write on both, she needs Read/Write on both parents to edit.",
+      "explain": "Junction access comes from both masters and each field's Sharing Setting. Both fields use Read/Write, so she needs Read/Write on both parents to edit.",
       "wrong": [
         "Access comes from both masters, not just the first one.",
         "Edit access on one master isn't enough.",
-        "Junction records have no Owner field of their own.",
+        "Object Edit doesn't give record access. She still needs Read/Write on both masters.",
         ""
       ],
       "source": "Considerations for Object Relationships"
@@ -3408,7 +3408,7 @@
         "Ask an admin to add a lookup filter to the field",
         "Pick the shipment from the Recent Items list",
         "Type the shipment's External ID value by hand",
-        "Update the field with Data Loader instead"
+        "Paste the shipment's Salesforce record ID"
       ],
       "answer": [
         2
@@ -3418,7 +3418,7 @@
         "Lookup filters aren't available for external lookup fields.",
         "There's no search to pick from. The value is typed in.",
         "",
-        "Data Loader isn't needed. The field can be edited by hand."
+        "The field matches the External ID value, not a record ID."
       ],
       "source": "Considerations for Object Relationships"
     },
@@ -3639,7 +3639,7 @@
         "The limit is total characters, not a count of fields.",
         "Salesforce never shrinks fields to make room.",
         "",
-        "There's no field count limit. The total characters are full."
+        "Long text fields have no count limit of their own. The characters are what's full."
       ],
       "source": "Custom Fields Allowed Per Object"
     },
@@ -3708,7 +3708,7 @@
       ],
       "explain": "Rich text can convert only to long text area. Images are deleted the next time the long text field is saved.",
       "wrong": [
-        "Long text areas can't show images or links.",
+        "Long text areas hold plain text and can't show images.",
         "Salesforce doesn't move images to Files.",
         "",
         "The change is allowed. The images are what you lose."
@@ -3744,22 +3744,22 @@
       "id": "data-q72",
       "lesson": "data-7",
       "difficulty": 2,
-      "q": "Which two field type changes keep the existing data? (Choose 2)",
+      "q": "Every record holds a value defined in its picklist. Which two field type changes keep the existing data? (Choose 2)",
       "options": [
         "Date/Time to Date",
-        "Text to Number",
+        "Currency to Percent",
         "Picklist to Picklist (Multi-Select)",
         "Picklist (Multi-Select) to Text",
-        "Auto Number to Text"
+        "Text to Text Area (Long)"
       ],
       "answer": [
         2,
         4
       ],
-      "explain": "A picklist becomes multi-select with each record's value still chosen. An auto number becomes text with its values unchanged.",
+      "explain": "A picklist becomes multi-select with each record's value still chosen. A text field becomes a long text area with every value kept. Values missing from the picklist's definition would be dropped.",
       "wrong": [
         "Changing to or from Date/Time can lose data.",
-        "Changing to Number from any type can lose data.",
+        "Changing to Percent from any other type can lose data.",
         "",
         "Changing from multi-select to any type can lose data.",
         ""
@@ -3773,7 +3773,7 @@
       "q": "Which two statements about the Data Export Service are true? (Choose 2)",
       "options": [
         "Formula and roll-up summary fields are left out",
-        "Exports run in sandboxes the same way as in production",
+        "Each zip file can hold up to 2 GB of data",
         "Professional Edition can schedule weekly exports",
         "The zip files are deleted about 48 hours after the email",
         "The notice email can be sent to any address"
@@ -3785,7 +3785,7 @@
       "explain": "Formula and roll-up summary fields are always left out of the export. The zip files are deleted 48 hours after the email, not counting weekends.",
       "wrong": [
         "",
-        "Exports don't complete in sandboxes.",
+        "Each zip holds about 512 MB. Bigger exports make more zips.",
         "Professional Edition can export only every 29 days.",
         "",
         "The notice goes to the user who scheduled it. It can't be changed."
@@ -3823,22 +3823,22 @@
       "lesson": "data-8",
       "difficulty": 3,
       "pack": "hard",
-      "q": "An auditor needs a CSV of every case, including cases now in the Recycle Bin. Which tool and option should the admin use?",
+      "q": "An auditor needs a CSV of every case, including cases in the Recycle Bin. The admin runs Data Loader's Export with the filter `IsDeleted = true`, and it returns no rows. What should the admin do?",
       "options": [
-        "Data Loader, with Export",
-        "Data Loader, with Export All",
-        "The Data Import Wizard, with its export step",
-        "A list view of cases, printed to a file"
+        "Give the admin View All on cases, then export again",
+        "Run Export All instead, without that filter",
+        "Change the filter to `IsDeleted = false` and export again",
+        "Use the Data Import Wizard's export step instead"
       ],
       "answer": [
         1
       ],
-      "explain": "Data Loader's Export All also returns soft-deleted records and archived activities. Plain Export returns only current records.",
+      "explain": "Data Loader's Export returns only current records. Export All also returns soft-deleted records and archived activities, so it includes the Recycle Bin.",
       "wrong": [
-        "Plain Export leaves out records in the Recycle Bin.",
+        "Export never returns deleted records, whatever access the admin has.",
         "",
-        "The import wizard can't export.",
-        "List views show current records, not deleted ones."
+        "That returns only the current cases.",
+        "The import wizard can't export data."
       ],
       "source": "Data Loader Guide: Export Data from Salesforce"
     },
@@ -3919,24 +3919,24 @@
       "id": "data-q75",
       "lesson": "data-9",
       "difficulty": 2,
-      "q": "On Account pages, the related list of `Order__x` records sometimes loads slowly. The rest of the page is fast. What's the most likely cause?",
+      "q": "Tallis Freight's tracking system has its own web API. It doesn't use OData and isn't a Salesforce org. Users want its shipments in Salesforce as external objects, read live. What should the app builder plan?",
       "options": [
-        "The account has too many roll-up summary fields",
-        "Salesforce copies every order row on each page view",
-        "The page layout has too many sections",
-        "The list waits on the outside system's response"
+        "The OData 4.0 adapter, set up with clicks",
+        "The cross-org adapter, set up with clicks",
+        "External Services, set up with clicks",
+        "A custom adapter, written in Apex"
       ],
       "answer": [
         3
       ],
-      "explain": "External records load from the outside system when needed. If it's slow, related lists of child external objects load slowly too.",
+      "explain": "When no built-in adapter fits, a developer writes a custom adapter with the Apex Connector Framework. It's the code side of Salesforce Connect.",
       "wrong": [
-        "Roll-ups can't count external objects, so they aren't the cause.",
-        "Salesforce Connect reads only what's needed. It doesn't copy all rows.",
-        "The rest of the page is fast, so the layout isn't the problem.",
+        "OData adapters need a system that speaks OData.",
+        "The cross-org adapter connects only to other Salesforce orgs.",
+        "External Services makes flow actions, not external objects.",
         ""
       ],
-      "source": "Considerations for Object Relationships"
+      "source": "Custom Adapter for Salesforce Connect"
     }
   ]
 }
