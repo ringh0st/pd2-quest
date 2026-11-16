@@ -1,5 +1,7 @@
 // Bottom sheet dialog: Escape closes, Tab stays inside, focus returns to what opened it.
+// Rendered into <body>, so it always covers the bottom nav (a screen's own layer can't trap it underneath).
 import { useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { AnimatePresence, motion } from 'motion/react';
 import { useReducedMotion } from '../hooks/useMotionPrefs.js';
 import { sfx } from '../audio/sfx.js';
@@ -40,7 +42,7 @@ export function Sheet({ open, onClose, labelledBy, children }) {
     };
   }, [open, onClose]);
 
-  return (
+  return createPortal(
     <AnimatePresence>
       {open && (
         <>
@@ -58,6 +60,7 @@ export function Sheet({ open, onClose, labelledBy, children }) {
           </motion.div>
         </>
       )}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body,
   );
 }
