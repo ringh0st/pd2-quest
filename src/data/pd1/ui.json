@@ -1140,7 +1140,7 @@
       "q": "What does adding `escape=\"false\"` to an `<apex:outputText>` component do?",
       "options": [
         "It turns off field-level security checks for the value it shows",
-        "It turns off escaping, so HTML and script in the value are rendered",
+        "It turns off escaping, so HTML in the value is rendered",
         "It makes the value read-only, even for users who can edit it",
         "It lets the component show values longer than 255 characters"
       ],
@@ -1165,7 +1165,7 @@
       "lang": "html",
       "options": [
         "Wrap the merge field in `URLENCODE()`",
-        "Add `escape=\"true\"` to the `<script>` tag",
+        "Add `escape=\"true\"` to `<script>`",
         "Wrap the merge field in `JSENCODE()`",
         "Move the code into `<apex:includeScript>`"
       ],
@@ -1188,9 +1188,9 @@
       "q": "Agents view case notes that customers type in a web form. The notes show on a Visualforce page with `escape=\"false\"` so line breaks render. What is the main risk?",
       "options": [
         "SOQL injection: a note can change the query that loads the case",
-        "A governor limit error when a note is longer than the field allows",
+        "A limit error when a note is too long",
         "Agents could edit notes they don't own, because sharing is skipped",
-        "Stored XSS: a script saved in a note runs for every agent who opens it"
+        "Stored XSS: a script saved in a note runs for every viewer"
       ],
       "answer": [
         3
@@ -1335,7 +1335,7 @@
         "A static query with a bind variable for the user input",
         "A dynamic query run from a `without sharing` class",
         "A dynamic query with `LIMIT 1` added to the end",
-        "A static query wrapped in a `try`/`catch` block"
+        "A static query wrapped in a `try`/`catch` block that logs errors"
       ],
       "answer": [
         0
@@ -1359,8 +1359,8 @@
       "options": [
         "`Database.query` always ignores the running user's sharing",
         "`LIKE` with wildcards is not allowed in dynamic SOQL at all",
-        "The user text is glued into the query string before it runs",
-        "The query has no `LIMIT`, so it can return every Case row"
+        "The user text is glued straight into the query string",
+        "The query has no `LIMIT` clause"
       ],
       "answer": [
         2
@@ -1479,7 +1479,7 @@
       "options": [
         "The user's field-level security on queried fields",
         "The user's create, edit and delete object rights",
-        "The running user's access to records",
+        "The running user's record access via sharing",
         "Record access, object rights and field security"
       ],
       "answer": [
@@ -1525,7 +1525,7 @@
       "code": "List<Contact> cons = [SELECT Name, Phone, SSN__c FROM Contact];\nSObjectAccessDecision d =\n  Security.stripInaccessible(AccessType.READABLE, cons);\nreturn cons;",
       "lang": "apex",
       "options": [
-        "It passes `AccessType.READABLE` instead of `UPDATABLE`",
+        "It should pass `AccessType.UPDATABLE`",
         "It needs `WITH SECURITY_ENFORCED` in the query as well",
         "It returns `cons` instead of `d.getRecords()`",
         "It must check `d.getRemovedFields()` before returning"
@@ -1548,10 +1548,10 @@
       "difficulty": 2,
       "q": "A method in a `with sharing` class is called from a `without sharing` class. How does the method run?",
       "options": [
-        "With sharing, because the class where it is defined decides",
+        "With sharing, because the class that defines it decides",
         "Without sharing, because the calling class decides the mode",
         "With sharing for queries, but without sharing for DML calls",
-        "It depends on whether the user has View All Data permission"
+        "It depends on the user's View All Data permission"
       ],
       "answer": [
         0
@@ -1594,17 +1594,17 @@
       "difficulty": 2,
       "q": "Records come from an LWC. The developer wants to save them but quietly drop fields the user can't edit, with no error. Which line fits?",
       "options": [
-        "`update as user recs;`",
-        "`Database.update(recs, false);`",
-        "`Database.update(recs, AccessLevel.USER_MODE);`",
-        "`Security.stripInaccessible(AccessType.UPDATABLE, recs)`"
+        "Save them with `update as user` so blocked fields are skipped",
+        "Save them with `Database.update(recs, false)` for partial success",
+        "Save them with `AccessLevel.USER_MODE` so blocked fields are dropped",
+        "Pass them through `Security.stripInaccessible` and save the result"
       ],
       "answer": [
         3
       ],
       "explain": "`stripInaccessible` removes fields the user can't access and returns clean copies to save. User mode would throw instead.",
       "wrong": [
-        "User mode DML fails when a field isn't editable.",
+        "User mode DML fails on a blocked field; it doesn't skip it.",
         "`false` allows partial success per record; it doesn't check FLS.",
         "User mode fails on blocked fields instead of dropping them.",
         ""
@@ -1620,7 +1620,7 @@
         "Without one, the mode depends on API version and caller",
         "Classes without one fail to compile from API 60.0 onward",
         "Without one, the class always ignores CRUD but keeps FLS",
-        "Salesforce counts the keyword toward code coverage rules"
+        "Salesforce counts the keyword for code coverage"
       ],
       "answer": [
         0
@@ -1690,8 +1690,8 @@
       "options": [
         "No arguments at all, because the page creates the class by itself",
         "The Id of the current record, passed in as a `String` argument",
-        "One argument: the standard controller, or the custom controller it extends",
-        "Two arguments: the standard controller and the current page"
+        "One argument: the standard or custom controller it extends",
+        "Two arguments: the controller and the page"
       ],
       "answer": [
         2
@@ -1737,7 +1737,7 @@
       "q": "A page must show accounts 20 at a time with Next and Previous buttons, and the team wants no Apex. What should the developer use?",
       "options": [
         "A standard list controller, using `recordSetVar`",
-        "A custom controller that pages with `OFFSET`",
+        "A custom controller that pages with `OFFSET` in SOQL",
         "A standard controller plus one extension class",
         "An `<apex:repeat>` over a hard-coded list"
       ],
@@ -1811,7 +1811,7 @@
       "q": "A custom controller must show a friendly error at the top of the page when a save fails. What should it do?",
       "options": [
         "Call `System.debug()` with the message so it shows on the page",
-        "Throw an `AuraHandledException` with the message text in it",
+        "Throw an `AuraHandledException` with the message so the page shows it",
         "Return a `String` with the message from the action method",
         "Call `ApexPages.addMessage()` and add `<apex:pageMessages/>` to the page"
       ],
@@ -1856,8 +1856,8 @@
       "difficulty": 1,
       "q": "In the `myCard` component folder, which file says where the component can be used, such as record pages?",
       "options": [
+        "`myCard.targets.json`",
         "`myCard.html`",
-        "`myCard.css`",
         "`myCard.js`",
         "`myCard.js-meta.xml`"
       ],
@@ -1866,8 +1866,8 @@
       ],
       "explain": "The `.js-meta.xml` file holds the config: `isExposed`, targets and target settings.",
       "wrong": [
+        "There is no such file; targets live in the `.js-meta.xml` file.",
         "The HTML file is the template, what shows on screen.",
-        "The CSS file holds styles only.",
         "The JavaScript file holds the class with data and logic.",
         ""
       ],
@@ -1882,7 +1882,7 @@
         "`<c:myCard></c:myCard>`",
         "`<c-my-card></c-my-card>`",
         "`<c-myCard></c-myCard>`",
-        "`<my-card></my-card>`"
+        "`<lightning-my-card></lightning-my-card>`"
       ],
       "answer": [
         1
@@ -1892,7 +1892,7 @@
         "That colon style is Aura markup.",
         "",
         "Uppercase letters aren't allowed in the tag name.",
-        "The namespace prefix is required."
+        "`lightning` is the namespace of base components, not yours."
       ],
       "source": "LWC Developer Guide: Component Folder"
     },
@@ -1929,8 +1929,8 @@
       "options": [
         "No, because `count` needs `@track` before it redraws",
         "No, because `count` needs `@api` before it redraws",
-        "Only after the code calls `this.render()` by hand",
-        "Yes, because every field redraws when it gets a new value"
+        "Only after calling `this.render()`",
+        "Yes, because fields redraw when reassigned"
       ],
       "answer": [
         3
@@ -1952,7 +1952,7 @@
       "code": "export default class AcctCard extends LightningElement {\n  @api account;\n  rename() {\n    this.account.Name = 'New Name';\n  }\n}",
       "lang": "js",
       "options": [
-        "It throws an error, because the parent owns the object",
+        "It throws an error: the parent owns the object",
         "It works, and the parent sees the new name right away",
         "It works, but only the child shows the new name",
         "Nothing happens until `@track` is added to the property"
@@ -2124,7 +2124,7 @@
         "Dispatch a `CustomEvent` with `bubbles: true` set on it",
         "Fire an Aura application event from the first LWC",
         "Have both share one `@api` property on the page",
-        "Publish on a message channel with Lightning Message Service"
+        "Use Lightning Message Service on a message channel"
       ],
       "answer": [
         3
@@ -2174,7 +2174,7 @@
         "`const id = event.id;`",
         "`const id = event.detail.id;`",
         "`const id = event.target.id;`",
-        "`const id = event.pick.id;`"
+        "`const id = event.detail.pick.id;`"
       ],
       "answer": [
         1
@@ -2184,7 +2184,7 @@
         "The event object has no `id` of its own.",
         "",
         "`event.target` is the element that fired it, not the data.",
-        "The event name isn't a property."
+        "The data is `detail` itself; it has no `pick` key."
       ],
       "source": "LWC Developer Guide: Handle Events"
     },
@@ -2314,7 +2314,7 @@
       "q": "`getContacts` takes one Apex parameter, `Id accountId`. Which imperative call is right?",
       "options": [
         "`getContacts(this.recordId).then(...)`",
-        "`getContacts({ id: this.recordId }).then(...)`",
+        "`getContacts({ accountRecordId: this.recordId }).then(...)`",
         "`getContacts({ accountId: this.recordId }).then(...)`",
         "`getContacts.call(this, this.recordId).then(...)`"
       ],
@@ -2364,7 +2364,7 @@
       "options": [
         "`AuraHandledException`",
         "`DmlException`",
-        "`CalloutException`",
+        "`System.CalloutException`",
         "`QueryException`"
       ],
       "answer": [
@@ -2388,7 +2388,7 @@
         "An imperative Apex method that runs an `update`",
         "`lightning-record-edit-form` from Lightning Data Service",
         "A wired `cacheable=true` Apex method with DML",
-        "A Visualforce page embedded in a Lightning tab"
+        "A Visualforce page with a custom controller, in a Lightning tab"
       ],
       "answer": [
         1
@@ -2433,7 +2433,7 @@
       "options": [
         "`isExposed` is `false` in its config file",
         "Its HTML template has no `lwc:if` directive",
-        "Its JavaScript class has no `@api` property",
+        "It has no `@api` property",
         "It doesn't have its own CSS file in the folder"
       ],
       "answer": [
@@ -2459,7 +2459,7 @@
         "Set it as an input from a flow variable, but not read it back",
         "Both set it as an input and store it as an output value",
         "Neither; `role` hides the property from Flow Builder",
-        "Store its value in a flow variable, but not set it as an input"
+        "Read it into a flow variable, but not set it as input"
       ],
       "answer": [
         3
@@ -2529,7 +2529,7 @@
       "options": [
         "Wire `getRecordId` from `lightning/uiRecordApi`",
         "Read the Id from `window.location` and parse it",
-        "Call an Apex method that returns the current Id",
+        "Call an Apex method that returns the current page's Id",
         "Declare `@api recordId;` and let the page fill it"
       ],
       "answer": [
@@ -2578,7 +2578,7 @@
       "options": [
         "A Visualforce page, a trigger or a custom report",
         "A validation rule, a workflow rule or an approval",
-        "A static resource, a custom label or a custom tab",
+        "A static resource, a custom label or a custom Lightning tab",
         "An Apex invocable method, a flow or a prompt template"
       ],
       "answer": [
@@ -2600,7 +2600,7 @@
       "q": "Which annotation makes an Apex method available as a custom action in Agentforce Builder?",
       "options": [
         "`@TestVisible`",
-        "`@future`",
+        "`@SuppressWarnings`",
         "`@InvocableMethod`",
         "`@ReadOnly`"
       ],
@@ -2610,7 +2610,7 @@
       "explain": "`@InvocableMethod` makes the method an invocable action. Flows and agents can both use it.",
       "wrong": [
         "It only lets tests see private members.",
-        "It runs the method later, in the background.",
+        "It only hides warnings in code-checking tools.",
         "",
         "It allows larger read-only queries in some contexts."
       ],
@@ -2673,7 +2673,7 @@
       "options": [
         "`cacheable=true`",
         "`callout=true`",
-        "`external=true`",
+        "`http=true`",
         "`category='Callout'`"
       ],
       "answer": [
@@ -2683,7 +2683,7 @@
       "wrong": [
         "`cacheable` belongs to `@AuraEnabled`.",
         "",
-        "There is no `external` setting.",
+        "There is no `http` setting.",
         "`category` only groups the action in Flow Builder."
       ],
       "source": "Apex Developer Guide: InvocableMethod Annotation"
@@ -2720,7 +2720,7 @@
       "code": "<apex:page controller=\"BioCtrl\">\n  <apex:outputText value=\"{!bio}\" escape=\"false\"/>\n</apex:page>",
       "lang": "html",
       "options": [
-        "Remove `escape=\"false\"`, or wrap the value in `HTMLENCODE()`",
+        "Turn escaping back on, or use `HTMLENCODE()`",
         "Mark the `bio` property `transient` in the controller",
         "Query `Bio__c` `WITH USER_MODE` in the controller",
         "Move the value into a `<script>` block and print it there"
@@ -2746,10 +2746,10 @@
       "code": "<button onclick=\"select('{!item.Label__c}')\">Pick</button>",
       "lang": "html",
       "options": [
-        "`HTMLENCODE`",
-        "`JSENCODE`",
-        "`URLENCODE`",
-        "`JSINHTMLENCODE`"
+        "Wrap it in `HTMLENCODE()`",
+        "Wrap it in `JSENCODE()`",
+        "Wrap it in `URLENCODE()` before printing",
+        "Wrap it in `JSINHTMLENCODE()`"
       ],
       "answer": [
         3
@@ -2803,7 +2803,7 @@
       "options": [
         "Yes. `escapeSingleQuotes` removes every SOQL keyword from the input",
         "Yes. Text after `ORDER BY` can never change which records come back",
-        "No. The value isn't in quotes, so check it against an allowlist of fields",
+        "No. It isn't in quotes; check it against a field allowlist",
         "No. Bind it as `:col` after `ORDER BY` and drop the escaping instead"
       ],
       "answer": [
@@ -2828,7 +2828,7 @@
       "lang": "apex",
       "options": [
         "Pass it through `String.escapeSingleQuotes(minAmount)` first",
-        "Convert it first with `Decimal.valueOf(minAmount)` and use the number",
+        "Cast it first with `Decimal.valueOf(minAmount)`",
         "Wrap it in `String.valueOf(minAmount)` when building the query",
         "Add `WITH SECURITY_ENFORCED` to the end of the query string"
       ],
@@ -3122,7 +3122,7 @@
         "The selector needs a class, not a tag; add `.c-chart`",
         "`this.template` is only set inside the `constructor()`",
         "Child calls need `@wire`; wire `draw` to the child",
-        "Child elements don't exist yet; use `renderedCallback()`"
+        "Children don't exist yet; use `renderedCallback()`"
       ],
       "answer": [
         3
@@ -3328,7 +3328,7 @@
       "lang": "js",
       "options": [
         "Call `getOpps()` again imperatively and assign it to `this.opps`",
-        "Keep the whole value the wire gives and pass that to `refreshApex()`",
+        "Pass the whole wired value to `refreshApex()`, not `data`",
         "Add `cacheable=false` to `getOpps` so the wire never caches it",
         "Call `this.connectedCallback()` to make the wire run once more"
       ],
@@ -3353,10 +3353,10 @@
       "code": "public with sharing class SearchCtrl {\n  @AuraEnabled(cacheable=true)\n  public static List<Account> find(String term) { /* ... */ }\n  @AuraEnabled(cacheable=true)\n  public static List<Account> find(String term, Integer max) { /* ... */ }\n}",
       "lang": "apex",
       "options": [
-        "It fails to save: `@AuraEnabled` methods can't be overloaded",
+        "It fails to save: these methods can't be overloaded",
         "It saves; the component picks a method by how many keys it sends",
         "It saves; the wire always calls the version with fewer arguments",
-        "It saves, but only the first method can be called from LWC code"
+        "It saves, but LWC can call only the first one"
       ],
       "answer": [
         0
@@ -3434,7 +3434,7 @@
       "options": [
         "Apex is called right away with `recId` set to `null`",
         "The wire throws an error because the value is missing",
-        "Apex is called once with an empty string, then again",
+        "Apex gets an empty string first",
         "Apex isn't called until `selectedId` has a value"
       ],
       "answer": [
@@ -3563,10 +3563,10 @@
       "code": "for (Request r : reqs) {\n  List<Order> found = [SELECT Status FROM Order\n                       WHERE OrderNumber = :r.orderNo];\n  if (found.isEmpty()) continue;\n  results.add(new Result(found[0].Status));\n}\nreturn results;",
       "lang": "apex",
       "options": [
-        "It returns 2 results for 3 requests; return a failure result instead",
+        "Two results for three requests; add a failure result",
         "It should throw an exception so the agent stops all three requests",
         "It must query inside the loop, so the `continue` is not allowed here",
-        "Nothing; the agent matches each result to its request by the status"
+        "Nothing; results are matched by their status"
       ],
       "answer": [
         0

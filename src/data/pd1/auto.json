@@ -1479,7 +1479,7 @@
       "q": "A manager must approve any Opportunity discount over 20% before the deal moves on. While it waits, sales reps must not be able to edit it. Which feature fits best?",
       "options": [
         "A validation rule on the Discount field",
-        "An approval process",
+        "An approval process with a manager approval step",
         "A screen flow on the Opportunity page",
         "A roll-up summary field on Account"
       ],
@@ -1577,7 +1577,7 @@
         "Build a new workflow rule, since it's simpler",
         "Build a new process in Process Builder",
         "Always write an Apex trigger instead",
-        "Build it in Flow"
+        "Build it in Flow, the recommended tool for new automation"
       ],
       "answer": [
         3
@@ -1893,7 +1893,7 @@
       "difficulty": 1,
       "q": "A method in an Apex class is declared with no access modifier. Which code can call it?",
       "options": [
-        "Only code inside the same class",
+        "Only code inside the class that declares it",
         "Any Apex class in the same namespace",
         "Any Apex code, plus the SOAP API",
         "The class and any class that extends it"
@@ -2068,7 +2068,7 @@
       "options": [
         "All of its methods must be `abstract` and have no body",
         "It can't declare a constructor, unlike a `virtual` class",
-        "It can't be created with `new`",
+        "It can't be created with `new`; subclasses fill in its `abstract` methods",
         "It can be created with `new`, but only from inside a subclass"
       ],
       "answer": [
@@ -2312,7 +2312,7 @@
       "q": "A synchronous job must update all 30,000 Contacts in an org without holding every row in memory at once. Which loop fits best?",
       "options": [
         "A `while` loop that runs one query per Contact",
-        "A SOQL `for` loop written around the query",
+        "A SOQL `for` loop written right around the query, so rows come in chunks",
         "A list loop over a query first stored in a `List<Contact>`",
         "A `do-while` loop that queries with `LIMIT 1` each time"
       ],
@@ -2663,7 +2663,7 @@
         "Ali is saved, and the second Contact quietly fails",
         "A `DmlException` is thrown and neither Contact is saved",
         "Both are saved, and the missing LastName gets a default value",
-        "The second Contact is skipped, with no error"
+        "The second Contact is skipped, and `insert` returns with no error"
       ],
       "answer": [
         1
@@ -2740,7 +2740,7 @@
         "It updates all 400, because the SOQL `for` loop chunks the records",
         "It updates the first 150 Opportunities, then stops without an error",
         "It throws a `QueryException`, because the loop is too big to query",
-        "It hits the DML statement limit, and nothing is saved"
+        "It hits the 150 DML statement limit on update 151, and nothing is saved"
       ],
       "answer": [
         3
@@ -2935,7 +2935,7 @@
         "The saves succeed, because validation ran before the trigger",
         "The trigger's new value is ignored and the old value is saved",
         "The rule is skipped, because it only runs for edits in the UI",
-        "The validation rule blocks those saves"
+        "The validation rule blocks those saves, since it runs after the trigger"
       ],
       "answer": [
         3
@@ -2982,7 +2982,7 @@
       "pack": "hard",
       "q": "An after insert trigger on Contact updates the parent Account. An after update trigger on Account then updates all that Account's Opportunities. Which statement is true?",
       "options": [
-        "It all runs in one transaction with one set of limits",
+        "It all runs in one transaction and shares one set of governor limits",
         "Each trigger runs in its own transaction with fresh limits",
         "The Account trigger waits until the Contact is committed",
         "Salesforce stops a trigger from updating a different object"
@@ -3008,7 +3008,7 @@
         "Up to 16 more times",
         "Until the field value stops changing",
         "None; triggers don't run again",
-        "One more time only"
+        "One more time, and only once"
       ],
       "answer": [
         3
@@ -3080,7 +3080,7 @@
       "q": "An after insert trigger on `Order__c` calls `System.enqueueJob()` to sync the order to an ERP. Later in the same save, a roll-up summary update makes the parent Account fail a validation rule, and the error isn't handled. What happens to the job?",
       "options": [
         "It runs, because it was queued before the error happened",
-        "It never runs, because the transaction rolls back",
+        "It never runs, because the whole transaction rolls back before commit",
         "It runs, but finds no Order, because the insert was rolled back",
         "It runs right away, before the validation rule on the Account"
       ],
@@ -3105,7 +3105,7 @@
         "The moment `sendEmail()` is called",
         "Before the after triggers run",
         "At the next scheduled job run",
-        "After the transaction commits"
+        "After the whole transaction commits"
       ],
       "answer": [
         3
@@ -3150,7 +3150,7 @@
       "options": [
         "Call `update Trigger.new;` at the end of the trigger",
         "Collect the records and call `Database.update(list, false)`",
-        "Set the field on `Trigger.new`; no DML is needed",
+        "Set the field on the records in `Trigger.new`; no extra DML is needed",
         "Query the Accounts again and update the queried copies"
       ],
       "answer": [
@@ -3426,7 +3426,7 @@
       "lang": "apex",
       "options": [
         "200 queries and 1 DML statement",
-        "1 query and 1 DML statement",
+        "1 query and 1 DML statement in total",
         "1 query and 200 DML statements",
         "2 queries and 2 DML statements"
       ],
@@ -3719,7 +3719,7 @@
       "code": "@AuraEnabled\npublic static void placeOrder(Order__c o, List<Line__c> lines) {\n    insert o;\n    try {\n        insert lines;\n    } catch (DmlException e) {\n        System.debug('Lines failed: ' + e.getMessage());\n    }\n}",
       "lang": "apex",
       "options": [
-        "The order only, because the error was caught",
+        "The order only, because the error was caught and not thrown again",
         "Nothing, because any `DmlException` rolls back the transaction",
         "The order and the lines that passed validation",
         "Nothing, because a `DmlException` can't be caught"
@@ -3772,7 +3772,7 @@
       "lang": "apex",
       "options": [
         "It prints `2`, and the Account named Ok is saved",
-        "It prints `2`, and no Accounts are saved",
+        "It prints `2`, and none of the three Accounts is saved",
         "It prints `1`, because DML stops at the first error",
         "It prints `3`, because the whole list failed"
       ],
@@ -3840,7 +3840,7 @@
       "difficulty": 1,
       "q": "When does a `finally` block run?",
       "options": [
-        "Every time, error or not",
+        "Every time, whether or not the try block threw an error",
         "Only when an error was caught by a catch block",
         "Only when the try block ran without any error",
         "Only when an error was thrown and nothing caught it"
@@ -3915,7 +3915,7 @@
       "code": "public class ScoreAction {\n    @InvocableMethod(label='Score Lead')\n    public static Integer score(Id leadId) {\n        return 5;\n    }\n}",
       "lang": "apex",
       "options": [
-        "The input and output must be lists",
+        "The input and output must both be lists, since flows send data in bulk",
         "The method must be `global`, because `public` isn't allowed",
         "The class must be `global` so Flow Builder can see it",
         "The `label` value can't contain spaces"
@@ -4018,7 +4018,7 @@
         "Mark the method `@AuraEnabled(cacheable=true)` so the agent can call it",
         "Wrap the logic in a schedule-triggered flow that runs every hour",
         "Make the class `global` and the method `webservice` so agents can find it",
-        "Expose it with `@InvocableMethod` and add it as an agent action"
+        "Expose the logic with `@InvocableMethod` and add it to the agent as an action"
       ],
       "answer": [
         3
@@ -4040,7 +4040,7 @@
       "options": [
         "Mark the invocable method `global` instead of `public`",
         "Add `with sharing` to the class that holds the action",
-        "Give the users access to the Apex class",
+        "Give the users access to the Apex class with a permission set",
         "Change the screen flow to a record-triggered flow"
       ],
       "answer": [
@@ -4089,7 +4089,7 @@
         "Whenever a field on the same record must be set on save",
         "Whenever an email alert must go out on save",
         "Whenever the admin team wants to maintain it without code",
-        "When the logic is too complex for Flow"
+        "When the logic is too complex, or needs more control than Flow gives"
       ],
       "answer": [
         3
