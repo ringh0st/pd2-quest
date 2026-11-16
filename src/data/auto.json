@@ -64,6 +64,51 @@
           "body": "**Flow, Trigger, Validate, Save.** Before-save flows first, before triggers next, then validation rules check the result. Guard recursion per record with a Set, never with one Boolean."
         }
       ],
+      "terms": [
+        {
+          "term": "order of execution",
+          "say": "The fixed list of steps Salesforce runs every time a record is saved. Like a recipe: same steps, same order, every time."
+        },
+        {
+          "term": "before trigger",
+          "match": [
+            "before triggers"
+          ],
+          "say": "Apex that runs just before the record is saved. It can change that record's fields for free, with no extra save."
+        },
+        {
+          "term": "Trigger.new",
+          "say": "The list of records being saved right now, with their new values. In a before trigger you can change them directly."
+        },
+        {
+          "term": "DML",
+          "say": "Apex commands that change records: insert, update, delete and more. Each one counts toward a limit, and can fire triggers."
+        },
+        {
+          "term": "workflow field update",
+          "say": "An old-style rule that changes a field after the save. It saves the record again, so update triggers run one more time."
+        },
+        {
+          "term": "validation rules",
+          "say": "Checks an admin sets up that block a bad save with an error message. For example: \"Close Date can't be in the past.\""
+        },
+        {
+          "term": "recursion",
+          "say": "Code that ends up starting itself again, like a trigger whose update fires the same trigger. Without a guard it loops or does work twice."
+        },
+        {
+          "term": "transaction",
+          "say": "Everything that happens in one save, start to finish. It all succeeds together, or it is all undone together."
+        },
+        {
+          "term": "commit",
+          "say": "The moment the changes become final in the database. Before that, everything can still be undone."
+        },
+        {
+          "term": "Set.add()",
+          "say": "Puts an item into a Set, a list with no repeats. It returns false if the item was already there. Handy to handle each record only once."
+        }
+      ],
       "check": [
         "auto-q1",
         "auto-q2",
@@ -131,6 +176,54 @@
           "body": "**One door, thin trigger, fat handler.** And never query in a loop: query once, then look things up in a Map."
         }
       ],
+      "terms": [
+        {
+          "term": "trigger framework",
+          "say": "A simple pattern for triggers: one small trigger per object passes all the work to a class. Keeps code tidy, testable and safe for many records."
+        },
+        {
+          "term": "bulk-safe",
+          "say": "Works just as well for 1 record or 200 at once, without hitting limits. Like cooking for a crowd in one big pot, not 200 tiny ones."
+        },
+        {
+          "term": "handler class",
+          "say": "The Apex class that holds the trigger's real logic. The trigger just calls it. Here you test the code and choose the order of steps."
+        },
+        {
+          "term": "Trigger.operationType",
+          "say": "Tells the code which event is running, like BEFORE_INSERT or AFTER_UPDATE. The handler uses it to pick the right method."
+        },
+        {
+          "term": "SOQL",
+          "say": "Salesforce's language for asking the database for records. Each query counts toward a limit, so never run one inside a loop."
+        },
+        {
+          "term": "DML",
+          "say": "Apex commands that save changes: insert, update, delete. Each one counts toward a limit, so do it once for the whole list."
+        },
+        {
+          "term": "Map",
+          "match": [
+            "Maps"
+          ],
+          "say": "A lookup table: each key points to one value. With Ids as keys, you find a record instantly instead of searching or querying again."
+        },
+        {
+          "term": "addError",
+          "say": "Marks one record, or one of its fields, as bad so it won't save. The user sees your message. Like a teacher returning one test with a note."
+        },
+        {
+          "term": "custom exception",
+          "say": "Your own error type. It must extend Exception, and its name must end in Exception, like PaymentException."
+        },
+        {
+          "term": "allOrNone",
+          "match": [
+            "allOrNone = true"
+          ],
+          "say": "A setting on a DML save. When true (the default), one bad record fails the whole save. When false, the good records still save."
+        }
+      ],
       "check": [
         "auto-q5",
         "auto-q6",
@@ -190,6 +283,54 @@
           "type": "tip",
           "title": "Remember it",
           "body": "**Future = Fire and Forget. Queueable = Queue it, Track it, Chain it.**"
+        }
+      ],
+      "terms": [
+        {
+          "term": "Asynchronous Apex",
+          "say": "Code that runs a bit later, in its own transaction with its own limits. The user doesn't wait for it to finish."
+        },
+        {
+          "term": "future method",
+          "match": [
+            "@future"
+          ],
+          "say": "A static, void method marked @future that runs later. You get no job Id. It only accepts simple values, like Ids, not whole records."
+        },
+        {
+          "term": "Queueable",
+          "say": "A class you put in a line to run later. You get a job Id, it can hold whole records, and it can start one next job."
+        },
+        {
+          "term": "primitives",
+          "say": "Simple values: numbers, text, dates, true/false and Ids. Not whole records. So pass Ids and look the records up again."
+        },
+        {
+          "term": "sObjects",
+          "say": "Salesforce records inside Apex, like an Account or a record of your own custom object."
+        },
+        {
+          "term": "System.enqueueJob",
+          "match": [
+            "enqueueJob"
+          ],
+          "say": "The call that puts a Queueable in line to run. It hands back a job Id so you can track the job."
+        },
+        {
+          "term": "job Id",
+          "say": "The ID of an async job. Use it to check how the job is doing: queued, running, done or failed."
+        },
+        {
+          "term": "Chain depth",
+          "say": "How many jobs in a row can each start the next one. No limit in normal orgs, but only 5 jobs (counting the first one) in Developer Edition and trial orgs."
+        },
+        {
+          "term": "AsyncOptions",
+          "say": "Extra settings when you queue a job: a minimum delay, a max chain depth, and a signature that stops the same job being queued twice."
+        },
+        {
+          "term": "System.isFuture()",
+          "say": "Returns true if the code is already running inside a future method. Check it first, because a future can't call another future."
         }
       ],
       "check": [
@@ -254,6 +395,51 @@
           "type": "tip",
           "title": "Remember it",
           "body": "**Finalizer = the cleanup crew.** One crew per job, its own transaction, one new job, five retries max."
+        }
+      ],
+      "terms": [
+        {
+          "term": "uncaught exception",
+          "say": "An error that no try/catch catches. The job stops right there and its changes are undone."
+        },
+        {
+          "term": "governor limit",
+          "say": "A per-transaction cap Salesforce sets, like 100 queries. Hit one and the job stops at once. Even try/catch can't catch it."
+        },
+        {
+          "term": "rolls back",
+          "match": [
+            "rolled back"
+          ],
+          "say": "All the job's database changes are undone, as if they never happened. Like pressing undo on everything at once."
+        },
+        {
+          "term": "Transaction Finalizer",
+          "say": "A class that runs after a Queueable ends, whether it worked or crashed. Use it to log the problem or try again."
+        },
+        {
+          "term": "System.attachFinalizer()",
+          "say": "Hooks your finalizer onto the running Queueable. Call it inside execute(). Only one finalizer per job."
+        },
+        {
+          "term": "getException()",
+          "say": "Hands the finalizer the error that ended the job. Use it to log what went wrong."
+        },
+        {
+          "term": "UNHANDLED_EXCEPTION",
+          "say": "The result when the Queueable crashed with an error nothing caught. The other possible result is SUCCESS."
+        },
+        {
+          "term": "AsyncApexJob",
+          "say": "The record Salesforce keeps for each async job, with its status and errors. You can query it to check on a job."
+        },
+        {
+          "term": "transient",
+          "say": "Marks a variable to skip when the object is saved. So the finalizer gets it back as null."
+        },
+        {
+          "term": "static",
+          "say": "A static variable is shared by all code in one transaction. It starts fresh in every new transaction, so it can't carry a count to the finalizer."
         }
       ],
       "check": [
@@ -326,6 +512,48 @@
           "body": "**Start, Execute, Finish: find, chew, tidy up.** Cron starts with **S M H**: Seconds, Minutes, Hours."
         }
       ],
+      "terms": [
+        {
+          "term": "Batch Apex",
+          "say": "Apex that splits a huge set of records into chunks. Each chunk runs as its own transaction, so millions of records can be handled."
+        },
+        {
+          "term": "Schedulable Apex",
+          "say": "Apex that starts at a set time, like every night at 2 AM. Like an alarm clock for your code."
+        },
+        {
+          "term": "governor limits",
+          "say": "Caps Salesforce sets per transaction, like how many queries or saves you may do. Each batch chunk gets a fresh set."
+        },
+        {
+          "term": "QueryLocator",
+          "say": "What start() returns when it uses one SOQL query. It can feed up to 50 million records to the batch."
+        },
+        {
+          "term": "Iterable",
+          "say": "What start() can return for custom logic or data that isn't a query. The normal 50,000-row query limit still applies."
+        },
+        {
+          "term": "scope",
+          "say": "How many records each execute() chunk gets. Default 200. With a QueryLocator the max is 2,000."
+        },
+        {
+          "term": "Database.Stateful",
+          "say": "Lets a batch remember its instance variables, like a running count, from one chunk to the next. Static variables still reset."
+        },
+        {
+          "term": "Apex flex queue",
+          "say": "A waiting room for batch jobs. Up to 100 wait there, marked Holding, until one of the 5 active slots frees up."
+        },
+        {
+          "term": "cron",
+          "say": "A short text that says when to run, read as seconds, minutes, hours, day, month, weekday. \"0 0 2 * * ?\" means every night at 2 AM."
+        },
+        {
+          "term": "Database.AllowsCallouts",
+          "say": "Add this to a batch class so it may call other systems over the internet."
+        }
+      ],
       "check": [
         "auto-q16",
         "auto-q17",
@@ -378,6 +606,48 @@
           "type": "tip",
           "title": "Remember it",
           "body": "**F-Q-B-S**: Future (fast and simple), Queueable (flexible), Batch (big), Schedule (clock). Add **PE** when many listeners must react."
+        }
+      ],
+      "terms": [
+        {
+          "term": "callout",
+          "say": "Apex calling another system over the internet, like a shipping service, and getting its answer back."
+        },
+        {
+          "term": "synchronous callout",
+          "say": "A call to another system where the code stops and waits for the answer. A trigger can't do it, because the record is still mid-save."
+        },
+        {
+          "term": "Queueable",
+          "say": "Async Apex that can take whole records, gives you a job Id, and can start one next job. The flexible all-rounder."
+        },
+        {
+          "term": "Finalizer",
+          "say": "A class that runs after a Queueable ends, even if it crashed. Good for cleanup, logging or one retry."
+        },
+        {
+          "term": "Batch Apex",
+          "say": "Async Apex for huge jobs. It splits millions of records into chunks, each with its own fresh limits."
+        },
+        {
+          "term": "Schedulable",
+          "say": "Apex that starts at a set time, like every night at 2 AM. The alarm clock of async tools."
+        },
+        {
+          "term": "Platform Events",
+          "say": "Messages sent out for anyone listening. The sender doesn't know or care who reacts. Like a radio show."
+        },
+        {
+          "term": "AsyncApexJob",
+          "say": "The record Salesforce keeps for each async job, with its status and errors. You can look it up or see it on the Apex Jobs page."
+        },
+        {
+          "term": "Database.executeBatch",
+          "say": "The call that starts a Batch Apex job. Only 5 batch jobs can run at once, so don't call it on every save."
+        },
+        {
+          "term": "flex queue",
+          "say": "A waiting line for extra batch jobs, up to 100. They wait there until one of the 5 active batch slots frees up."
         }
       ],
       "check": [
@@ -451,6 +721,48 @@
           "body": "**After Commit waits for the bell. Immediately shouts now.** Event triggers: `after insert` only."
         }
       ],
+      "terms": [
+        {
+          "term": "platform event",
+          "say": "A message one part of your system sends out for others to hear. The sender doesn't know who is listening."
+        },
+        {
+          "term": "EventBus.publish",
+          "say": "The Apex call that sends out platform events. It counts as a DML statement, a save command, and gives back a SaveResult."
+        },
+        {
+          "term": "SaveResult",
+          "say": "The receipt you get after publishing. Success only means the event was queued to send, not that anyone got it yet."
+        },
+        {
+          "term": "Publish After Commit",
+          "say": "The event goes out only if the whole transaction saves for good. If the transaction is undone, the event is never sent."
+        },
+        {
+          "term": "Publish Immediately",
+          "say": "The event goes out right away, even if the transaction is undone later. Good for error logs that must survive."
+        },
+        {
+          "term": "Pub/Sub API",
+          "say": "Salesforce's API that outside systems use to listen for events or send them. CometD is an older way to listen."
+        },
+        {
+          "term": "Automated Process",
+          "say": "A built-in system user. Platform event triggers run as this user by default, not as the person who published."
+        },
+        {
+          "term": "PlatformEventSubscriberConfig",
+          "say": "Setup for a platform event trigger: which user it runs as and how many events it gets per batch."
+        },
+        {
+          "term": "setResumeCheckpoint",
+          "say": "Saves your place in the batch of events. If the trigger fails, the next run starts after that event, not from the top."
+        },
+        {
+          "term": "EventBus.RetryableException",
+          "say": "Throw it to have the whole batch of events sent to your trigger again, a bit later. Up to 9 retries."
+        }
+      ],
       "check": [
         "auto-q24",
         "auto-q25",
@@ -508,6 +820,51 @@
           "type": "tip",
           "title": "Remember it",
           "body": "**PE = you write the message. CDC = Salesforce writes the diary of record changes.**"
+        }
+      ],
+      "terms": [
+        {
+          "term": "Change Data Capture",
+          "match": [
+            "CDC"
+          ],
+          "say": "Salesforce sends a message whenever a chosen object's records are created, updated, deleted or undeleted. You pick objects in Setup, no code to publish."
+        },
+        {
+          "term": "change event",
+          "say": "The message Salesforce sends when a record is created, updated, deleted or undeleted. Other systems read it to stay in sync."
+        },
+        {
+          "term": "channel",
+          "say": "The address listeners tune in to, like a radio station. One per object, or /data/ChangeEvents for all selected objects."
+        },
+        {
+          "term": "ChangeEventHeader",
+          "say": "The part of a change event that says what happened: which kind of change, which records, which fields, and who made it."
+        },
+        {
+          "term": "changedFields",
+          "say": "The list of fields that changed in an update. Read it, because fields that didn't change arrive as null."
+        },
+        {
+          "term": "recordIds",
+          "say": "The Ids of the records this event is about. One event can cover many records, so loop over them all."
+        },
+        {
+          "term": "commitUser",
+          "say": "The user whose save made the change. Handy to know who did it."
+        },
+        {
+          "term": "replay",
+          "say": "Asking again for events that were already sent, like rewinding a recording. Change events are kept for 3 days."
+        },
+        {
+          "term": "nulledFields",
+          "say": "Lists fields someone emptied on purpose. It tells a real \"made blank\" apart from \"didn't change\", since both show null."
+        },
+        {
+          "term": "Trigger.old",
+          "say": "In normal update triggers, the records as they were before the change. Change event triggers don't have it."
         }
       ],
       "check": [
@@ -574,6 +931,51 @@
           "body": "**Call first, save second.** And an HTTP 503 doesn't throw: check `getStatusCode()` before you parse the body."
         }
       ],
+      "terms": [
+        {
+          "term": "callout",
+          "say": "Your Apex calling another system over the internet, like a tax service. You send a request and wait for the answer."
+        },
+        {
+          "term": "Named Credential",
+          "say": "A saved setting with the address of another system, linked to how to log in. Your code never holds the password."
+        },
+        {
+          "term": "External Credential",
+          "say": "Holds how to log in to the other system, like OAuth or a token in a header. A Named Credential points to it."
+        },
+        {
+          "term": "principal",
+          "match": [
+            "principals"
+          ],
+          "say": "The login identity an External Credential uses: one shared login, or each user's own. Users get it through a permission set."
+        },
+        {
+          "term": "Remote Site Setting",
+          "say": "An older allow-list of web addresses Apex may call. Not needed when you call through a Named Credential."
+        },
+        {
+          "term": "CalloutException",
+          "say": "The error a callout throws when it can't go ahead or fails, like calling out while unsaved changes are waiting."
+        },
+        {
+          "term": "WSDL2Apex",
+          "say": "Reads a SOAP service's WSDL, its contract file, and writes ready-made Apex classes to call that service."
+        },
+        {
+          "term": "WebServiceMock",
+          "say": "A fake SOAP service for tests. Tests can't make real callouts, so it hands back a pretend answer."
+        },
+        {
+          "term": "HttpCalloutMock",
+          "say": "A fake REST service for tests. Set it with Test.setMock, and your callout gets a pretend response instead of a real one."
+        },
+        {
+          "term": "Continuation",
+          "say": "Lets a page built with LWC, Aura or Visualforce wait for a slow callout without tying up a Salesforce server. Up to 3 callouts each."
+        }
+      ],
       "check": [
         "auto-q32",
         "auto-q33",
@@ -634,6 +1036,56 @@
           "type": "tip",
           "title": "Remember it",
           "body": "**G.S. = Global Static.** Every inbound Apex web method needs both."
+        }
+      ],
+      "terms": [
+        {
+          "term": "Apex REST",
+          "say": "Turns an Apex class into a web address outside systems can call, using URLs and JSON."
+        },
+        {
+          "term": "Apex SOAP",
+          "say": "Turns Apex methods into a SOAP web service. Callers follow a WSDL contract and send XML."
+        },
+        {
+          "term": "WSDL",
+          "say": "A contract file that lists a SOAP service's methods and data types. You give it to the caller so they know what to send."
+        },
+        {
+          "term": "urlMapping",
+          "say": "The path your Apex REST class answers at, after /services/apexrest/. Like the menu board: it says what can be ordered here."
+        },
+        {
+          "term": "global",
+          "say": "The widest access level. Code and callers outside your app or package can reach it. Inbound web service classes must be global."
+        },
+        {
+          "term": "static",
+          "say": "Belongs to the class itself, not to one object made from it. So it can run without creating an object first."
+        },
+        {
+          "term": "@HttpPost",
+          "say": "Marks the method that answers POST calls, usually to create something. A class may have only one."
+        },
+        {
+          "term": "RestContext",
+          "match": [
+            "RestContext.request",
+            "RestContext.response",
+            "RestContext.request.requestBody"
+          ],
+          "say": "Gives your REST method the incoming request and the response you send back, including its status code."
+        },
+        {
+          "term": "requestBody",
+          "say": "The raw body of the incoming request. It stays empty when your method has parameters, because Salesforce already used it to fill them."
+        },
+        {
+          "term": "webservice",
+          "match": [
+            "webservice static"
+          ],
+          "say": "The keyword that makes an Apex method callable over SOAP. It goes with static, inside a global class."
         }
       ],
       "check": [
@@ -701,6 +1153,48 @@
           "body": "**One door, one list in, one list out.** That's an invocable method."
         }
       ],
+      "terms": [
+        {
+          "term": "Flow",
+          "say": "Salesforce's point-and-click tool for automation. Admins build it from boxes and arrows, with no code."
+        },
+        {
+          "term": "invocable method",
+          "say": "Apex that Flow can call like any other action. It takes one list in and hands one list back."
+        },
+        {
+          "term": "@InvocableVariable",
+          "say": "Marks a field in a class so Flow sees it as an input or output. Lets you pass several values together."
+        },
+        {
+          "term": "inner class",
+          "say": "A class written inside another class. Here it bundles several Flow inputs into one object."
+        },
+        {
+          "term": "outer class",
+          "say": "A top-level class, not written inside another class. An invocable method must live in one."
+        },
+        {
+          "term": "interviews",
+          "say": "One run of a flow is one interview. Many runs get bundled, so your method gets one call with a big list."
+        },
+        {
+          "term": "before-save flow",
+          "say": "A record-triggered flow that runs before the record is saved. The fastest way to update fields on that same record."
+        },
+        {
+          "term": "record-triggered flow",
+          "say": "A flow that starts by itself when a record is created, updated or deleted."
+        },
+        {
+          "term": "Apex-defined",
+          "say": "A Flow variable whose type is your own Apex class. Flow can read and set each of its fields marked @AuraEnabled."
+        },
+        {
+          "term": "Run Asynchronously",
+          "say": "A separate path in a record-triggered flow that runs a bit later, after the save. Callouts are allowed there."
+        }
+      ],
       "check": [
         "auto-q42",
         "auto-q43",
@@ -762,6 +1256,57 @@
           "type": "tip",
           "title": "Remember it",
           "body": "**False means forgiving:** `Database.insert(list, false)` keeps the good and reports the bad. Bind your values; never glue them in."
+        }
+      ],
+      "terms": [
+        {
+          "term": "allOrNone",
+          "match": [
+            "allOrNone = false"
+          ],
+          "say": "A save setting. False means the good rows save and the bad ones just report errors. True, the default, fails the whole list."
+        },
+        {
+          "term": "Upsert",
+          "say": "Insert or update in one step. If a matching record exists, it is updated. If not, a new one is made."
+        },
+        {
+          "term": "external Id",
+          "say": "A field holding another system's own ID for the record. Upsert can match on it, so you need no Salesforce Ids."
+        },
+        {
+          "term": "setup objects",
+          "say": "Records that control users and access, like User, Group and UserRole. Saving them with normal records at once causes an error."
+        },
+        {
+          "term": "MIXED_DML_OPERATION",
+          "say": "The error from saving setup objects and normal records in one transaction. Fix it by moving one side to async Apex."
+        },
+        {
+          "term": "System.runAs",
+          "say": "In tests, runs code as a chosen user. It also lets a test save setup and normal records without the mixed DML error."
+        },
+        {
+          "term": "SOQL injection",
+          "say": "When user input is glued into a query and changes what the query does. Like someone slipping an extra line into your shopping list."
+        },
+        {
+          "term": "bind variables",
+          "match": [
+            "bind Map"
+          ],
+          "say": "Placeholders in a query, like :name, filled with a value safely. The value is only data, never part of the query itself."
+        },
+        {
+          "term": "String.escapeSingleQuotes",
+          "say": "Puts a backslash before every single quote in user input. Then the input can't close your text early and add its own query parts."
+        },
+        {
+          "term": "savepoint",
+          "match": [
+            "Database.setSavepoint()"
+          ],
+          "say": "A marked spot in a transaction. Rolling back to it undoes every database change since then. Setting and rolling back each count toward the save-command limit."
         }
       ],
       "check": [
