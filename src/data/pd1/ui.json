@@ -2812,7 +2812,7 @@
       "explain": "`escapeSingleQuotes` only helps for values inside quotes. A field name sits outside quotes, so allow only names from a fixed list.",
       "wrong": [
         "It only adds backslashes before single quotes; keywords pass through.",
-        "Injected text could add clauses or end the query differently, so it isn't safe.",
+        "With a `LIMIT`, the sort decides which rows come back, and the input is never checked.",
         "",
         "Binds hold values only. A field name can't be a bind variable."
       ],
@@ -3170,7 +3170,7 @@
       "lesson": "ui-5",
       "difficulty": 3,
       "pack": "hard",
-      "q": "Rows sometimes show the wrong data after a contact is removed from the list. What is the problem?",
+      "q": "A code review flags this loop. What is the problem?",
       "code": "<template for:each={contacts} for:item=\"c\" for:index=\"i\">\n  <li key={i}>{c.Name}</li>\n</template>",
       "lang": "html",
       "options": [
@@ -3182,14 +3182,14 @@
       "answer": [
         1
       ],
-      "explain": "LWC uses the key to tell items apart. An index shifts when items move or are removed, so use a unique id from the data.",
+      "explain": "LWC uses the key to tell list items apart. You can't use the index as a key; use a unique value from the data, like an Id.",
       "wrong": [
         "Attribute order doesn't matter.",
         "",
         "Both directives work, and both need a proper key.",
         "The key goes on the first element inside the loop."
       ],
-      "source": "LWC Developer Guide: HTML Templates"
+      "source": "LWC Developer Guide: Render Lists"
     },
     {
       "id": "ui-x19",
