@@ -58,6 +58,54 @@
         "fund-q1",
         "fund-q2",
         "fund-q3"
+      ],
+      "terms": [
+        {
+          "term": "Sharing",
+          "say": "Sharing decides which records (rows) each user may see. Like a library card: it lets you borrow some books, but not all of them."
+        },
+        {
+          "term": "system mode",
+          "say": "Apex's default way to run. It skips the user's object and field permissions. Whether it also skips record sharing depends on the class's sharing keyword."
+        },
+        {
+          "term": "sharing keyword",
+          "say": "A word on a class that tells Apex whether to respect the user's record access. There are three: with sharing, without sharing and inherited sharing."
+        },
+        {
+          "term": "with sharing",
+          "say": "The code only sees records the user may see. It filters rows only. It does not check object or field permissions."
+        },
+        {
+          "term": "without sharing",
+          "say": "The code ignores sharing rules and sees every record. Like the librarian's master key that opens every shelf."
+        },
+        {
+          "term": "inherited sharing",
+          "say": "Use the same mode as the code that called this class. If nothing called it, it runs with sharing. It shows your intent clearly."
+        },
+        {
+          "term": "entry point",
+          "say": "The first Apex class a request runs, like the front door of a house. Nothing called it, so there is no caller mode to copy."
+        },
+        {
+          "term": "@AuraEnabled",
+          "say": "A tag that lets Lightning components call an Apex method. A class like that with no sharing keyword runs with sharing."
+        },
+        {
+          "term": "inner class",
+          "match": [
+            "inner classes"
+          ],
+          "say": "A class written inside another class. It does not copy the outer class's sharing keyword, so give it its own."
+        },
+        {
+          "term": "user mode",
+          "match": [
+            "USER_MODE"
+          ],
+          "say": "Telling the code: \"act like the person using the app.\" Then it checks their object, field and record access, all three."
+        }
       ]
     },
     {
@@ -231,6 +279,57 @@
         "fund-q8",
         "fund-q9",
         "fund-q10"
+      ],
+      "terms": [
+        {
+          "term": "OWD",
+          "match": [
+            "org-wide default"
+          ],
+          "say": "Org-wide default. Everyone's starting access to one object's records, like Private or Public Read Only. Sharing can only open more, never less."
+        },
+        {
+          "term": "Apex managed sharing",
+          "say": "Code that gives people access to records when the click tools can't. It writes share records itself, like adding names to a guest list."
+        },
+        {
+          "term": "share record",
+          "match": [
+            "share row"
+          ],
+          "say": "One line on the guest list: this user or group may see this record, with this level of access."
+        },
+        {
+          "term": "share object",
+          "match": [
+            "ObjectName__Share"
+          ],
+          "say": "The list that holds a custom object's share records. Its name ends in __Share, like Project__Share."
+        },
+        {
+          "term": "AccessLevel",
+          "say": "How much a share gives: Read (look) or Edit (change). All (full control) belongs to the record's owner only."
+        },
+        {
+          "term": "RowCause",
+          "say": "The reason a share exists, written on the share itself. It decides whether the share survives when the record gets a new owner."
+        },
+        {
+          "term": "Manual",
+          "say": "The default reason on a share. Manual shares are deleted when the record's owner changes, like a new host tearing up the old guest list."
+        },
+        {
+          "term": "Apex sharing reason",
+          "say": "A custom reason you create for your code's shares, on custom objects only. These shares stay when the owner changes. Only users with Modify All Data (a top admin power) can edit them in the UI."
+        },
+        {
+          "term": "Controlled by Parent",
+          "say": "The child in a master-detail link just follows its parent's access. So it has no share object of its own. Share the parent (master) instead."
+        },
+        {
+          "term": "Apex Sharing Recalculation",
+          "say": "Where you register a batch class (code that works through many records in chunks) to rebuild your code's shares. It runs when the OWD changes or an admin starts it."
+        }
       ]
     },
     {
@@ -296,6 +395,61 @@
         "fund-q12",
         "fund-q13",
         "fund-q14"
+      ],
+      "terms": [
+        {
+          "term": "custom metadata types",
+          "match": [
+            "custom metadata",
+            "__mdt"
+          ],
+          "say": "Settings saved as metadata, like a printed menu sent to every branch. They deploy with your code, and tests can see them. Code can't insert them with DML."
+        },
+        {
+          "term": "custom settings",
+          "match": [
+            "custom setting"
+          ],
+          "say": "Settings saved as data in one org, like one shop's specials board. The data doesn't deploy, and tests can't see it unless the test inserts it."
+        },
+        {
+          "term": "custom labels",
+          "say": "Short texts, like messages, that can be translated into each user's language. Use them for words people read, not for logic settings."
+        },
+        {
+          "term": "Hierarchy",
+          "say": "A custom setting with three layers: org, then profile, then user. The most specific value wins, like a person's own rule beating the company rule."
+        },
+        {
+          "term": "Protected",
+          "say": "A lock on custom metadata in a managed package (an app installed from someone else). Only that package's own code can read the records."
+        },
+        {
+          "term": "SeeAllData",
+          "say": "A test setting that lets a test see the org's real data. Custom metadata doesn't need it: tests see those records anyway."
+        },
+        {
+          "term": "DML",
+          "say": "The Apex statements that save changes to records: insert, update and delete. Like writing in the database with a pen."
+        },
+        {
+          "term": "enqueueDeployment",
+          "match": [
+            "Metadata.Operations.enqueueDeployment()"
+          ],
+          "say": "How Apex changes custom metadata records. It sends them off to deploy, and the work finishes later. A callback (code that runs when it's done) tells you how it went."
+        },
+        {
+          "term": "getInstance",
+          "match": [
+            "getInstance()"
+          ],
+          "say": "Reads a custom setting. For a hierarchy setting, it gives the most specific value for each field: the user's, else the profile's, else the org's."
+        },
+        {
+          "term": "$Setup",
+          "say": "How a formula reads a hierarchy custom setting. Formulas can't read list custom settings at all."
+        }
       ]
     },
     {
@@ -356,6 +510,60 @@
         "fund-q17",
         "fund-q18",
         "fund-q19"
+      ],
+      "terms": [
+        {
+          "term": "Locale",
+          "say": "A user's country and format style. It decides how dates, numbers and money look, like 12/31 in one place and 31/12 in another."
+        },
+        {
+          "term": "time zone",
+          "say": "Where the user's clock is set, like Tokyo or London. The same moment shows a different hour in each."
+        },
+        {
+          "term": "GMT",
+          "match": [
+            "UTC"
+          ],
+          "say": "One master clock for the whole world. Salesforce stores every date-and-time on it. UTC is practically the same clock."
+        },
+        {
+          "term": "Datetime",
+          "match": [
+            "Datetimes"
+          ],
+          "say": "A date plus a time, like a flight's departure. It is stored in GMT, and format() shows it in the user's local time."
+        },
+        {
+          "term": "toLabel",
+          "say": "A SOQL word that gives a picklist value (a choice from a dropdown) translated into the user's language."
+        },
+        {
+          "term": "convertCurrency",
+          "match": [
+            "convertCurrency()"
+          ],
+          "say": "A SOQL word that shows an amount in the user's own currency. It's not allowed in WHERE or ORDER BY, so filter with a literal like USD100000."
+        },
+        {
+          "term": "multi-currency",
+          "say": "An org setting that lets records use different money, like dollars and euros. Once it's turned on, it can never be turned off."
+        },
+        {
+          "term": "CurrencyIsoCode",
+          "say": "The field naming a record's currency, like USD or EUR. It exists only with multi-currency on, so code naming it directly won't compile in other orgs."
+        },
+        {
+          "term": "corporate currency",
+          "say": "The company's main currency. Totals from GROUP BY queries come back in it, not in each record's own currency."
+        },
+        {
+          "term": "convertTimezone",
+          "match": [
+            "convertTimezone()"
+          ],
+          "say": "Turns a stored GMT time into the user's local time inside a SOQL date function. Use it to group records by local day or hour."
+        }
       ]
     },
     {
@@ -426,6 +634,64 @@
         "fund-q21",
         "fund-q22",
         "fund-q23"
+      ],
+      "terms": [
+        {
+          "term": "Dynamic Apex",
+          "say": "Code that picks the object, field or class while it runs, not when you write it. Like a vending machine that finds the snack from the code you type."
+        },
+        {
+          "term": "Schema describe",
+          "match": [
+            "describe",
+            "describes"
+          ],
+          "say": "Asking Salesforce about objects and fields: names, types, record types. Like reading the label on a box. It needs no SOQL query."
+        },
+        {
+          "term": "SOQL injection",
+          "say": "A trick where a bad user types query words into a text box. If code glues that text into a query, the query does something you never meant."
+        },
+        {
+          "term": "Bind variables",
+          "match": [
+            "bind variable"
+          ],
+          "say": "A slot in a query, written :name, that takes user input as plain data. The input can never change the query itself. It's the safest fix for injection."
+        },
+        {
+          "term": "String.escapeSingleQuotes",
+          "match": [
+            "String.escapeSingleQuotes()"
+          ],
+          "say": "Puts a backslash before each single quote in user text, so the text can't end the query string early. A fallback; bind variables are better."
+        },
+        {
+          "term": "Type.forName",
+          "say": "Finds a class by its name while the code runs. If no class has that name, it returns null (nothing)."
+        },
+        {
+          "term": "newInstance",
+          "match": [
+            "newInstance()"
+          ],
+          "say": "Makes a new object from a type found at run time. The class needs a public constructor (its setup code) that takes no inputs."
+        },
+        {
+          "term": "type token",
+          "say": "A value that stands for an object type, like Account. Call newSObject() on it to make a new, empty record of that type."
+        },
+        {
+          "term": "Schema.getGlobalDescribe",
+          "match": [
+            "Schema.getGlobalDescribe()"
+          ],
+          "say": "Gives a map of every object in the org. It is slow and expensive, so call it once, never inside a loop."
+        },
+        {
+          "term": "instanceof",
+          "say": "Asks: is this value of that type? Like asking: is this pet a dog? A list of Accounts counts as a list of any records (List<SObject>)."
+        }
       ]
     },
     {
@@ -495,6 +761,48 @@
         "fund-q25",
         "fund-q26",
         "fund-q27"
+      ],
+      "terms": [
+        {
+          "term": "interface",
+          "say": "A list of methods a class promises to have, with no code inside. Like a plug shape: anything that fits can plug in. A class can use many."
+        },
+        {
+          "term": "abstract",
+          "say": "A half-built class. You can't create one with new. A child class must extend it and finish its abstract methods."
+        },
+        {
+          "term": "virtual",
+          "say": "A class or method that children may extend or change. A virtual class can also be created with new, unlike an abstract one."
+        },
+        {
+          "term": "final",
+          "say": "Closed: no one can extend it. Apex classes and methods are final unless you mark them virtual or abstract."
+        },
+        {
+          "term": "override",
+          "say": "The word a child class writes to replace its parent's method. The parent method must be virtual or abstract."
+        },
+        {
+          "term": "handler class",
+          "say": "The class a trigger hands all its work to. The trigger stays empty, and the handler picks what to do for each event, like before insert."
+        },
+        {
+          "term": "Selector",
+          "say": "One class that holds all the SOQL queries for one object. Like one librarian who fetches every book of one kind."
+        },
+        {
+          "term": "Unit of Work",
+          "say": "Collects all the record changes during a job, then saves them in one go at the end. Like a shopping cart you pay for once."
+        },
+        {
+          "term": "Singleton",
+          "say": "A class with only one shared copy. Its constructor is private, so code gets the copy from a static getInstance(). The copy lasts only one transaction (one request)."
+        },
+        {
+          "term": "Strategy",
+          "say": "Several swappable classes behind one interface, each doing the job its own way. Code picks one, often at run time with Type.forName."
+        }
       ]
     },
     {
@@ -561,6 +869,65 @@
         "fund-q29",
         "fund-q30",
         "fund-q31"
+      ],
+      "terms": [
+        {
+          "term": "exception",
+          "match": [
+            "exceptions"
+          ],
+          "say": "Apex's way of shouting \"something went wrong!\" It stops the normal flow until code catches it. Your own exception classes must end in the word Exception."
+        },
+        {
+          "term": "savepoint",
+          "match": [
+            "savepoints",
+            "setSavepoint",
+            "setSavepoint()"
+          ],
+          "say": "A checkpoint in your database work, like in a video game. Later you can go back to it and undo what came after."
+        },
+        {
+          "term": "rollback",
+          "match": [
+            "rollback()"
+          ],
+          "say": "Goes back to a savepoint and undoes every database change made since. Variables and record IDs stay as they were. It counts toward the DML (save) statement limit."
+        },
+        {
+          "term": "Database.insert(recs, false)",
+          "say": "Saves the good records and skips the bad ones, instead of failing them all. It hands back a result for each record to check."
+        },
+        {
+          "term": "SaveResult",
+          "match": [
+            "SaveResult[]"
+          ],
+          "say": "The report card for one record after a Database save. isSuccess() says if it saved. getErrors() says what went wrong."
+        },
+        {
+          "term": "addError",
+          "match": [
+            "addError()"
+          ],
+          "say": "Used in a trigger to block one record from saving. It shows the user a friendly error message on that record."
+        },
+        {
+          "term": "uncaught exception",
+          "say": "An error that no code catches. It ends the request and undoes all its database changes, even the error log you just saved."
+        },
+        {
+          "term": "platform event",
+          "say": "A message Salesforce sends out to listeners. Set to Publish Immediately, it goes out at once, even if the rest of the work is undone."
+        },
+        {
+          "term": "System.LimitException",
+          "say": "The error when code goes over a governor limit (a usage cap). It can't be caught. The only cure is staying under the limit."
+        },
+        {
+          "term": "bulkify",
+          "say": "Writing code that handles many records at once. Query and save whole lists in one go, never one record at a time inside a loop."
+        }
       ]
     },
     {
@@ -622,6 +989,54 @@
         "fund-q33",
         "fund-q34",
         "fund-q35"
+      ],
+      "terms": [
+        {
+          "term": "Platform Cache",
+          "say": "Fast short-term memory in Salesforce. You keep a copy of slow-to-get data there, so you don't fetch it again. Like a sticky note on the fridge."
+        },
+        {
+          "term": "governor limits",
+          "say": "Caps on how much one transaction (one request) may use, like how many queries it runs. Go over one, and everything stops."
+        },
+        {
+          "term": "Org cache",
+          "say": "Cache shared by all users in the org. Values live 24 hours by default, and 48 hours at most."
+        },
+        {
+          "term": "Session cache",
+          "say": "Cache tied to one user's login session. Only that session sees it, and it lasts 8 hours at most."
+        },
+        {
+          "term": "TTL",
+          "say": "Time to live: how long a cached value may stay before it expires. Like a best-before date. It can still be thrown out earlier."
+        },
+        {
+          "term": "partition",
+          "match": [
+            "partitions"
+          ],
+          "say": "A named slice of your cache space, like one shelf in the fridge. Without a default partition, every key must name its partition."
+        },
+        {
+          "term": "cache miss",
+          "say": "Asking the cache for something that isn't there, so you get null (nothing). Then fetch it from the source and store it again."
+        },
+        {
+          "term": "doLoad",
+          "match": [
+            "doLoad()"
+          ],
+          "say": "The method you write in a CacheBuilder class. On a cache miss it runs and loads the value, and the cache keeps the result for you."
+        },
+        {
+          "term": "evicted",
+          "say": "Thrown out of the cache early, before its time is up. It can happen any time, so never count on a value staying."
+        },
+        {
+          "term": "local",
+          "say": "A name meaning your own org's namespace (its name tag). Write it before the partition name, like local.Rates."
+        }
       ]
     }
   ],

@@ -34,6 +34,7 @@ import { Sprint } from './screens/Sprint.jsx';
 import { Onboarding } from './screens/Onboarding.jsx';
 import { scrollToTop } from './lib/scroller.js';
 import { setMusicSettings } from './audio/music.js';
+import { setPreferredVoice } from './lib/speech.js';
 import { setSplashUp } from './lib/updates.js';
 import { UpdateBanner } from './components/UpdateBanner.jsx';
 
@@ -64,6 +65,7 @@ function useApplySettings() {
     setSoundEnabled(st.sound);
     setMusicSettings({ sound: st.sound, music: st.music });
     setHapticsEnabled(st.haptics);
+    setPreferredVoice(st.voice);
   }, [st, sysDark, reduced, accent]);
   return reduced;
 }

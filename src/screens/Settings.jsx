@@ -7,6 +7,7 @@ import { Switch, Segmented } from '../components/Controls.jsx';
 import { go } from '../hooks/useRoute.js';
 import { useFeedback } from '../components/Feedback.jsx';
 import { ReminderSettings } from '../components/ReminderSettings.jsx';
+import { VoicePicker } from '../components/VoicePicker.jsx';
 import { Icon } from '../components/icons/Icon.jsx';
 import { sfx, setSoundEnabled } from '../audio/sfx.js';
 import { haptic, setHapticsEnabled } from '../audio/haptics.js';
@@ -97,6 +98,7 @@ export function Settings() {
           label="Vibration" hint="Buzzes on Android; light taps on iPhone"
           checked={st.haptics} onChange={(v) => { updateSettings({ haptics: v }); if (v) { setHapticsEnabled(true); haptic('success'); } }}
         />
+        <VoicePicker value={st.voice ?? ''} />
       </section>
 
       <section className="card stack">

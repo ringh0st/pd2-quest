@@ -20,6 +20,7 @@ export const DEFAULT_SETTINGS = {
   askConfidence: true,
   breakMinutes: 30,      // suggest a short break after this much active study (0 = off)   // Check · Sure / Check · Guessing in practice (not in mock exams)        // code blocks wrap long lines (the Wrap/Scroll button switches it everywhere)
   haptics: true,
+  voice: '',             // read-aloud voice (voiceURI); '' = the most natural voice the device has
   font: 'atkinson',       // atkinson | lexend
   textScale: 1,           // 0.9 .. 1.3
   sprintSize: 5,
