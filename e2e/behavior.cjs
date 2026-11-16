@@ -1,12 +1,13 @@
 // Behaviour checks for the fixes the testers asked for.
 const { chromium, devices } = require('playwright');
+const { launchForTrack } = require('./track.cjs');
 const BASE = process.env.E2E_BASE || 'http://localhost:4173/';
 const seed = (extra = {}) => ({ v: 1, onboarded: true, xp: 300, settings: { theme: 'light', motion: 'reduced', sound: false, haptics: false, textScale: 1.3, sprintSize: 5, focusMinutes: 10, font: 'atkinson' }, ...extra });
 const results = [];
 const ok = (name, pass, info = '') => results.push(`${pass ? 'PASS' : 'FAIL'}  ${name}${info ? ' · ' + info : ''}`);
 
 (async () => {
-  const browser = await chromium.launch();
+  const browser = await launchForTrack(chromium);
   const ctx = await browser.newContext({ ...devices['iPhone SE'] });
   const page = await ctx.newPage();
   const errors = [];

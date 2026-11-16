@@ -1,6 +1,7 @@
 // Overflow sweep: every route at 320px × text sizes × fonts; reports pages wider than the screen.
 // Run against `npm run preview` (E2E_BASE overrides the URL).
 const { chromium } = require('playwright');
+const { launchForTrack } = require('./track.cjs');
 const BASE = process.env.E2E_BASE || 'http://localhost:4173/';
 const ROUTES = ['', 'map', 'world/fund', 'world/auto', 'world/test', 'lesson/fund-1', 'play/fund-hard-1', 'play/fund-boss', 'sprint', 'sprint?section=auto', 'sprint?section=test', 'sprint?hard=1', 'cards', 'exam', 'me', 'settings', 'resources', 'shop', 'bolt', 'plan', 'placement/fund', 'placement/lesson/fund-2'];
 const seed = (scale, font) => ({
@@ -9,7 +10,7 @@ const seed = (scale, font) => ({
   unlockedWorlds: ['auto', 'ui', 'test', 'perf'], helpers: { fifty: 2, hint: 2, heart: 1 },
 });
 (async () => {
-  const browser = await chromium.launch();
+  const browser = await launchForTrack(chromium);
   const bad = [];
   for (const [w, h] of [[320, 568], [390, 844]]) {
     for (const scale of [1, 1.15, 1.3]) {

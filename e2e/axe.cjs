@@ -1,11 +1,12 @@
 // Run against `npm run preview` (E2E_BASE overrides the URL).
 const { chromium } = require('playwright');
+const { launchForTrack } = require('./track.cjs');
 const fs = require('fs');
 const axeSrc = fs.readFileSync(require.resolve('axe-core/axe.min.js'), 'utf8');
 const BASE = process.env.E2E_BASE || 'http://localhost:4173/';
 const ROUTES = ['', 'map', 'world/fund', 'lesson/fund-1', 'play/fund-hard-1', 'sprint', 'cards', 'exam', 'me', 'settings', 'shop', 'bolt', 'resources'];
 (async () => {
-  const b = await chromium.launch();
+  const b = await launchForTrack(chromium);
   const out = [];
   for (const theme of ['light', 'dark']) {
     const p = await (await b.newContext({ viewport: { width: 390, height: 844 } })).newPage();
