@@ -1,0 +1,2813 @@
+{
+  "id": "fund",
+  "title": "Salesforce Fundamentals",
+  "weight": 18,
+  "summary": "What clicks can and can't do, when to install instead of build, who sees which objects, fields and records, and how reports and dashboards show your data.",
+  "lessons": [
+    {
+      "id": "fund-1",
+      "title": "Clicks or Code? Where Declarative Ends",
+      "minutes": 3,
+      "objective": "Given a scenario, identify the boundaries of declarative customization and the use cases for programmatic customization.",
+      "cards": [
+        {
+          "type": "text",
+          "title": "In plain words",
+          "body": "You can build in Salesforce two ways. **Declarative** means clicks: you set things up in Setup screens, with no code. **Programmatic** means code, like Apex or Lightning web components. The App Builder exam asks one question again and again. Can clicks do this? If yes, clicks win."
+        },
+        {
+          "type": "tip",
+          "title": "Think of it like…",
+          "body": "Furniture. A flat-pack shelf from the store (clicks) is quick, and anyone can put it together. A carpenter (code) can build anything, but costs more, and only a carpenter can change it later. Where it stops: Salesforce clicks are very strong. Many jobs that sound like code are not."
+        },
+        {
+          "type": "list",
+          "title": "Clicks can do a lot",
+          "items": [
+            "**Formula fields**: work out a value each time you look",
+            "**Validation rules**: stop bad data when a record is saved",
+            "**Roll-up summary fields**: count or add up child records on a master-detail parent",
+            "**Flows**: update records, send emails, show screens",
+            "**Lightning App Builder**: design pages by drag and drop"
+          ]
+        },
+        {
+          "type": "text",
+          "title": "When code is the answer",
+          "body": "Use code only when clicks truly can't do the job. **Apex** (Salesforce's own programming language) handles very complex logic and custom web services. **Apex managed sharing** shares records when no sharing rule can express the rule. A **Lightning web component** (a custom page building block) gives a screen no standard component offers."
+        },
+        {
+          "type": "text",
+          "title": "Fast field updates",
+          "body": "A **before-save flow** runs before the record is saved. It updates that same record about **10 times faster** than a record-change process. It can use only Assignment, Decision, Get Records and Loop. To change other records, send an email or read the new record's Id, use an **after-save flow**."
+        },
+        {
+          "type": "code",
+          "title": "Same job, no code",
+          "lang": "formula",
+          "code": "FLOOR((TODAY() - Customer_Since__c) / 365)",
+          "body": "A formula field shows how many full years someone has been a customer. No trigger needed."
+        },
+        {
+          "type": "trap",
+          "body": "Don't pick Apex just because a requirement sounds hard. If a formula, validation rule, roll-up summary or flow can do it, that is the right answer. Code is right only when clicks can't do it."
+        },
+        {
+          "type": "tip",
+          "title": "Remember it",
+          "body": "**Clicks first, code last.** Ask four questions: formula? Validation rule? Roll-up? Flow? Only after four noes, reach for Apex."
+        }
+      ],
+      "check": [
+        "fund-q2",
+        "fund-q4",
+        "fund-x2"
+      ],
+      "terms": [
+        {
+          "term": "Declarative",
+          "match": [
+            "clicks"
+          ],
+          "say": "Building by clicking and choosing settings, not by writing code. Like building with LEGO from the box instead of carving your own bricks."
+        },
+        {
+          "term": "Programmatic",
+          "say": "Building by writing code, like Apex. Very flexible, but someone who codes must build it and look after it."
+        },
+        {
+          "term": "Formula fields",
+          "match": [
+            "formula field",
+            "formula"
+          ],
+          "say": "A field that works out its own value from other fields, like a calculator. Nobody types into it."
+        },
+        {
+          "term": "Validation rules",
+          "match": [
+            "validation rule"
+          ],
+          "say": "A rule that checks a record when someone saves it. If the data breaks the rule, the save stops and an error shows."
+        },
+        {
+          "term": "Roll-up summary fields",
+          "match": [
+            "roll-up summary",
+            "roll-up"
+          ],
+          "say": "A field on a parent record that counts or adds up its child records, like the total of all items on an order."
+        },
+        {
+          "term": "Flows",
+          "match": [
+            "flow"
+          ],
+          "say": "Automation you build by dragging steps onto a canvas. A flow can update records, send emails or show screens."
+        },
+        {
+          "term": "Apex",
+          "say": "Salesforce's own programming language. Developers write it when clicks can't do the job."
+        },
+        {
+          "term": "Apex managed sharing",
+          "say": "Code that shares records with people when no sharing rule or button can describe who should get them."
+        },
+        {
+          "term": "before-save flow",
+          "say": "A flow that changes a record just before it is saved. It is very fast, but it can only change that same record."
+        },
+        {
+          "term": "after-save flow",
+          "say": "A flow that runs right after a record is saved. It can change other records, send emails and use the new record's Id."
+        }
+      ]
+    },
+    {
+      "id": "fund-2",
+      "title": "AgentExchange: Install It, Don't Build It",
+      "minutes": 3,
+      "objective": "Identify common scenarios for extending an org using the AgentExchange.",
+      "cards": [
+        {
+          "type": "text",
+          "title": "In plain words",
+          "body": "**AgentExchange** is Salesforce's marketplace. It used to be called AppExchange. Partners offer ready-made solutions there, some free and some paid. Before you build something big, look there first. Installing a tested solution is often faster and cheaper than building it."
+        },
+        {
+          "type": "tip",
+          "title": "Think of it like…",
+          "body": "An app store on your phone. You don't write your own map app; you install one. Where it stops: an AgentExchange solution goes into your company's org, so you try it in a safe copy first."
+        },
+        {
+          "type": "list",
+          "title": "Solution types",
+          "items": [
+            "**Apps**: full packaged solutions with objects, tabs and components",
+            "**Components**: small building blocks you drop on a page",
+            "**Bolt solutions**: industry solutions, set up with the partner's help",
+            "**Flow solutions**: flow actions and flow templates",
+            "**Consultants**: experts you can hire for a project"
+          ]
+        },
+        {
+          "type": "text",
+          "title": "Try before you buy",
+          "body": "A **test drive** is a read-only Developer Edition org that the provider sets up. A **Trialforce trial** is a writable Developer Edition org for a limited time. You can keep it if you buy. You can also try it in your **sandbox** (a safe copy of your org)."
+        },
+        {
+          "type": "text",
+          "title": "Managed or unmanaged",
+          "body": "Solutions arrive in a **package** (a container of apps, tabs and objects). A **managed package** hides its code and can be upgraded by the provider. It doesn't count against your app, tab and object limits. An **unmanaged package** can be edited, counts against limits, and must be reinstalled to upgrade."
+        },
+        {
+          "type": "text",
+          "title": "Install safely",
+          "body": "Never install in production first. Test in a sandbox or Developer Edition org. Read the listing: reviews, price, supported editions and docs. At install, give access to **Admins Only**, **All Users** or **Specific Profiles**. Not sure? Pick Admins Only and open it up later."
+        },
+        {
+          "type": "trap",
+          "body": "A test drive is read-only. If the team must change settings and keep the org after buying, that's a Trialforce trial, not a test drive."
+        },
+        {
+          "type": "tip",
+          "title": "Remember it",
+          "body": "**Search, try, test, install.** Search AgentExchange, try it, test it in a sandbox, then install for Admins Only."
+        }
+      ],
+      "check": [
+        "fund-q8",
+        "fund-q9",
+        "fund-x4"
+      ],
+      "terms": [
+        {
+          "term": "AgentExchange",
+          "match": [
+            "AppExchange"
+          ],
+          "say": "Salesforce's online shop for ready-made add-ons and experts. You can install many add-ons with a few clicks."
+        },
+        {
+          "term": "Components",
+          "say": "Small ready-made pieces you place on a page, like a sticker you add to a notebook."
+        },
+        {
+          "term": "Bolt solutions",
+          "say": "Big ready-made solutions for one industry, like a help-desk portal. A partner helps you set them up."
+        },
+        {
+          "term": "test drive",
+          "say": "A look-but-don't-touch practice org the provider fills with sample data. You can click around, but not change settings."
+        },
+        {
+          "term": "Trialforce trial",
+          "say": "A practice org you can change for a limited time. If you buy the solution, you can keep using it."
+        },
+        {
+          "term": "sandbox",
+          "say": "A safe copy of your company's org for testing. Mistakes there don't hurt real work."
+        },
+        {
+          "term": "package",
+          "say": "A box that carries a solution's parts, like objects, tabs and apps, into your org."
+        },
+        {
+          "term": "managed package",
+          "say": "A sealed package. You can't see or change its code, but the maker can send you upgrades."
+        },
+        {
+          "term": "unmanaged package",
+          "say": "An open package. You can change everything in it, but you get no automatic upgrades."
+        },
+        {
+          "term": "Admins Only",
+          "say": "An install choice that lets only admins use the new solution at first. You can give others access later."
+        }
+      ]
+    },
+    {
+      "id": "fund-3",
+      "title": "Object and Field Access: Profiles and Permission Sets",
+      "minutes": 3,
+      "objective": "Apply features and capabilities available to restrict and extend object, record, and field access.",
+      "cards": [
+        {
+          "type": "text",
+          "title": "In plain words",
+          "body": "Every user needs two kinds of permission. **Object permissions** say what they can do with a whole kind of record: Read, Create, Edit, Delete. **Field-level security** says which fields they can see or edit. Both live in profiles and permission sets."
+        },
+        {
+          "type": "tip",
+          "title": "Think of it like…",
+          "body": "A building pass. Object permissions open the doors to rooms. Field-level security locks certain drawers inside a room. Where it stops: a door key doesn't open every record in the room. That's record access, in the next lessons."
+        },
+        {
+          "type": "text",
+          "title": "Profiles",
+          "body": "A **profile** holds a user's base settings. Every user has **exactly one** profile. It sets defaults like apps, record types, page layouts and login hours. You can't edit object permissions on a standard profile; clone it instead. Salesforce suggests starting from **Minimum Access - Salesforce**."
+        },
+        {
+          "type": "text",
+          "title": "Permission sets and groups",
+          "body": "A **permission set** adds permissions on top of the profile. A user can have many. A **permission set group** bundles permission sets for one job, like Sales Rep. A **muting permission set** inside a group turns off chosen permissions for that group only."
+        },
+        {
+          "type": "text",
+          "title": "Field-level security",
+          "body": "**Field-level security** (FLS) hides or locks a field everywhere: pages, related lists, list views, reports and search. A **page layout** only hides a field on the record's detail and edit pages. So FLS is the only real way to protect a field."
+        },
+        {
+          "type": "list",
+          "title": "Big object permissions",
+          "items": [
+            "**View All Records** / **Modify All Records**: every record of one object, ignoring sharing",
+            "**View All Data** / **Modify All Data**: every record of every object",
+            "None of them override field-level security"
+          ]
+        },
+        {
+          "type": "trap",
+          "body": "Removing a field from the page layout does not secure it. Users can still find the value in a report, list view or search. Use field-level security."
+        },
+        {
+          "type": "tip",
+          "title": "Remember it",
+          "body": "**One profile, many permission sets.** Start lean with the profile, add with permission sets, bundle with groups, mute to take away."
+        }
+      ],
+      "check": [
+        "fund-q14",
+        "fund-q15",
+        "fund-x7"
+      ],
+      "terms": [
+        {
+          "term": "Object permissions",
+          "match": [
+            "object permission"
+          ],
+          "say": "Switches that say what you may do with a whole kind of record, like Read, Create, Edit or Delete for all cases."
+        },
+        {
+          "term": "Field-level security",
+          "match": [
+            "FLS"
+          ],
+          "say": "Settings that hide a field or make it read-only for some users, everywhere in Salesforce."
+        },
+        {
+          "term": "profile",
+          "say": "A user's basic settings card. Each user has exactly one, and it sets things like default apps and login hours."
+        },
+        {
+          "term": "Minimum Access - Salesforce",
+          "say": "A standard profile that gives almost nothing. You add what each user needs with permission sets."
+        },
+        {
+          "term": "permission set",
+          "say": "An extra bundle of permissions you add on top of a profile. One user can have many."
+        },
+        {
+          "term": "permission set group",
+          "say": "A bundle of permission sets for one job, like Sales Rep. Assign the group, and the user gets everything inside."
+        },
+        {
+          "term": "muting permission set",
+          "say": "A switch-off list inside a permission set group. It turns off chosen permissions for people in that group."
+        },
+        {
+          "term": "page layout",
+          "say": "The arrangement of fields and buttons on a record page. It changes what's shown, not what's allowed."
+        },
+        {
+          "term": "View All Records",
+          "match": [
+            "Modify All Records"
+          ],
+          "say": "A permission to see every record of one object, even ones nobody shared with you."
+        },
+        {
+          "term": "View All Data",
+          "match": [
+            "Modify All Data"
+          ],
+          "say": "A very powerful permission to see every record of every object. Usually only admins get it."
+        }
+      ]
+    },
+    {
+      "id": "fund-4",
+      "title": "Record Access: Org-Wide Defaults and Roles",
+      "minutes": 3,
+      "objective": "Apply features and capabilities available to restrict and extend object, record, and field access.",
+      "cards": [
+        {
+          "type": "text",
+          "title": "In plain words",
+          "body": "**Record access** decides which single records a user can open. Each record has an **owner**, who has full access. The **org-wide default** (OWD) is the access everyone else gets to records they don't own. Then the **role hierarchy** lets managers see what their team sees."
+        },
+        {
+          "type": "tip",
+          "title": "Think of it like…",
+          "body": "Notebooks at school. The OWD is the school rule: are other students' notebooks closed, open to read, or open to write in? Teachers can see what their students see. That's the role hierarchy. Where it stops: roles aren't job titles. They are levels of data access."
+        },
+        {
+          "type": "list",
+          "title": "OWD settings",
+          "items": [
+            "**Private**: only the owner and people above them",
+            "**Public Read Only**: everyone can view; only the owner side can edit",
+            "**Public Read/Write**: everyone can view and edit",
+            "**Controlled by Parent**: follows the parent record, like contacts follow their account",
+            "Public Read/Write/Transfer: cases and leads only"
+          ]
+        },
+        {
+          "type": "text",
+          "title": "Lock down first",
+          "body": "Set each OWD for your **most restricted user**. Then open up access for everyone else. Other sharing tools can only **grant more** access, never less. Internal and external users (like site users) can have different defaults."
+        },
+        {
+          "type": "text",
+          "title": "The role hierarchy",
+          "body": "A user higher in the **role hierarchy** gets the same access as the owners below them. For a custom object, you can untick **Grant Access Using Hierarchies**. Then only owners and people given access by sharing see the records. Roles control records; profiles and permission sets control objects and fields."
+        },
+        {
+          "type": "text",
+          "title": "Object permissions still rule",
+          "body": "An OWD never gives more than the object permission. With Public Read/Write, a user who has only Read can still only read. Also, Public Read/Write lets others edit, not delete. Deleting and sharing stay with the owner, those above them, and admins."
+        },
+        {
+          "type": "trap",
+          "body": "You can't use a role or a sharing rule to take access away. If one group must not see records, the OWD must be stricter. Then open access for everyone else."
+        },
+        {
+          "type": "tip",
+          "title": "Remember it",
+          "body": "**Lock the door, then hand out keys.** The OWD locks the door. The role hierarchy is the first key."
+        }
+      ],
+      "check": [
+        "fund-q20",
+        "fund-q22",
+        "fund-x11"
+      ],
+      "terms": [
+        {
+          "term": "Record access",
+          "say": "Which single records a person may open or change, like which notebooks you may read."
+        },
+        {
+          "term": "owner",
+          "say": "The user a record belongs to. The owner can always see and change their own record."
+        },
+        {
+          "term": "org-wide default",
+          "match": [
+            "OWD",
+            "org-wide defaults"
+          ],
+          "say": "The starting rule for records you don't own: hidden, read-only, or open to edit."
+        },
+        {
+          "term": "role hierarchy",
+          "say": "A ladder of roles. People higher up can see the records of people below them."
+        },
+        {
+          "term": "Private",
+          "say": "Only the owner and people above them in the role hierarchy can see the record."
+        },
+        {
+          "term": "Public Read Only",
+          "say": "Everyone can look at the record, but only the owner side can change it."
+        },
+        {
+          "term": "Public Read/Write",
+          "say": "Everyone can look at and change the record. Deleting it still belongs to the owner side."
+        },
+        {
+          "term": "Controlled by Parent",
+          "say": "The child record follows its parent. If you can see the account, you can see its contacts."
+        },
+        {
+          "term": "most restricted user",
+          "say": "The person who should see the least. You set the OWD for them, then open access for others."
+        },
+        {
+          "term": "Grant Access Using Hierarchies",
+          "say": "A checkbox for custom objects. Untick it, and managers no longer see their team's records just by being higher."
+        }
+      ]
+    },
+    {
+      "id": "fund-5",
+      "title": "Opening Access: Sharing Rules and Manual Sharing",
+      "minutes": 4,
+      "objective": "Given a set of business requirements, determine the appropriate sharing solution.",
+      "cards": [
+        {
+          "type": "text",
+          "title": "In plain words",
+          "body": "After the OWD locks records down, you open them back up for people who need them. **Sharing rules** do it automatically for groups. **Manual sharing** does it one record at a time. Teams and territories open access too. None of these can take access away."
+        },
+        {
+          "type": "tip",
+          "title": "Think of it like…",
+          "body": "A party guest list. The OWD says the door is closed. A sharing rule is a standing invite: everyone from the soccer club gets in. Manual sharing is the host inviting one friend for one night. Where it stops: invites only let people in. They never send anyone out."
+        },
+        {
+          "type": "list",
+          "title": "Sharing rule types",
+          "items": [
+            "**Owner-based**: share records owned by certain users, like a role",
+            "**Criteria-based**: share records whose field values match, like Region equals West",
+            "**Guest user**: the only way to share records with site visitors who aren't logged in"
+          ]
+        },
+        {
+          "type": "text",
+          "title": "Who and how much",
+          "body": "A sharing rule shares with a **public group** (a hand-picked mix of users, roles and groups), a role, a role and its subordinates, or a territory. Access is **Read Only** or **Read/Write**. Each object can have up to **300** sharing rules. Up to **50** of them can be criteria-based or guest rules."
+        },
+        {
+          "type": "text",
+          "title": "Criteria are exact",
+          "body": "Criteria-based rules match field values, not owners. Text matching is **case-sensitive**: \"Manager\" won't match \"manager\". Supported fields include checkbox, date, number, picklist, text, and lookups to a user or queue. Formula fields aren't on that list."
+        },
+        {
+          "type": "text",
+          "title": "Manual sharing",
+          "body": "**Manual sharing** uses the Sharing button on one record. It suits one-off needs that no rule can predict. The owner can do it. So can people above the owner in the role hierarchy, users with Modify All Records on that object, and admins. By default, manual shares go away when the owner changes."
+        },
+        {
+          "type": "text",
+          "title": "Teams, territories and code",
+          "body": "**Account teams**, opportunity teams and case teams give their members access to that one record. A **territory** hierarchy shares records by sales area. If no rule can express the need, a developer can write **Apex managed sharing**."
+        },
+        {
+          "type": "trap",
+          "body": "A sharing rule can't share with \"the person named on this record,\" like a hiring manager in a lookup. Rules need a group you can predict. For per-record people, use manual sharing, a team or Apex managed sharing."
+        },
+        {
+          "type": "tip",
+          "title": "Remember it",
+          "body": "**Rules for groups, manual for one-offs.** Owner or criteria picks the records. Group, role or territory picks the people."
+        }
+      ],
+      "check": [
+        "fund-q28",
+        "fund-q29",
+        "fund-x13"
+      ],
+      "terms": [
+        {
+          "term": "Sharing rules",
+          "match": [
+            "sharing rule"
+          ],
+          "say": "Automatic rules that give a group extra access to records they couldn't see before."
+        },
+        {
+          "term": "Manual sharing",
+          "match": [
+            "manual shares"
+          ],
+          "say": "Sharing one record by hand with a person or group, using the Sharing button."
+        },
+        {
+          "term": "Owner-based",
+          "say": "A sharing rule that picks records by who owns them, like all records owned by the West team."
+        },
+        {
+          "term": "Criteria-based",
+          "say": "A sharing rule that picks records by what's in their fields, like all cases with Priority High."
+        },
+        {
+          "term": "Guest user",
+          "say": "A visitor to a public site who hasn't logged in. A guest user sharing rule is the only way to share records with them."
+        },
+        {
+          "term": "public group",
+          "say": "A named list of users, roles and other groups. Sharing rules can share with it in one go."
+        },
+        {
+          "term": "case-sensitive",
+          "say": "Big and small letters count as different. \"Manager\" and \"manager\" don't match."
+        },
+        {
+          "term": "territory",
+          "say": "A sales area, like West Coast. Records can be shared with everyone in a territory."
+        },
+        {
+          "term": "Account teams",
+          "say": "A group of people who work on one account together. Being on the team gives them access to it."
+        },
+        {
+          "term": "Apex managed sharing",
+          "say": "Code that shares records when no sharing rule or button can describe who should get them."
+        }
+      ]
+    },
+    {
+      "id": "fund-6",
+      "title": "Narrowing Access: Restriction and Scoping Rules",
+      "minutes": 3,
+      "objective": "Apply features and capabilities available to restrict and extend object, record, and field access.",
+      "cards": [
+        {
+          "type": "text",
+          "title": "In plain words",
+          "body": "Sharing tools only add access. But sometimes users should see fewer records than sharing gives them. A **restriction rule** filters the records a user can reach. A **scoping rule** only changes which records they see by default. One blocks; the other just focuses."
+        },
+        {
+          "type": "tip",
+          "title": "Think of it like…",
+          "body": "A library card opens the whole library. That's sharing. A restriction rule locks some shelves for you, for good. A scoping rule is a \"start here\" shelf. You begin there, but you can still walk to any shelf."
+        },
+        {
+          "type": "text",
+          "title": "Restriction rules",
+          "body": "A **restriction rule** has **user criteria** (who it applies to) and **record criteria** (which records they keep). It filters list views, lookups, related lists, reports, search, SOQL and SOSL. It works on custom objects, **external objects**, contracts, events, tasks, quotes, time sheets and time sheet entries."
+        },
+        {
+          "type": "list",
+          "title": "Restriction rule limits",
+          "items": [
+            "**2** active rules per object in Enterprise and Developer Edition",
+            "**5** in Performance and Unlimited Edition",
+            "Only one active rule should apply to each user",
+            "Criteria use **equals** only: no formulas, no AND or OR",
+            "Users with View All Records or View All Data skip the rule"
+          ]
+        },
+        {
+          "type": "text",
+          "title": "Scoping rules",
+          "body": "A **scoping rule** sets a default filter for list views, reports and SOQL. Users can still open every record their sharing allows. Scoping rules come with Performance, Unlimited and Developer Edition. They work on custom objects, accounts, cases, contacts, events, leads, opportunities and tasks."
+        },
+        {
+          "type": "text",
+          "title": "Other ways to narrow",
+          "body": "Too many fields? Use **field-level security**. Too many permissions from a permission set group? Add a **muting permission set**. Too many records on an object without restriction rules? Make the OWD stricter, then open it up with sharing rules."
+        },
+        {
+          "type": "trap",
+          "body": "A scoping rule doesn't hide confidential records. It only focuses the view, and users can still open the records. To really block access, use a restriction rule."
+        },
+        {
+          "type": "tip",
+          "title": "Remember it",
+          "body": "**Restrict removes, scope focuses.** A restriction rule is a wall. A scoping rule is a spotlight."
+        }
+      ],
+      "check": [
+        "fund-q34",
+        "fund-q37",
+        "fund-x16"
+      ],
+      "terms": [
+        {
+          "term": "restriction rule",
+          "say": "A rule that hides records from certain users, even ones sharing would let them see."
+        },
+        {
+          "term": "scoping rule",
+          "say": "A rule that picks which records users see first in lists and reports. They can still open the others."
+        },
+        {
+          "term": "user criteria",
+          "say": "The part of a rule that says who it applies to, like everyone in the Support department."
+        },
+        {
+          "term": "record criteria",
+          "say": "The part of a rule that says which records those users keep, like tasks for their own team."
+        },
+        {
+          "term": "SOQL",
+          "match": [
+            "SOSL"
+          ],
+          "say": "The language code uses to ask the database for records. Restriction rules filter its answers too."
+        },
+        {
+          "term": "external objects",
+          "say": "Objects that show data stored outside Salesforce, read in live instead of copied in."
+        },
+        {
+          "term": "field-level security",
+          "say": "Settings that hide a field or make it read-only for some users, everywhere in Salesforce."
+        },
+        {
+          "term": "muting permission set",
+          "say": "A switch-off list inside a permission set group. It turns off chosen permissions for people in that group."
+        }
+      ]
+    },
+    {
+      "id": "fund-7",
+      "title": "Reports, Formats and Custom Report Types",
+      "minutes": 4,
+      "objective": "Identify the features and capabilities available when creating reports, report types, and dashboards.",
+      "cards": [
+        {
+          "type": "text",
+          "title": "In plain words",
+          "body": "A **report** is a list of records that match filters you choose, with the columns you pick. Every report starts from a **report type**. That's the template that sets which objects and fields you can use. The format then decides how rows are grouped."
+        },
+        {
+          "type": "tip",
+          "title": "Think of it like…",
+          "body": "Ordering at a restaurant. The report type is the menu: you can only order what's on it. Filters and columns are your order. The format is how the plate looks. Where it stops: you can write your own menu, with a custom report type."
+        },
+        {
+          "type": "list",
+          "title": "Report formats",
+          "items": [
+            "**Tabular**: a simple list, like a mailing list (the default)",
+            "**Summary**: groups rows, with subtotals and charts; the workhorse",
+            "**Matrix**: groups by rows and columns, like a grid",
+            "**Joined**: several report blocks side by side"
+          ]
+        },
+        {
+          "type": "text",
+          "title": "Formats and dashboards",
+          "body": "Summary and matrix reports feed dashboards easily. A tabular report can feed one only if you **limit its rows**. A joined report or a **historical trend** report can't be a dashboard source."
+        },
+        {
+          "type": "text",
+          "title": "Custom report types",
+          "body": "Need objects no standard report type joins? Build a **custom report type**. Pick a **primary object**; you can't change it later. Add up to **4** object levels. Choose whether each parent must have related records or may not. Set it to **Deployed** so users can see it."
+        },
+        {
+          "type": "list",
+          "title": "Limits to know",
+          "items": [
+            "**60** object references per report type",
+            "**1,000** fields per report type",
+            "Columns from more than **20** objects in one report cause an error",
+            "In Development: only users with Manage Custom Report Types see it"
+          ]
+        },
+        {
+          "type": "text",
+          "title": "Handy report tools",
+          "body": "A **bucket column** sorts values into groups, like Small, Medium and Large, with no new field. A **cross filter** keeps records **with** or **without** related records, like accounts without cases. Both need no code."
+        },
+        {
+          "type": "trap",
+          "body": "A report type set to \"each A must have at least one B\" drops every A with no B. New projects with no tasks vanish. Use \"A may or may not have B\" to keep them."
+        },
+        {
+          "type": "tip",
+          "title": "Remember it",
+          "body": "**List, group, grid, blocks:** tabular, summary, matrix, joined. Dashboards love summary and matrix. Tabular needs a row limit. Joined can't go."
+        }
+      ],
+      "check": [
+        "fund-q41",
+        "fund-q42",
+        "fund-x19"
+      ],
+      "terms": [
+        {
+          "term": "report",
+          "say": "A list of records that match your filters, with the columns you chose. You can group it and add totals."
+        },
+        {
+          "term": "report type",
+          "say": "The template behind a report. It decides which objects and fields the report can use."
+        },
+        {
+          "term": "Tabular",
+          "say": "The simplest report format: a plain list, like a spreadsheet."
+        },
+        {
+          "term": "Matrix",
+          "say": "A report format that groups by rows and by columns, like a times table grid."
+        },
+        {
+          "term": "Joined",
+          "say": "A report format that shows several report blocks side by side in one report."
+        },
+        {
+          "term": "historical trend",
+          "say": "A report that shows how values changed over the past few months. It can't feed a dashboard."
+        },
+        {
+          "term": "custom report type",
+          "say": "A report template you build yourself, choosing the main object and related objects."
+        },
+        {
+          "term": "primary object",
+          "say": "The main object a custom report type starts from. Once saved, you can't change it."
+        },
+        {
+          "term": "bucket column",
+          "say": "A report column that sorts values into groups you name, like Small, Medium and Large."
+        },
+        {
+          "term": "cross filter",
+          "say": "A report filter that keeps records with or without related records, like accounts without cases."
+        }
+      ]
+    },
+    {
+      "id": "fund-8",
+      "title": "Dashboards and Running Users",
+      "minutes": 3,
+      "objective": "Identify the features and capabilities available when creating reports, report types, and dashboards.",
+      "cards": [
+        {
+          "type": "text",
+          "title": "In plain words",
+          "body": "A **dashboard** shows key numbers from reports as pictures, side by side. Each **widget** (also called a component) shows data from one **source report**. A widget can be a chart, a gauge, a metric or a table."
+        },
+        {
+          "type": "tip",
+          "title": "Think of it like…",
+          "body": "A car's dashboard. One glance shows speed, fuel and warnings. Each dial reads one sensor, like each widget reads one report. Where it stops: a car shows one car. A dashboard shows data through one person's eyes, and you choose whose."
+        },
+        {
+          "type": "list",
+          "title": "Widget types",
+          "items": [
+            "**Chart**: data as a picture, like bars or a donut",
+            "**Gauge**: one value within a range, like progress to a goal",
+            "**Metric**: one key number",
+            "**Table**: report data in columns"
+          ]
+        },
+        {
+          "type": "text",
+          "title": "The running user",
+          "body": "A dashboard shows data as one person: the **running user**. Every viewer sees what the running user can see. If the running user is the sales VP, a rep sees the whole team's numbers. You set it under **View Dashboard As**."
+        },
+        {
+          "type": "text",
+          "title": "Dynamic dashboards",
+          "body": "A **dynamic dashboard** runs as the dashboard viewer. Each person sees only the data they can access. One dashboard replaces dozens of copies. To create one, you need the **Manage Dynamic Dashboards** permission."
+        },
+        {
+          "type": "list",
+          "title": "Dynamic dashboard rules",
+          "items": [
+            "Limit: **5** in Enterprise, **10** in Performance and Unlimited, **3** in Developer Edition",
+            "Can't be saved in a private folder",
+            "Can't have scheduled refreshes: refresh by hand",
+            "Can't be subscribed to",
+            "Deleted ones in the Recycle Bin still count"
+          ]
+        },
+        {
+          "type": "text",
+          "title": "Viewing as someone else",
+          "body": "Managers with **View My Team's Dashboards** or View All Data can preview a dynamic dashboard as people below them in the role hierarchy. **Dashboard filters** let viewers narrow the data, like by product or region."
+        },
+        {
+          "type": "trap",
+          "body": "Reps see the whole team's pipeline? The running user is set to a manager. Don't build one dashboard per rep. Make it dynamic, so it runs as each viewer."
+        },
+        {
+          "type": "tip",
+          "title": "Remember it",
+          "body": "**Static: one person's eyes. Dynamic: your own eyes.** Dynamic means no schedule, no subscription, no private folder."
+        }
+      ],
+      "check": [
+        "fund-q46",
+        "fund-q48",
+        "fund-x22"
+      ],
+      "terms": [
+        {
+          "term": "dashboard",
+          "say": "A page of charts and numbers built from reports, so you can see how things are going at a glance."
+        },
+        {
+          "term": "widget",
+          "match": [
+            "component"
+          ],
+          "say": "One box on a dashboard, like a chart or a big number. Each one gets its data from one report."
+        },
+        {
+          "term": "source report",
+          "say": "The report a dashboard widget gets its numbers from."
+        },
+        {
+          "term": "Gauge",
+          "say": "A dial that shows one number inside a range, like how close you are to a goal."
+        },
+        {
+          "term": "Metric",
+          "say": "A widget that shows one big important number, like total sales this month."
+        },
+        {
+          "term": "running user",
+          "say": "The person whose eyes a dashboard uses. Everyone viewing it sees what that person can see."
+        },
+        {
+          "term": "dynamic dashboard",
+          "say": "A dashboard that shows each viewer their own data, as if they were the running user."
+        },
+        {
+          "term": "Manage Dynamic Dashboards",
+          "say": "The permission you need to create, change or delete dynamic dashboards."
+        },
+        {
+          "term": "View My Team's Dashboards",
+          "say": "A permission that lets a manager see a dashboard the way someone on their team sees it."
+        },
+        {
+          "term": "Dashboard filters",
+          "say": "Pickers on a dashboard that narrow what it shows, like only one region."
+        }
+      ]
+    }
+  ],
+  "flashcards": [
+    {
+      "id": "fund-f1",
+      "front": "What does \"declarative\" mean in Salesforce?",
+      "back": "Building with clicks in Setup, not code. Formulas, validation rules, roll-ups, flows and Lightning App Builder are all declarative."
+    },
+    {
+      "id": "fund-f2",
+      "front": "When should an App Builder choose code over clicks?",
+      "back": "Only when clicks can't meet the need. Examples: very complex logic, custom web services, Apex managed sharing, or a custom Lightning component."
+    },
+    {
+      "id": "fund-f3",
+      "front": "What can a before-save flow do, and what can't it do?",
+      "back": "It updates the triggering record fast, about 10 times faster than a record-change process. It can't change other records, send emails or read the new record's Id."
+    },
+    {
+      "id": "fund-f4",
+      "front": "What is AgentExchange?",
+      "back": "Salesforce's marketplace, formerly AppExchange. It offers apps, components, Bolt solutions, flow solutions and consultants."
+    },
+    {
+      "id": "fund-f5",
+      "front": "Test drive or Trialforce trial: which can you change and keep?",
+      "back": "A Trialforce trial: a writable Developer Edition org for a limited time, kept if you buy. A test drive is read-only."
+    },
+    {
+      "id": "fund-f6",
+      "front": "What are the three access choices when you install a package?",
+      "back": "Admins Only, All Users or Specific Profiles. If you're not sure, choose Admins Only."
+    },
+    {
+      "id": "fund-f7",
+      "front": "Managed or unmanaged package: which can the provider upgrade?",
+      "back": "Managed. Its code is hidden and it doesn't count against your app, tab and object limits. Unmanaged packages are editable but must be reinstalled to upgrade."
+    },
+    {
+      "id": "fund-f8",
+      "front": "How many profiles and permission sets can one user have?",
+      "back": "Exactly one profile, and many permission sets and permission set groups."
+    },
+    {
+      "id": "fund-f9",
+      "front": "Does hiding a field on the page layout secure it?",
+      "back": "No. The value still shows in reports, list views and search. Only field-level security protects a field everywhere."
+    },
+    {
+      "id": "fund-f10",
+      "front": "How do you take one permission away from everyone in a permission set group?",
+      "back": "Add a muting permission set to the group and mute that permission. The shared permission sets stay unchanged."
+    },
+    {
+      "id": "fund-f11",
+      "front": "What is an org-wide default (OWD)?",
+      "back": "The baseline access users get to records they don't own: Private, Public Read Only, Public Read/Write or Controlled by Parent."
+    },
+    {
+      "id": "fund-f12",
+      "front": "What does the role hierarchy do for record access?",
+      "back": "Users higher up get the same access as the owners below them. For custom objects, you can turn it off with Grant Access Using Hierarchies."
+    },
+    {
+      "id": "fund-f13",
+      "front": "Can a sharing rule give less access than the OWD?",
+      "back": "No. Sharing rules, roles and manual sharing only grant more access. To restrict, make the OWD stricter."
+    },
+    {
+      "id": "fund-f14",
+      "front": "What are the three sharing rule types?",
+      "back": "Owner-based, criteria-based and guest user. Guest user rules are the only way to share records with unauthenticated site visitors."
+    },
+    {
+      "id": "fund-f15",
+      "front": "Who can manually share a record?",
+      "back": "The owner, people above the owner in the role hierarchy, users with Modify All Records on the object, and admins."
+    },
+    {
+      "id": "fund-f16",
+      "front": "Are criteria-based sharing rules case-sensitive?",
+      "back": "Yes, for text and text area fields. A rule for \"Manager\" won't share records with \"manager\"."
+    },
+    {
+      "id": "fund-f17",
+      "front": "Restriction rule or scoping rule: which removes access?",
+      "back": "A restriction rule. It filters records users can reach. A scoping rule only sets which records they see by default."
+    },
+    {
+      "id": "fund-f18",
+      "front": "How many active restriction rules can one object have?",
+      "back": "Two in Enterprise and Developer Edition. Five in Performance and Unlimited Edition."
+    },
+    {
+      "id": "fund-f19",
+      "front": "Who ignores restriction rules?",
+      "back": "Users with View All Records or View All Data (and Modify All) on the object. Code running in system mode ignores them too."
+    },
+    {
+      "id": "fund-f20",
+      "front": "What are the four report formats?",
+      "back": "Tabular (a list), summary (grouped rows), matrix (rows and columns) and joined (several blocks)."
+    },
+    {
+      "id": "fund-f21",
+      "front": "Which reports can't feed a dashboard widget?",
+      "back": "Joined reports and historical trend reports. A tabular report can feed one only with a row limit."
+    },
+    {
+      "id": "fund-f22",
+      "front": "What are the key custom report type limits?",
+      "back": "Up to 4 object levels, 60 object references and 1,000 fields. A report with columns from over 20 objects errors."
+    },
+    {
+      "id": "fund-f23",
+      "front": "How do you find accounts with no cases in a report?",
+      "back": "Add a cross filter: Accounts without Cases. No custom field or code is needed."
+    },
+    {
+      "id": "fund-f24",
+      "front": "What is a dashboard's running user?",
+      "back": "The user whose access decides what data the dashboard shows. Every viewer sees that user's view."
+    },
+    {
+      "id": "fund-f25",
+      "front": "What is a dynamic dashboard?",
+      "back": "A dashboard that runs as the logged-in viewer, so each person sees only their own data. It needs Manage Dynamic Dashboards."
+    },
+    {
+      "id": "fund-f26",
+      "front": "What can't you do with a dynamic dashboard?",
+      "back": "Save it in a private folder, schedule its refresh, or subscribe to it."
+    },
+    {
+      "id": "fund-f27",
+      "front": "How many dynamic dashboards can an org have?",
+      "back": "Five in Enterprise, ten in Performance and Unlimited, and three in Developer Edition. Deleted ones in the Recycle Bin still count."
+    }
+  ],
+  "questions": [
+    {
+      "id": "fund-q1",
+      "lesson": "fund-1",
+      "difficulty": 1,
+      "q": "Which description best fits declarative customization in Salesforce?",
+      "options": [
+        "Building features with Setup tools and clicks, without code",
+        "Writing Apex classes that run when records are saved",
+        "Building Lightning web components with JavaScript",
+        "Calling the Metadata API from an outside script"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "Declarative means building with clicks in Setup. Formulas, validation rules, flows and page builders are all declarative.",
+      "wrong": [
+        "",
+        "Apex is code, so it's programmatic.",
+        "Lightning web components are code, so they're programmatic.",
+        "Scripting an API is programmatic work, not clicks."
+      ],
+      "source": "Salesforce Help: Before-Save Record-Triggered Flows"
+    },
+    {
+      "id": "fund-q2",
+      "lesson": "fund-1",
+      "difficulty": 2,
+      "q": "Pine Hollow Outfitters wants an opportunity's Discount field set to 10% whenever Stage changes to Negotiation. The update must be as fast as possible and use no code. What should the app builder use?",
+      "options": [
+        "An after-save record-triggered flow",
+        "A schedule-triggered flow that runs each night",
+        "A before-save record-triggered flow",
+        "An Apex before-update trigger"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "To change a field on the record being saved, use a before-save flow. It updates that same record about 10 times faster than a record-change process, with no code.",
+      "wrong": [
+        "It works, but it saves the record a second time, so it's slower.",
+        "A nightly run doesn't update the record when Stage changes.",
+        "",
+        "A trigger is code. Clicks can already do this."
+      ],
+      "source": "Salesforce Help: Before-Save Record-Triggered Flows"
+    },
+    {
+      "id": "fund-q3",
+      "lesson": "fund-1",
+      "difficulty": 2,
+      "q": "Which two requirements need an after-save flow or Apex instead of a before-save flow? (Choose 2)",
+      "options": [
+        "Set the case's Priority field from its Type field",
+        "Create a follow-up task when a case is closed",
+        "Copy a new record's Id into a text field on that record",
+        "Change the record's Postal Code field to capital letters",
+        "Fill a field with a value found by a Get Records step"
+      ],
+      "answer": [
+        1,
+        2
+      ],
+      "explain": "A before-save flow can only update the record that started it. Creating other records, or reading the Id of a new record, needs an after-save flow or an Apex after trigger.",
+      "wrong": [
+        "Setting a field on the same record is exactly what before-save flows do.",
+        "",
+        "",
+        "Changing a field on the same record works before save.",
+        "Get Records is one of the elements a before-save flow supports."
+      ],
+      "source": "Salesforce Help: Before-Save Record-Triggered Flows"
+    },
+    {
+      "id": "fund-q4",
+      "lesson": "fund-1",
+      "difficulty": 2,
+      "q": "Which requirement is a real use case for programmatic customization?",
+      "options": [
+        "Show an error when Close Date is set in the past",
+        "Count the line items on a master-detail order header",
+        "Email the case owner when a case is escalated",
+        "Add a seating-chart editor that no component offers"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "Code is right only when clicks can't do the job. A custom interactive editor that no standard or AgentExchange component offers needs a custom Lightning component.",
+      "wrong": [
+        "A validation rule does this with clicks.",
+        "A roll-up summary field does this with clicks.",
+        "A record-triggered flow can send this email.",
+        ""
+      ],
+      "source": "Salesforce Help: Control Who Sees What"
+    },
+    {
+      "id": "fund-q5",
+      "lesson": "fund-1",
+      "difficulty": 1,
+      "q": "A requirement can be met by either a flow or an Apex trigger, and both would work. What should an app builder choose?",
+      "options": [
+        "The flow, because declarative tools come first",
+        "The trigger, because code is always easier to change",
+        "Both, so one can back up the other",
+        "A Visualforce page that runs the same logic"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "When clicks can do the job, clicks win. Declarative tools are faster to build, and admins can maintain them without a developer.",
+      "wrong": [
+        "",
+        "Code needs a developer to change, so it's harder to maintain.",
+        "Two automations for one job can clash and double the work.",
+        "Visualforce is code and builds pages, not save logic."
+      ],
+      "source": "Salesforce Help: Before-Save Record-Triggered Flows"
+    },
+    {
+      "id": "fund-q6",
+      "lesson": "fund-1",
+      "difficulty": 2,
+      "q": "A developer offers to write an Apex trigger that recalculates this value on every save. The value only needs to be right when someone looks at it. What should the app builder suggest instead?",
+      "code": "FLOOR((TODAY() - Customer_Since__c) / 365)",
+      "lang": "formula",
+      "options": [
+        "A roll-up summary field on the account",
+        "A formula field with this expression",
+        "A schedule-triggered flow that updates a number field",
+        "Keeping the trigger, since dates need code"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "A formula field works out its value every time the record is viewed. It needs no code and is always current, even as days pass.",
+      "wrong": [
+        "A roll-up summary counts or adds up child records, not dates on the same record.",
+        "",
+        "A flow could work, but it adds stored data and a schedule a formula doesn't need.",
+        "Formulas handle date math well. No code needed."
+      ],
+      "source": "Salesforce Help: Before-Save Record-Triggered Flows"
+    },
+    {
+      "id": "fund-x1",
+      "lesson": "fund-1",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "Harbor Lane Clinics wrote this requirement for a custom object. Their architect confirms that sharing rules, teams and manual sharing can't express it. What should they use?",
+      "code": "Object: Appointment__c (custom)\nWho needs access: Billing users\nRule: share an appointment with each Billing user\n  who is linked to the patient's insurance partner\n  in the Partner_Assignment__c object\nChanges: assignments change daily, per record",
+      "lang": "text",
+      "options": [
+        "A criteria-based sharing rule on the partner field",
+        "A restriction rule on Appointment__c",
+        "Apex managed sharing",
+        "Moving Billing users higher in the role hierarchy"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "When no declarative sharing tool can express the rule, Apex managed sharing is the use case for code. It can share each record with users found through related data.",
+      "wrong": [
+        "Criteria rules share with fixed groups. They can't follow per-record links in another object.",
+        "Restriction rules only take access away. They can't grant it.",
+        "",
+        "Higher roles see their subordinates' records, not records linked through partners."
+      ],
+      "source": "Salesforce Help: Control Who Sees What"
+    },
+    {
+      "id": "fund-x2",
+      "lesson": "fund-1",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "An admin sketches this record-triggered flow. Which step can't be built as drawn?",
+      "code": "Record-triggered flow on Opportunity\nOptimize for: Fast Field Updates (before save)\n1. Get Records: the account's open cases\n2. Decision: any open cases?\n3. Create Records: a Task for the opportunity owner\n4. Assignment: set Risk__c to High",
+      "lang": "text",
+      "options": [
+        "Step 1, since before-save flows can't read other objects",
+        "Step 2, since a Decision needs an after-save flow",
+        "Step 3, since before-save flows can't create records",
+        "Step 4, since fields can't be assigned before save"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "Before-save flows support only Assignment, Decision, Get Records and Loop. Creating a task is another record, so it needs an after-save flow.",
+      "wrong": [
+        "Get Records is supported before save.",
+        "Decision is supported before save.",
+        "",
+        "Assigning fields on the triggering record is the whole point of before save."
+      ],
+      "source": "Salesforce Help: Before-Save Record-Triggered Flows"
+    },
+    {
+      "id": "fund-x3",
+      "lesson": "fund-1",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "Ridgeback Logistics sent this list. Which two requests can be met with declarative tools alone? (Choose 2)",
+      "code": "A. Total Weight__c of all shipment lines on their\n   master-detail parent Shipment__c\nB. Block saving a shipment when Ship_Date__c is\n   earlier than Order_Date__c\nC. A custom web service with its own URL and reply format\nD. A rotating 3D model of each truck on the record page,\n   which no standard or AgentExchange component offers\nE. Share each shipment with users listed in a table\n   that changes for every record",
+      "lang": "text",
+      "options": [
+        "Request A",
+        "Request B",
+        "Request C",
+        "Request D",
+        "Request E"
+      ],
+      "answer": [
+        0,
+        1
+      ],
+      "explain": "A roll-up summary field totals child records on a master-detail parent. A validation rule blocks bad dates. The other three need Apex or a custom component.",
+      "wrong": [
+        "",
+        "",
+        "A custom web service needs Apex.",
+        "A custom interactive 3D view needs a custom Lightning component.",
+        "Per-record sharing from a changing table needs Apex managed sharing."
+      ],
+      "source": "Salesforce Help: Control Who Sees What"
+    },
+    {
+      "id": "fund-q7",
+      "lesson": "fund-2",
+      "difficulty": 1,
+      "q": "What is AgentExchange?",
+      "options": [
+        "The tool that moves changes between sandboxes",
+        "Salesforce's marketplace for solutions and consultants",
+        "A Setup page that lists your org's Apex classes",
+        "An AI agent that writes flows for your org"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "AgentExchange, formerly AppExchange, is Salesforce's marketplace. It offers apps, components, Bolt solutions, flow solutions and consultants.",
+      "wrong": [
+        "Moving changes between orgs uses change sets or other deployment tools.",
+        "",
+        "Apex classes are listed in Setup, not on a marketplace.",
+        "AgentExchange is a marketplace, not a flow-writing agent."
+      ],
+      "source": "Trailhead: Tour Solutions by Type"
+    },
+    {
+      "id": "fund-q8",
+      "lesson": "fund-2",
+      "difficulty": 2,
+      "q": "A team wants to try a solution with sample data, change its settings, and keep using that org if they buy. Which option fits?",
+      "options": [
+        "A Trialforce trial",
+        "A test drive",
+        "Installing it in production for Admins Only",
+        "Watching the listing's demo video"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "A Trialforce trial is a writable Developer Edition org with sample data, for a limited time. You can customize it and keep using it if you buy.",
+      "wrong": [
+        "",
+        "A test drive is read-only, so you can't change settings.",
+        "Production is never the place to try an unknown solution first.",
+        "A video shows the solution but gives you nothing to change."
+      ],
+      "source": "Trailhead: Explore AgentExchange Listings"
+    },
+    {
+      "id": "fund-q9",
+      "lesson": "fund-2",
+      "difficulty": 2,
+      "q": "An admin found a promising package on AgentExchange. What should happen before it's installed in production?",
+      "options": [
+        "Install it for All Users so everyone can test it",
+        "Ask the provider to install it in production for you",
+        "Turn off the org's validation rules during the install",
+        "Install and test it in a sandbox or Developer Edition org"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "Never install in production without testing first. Try the package in a sandbox or Developer Edition org, where mistakes can't hurt real work.",
+      "wrong": [
+        "Testing in production with every user is the risk to avoid.",
+        "Who clicks Install doesn't matter. It still needs testing first.",
+        "Turning off rules weakens data quality and skips the real step: testing.",
+        ""
+      ],
+      "source": "Trailhead: Install AgentExchange Packages"
+    },
+    {
+      "id": "fund-q10",
+      "lesson": "fund-2",
+      "difficulty": 2,
+      "q": "Which two statements about managed packages from AgentExchange are true? (Choose 2)",
+      "options": [
+        "You can view and change all of their code",
+        "To upgrade, you must uninstall and then reinstall",
+        "The provider can upgrade them for you",
+        "They can be installed only for admins",
+        "They don't count against your app, tab and object limits"
+      ],
+      "answer": [
+        2,
+        4
+      ],
+      "explain": "Managed packages hide their code, and the provider can upgrade them. Their contents don't count against your org's app, tab and object limits.",
+      "wrong": [
+        "That describes an unmanaged package.",
+        "Reinstalling to upgrade is how unmanaged packages work.",
+        "",
+        "You can install for Admins Only, All Users or Specific Profiles.",
+        ""
+      ],
+      "source": "Trailhead: Install AgentExchange Packages"
+    },
+    {
+      "id": "fund-q11",
+      "lesson": "fund-2",
+      "difficulty": 2,
+      "q": "Nova Pet Care's help desk is overloaded. They want a complete, industry-ready ticketing portal with themed pages and built-in logic, set up with a partner's help. Which AgentExchange solution type fits?",
+      "options": [
+        "A component for the case page",
+        "A flow template",
+        "A Bolt solution",
+        "An unmanaged package of reports"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "Bolt solutions are complete industry solutions with pages, logic and workflow built in. You deploy them with the partner's help.",
+      "wrong": [
+        "A component adds one small feature, not a whole portal.",
+        "A flow template automates a process, not a themed portal.",
+        "",
+        "Reports show data. They don't give customers a portal."
+      ],
+      "source": "Trailhead: Tour Solutions by Type"
+    },
+    {
+      "id": "fund-q12",
+      "lesson": "fund-2",
+      "difficulty": 2,
+      "q": "Account executives want an eye-catching alert on account pages when a follow-up date is near. A partner offers a configurable alert piece you drop onto a Lightning page. What should the admin do?",
+      "options": [
+        "Have a developer build a custom Lightning web component",
+        "Install the component and add it in Lightning App Builder",
+        "Write an Apex trigger that posts the alert",
+        "Buy a Bolt solution for the sales team"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "Check AgentExchange before building. A ready-made component can go on the page with Lightning App Builder, with no code.",
+      "wrong": [
+        "Building it from scratch costs more when a tested component exists.",
+        "",
+        "A trigger runs on save. It can't show an alert on a page.",
+        "A Bolt solution is a whole industry solution, far more than one alert."
+      ],
+      "source": "Trailhead: Tour Solutions by Type"
+    },
+    {
+      "id": "fund-x4",
+      "lesson": "fund-2",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "Willow Bay Credit Union is installing a managed package in a sandbox. For now, only the admin team will evaluate it. Later, loan officers may get access. Which install option matches Salesforce guidance?",
+      "options": [
+        "All Users, then hide the app's tab from loan officers",
+        "Specific Profiles: the admin and loan officer profiles",
+        "Admins Only, then grant access to others later",
+        "All Users, so the later rollout needs no changes"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "Give access only to who needs it now. Admins Only is the safe choice when unsure, and access can be granted to others later.",
+      "wrong": [
+        "Hiding a tab doesn't remove the package's permissions.",
+        "Loan officers don't need access yet, so this gives too much too soon.",
+        "",
+        "Giving everyone access before they need it is the risk to avoid."
+      ],
+      "source": "Trailhead: Install AgentExchange Packages"
+    },
+    {
+      "id": "fund-x5",
+      "lesson": "fund-2",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "Crestline Movers uses Professional Edition. An admin reviews this listing. Which finding should stop the install?",
+      "code": "Listing: Route Planner Pro\nPackage type: Managed\nSupported editions: Enterprise, Unlimited\nLightning Ready: Yes\nTrials offered: Test drive\nReviews: 4.6 average",
+      "lang": "text",
+      "options": [
+        "It's managed, so its code can't be edited",
+        "Only a test drive is offered, not a Trialforce trial",
+        "Professional Edition isn't in the supported editions",
+        "Managed packages count against the org's object limits"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "Check technical fit first: edition support is hard to change. A solution that doesn't support your edition won't work in your org.",
+      "wrong": [
+        "Hidden code is normal for managed packages and not a blocker.",
+        "A test drive is still a valid way to try a solution.",
+        "",
+        "Managed package contents don't count against those limits."
+      ],
+      "source": "Trailhead: Explore AgentExchange Listings"
+    },
+    {
+      "id": "fund-x6",
+      "lesson": "fund-2",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "Before rolling a new AgentExchange app out to 300 users, which two steps match best practice? (Choose 2)",
+      "options": [
+        "Install it straight into production to save time",
+        "Read the listing's reviews and documentation",
+        "Choose an unmanaged package so upgrades arrive automatically",
+        "Test the package in a sandbox or Developer Edition org",
+        "Install for All Users, then remove access where needed"
+      ],
+      "answer": [
+        1,
+        3
+      ],
+      "explain": "Read the listing first: reviews, docs and edition fit. Then test in a sandbox or Developer Edition org before production.",
+      "wrong": [
+        "Skipping testing risks breaking real work.",
+        "",
+        "Unmanaged packages don't upgrade automatically. You reinstall them.",
+        "",
+        "Start narrow, with Admins Only, then open access."
+      ],
+      "source": "Trailhead: Install AgentExchange Packages"
+    },
+    {
+      "id": "fund-q13",
+      "lesson": "fund-3",
+      "difficulty": 1,
+      "q": "How many profiles can one Salesforce user have?",
+      "options": [
+        "Exactly one",
+        "Up to five",
+        "As many as needed",
+        "None, if they have a permission set"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "Each user has exactly one profile. Extra access comes from permission sets and permission set groups, and a user can have many of those.",
+      "wrong": [
+        "",
+        "There's no five-profile option. It's always one.",
+        "Many is true for permission sets, not profiles.",
+        "Every user needs a profile, even with permission sets."
+      ],
+      "source": "Trailhead: Control Access to Objects"
+    },
+    {
+      "id": "fund-q14",
+      "lesson": "fund-3",
+      "difficulty": 2,
+      "q": "Interns must never see the Salary__c field: not on records, list views, reports or search results. What should the admin use?",
+      "options": [
+        "Remove the field from the interns' page layout",
+        "Field-level security on Salary__c for the interns",
+        "A restriction rule on the object",
+        "A validation rule that blocks the field"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "Field-level security hides a field everywhere: pages, related lists, list views, reports and search. It's the only setting that fully protects a field.",
+      "wrong": [
+        "A page layout only hides the field on detail and edit pages.",
+        "",
+        "Restriction rules filter records, not fields.",
+        "Validation rules check data on save. They don't hide fields."
+      ],
+      "source": "Salesforce Help: Control Who Sees What"
+    },
+    {
+      "id": "fund-q15",
+      "lesson": "fund-3",
+      "difficulty": 2,
+      "q": "Which approach to granting permissions does Salesforce recommend?",
+      "options": [
+        "One custom profile per user, with every permission inside",
+        "The System Administrator profile, with fields hidden by layouts",
+        "Standard profiles, edited to add the object permissions needed",
+        "A lean profile, with access added by permission sets and groups"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "Start from Minimum Access - Salesforce, or a clone of it. Then grant what each user needs with permission sets and permission set groups.",
+      "wrong": [
+        "One profile per user is hard to manage and doesn't scale.",
+        "That gives far too much access, and layouts don't secure fields.",
+        "You can't edit object permissions on a standard profile.",
+        ""
+      ],
+      "source": "Trailhead: Control Access to Objects"
+    },
+    {
+      "id": "fund-q16",
+      "lesson": "fund-3",
+      "difficulty": 2,
+      "q": "Which two can you control with object permissions in a permission set? (Choose 2)",
+      "options": [
+        "Which page layout the user sees",
+        "Whether the user can create records of the object",
+        "Which role the user holds",
+        "Whether the user sees every record of the object, ignoring sharing",
+        "Which records the user can open, based on who owns them"
+      ],
+      "answer": [
+        1,
+        3
+      ],
+      "explain": "Object permissions control Read, Create, Edit and Delete, plus View All and Modify All. View All lets a user see every record of that object, ignoring sharing.",
+      "wrong": [
+        "Page layout assignment belongs on the profile.",
+        "",
+        "Roles are set on the user record, not in permission sets.",
+        "",
+        "Owner-based record access comes from sharing settings, not object permissions."
+      ],
+      "source": "Salesforce Help: \"View All\" and \"Modify All\" Permissions Overview"
+    },
+    {
+      "id": "fund-q17",
+      "lesson": "fund-3",
+      "difficulty": 1,
+      "q": "Where do you set field-level security?",
+      "options": [
+        "In org-wide defaults",
+        "In the role hierarchy",
+        "In profiles and permission sets",
+        "Only in the page layout editor"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "Field permissions live in profiles and permission sets. You can also set them for one field across all profiles or permission sets.",
+      "wrong": [
+        "Org-wide defaults set record access, not field access.",
+        "Roles control record access, not fields.",
+        "",
+        "Page layouts only arrange fields. They don't secure them."
+      ],
+      "source": "Salesforce Help: Control Who Sees What"
+    },
+    {
+      "id": "fund-q18",
+      "lesson": "fund-3",
+      "difficulty": 2,
+      "q": "Which statement about the View All Records permission on an object is true?",
+      "options": [
+        "It also gives Modify access to every record of that object",
+        "It overrides field-level security on that object",
+        "It covers only records the user's role can already see",
+        "It ignores sharing for that object, but not field-level security"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "View All Records ignores sharing settings for one object. But users still need field permissions to see each field.",
+      "wrong": [
+        "Editing every record needs Modify All Records.",
+        "No View All or Modify All permission overrides field-level security.",
+        "It ignores sharing and the role hierarchy, so it covers every record.",
+        ""
+      ],
+      "source": "Salesforce Help: \"View All\" and \"Modify All\" Permissions Overview"
+    },
+    {
+      "id": "fund-x7",
+      "lesson": "fund-3",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A Sales Rep permission set group includes a shared permission set that grants Delete on Opportunity. Reps must not delete opportunities. Other groups using the same permission set must keep Delete. What should the admin do?",
+      "options": [
+        "Remove Delete from the shared permission set",
+        "Add a muting permission set to the group that mutes Delete",
+        "Clone the reps' profile and turn off Delete in it",
+        "Create a restriction rule on Opportunity for the reps"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "A muting permission set turns off chosen permissions inside one permission set group. The shared permission set stays the same for every other group.",
+      "wrong": [
+        "That takes Delete away from the other groups too.",
+        "",
+        "A profile can't take away a permission a permission set grants.",
+        "Restriction rules aren't available for opportunities, and they filter records, not Delete."
+      ],
+      "source": "Salesforce Help: Permission Set Groups"
+    },
+    {
+      "id": "fund-x8",
+      "lesson": "fund-3",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "Dana has this access. What can she do with Amount__c on the contracts she can open?",
+      "code": "Profile: Minimum Access - Salesforce\nPermission set: Contract Viewer\n  Contract__c: Read\n  Amount__c: Read Access only\nPermission set: Contract Editor\n  Contract__c: Read, Edit\n  Amount__c: no access",
+      "lang": "text",
+      "options": [
+        "Edit it, because Contract Editor grants Edit on the object",
+        "See it but not edit it",
+        "Nothing, because one permission set gives no field access",
+        "Edit it, but only on contracts she owns"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "Permissions add up: a user gets the most access any of their profile or permission sets grants. Read Access on the field comes from Contract Viewer, and nothing grants Edit Access.",
+      "wrong": [
+        "Object Edit doesn't make a field editable. The field needs Edit Access too.",
+        "",
+        "A missing permission never takes away one granted elsewhere.",
+        "Ownership doesn't change field-level security."
+      ],
+      "source": "Trailhead: Control Access to Objects"
+    },
+    {
+      "id": "fund-x9",
+      "lesson": "fund-3",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "Hightide Insurance hid SSN__c by removing it from all page layouts. Field-level security still gives agents Read Access to it. Where can agents still see the value? (Choose 2)",
+      "options": [
+        "In a report that includes the field",
+        "On the record detail page using the same layout",
+        "In a list view column showing the field",
+        "On the edit page using the same layout",
+        "Nowhere, since layouts hide fields everywhere"
+      ],
+      "answer": [
+        0,
+        2
+      ],
+      "explain": "Page layouts only control the detail and edit pages. With Read Access in field-level security, the value still shows in reports, list views and search.",
+      "wrong": [
+        "",
+        "The layout removed it there, so it doesn't show on the detail page.",
+        "",
+        "The layout removed it from the edit page too.",
+        "Layouts don't reach reports, list views or search."
+      ],
+      "source": "Salesforce Help: Control Who Sees What"
+    },
+    {
+      "id": "fund-q19",
+      "lesson": "fund-4",
+      "difficulty": 1,
+      "q": "What do org-wide defaults set?",
+      "options": [
+        "Which fields each profile can edit",
+        "The baseline access to records users don't own",
+        "Which apps appear in the App Launcher",
+        "Which records a manager's team owns"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "Org-wide defaults set the starting access users have to records they don't own. Other sharing tools then open access further.",
+      "wrong": [
+        "Field access comes from field-level security.",
+        "",
+        "App visibility is set in profiles and permission sets.",
+        "Ownership is a field on each record, not a default."
+      ],
+      "source": "Salesforce Help: Organization-Wide Sharing Defaults"
+    },
+    {
+      "id": "fund-q20",
+      "lesson": "fund-4",
+      "difficulty": 2,
+      "q": "At Brightfield Schools, every user must be able to view all Course__c records. Only the owner and users above the owner in the role hierarchy may edit them. Which org-wide default fits?",
+      "options": [
+        "Private",
+        "Public Read/Write",
+        "Controlled by Parent",
+        "Public Read Only"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "Public Read Only lets everyone view and report on records. Only the owner and those above them can edit.",
+      "wrong": [
+        "Private would hide other users' courses.",
+        "Public Read/Write would let everyone edit.",
+        "Controlled by Parent is for child records, like contacts under accounts.",
+        ""
+      ],
+      "source": "Salesforce Help: Organization-Wide Default Access Settings"
+    },
+    {
+      "id": "fund-q21",
+      "lesson": "fund-4",
+      "difficulty": 2,
+      "q": "The Opportunity org-wide default is Private. A sales manager can still see opportunities owned by the reps who report to her. What gives her that access?",
+      "options": [
+        "Her profile's Read permission on Opportunity",
+        "A criteria-based sharing rule",
+        "The role hierarchy",
+        "Implicit sharing from the account"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "Users higher in the role hierarchy get the same access as the owners below them. That works no matter what the org-wide default is.",
+      "wrong": [
+        "Object Read lets her use the object. It doesn't open other people's records.",
+        "No rule is described, and roles already give this access.",
+        "",
+        "Implicit sharing gives access between parent and child records, not to a manager's team."
+      ],
+      "source": "Salesforce Help: Control Who Sees What"
+    },
+    {
+      "id": "fund-q22",
+      "lesson": "fund-4",
+      "difficulty": 2,
+      "q": "Which two statements about org-wide defaults are true? (Choose 2)",
+      "options": [
+        "Sharing rules can make records stricter than the default",
+        "Set them for the most restricted user, then open up access",
+        "They can give more access than the user's object permissions",
+        "Internal and external users can have different defaults",
+        "Public Read/Write/Transfer is available on every object"
+      ],
+      "answer": [
+        1,
+        3
+      ],
+      "explain": "Set org-wide defaults to the most restrictive level needed, then open access with other tools. You can set separate internal and external defaults.",
+      "wrong": [
+        "Sharing tools only grant more access, never less.",
+        "",
+        "Org-wide defaults never go beyond object permissions.",
+        "",
+        "Public Read/Write/Transfer exists only for cases and leads."
+      ],
+      "source": "Salesforce Help: Organization-Wide Sharing Defaults"
+    },
+    {
+      "id": "fund-q23",
+      "lesson": "fund-4",
+      "difficulty": 1,
+      "q": "Which org-wide default option is available only for cases and leads?",
+      "options": [
+        "Public Full Access",
+        "Controlled by Parent",
+        "Public Read/Write/Transfer",
+        "View Only"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "Public Read/Write/Transfer lets all users view, edit and transfer records. It exists only for cases and leads.",
+      "wrong": [
+        "Public Full Access is only for campaigns.",
+        "Controlled by Parent is for child records, like contacts and orders.",
+        "",
+        "View Only is a price book setting."
+      ],
+      "source": "Salesforce Help: Organization-Wide Default Access Settings"
+    },
+    {
+      "id": "fund-q24",
+      "lesson": "fund-4",
+      "difficulty": 2,
+      "q": "What does Controlled by Parent mean for contacts?",
+      "options": [
+        "Only the contact's owner can see it",
+        "A user can act on a contact only if they can do the same on its account",
+        "The contact is always visible to everyone in the org",
+        "Access follows the contact owner's manager"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "With Controlled by Parent, a child record follows its parent. If you can edit the account, you can edit its contacts.",
+      "wrong": [
+        "That describes Private, not Controlled by Parent.",
+        "",
+        "That would be a public setting, not one tied to the parent.",
+        "Access follows the parent record, not the owner's manager."
+      ],
+      "source": "Salesforce Help: Organization-Wide Default Access Settings"
+    },
+    {
+      "id": "fund-q25",
+      "lesson": "fund-4",
+      "difficulty": 2,
+      "q": "Inspection__c is the detail side of a master-detail relationship with Property__c. Why can't the admin set an org-wide default for Inspection__c?",
+      "options": [
+        "Custom objects always use Public Read/Write",
+        "A sharing rule must exist before the default can be set",
+        "The role hierarchy controls detail objects instead",
+        "Detail records take their sharing from the master record"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "A detail record in a master-detail relationship inherits its sharing from its master. Its org-wide default is fixed as Controlled by Parent.",
+      "wrong": [
+        "Custom objects can be Private, Public Read Only or Public Read/Write.",
+        "Defaults never wait for sharing rules.",
+        "The role hierarchy adds access. It doesn't replace the default.",
+        ""
+      ],
+      "source": "Trailhead: Control Access to Records"
+    },
+    {
+      "id": "fund-x10",
+      "lesson": "fund-4",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "An admin set up this custom object. Which users can view bid B-102?",
+      "code": "Object: Bid__c\nInternal default: Private\nGrant Access Using Hierarchies: unchecked\nRoles: VP Sales > West Manager > West Rep\nOwner of B-102: a West Rep\nSharing rules on Bid__c: none\nManual shares on B-102: none",
+      "lang": "text",
+      "options": [
+        "The owner, the West Manager and the VP Sales",
+        "The owner and the West Manager only",
+        "Every user, since no sharing rule limits it",
+        "The owner, plus users with powers like View All Data"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "With Grant Access Using Hierarchies unchecked, roles above the owner get no automatic access. Only the owner and people given access another way can see it.",
+      "wrong": [
+        "The unchecked box stops managers from inheriting access.",
+        "The West Manager is also cut off by the unchecked box.",
+        "Private hides records. Rules only add access.",
+        ""
+      ],
+      "source": "Trailhead: Control Access to Records"
+    },
+    {
+      "id": "fund-x11",
+      "lesson": "fund-4",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "Larkspur Health has these needs for Visit__c. Which design meets them?",
+      "code": "Employees: edit every visit\nContractors: edit visits they own;\n  only view everyone else's visits\nBoth: have Read and Edit on Visit__c",
+      "lang": "text",
+      "options": [
+        "Public Read/Write, plus a sharing rule giving contractors Read Only",
+        "Public Read/Write, and remove Edit from contractors' permission set",
+        "Public Read Only, plus a Read/Write sharing rule for an employees group",
+        "Private, and give contractors View All Records on Visit__c"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "Set the default for the most restricted user: contractors can only view others' visits. Then a sharing rule opens Read/Write for employees.",
+      "wrong": [
+        "A sharing rule can't take access below the default.",
+        "Without Edit, contractors couldn't edit even their own visits.",
+        "",
+        "View All Records gives read access only, and employees still couldn't edit."
+      ],
+      "source": "Trailhead: Control Access to Records"
+    },
+    {
+      "id": "fund-x12",
+      "lesson": "fund-4",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "The Account default is Public Read/Write. A rep's permission set grants Read, Create, Edit and Delete on Account. Which two actions fail on an account the rep doesn't own? (Choose 2)",
+      "options": [
+        "Edit the account's phone number",
+        "See the account in a report",
+        "Delete the account",
+        "Change who the account is shared with",
+        "Open the account's detail page"
+      ],
+      "answer": [
+        2,
+        3
+      ],
+      "explain": "Public Read/Write lets everyone view and edit. Deleting and changing sharing stay with the owner, those above the owner, and admins.",
+      "wrong": [
+        "Public Read/Write lets all users edit.",
+        "Public Read/Write lets all users report on records.",
+        "",
+        "",
+        "Everyone can view under Public Read/Write."
+      ],
+      "source": "Salesforce Help: Organization-Wide Default Access Settings"
+    },
+    {
+      "id": "fund-q26",
+      "lesson": "fund-5",
+      "difficulty": 1,
+      "q": "Which type of sharing rule chooses records by their field values?",
+      "options": [
+        "Owner-based",
+        "Manual",
+        "Criteria-based",
+        "Territory-based"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "A criteria-based sharing rule shares records whose field values match. An owner-based rule looks at who owns the record instead.",
+      "wrong": [
+        "Owner-based rules share records by who owns them.",
+        "Manual sharing isn't a rule. It shares one record by hand.",
+        "",
+        "There's no territory-based rule type. Territories can only be who receives access."
+      ],
+      "source": "Salesforce Help: Sharing Rule Types"
+    },
+    {
+      "id": "fund-q27",
+      "lesson": "fund-5",
+      "difficulty": 2,
+      "q": "Visitors to a public site, who never log in, must see all Product_Review__c records. What is the only way to give them record access?",
+      "options": [
+        "Manual sharing by each review's owner",
+        "A guest user sharing rule",
+        "A Public Read Only org-wide default",
+        "Adding the guest user to a role"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "A guest user sharing rule is a special criteria-based rule. It's the only way to grant record access to unauthenticated guest users.",
+      "wrong": [
+        "Manual sharing can't reach unauthenticated guests.",
+        "",
+        "Guests aren't covered by internal defaults like this.",
+        "Guest users don't get record access through roles."
+      ],
+      "source": "Salesforce Help: Sharing Rule Types"
+    },
+    {
+      "id": "fund-q28",
+      "lesson": "fund-5",
+      "difficulty": 2,
+      "q": "Each Position__c record names a hiring manager who needs edit access to it. Who the hiring manager is changes per record and is hard to predict. Which declarative option fits?",
+      "options": [
+        "An owner-based sharing rule for the managers' role",
+        "A criteria-based rule on the Hiring Manager field",
+        "Moving hiring managers higher in the role hierarchy",
+        "Manual sharing on each position"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "Sharing rules need a group you can predict ahead of time. For one-off, per-record access, the owner can share each record manually.",
+      "wrong": [
+        "An owner-based rule shares every record from those owners, not the right one per manager.",
+        "Criteria rules match fixed values. They can't share with \"the user named in this field.\"",
+        "That would open every subordinate's records, not just their own positions.",
+        ""
+      ],
+      "source": "Trailhead: Define Sharing Rules"
+    },
+    {
+      "id": "fund-q29",
+      "lesson": "fund-5",
+      "difficulty": 2,
+      "q": "An admin created this sharing rule. Cases whose Status__c is \"escalated\" (lowercase) are not shared. Why?",
+      "code": "Sharing rule: Escalated Cases to Tier 2\nObject: Case\nType: Criteria-based\nCriteria: Status__c (text) equals Escalated\nShare with: Public group Tier 2\nAccess: Read/Write",
+      "lang": "text",
+      "options": [
+        "Criteria rules run only once a day",
+        "Text criteria in sharing rules are case-sensitive",
+        "Public groups can't receive Read/Write access",
+        "Criteria rules work only on custom objects"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "Text and text area criteria are case-sensitive. \"Escalated\" won't match \"escalated\", so list each spelling, separated by commas.",
+      "wrong": [
+        "Sharing rules apply as records change, not once a day.",
+        "",
+        "Sharing rules can grant Read/Write to public groups.",
+        "Criteria rules also work on cases, accounts, leads and more."
+      ],
+      "source": "Salesforce Help: Sharing Rule Types"
+    },
+    {
+      "id": "fund-q30",
+      "lesson": "fund-5",
+      "difficulty": 2,
+      "q": "Which two can a sharing rule share records with? (Choose 2)",
+      "options": [
+        "A permission set",
+        "A public group",
+        "A profile",
+        "A role and its subordinates",
+        "The user named in a lookup on each record"
+      ],
+      "answer": [
+        1,
+        3
+      ],
+      "explain": "Sharing rules share with public groups, roles, roles and subordinates, or territories. Profiles and permission sets aren't sharing targets.",
+      "wrong": [
+        "Permission sets grant permissions, not record shares.",
+        "",
+        "Profiles aren't a choice in a sharing rule.",
+        "",
+        "Rules can't follow a per-record user lookup."
+      ],
+      "source": "Trailhead: Define Sharing Rules"
+    },
+    {
+      "id": "fund-q31",
+      "lesson": "fund-5",
+      "difficulty": 1,
+      "q": "What do sharing rules do?",
+      "options": [
+        "Hide fields from certain users",
+        "Restrict access below the org-wide default",
+        "Change which page layout a user sees",
+        "Grant groups of users extra access automatically"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "Sharing rules make automatic exceptions to the org-wide default for groups of users. They can only grant more access.",
+      "wrong": [
+        "Hiding fields is field-level security.",
+        "Sharing rules can never be stricter than the default.",
+        "Page layouts are assigned by profile and record type.",
+        ""
+      ],
+      "source": "Salesforce Help: Sharing Rules"
+    },
+    {
+      "id": "fund-q32",
+      "lesson": "fund-5",
+      "difficulty": 2,
+      "q": "By default, what happens to a record's manual shares when its owner changes?",
+      "options": [
+        "They are removed",
+        "They stay, and the new owner can't edit them",
+        "They turn into a sharing rule",
+        "They move to the old owner's manager"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "By default, Salesforce deletes manual shares when a record's owner changes. Users who relied on them can lose access.",
+      "wrong": [
+        "",
+        "They don't stay by default. An org setting is needed to keep them.",
+        "Manual shares never become sharing rules.",
+        "Shares aren't handed to anyone's manager."
+      ],
+      "source": "Salesforce Help: Manual Sharing"
+    },
+    {
+      "id": "fund-x13",
+      "lesson": "fund-5",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "Opportunities are Private. East and West sales teams sit in separate role branches, and opportunities have no region field. The East sales manager needs read-only access to every opportunity owned by the West team. What should the admin do?",
+      "code": "Roles:\nVP Sales\n├─ East Manager\n│   └─ East Rep\n└─ West Manager\n    └─ West Rep",
+      "lang": "text",
+      "options": [
+        "Move the East Manager role above the West Manager role",
+        "Create a criteria-based rule where Region equals West",
+        "Ask each West rep to share their opportunities manually",
+        "Share records owned by West Manager and subordinates with East Manager, Read Only"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "When access depends on who owns the records, use an owner-based sharing rule. Share West Manager and subordinates' records with the East Manager role.",
+      "wrong": [
+        "Roles above would get full owner-level access, not read-only, and break the org chart's logic.",
+        "There is no region field to match on.",
+        "Manual sharing for every record is slow and easy to miss.",
+        ""
+      ],
+      "source": "Salesforce Help: Sharing Rule Types"
+    },
+    {
+      "id": "fund-x14",
+      "lesson": "fund-5",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "At Cobalt Engineering, a different and unpredictable set of engineers needs access to each Project__c record. Which two solutions can meet this? (Choose 2)",
+      "options": [
+        "An owner-based sharing rule",
+        "Manual sharing by the project owner",
+        "Opportunity teams on Project__c",
+        "Apex managed sharing driven by an assignments object",
+        "A scoping rule for each engineer"
+      ],
+      "answer": [
+        1,
+        3
+      ],
+      "explain": "Per-record, unpredictable access fits manual sharing. When it must be automatic, Apex managed sharing can share from related assignment data.",
+      "wrong": [
+        "Owner-based rules share every record from a group of owners, not per project.",
+        "",
+        "Opportunity teams work only on opportunities.",
+        "",
+        "Scoping rules only set a default view. They never grant access."
+      ],
+      "source": "Salesforce Help: Control Who Sees What"
+    },
+    {
+      "id": "fund-x15",
+      "lesson": "fund-5",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "Kai owns a Private custom object record. Grant Access Using Hierarchies is on. Who can't use the Sharing button to share Kai's record?",
+      "options": [
+        "Kai's manager, whose role is above Kai's",
+        "A user with Modify All Records on the object",
+        "A peer who has Read/Write from a sharing rule",
+        "A Salesforce admin"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "Only the owner, users above the owner in the role hierarchy, users with Modify All Records on the object, and admins can share manually. Read/Write from a rule isn't enough.",
+      "wrong": [
+        "Users above the owner can share when hierarchies grant access.",
+        "Modify All Records on the object allows manual sharing.",
+        "",
+        "Admins can always share records manually."
+      ],
+      "source": "Salesforce Help: Manual Sharing"
+    },
+    {
+      "id": "fund-q33",
+      "lesson": "fund-6",
+      "difficulty": 1,
+      "q": "Which feature filters the records a user has access to, so they can reach only the records that match its criteria?",
+      "options": [
+        "A scoping rule",
+        "A sharing rule",
+        "A restriction rule",
+        "The role hierarchy"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "A restriction rule filters the records a user already has access to. They can reach only the records that match its criteria.",
+      "wrong": [
+        "A scoping rule only sets a default view. Users can still open other records.",
+        "Sharing rules only add access.",
+        "",
+        "The role hierarchy only adds access for managers."
+      ],
+      "source": "Salesforce Help: Restriction Rules"
+    },
+    {
+      "id": "fund-q34",
+      "lesson": "fund-6",
+      "difficulty": 2,
+      "q": "Staff at Ember County support several agencies. Their list views and reports should start with their own agency's records. They must still be able to open other agencies' records when needed. Which feature fits?",
+      "options": [
+        "A restriction rule",
+        "A scoping rule",
+        "A stricter org-wide default",
+        "A muting permission set"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "A scoping rule sets which records users see by default in list views, reports and SOQL. It doesn't remove access to other records.",
+      "wrong": [
+        "A restriction rule would block the other agencies' records.",
+        "",
+        "A stricter default would take access away.",
+        "Muting turns off permissions, not records."
+      ],
+      "source": "Salesforce Help: Scoping Rules"
+    },
+    {
+      "id": "fund-q35",
+      "lesson": "fund-6",
+      "difficulty": 1,
+      "q": "How many active restriction rules can one object have in Enterprise Edition?",
+      "options": [
+        "One",
+        "Two",
+        "Five",
+        "Ten"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "Enterprise and Developer Edition allow two active restriction rules per object. Performance and Unlimited Edition allow five.",
+      "wrong": [
+        "The limit is higher than one.",
+        "",
+        "Five is the limit for Performance and Unlimited Edition.",
+        "No edition allows ten."
+      ],
+      "source": "Salesforce Help: Restriction Rules"
+    },
+    {
+      "id": "fund-q36",
+      "lesson": "fund-6",
+      "difficulty": 2,
+      "q": "Which two objects support restriction rules? (Choose 2)",
+      "options": [
+        "Accounts",
+        "Tasks",
+        "Opportunities",
+        "Contracts",
+        "Leads"
+      ],
+      "answer": [
+        1,
+        3
+      ],
+      "explain": "Restriction rules work on custom objects, external objects, contracts, events, tasks, quotes, time sheets and time sheet entries.",
+      "wrong": [
+        "Accounts don't support restriction rules.",
+        "",
+        "Opportunities don't support restriction rules.",
+        "",
+        "Leads don't support restriction rules."
+      ],
+      "source": "Salesforce Help: Restriction Rules"
+    },
+    {
+      "id": "fund-q37",
+      "lesson": "fund-6",
+      "difficulty": 2,
+      "q": "Contracts are Public Read Only, and most users need that. Interns must see only the contracts they own. What should the admin use?",
+      "code": "User criteria: Profile is Intern\nRecord criteria: Owner equals the current user",
+      "lang": "text",
+      "options": [
+        "A sharing rule giving interns No Access",
+        "A scoping rule with these criteria",
+        "A restriction rule with these criteria",
+        "Remove Contract from the interns' page layouts"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "A restriction rule filters a user's access down to matching records. Contracts support restriction rules, and the criteria pick interns and their own records.",
+      "wrong": [
+        "Sharing rules can't take access away, and there's no No Access level.",
+        "A scoping rule only changes the default view. Interns could still open others.",
+        "",
+        "Layouts don't control which records users can open."
+      ],
+      "source": "Salesforce Help: Restriction Rules"
+    },
+    {
+      "id": "fund-q38",
+      "lesson": "fund-6",
+      "difficulty": 2,
+      "q": "Which edition is needed to use scoping rules in a production org?",
+      "options": [
+        "Professional Edition",
+        "Enterprise Edition",
+        "Unlimited Edition",
+        "Essentials Edition"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "Scoping rules are available in Performance, Unlimited and Developer Edition. Enterprise Edition doesn't include them.",
+      "wrong": [
+        "Professional Edition doesn't include scoping rules.",
+        "Enterprise Edition has restriction rules, but not scoping rules.",
+        "",
+        "Essentials Edition doesn't include scoping rules."
+      ],
+      "source": "Salesforce Help: Scoping Rules"
+    },
+    {
+      "id": "fund-x16",
+      "lesson": "fund-6",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "Two rival sales teams log tasks on the same accounts. Each team must not see the other team's tasks anywhere, including reports, lookups and search. Each task has a Team__c field. What should the admin do?",
+      "options": [
+        "Create a scoping rule on Task based on Team__c",
+        "Create a restriction rule on Task based on Team__c",
+        "Set the Activity org-wide default to Private",
+        "Remove the activity related list from page layouts"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "Restriction rules truly limit which tasks a user can reach, across list views, reports, lookups and search. Tasks are hard to make private with defaults alone.",
+      "wrong": [
+        "A scoping rule only focuses the default view. Tasks stay reachable.",
+        "",
+        "Users who can read the account can still view its activities.",
+        "Tasks would still show in reports and search."
+      ],
+      "source": "Salesforce Help: Restriction Rules"
+    },
+    {
+      "id": "fund-x17",
+      "lesson": "fund-6",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "This restriction rule is active. Pat works in Field Ops and has View All Records on Expense__c. Which expenses can Pat see?",
+      "code": "Restriction rule: West Only\nObject: Expense__c\nUser criteria: Department equals Field Ops\nRecord criteria: Region__c equals West\nActive: yes",
+      "lang": "text",
+      "options": [
+        "Only expenses where Region__c is West",
+        "Only West expenses that Pat owns",
+        "No expenses, since View All users are fully blocked",
+        "All expense records"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "Users with View All Records or View All Data on an object can view all its records, whatever the restriction rules say.",
+      "wrong": [
+        "That would apply to Field Ops users without View All Records.",
+        "The rule never looks at ownership.",
+        "View All Records skips restriction rules. It doesn't block anything.",
+        ""
+      ],
+      "source": "Salesforce Help: Restriction Rule Considerations"
+    },
+    {
+      "id": "fund-x18",
+      "lesson": "fund-6",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "An admin compares restriction rules and scoping rules. Which two statements are true? (Choose 2)",
+      "options": [
+        "Scoping rules are available in Enterprise Edition",
+        "A scoping rule doesn't remove access to any records",
+        "Restriction rule criteria can use formulas and OR logic",
+        "Only one active restriction or scoping rule should apply to a user",
+        "A restriction rule also restricts the object's child records"
+      ],
+      "answer": [
+        1,
+        3
+      ],
+      "explain": "Scoping rules only set a default view. For both rule types, configure them so only one active rule applies to each user.",
+      "wrong": [
+        "Scoping rules come with Performance, Unlimited and Developer Edition.",
+        "",
+        "Criteria support only equals. No formulas, AND or OR.",
+        "",
+        "Child objects need their own sharing controls."
+      ],
+      "source": "Salesforce Help: Restriction Rule Considerations"
+    },
+    {
+      "id": "fund-q39",
+      "lesson": "fund-7",
+      "difficulty": 1,
+      "q": "Which report format is the default and shows a simple list of records?",
+      "options": [
+        "Summary",
+        "Matrix",
+        "Joined",
+        "Tabular"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "Tabular is the default format. It lists records in rows, like a spreadsheet or a mailing list.",
+      "wrong": [
+        "Summary reports group rows with subtotals.",
+        "Matrix reports group by rows and columns.",
+        "Joined reports combine several report blocks.",
+        ""
+      ],
+      "source": "Trailhead: Format Your Report"
+    },
+    {
+      "id": "fund-q40",
+      "lesson": "fund-7",
+      "difficulty": 2,
+      "q": "The CEO wants closed-won revenue grouped by close month down the side and by opportunity type across the top. Which report format fits?",
+      "options": [
+        "Tabular",
+        "Matrix",
+        "Summary",
+        "Joined"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "Matrix reports group records by both rows and columns. That gives a grid, like months by type.",
+      "wrong": [
+        "Tabular reports don't group at all.",
+        "",
+        "Summary reports group rows only, not columns.",
+        "Joined reports show separate blocks, not one grid."
+      ],
+      "source": "Trailhead: Format Your Report"
+    },
+    {
+      "id": "fund-q41",
+      "lesson": "fund-7",
+      "difficulty": 2,
+      "q": "Which report can't be the source report of a dashboard widget?",
+      "options": [
+        "A summary report grouped by stage",
+        "A matrix report grouped by month and type",
+        "A tabular report limited to 10 rows",
+        "A joined report with two blocks"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "Dashboard widgets can't use joined reports or historical trend reports as their source.",
+      "wrong": [
+        "Summary reports work well in dashboards.",
+        "Matrix reports can feed dashboards.",
+        "A tabular report can feed a dashboard once its rows are limited.",
+        ""
+      ],
+      "source": "Trailhead: Visualize Your Data with the Lightning Dashboard Builder"
+    },
+    {
+      "id": "fund-q42",
+      "lesson": "fund-7",
+      "difficulty": 2,
+      "q": "A manager needs a report of accounts that have no cases at all. What is the quickest no-code way?",
+      "options": [
+        "A bucket column on Case Number",
+        "A cross filter: Accounts without Cases",
+        "A report type where each account must have cases",
+        "A formula field that counts each account's cases"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "A cross filter keeps records with or without related records. \"Accounts without Cases\" gives exactly this list, with no new fields.",
+      "wrong": [
+        "Bucket columns group values. They can't find missing related records.",
+        "",
+        "That report type would drop accounts with no cases.",
+        "A formula field can't count child records. That needs a roll-up or automation."
+      ],
+      "source": "Salesforce Help: Filter Across Objects with Cross Filters"
+    },
+    {
+      "id": "fund-q43",
+      "lesson": "fund-7",
+      "difficulty": 2,
+      "q": "Which two statements about custom report types are true? (Choose 2)",
+      "options": [
+        "They can relate up to 10 object levels",
+        "The primary object can't be changed after saving",
+        "They can hold at most 100 fields",
+        "Users can't run reports from one until it's Deployed",
+        "They can use standard objects only"
+      ],
+      "answer": [
+        1,
+        3
+      ],
+      "explain": "The primary object is fixed once you save. While In Development, only users with Manage Custom Report Types can see and run it.",
+      "wrong": [
+        "The limit is 4 object levels.",
+        "",
+        "They can hold up to 1,000 fields.",
+        "",
+        "Custom objects work too."
+      ],
+      "source": "Salesforce Help: Create a Custom Report Type in the Legacy Custom Report Type Builder"
+    },
+    {
+      "id": "fund-q44",
+      "lesson": "fund-7",
+      "difficulty": 2,
+      "q": "A sales director wants accounts grouped as Small, Medium or Large by employee count, in one report, without adding a field. What should the admin use?",
+      "options": [
+        "A formula field on Account",
+        "A cross filter on Account",
+        "A bucket column in the report",
+        "A summary formula in the report"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "A bucket column sorts report values into groups you define, like Small, Medium and Large. It needs no new field or formula.",
+      "wrong": [
+        "That would add a field, which the director wants to avoid.",
+        "Cross filters include or exclude records by related records.",
+        "",
+        "A summary formula calculates totals. It doesn't label each row."
+      ],
+      "source": "Salesforce Help: Categorize Data with Bucket Columns"
+    },
+    {
+      "id": "fund-x19",
+      "lesson": "fund-7",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "Managers say reports built on this custom report type miss brand-new projects. What is the cause and fix?",
+      "code": "Custom report type: Projects with Tasks\nPrimary object: Project__c\nRelated object: Project_Task__c\nRelationship: Each \"A\" record must have\n  at least one related \"B\" record\nStatus: Deployed",
+      "lang": "text",
+      "options": [
+        "Reports skip new records until a nightly refresh, so wait a day",
+        "The type is still hidden, so change its status to Deployed",
+        "New projects have no tasks yet, so allow A records without B records",
+        "Project__c needs a lookup to tasks instead of a master-detail"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "The \"must have at least one B\" setting drops parents with no children. Choosing \"A records may or may not have related B records\" brings them back.",
+      "wrong": [
+        "Reports show current data. There's no nightly wait.",
+        "It's already Deployed, and an undeployed type would hide all reports.",
+        "",
+        "The relationship type isn't the problem. The report type's join is."
+      ],
+      "source": "Salesforce Help: Create a Custom Report Type in the Legacy Custom Report Type Builder"
+    },
+    {
+      "id": "fund-x20",
+      "lesson": "fund-7",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A dashboard needs a widget built from opportunity data. Which two report setups can be the source report? (Choose 2)",
+      "options": [
+        "A joined report with a Won block and a Lost block",
+        "A summary report grouped by Stage",
+        "A historical trend report on Amount",
+        "A tabular report with no row limit",
+        "A tabular report limited to the top 10 rows by Amount"
+      ],
+      "answer": [
+        1,
+        4
+      ],
+      "explain": "Summary and matrix reports can feed dashboards. A tabular report can too, but only once you limit its rows.",
+      "wrong": [
+        "Joined reports can't be a dashboard source.",
+        "",
+        "Historical trend reports can't be a dashboard source.",
+        "A tabular report needs a row limit first.",
+        ""
+      ],
+      "source": "Trailhead: Visualize Your Data with the Lightning Dashboard Builder"
+    },
+    {
+      "id": "fund-x21",
+      "lesson": "fund-7",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A user runs a report from a custom report type. Through lookups, the report's columns come from 23 different objects. What happens?",
+      "options": [
+        "It runs, but columns from 3 objects are dropped",
+        "It runs, since the report type limit is 60 objects",
+        "It runs only for users with View All Data",
+        "It errors, since columns can come from at most 20 objects"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "If a report has columns from more than 20 different objects, an error occurs. The 60 limit is for object references in the report type.",
+      "wrong": [
+        "Salesforce doesn't drop columns. It shows an error.",
+        "The 60 limit counts references in the type, not columns in a report.",
+        "Permissions don't change this limit.",
+        ""
+      ],
+      "source": "Salesforce Help: Limits on Report Types"
+    },
+    {
+      "id": "fund-q45",
+      "lesson": "fund-8",
+      "difficulty": 1,
+      "q": "On a dashboard that isn't dynamic, what decides which data every viewer sees?",
+      "options": [
+        "The viewer's own role",
+        "The running user",
+        "The folder's owner",
+        "The source report's creator"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "A dashboard shows data as its running user. Every viewer sees what that user can see.",
+      "wrong": [
+        "That's how a dynamic dashboard works, not a regular one.",
+        "",
+        "Folders control who can open the dashboard, not its data.",
+        "Who built the report doesn't decide the data shown."
+      ],
+      "source": "Trailhead: Visualize Your Data with the Lightning Dashboard Builder"
+    },
+    {
+      "id": "fund-q46",
+      "lesson": "fund-8",
+      "difficulty": 2,
+      "q": "Forty reps should each see only their own numbers on one shared dashboard. What should the admin build?",
+      "options": [
+        "Forty dashboards, one per rep",
+        "A dashboard with a filter on Opportunity Owner",
+        "A dashboard whose running user is the sales VP",
+        "A dynamic dashboard that runs as the dashboard viewer"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "A dynamic dashboard runs as the logged-in viewer. Each rep sees only the data they can access, from one dashboard.",
+      "wrong": [
+        "That's the work dynamic dashboards remove.",
+        "Reps could pick another owner in the filter and see their data.",
+        "Every rep would see the whole team's numbers.",
+        ""
+      ],
+      "source": "Trailhead: Visualize Your Data with the Lightning Dashboard Builder"
+    },
+    {
+      "id": "fund-q47",
+      "lesson": "fund-8",
+      "difficulty": 1,
+      "q": "How many dynamic dashboards can an Enterprise Edition org have?",
+      "options": [
+        "3",
+        "5",
+        "10",
+        "20"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "Enterprise Edition allows 5 dynamic dashboards. Performance and Unlimited allow 10, and Developer Edition allows 3.",
+      "wrong": [
+        "3 is the Developer Edition limit.",
+        "",
+        "10 is the Performance and Unlimited limit.",
+        "No edition allows 20."
+      ],
+      "source": "Salesforce Help: Dynamic Dashboards"
+    },
+    {
+      "id": "fund-q48",
+      "lesson": "fund-8",
+      "difficulty": 2,
+      "q": "Which two are limits of dynamic dashboards? (Choose 2)",
+      "options": [
+        "They can't use filters",
+        "They can't be saved in a private folder",
+        "They can't use chart widgets",
+        "They can't have scheduled refreshes",
+        "They can be viewed only by admins"
+      ],
+      "answer": [
+        1,
+        3
+      ],
+      "explain": "Dynamic dashboards can't live in a private folder or be refreshed on a schedule. They also can't be subscribed to.",
+      "wrong": [
+        "You can add filters to a dynamic dashboard.",
+        "",
+        "Charts work on dynamic dashboards.",
+        "",
+        "Anyone with folder access can view one."
+      ],
+      "source": "Salesforce Help: Dynamic Dashboards"
+    },
+    {
+      "id": "fund-q49",
+      "lesson": "fund-8",
+      "difficulty": 2,
+      "q": "Which dashboard widget shows one value within a range, like progress toward a quarterly target?",
+      "options": [
+        "Metric",
+        "Table",
+        "Gauge",
+        "Donut chart"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "A gauge shows a single value within a range of custom values, like how close you are to a target.",
+      "wrong": [
+        "A metric shows one key number, with no range.",
+        "A table shows report rows in columns.",
+        "",
+        "A donut chart shows parts of a whole."
+      ],
+      "source": "Trailhead: Visualize Your Data with the Lightning Dashboard Builder"
+    },
+    {
+      "id": "fund-q50",
+      "lesson": "fund-8",
+      "difficulty": 2,
+      "q": "An Enterprise org has reached its dynamic dashboard limit. The admin deletes one, but still can't create a new one. Why?",
+      "options": [
+        "Deleted dashboards in the Recycle Bin still count",
+        "The limit resets only once a month",
+        "The admin needs View My Team's Dashboards",
+        "New dynamic dashboards need a private folder"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "Deleted dynamic dashboards in the Recycle Bin count toward the limit. Delete it permanently to free the slot.",
+      "wrong": [
+        "",
+        "The limit is a count of dashboards, not a monthly quota.",
+        "Creating one needs Manage Dynamic Dashboards, not View My Team's Dashboards.",
+        "Dynamic dashboards can't be saved in private folders at all."
+      ],
+      "source": "Salesforce Help: Dynamic Dashboards"
+    },
+    {
+      "id": "fund-x22",
+      "lesson": "fund-8",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "Reps say this dashboard shows every rep's deals. Each rep should see only their own pipeline. Which change fixes it?",
+      "code": "Dashboard: Q3 Pipeline\nFolder: shared with the Sales Reps role\nView Dashboard As: Me (Jordan, VP of Sales)\nSource report: All Open Opportunities (summary)",
+      "lang": "text",
+      "options": [
+        "Set View Dashboard As to the dashboard viewer",
+        "Move the dashboard to Jordan's private folder",
+        "Change the source report to tabular format",
+        "Add a filter so reps can pick their own name"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "The running user is the VP, so every viewer sees the VP's data. Running it as the dashboard viewer makes it dynamic, so each rep sees only their own.",
+      "wrong": [
+        "",
+        "Reps would lose access, and dynamic dashboards can't be private.",
+        "The format doesn't change whose data shows.",
+        "Reps could still pick other names and see their deals."
+      ],
+      "source": "Trailhead: Visualize Your Data with the Lightning Dashboard Builder"
+    },
+    {
+      "id": "fund-x23",
+      "lesson": "fund-8",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "An admin wants a dynamic dashboard refreshed every morning at 7 and emailed to each manager. What should the admin know?",
+      "code": "Dashboard: Team Health\nView Dashboard As: The dashboard viewer\nFolder: Shared Sales Dashboards\nRequest: refresh daily at 7:00, email to managers",
+      "lang": "text",
+      "options": [
+        "Dynamic dashboards can't be scheduled or subscribed to",
+        "Schedule the refresh under the dashboard's properties",
+        "Subscribe each manager, and the refresh runs as each one",
+        "Move it to a private folder first, then schedule it"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "Dynamic dashboards can't have scheduled refreshes and can't be subscribed to. They must be refreshed by hand.",
+      "wrong": [
+        "",
+        "Scheduling isn't available for dynamic dashboards.",
+        "You can't subscribe to a dynamic dashboard.",
+        "Dynamic dashboards can't be saved in private folders."
+      ],
+      "source": "Salesforce Help: Dynamic Dashboards"
+    },
+    {
+      "id": "fund-x24",
+      "lesson": "fund-8",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A sales manager wants to preview a dynamic dashboard as one of her reps, to check what the rep sees. Which two permissions allow this? (Choose 2)",
+      "options": [
+        "Manage Dynamic Dashboards",
+        "View My Team's Dashboards",
+        "Run Reports",
+        "View All Records on Opportunity",
+        "View All Data"
+      ],
+      "answer": [
+        1,
+        4
+      ],
+      "explain": "Managers with View My Team's Dashboards or View All Data can view a dynamic dashboard as users below them in the role hierarchy.",
+      "wrong": [
+        "That permission is for creating and editing dynamic dashboards.",
+        "",
+        "Running reports doesn't let you view as someone else.",
+        "Object-level View All doesn't unlock viewing as another user.",
+        ""
+      ],
+      "source": "Salesforce Help: Dynamic Dashboards"
+    }
+  ]
+}
