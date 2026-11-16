@@ -1294,3 +1294,16 @@ html { background: var(--bg); }
 .term-box p { margin: 6px 0 0; }
 .term-head { display: flex; align-items: center; gap: 8px; font-size: calc(17px * var(--text-scale)); }
 .term-head .icon-btn { width: 40px; height: 40px; min-height: 40px; }
+/* ===== study screens read 1px bigger (lessons, questions, explanations, cards, exam review) =====
+   Tokens are re-set here so everything inside follows; font-size is re-set too, because plain text
+   inherits the size the body worked out, not the token. */
+.screen.focus, .screen.study {
+  --fs-body: calc(18px * var(--text-scale));
+  --fs-small: calc(15.5px * var(--text-scale));
+  --fs-q: calc(21px * var(--text-scale));
+  --fs-code: calc(15px * var(--text-scale));
+  font-size: var(--fs-body);
+}
+.screen.focus .lesson-card .kind, .screen.focus .code-lang { font-size: calc(14px * var(--text-scale)); }
+.screen.focus .feedback .verdict { font-size: calc(20px * var(--text-scale)); }
+.screen.focus .term-head { font-size: calc(18px * var(--text-scale)); }

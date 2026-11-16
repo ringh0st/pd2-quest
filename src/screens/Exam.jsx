@@ -372,7 +372,7 @@ function ExamResult({ result, onClose }) {
   const list = useMemo(() => result.review.filter((r) => filter === 'all' || !r.ok), [result, filter]);
 
   return (
-    <main className="screen" id="main">
+    <main className="screen study" id="main">
       <motion.div className="hero stack center" initial={reduced ? false : { scale: 0.85, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ type: 'spring', stiffness: 380, damping: 24 }}>
         <HeroArt kind={!result.answered ? 'empty' : pass ? 'trophy' : 'goal'} size={96} className="ic-hero" />
         <h1 ref={heading} tabIndex={-1}>{!result.answered ? 'Nothing answered' : pass ? 'You passed the mock!' : 'Not yet, and that’s data!'}</h1>
