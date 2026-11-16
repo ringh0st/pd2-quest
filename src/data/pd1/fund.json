@@ -4312,7 +4312,7 @@
         0,
         3
       ],
-      "explain": "Before-save flows support only Assignment, Decision, Get Records and Loop. They can read other records and set fields on the triggering record. A new record's Id exists only after the save.",
+      "explain": "A before-save flow can read other records and set fields on the record being saved. Creating other records and actions like email alerts need an after-save flow. A new record's Id exists only after the save.",
       "wrong": [
         "",
         "Creating related records needs an after-save flow.",
@@ -4908,22 +4908,22 @@
       "id": "fund-q98",
       "lesson": "fund-9",
       "difficulty": 2,
-      "q": "A security officer asks whether code sent to Agentforce for Developers is used to train the AI model. Which answer is accurate?",
+      "q": "Before a team starts using Agentforce for Developers, a security officer asks who is responsible for what goes into each prompt. Which answer is accurate?",
       "options": [
-        "No, Salesforce doesn't use customer code to train the models",
-        "Yes, every prompt improves one shared model for all customers",
-        "Only code from sandboxes and scratch orgs is used for training",
-        "Yes, unless each developer turns off telemetry in VS Code"
+        "The developer, who decides which code and context to include",
+        "Salesforce, which removes all sensitive data, so no checks are needed",
+        "The org admin, who must approve each prompt before it's sent",
+        "No one, because prompts are deleted as soon as VS Code closes"
       ],
       "answer": [
         0
       ],
-      "explain": "Salesforce treats your code as confidential and doesn't use it to train the global model. You still choose what goes into each prompt.",
+      "explain": "The developer chooses what goes into a prompt, so the developer is responsible for it. Share only the code the AI needs. Never share secrets or real customer data, and follow your company's AI rules.",
       "wrong": [
         "",
-        "Customer code isn't used for training.",
-        "No customer code is used for training, from any org.",
-        "Telemetry is separate. Code isn't used for training either way."
+        "Built-in protections don't replace care. The docs say never to put credentials or sensitive data in prompts.",
+        "Admins don't approve each prompt. The developer controls what is sent.",
+        "When a prompt is deleted doesn't change who chose to send the data."
       ],
       "source": "Agentforce Vibes Developer Guide: FAQ"
     },
@@ -4958,27 +4958,27 @@
       "lesson": "fund-9",
       "difficulty": 3,
       "pack": "hard",
-      "q": "A team lead explains how Agentforce for Developers protects data. Which two statements are accurate? (Choose 2)",
+      "q": "A teammate says Agentforce for Developers has built-in data protections, so the team can relax its prompt and review rules. Which two statements are accurate? (Choose 2)",
       "options": [
-        "The Einstein Trust Layer can mask personal data in prompts before they reach the model",
-        "Thanks to masking, it's safe to paste production API tokens into a prompt",
-        "Because the data is protected, generated code no longer needs review",
-        "The org's records are sent along with every prompt for better answers",
-        "Code that isn't included in a prompt isn't sent to the model"
+        "Credentials and API tokens still stay out of every prompt",
+        "Protected prompts mean generated code can skip code review",
+        "Real customer records can be pasted in, since they're protected",
+        "The protections also scan the generated Apex for security bugs",
+        "The developer still decides what goes into each prompt"
       ],
       "answer": [
         0,
         4
       ],
-      "explain": "Prompts pass through the Einstein Trust Layer, which can mask personal and payment data. Only data you include is sent. Neither protection replaces code review.",
+      "explain": "Built-in protections don't move the responsibility. The developer chooses what goes into a prompt, so secrets and real customer data stay out. Every piece of AI code still needs review and tests.",
       "wrong": [
         "",
-        "The docs say never to put credentials or tokens in prompts.",
         "Protecting data doesn't make code correct. Review is still required.",
-        "Record data isn't sent unless you include it.",
+        "The docs say never to put sensitive record data in prompts.",
+        "Data protection isn't a code scanner. A developer still checks sharing, CRUD and FLS.",
         ""
       ],
-      "source": "Agentforce Vibes Developer Guide: Trust and Verification"
+      "source": "Agentforce Vibes Developer Guide: FAQ"
     },
     {
       "id": "fund-q99",
@@ -4996,7 +4996,7 @@
       "answer": [
         2
       ],
-      "explain": "Event names should have no uppercase letters. The handler `onorderselected` listens for `orderselected`, which doesn't match `orderSelected`.",
+      "explain": "Event names must have no uppercase letters. Markup handler names are all lowercase, so `onorderselected` listens for `orderselected`. That doesn't match `orderSelected`.",
       "wrong": [
         "The fix is a lowercase event name, not a different handler name.",
         "`detail` can hold a plain value like an Id.",
