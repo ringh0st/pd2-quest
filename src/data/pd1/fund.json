@@ -2062,7 +2062,7 @@
       "lesson": "fund-4",
       "difficulty": 3,
       "pack": "hard",
-      "q": "A record-triggered flow on Order runs a Loop over the order's line items. Inside the loop it has a Get Records element that finds each line's product. A data load inserts orders with 150 line items each. What is the risk?",
+      "q": "A record-triggered flow on Order runs a Loop over the order's line items. Inside the loop it has a Get Records element that finds each line's product. A user updates an order that has 150 line items. What is the risk?",
       "code": "Record-triggered flow on Order (after save)\n  Get Records: Order_Line__c where Order__c = {!$Record.Id}\n  Loop: for each line\n    Get Records: Product2 where Id = {!Loop.Product__c}\n    Assignment: add the product name to a text variable\n  Update Records: Order.Product_Summary__c",
       "lang": "text",
       "options": [
@@ -2260,7 +2260,7 @@
       "difficulty": 2,
       "q": "Contacts must show the Rating of their parent account, and it must update when the account changes. What is the simplest solution?",
       "options": [
-        "A cross-object formula field on Contact: `Account.Rating`",
+        "A cross-object formula field on Contact: `TEXT(Account.Rating)`",
         "A before-save flow on Contact that copies `Account.Rating`",
         "A lookup field on Contact to the Rating picklist",
         "A roll-up summary on Contact that reads the account"
@@ -2268,7 +2268,7 @@
       "answer": [
         0
       ],
-      "explain": "A cross-object formula reads a parent's field through the relationship. It's calculated on read, so it's always current.",
+      "explain": "A cross-object formula reads a parent's field through the relationship. It's calculated on read, so it's always current. `TEXT()` turns the Rating picklist into text.",
       "wrong": [
         "",
         "A flow on Contact won't run when only the account changes.",
