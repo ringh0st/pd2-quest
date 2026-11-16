@@ -1,7 +1,11 @@
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync, existsSync } from 'node:fs';
 import { termMatcher, firstMentions } from '../src/lib/terms.js';
 // Validates section content files (all of them when no path is given). Exits 1 on any error.
-const files = process.argv.slice(2).length ? process.argv.slice(2) : ['fund', 'auto', 'ui', 'test', 'perf'].map((id) => `src/data/pd2/${id}.json`);
+// Every exam's section files (src/data/<exam>/<section>.json; exam.json holds the exam facts, not a section).
+const allSectionFiles = () => ['pd1', 'pd2']
+  .filter((exam) => existsSync(`src/data/${exam}`))
+  .flatMap((exam) => readdirSync(`src/data/${exam}`).filter((f) => f.endsWith('.json') && f !== 'exam.json').sort().map((f) => `src/data/${exam}/${f}`));
+const files = process.argv.slice(2).length ? process.argv.slice(2) : allSectionFiles();
 let failed = false;
 for (const file of files) {
 const d = JSON.parse(readFileSync(file));

@@ -3,8 +3,12 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 
-const SECTIONS = ['fund', 'auto', 'ui', 'test', 'perf'];
-const load = (id) => JSON.parse(fs.readFileSync(new URL(`../src/data/pd2/${id}.json`, import.meta.url)));
+// Every exam's sections, as "exam/section" (e.g. "pd2/fund").
+const SECTIONS = ['pd1', 'pd2']
+  .filter((exam) => fs.existsSync(new URL(`../src/data/${exam}`, import.meta.url)))
+  .flatMap((exam) => fs.readdirSync(new URL(`../src/data/${exam}`, import.meta.url))
+    .filter((f) => f.endsWith('.json') && f !== 'exam.json').map((f) => `${exam}/${f.replace('.json', '')}`));
+const load = (id) => JSON.parse(fs.readFileSync(new URL(`../src/data/${id}.json`, import.meta.url)));
 // Length as displayed: `code` and **bold** marks are not shown, so they don't count.
 const shown = (o) => o.replace(/`|\*\*/g, '').length;
 
