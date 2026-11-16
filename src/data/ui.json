@@ -66,6 +66,44 @@
           "body": "**\"New box, new look.\"** Hand LWC a new value and it redraws. Change what's inside the old box and it only notices with `@track`, and only for plain objects and arrays."
         }
       ],
+      "terms": [
+        {
+          "term": "re-render",
+          "say": "When the screen redraws a component to show new data. LWC does it by itself when a value it watches changes."
+        },
+        {
+          "term": "Reactivity",
+          "say": "The rule for which changes LWC notices. If it notices a change, it redraws the screen. If it misses one, the old value stays."
+        },
+        {
+          "term": "mutation",
+          "say": "Changing something inside an object or array, like editing one line of a list. LWC misses it unless the field has @track. A whole new object is always seen."
+        },
+        {
+          "term": "@track",
+          "say": "A tag that makes LWC watch inside a plain object or array too. Then changing one piece redraws the screen. It doesn't watch Set, Map or Date."
+        },
+        {
+          "term": "@api",
+          "say": "Makes a property or method public. Then the parent, App Builder or Flow can set it. The child must not change an @api object itself."
+        },
+        {
+          "term": "@wire",
+          "say": "Fills a field with data from a wire adapter, a ready-made data feed. When its inputs change, fresh data streams in by itself."
+        },
+        {
+          "term": "getter",
+          "say": "A function you read like a field, like fullName. It runs again on every render, so it always shows fresh values. Use it instead of math in templates."
+        },
+        {
+          "term": "key",
+          "say": "A unique label for each item in a list loop, taken from the data, like a record Id. LWC uses it to tell items apart. Never use the index."
+        },
+        {
+          "term": "lwc:if",
+          "say": "Shows a part of the template only when a value is true. Add lwc:elseif and lwc:else for the other cases."
+        }
+      ],
       "check": [
         "ui-q1",
         "ui-q2",
@@ -132,6 +170,57 @@
           "type": "tip",
           "title": "Remember it",
           "body": "**\"One whiteboard, everyone in sync, permissions checked.\"** A field some users can't see goes in the *optional* row."
+        }
+      ],
+      "terms": [
+        {
+          "term": "Lightning Data Service",
+          "match": [
+            "LDS"
+          ],
+          "say": "Salesforce's built-in helper that reads and saves records for components, with no Apex. It keeps one shared copy and checks the user's permissions."
+        },
+        {
+          "term": "CRUD",
+          "say": "Four things you can do to records: Create, Read, Update, Delete. CRUD says which of the four a user may do on an object, like Account."
+        },
+        {
+          "term": "FLS",
+          "say": "Field-level security. Rules for single boxes on a record. A user may see a name, but the Salary box can be hidden or locked."
+        },
+        {
+          "term": "UI API",
+          "say": "The Salesforce service LDS uses to read and save records. It follows the user's permissions, so users only get what they may see."
+        },
+        {
+          "term": "cache",
+          "match": [
+            "caches"
+          ],
+          "say": "A copy kept in the browser so it needn't ask the server again. LDS shares one copy, so every component shows the same record."
+        },
+        {
+          "term": "getRecord",
+          "say": "A ready-made way to read one record's fields through LDS. If the user can't see one field in fields, the whole call fails."
+        },
+        {
+          "term": "optionalFields",
+          "say": "Fields for getRecord that some users may not see. A field the user can't see is quietly left out, and the rest still loads."
+        },
+        {
+          "term": "lightning-record-form",
+          "say": "The quickest ready-made form for one record. It can view or edit with very little code, but you can't control the layout much."
+        },
+        {
+          "term": "lightning-record-edit-form",
+          "say": "A ready-made edit form where you place each field yourself. Its onsubmit lets you change values before saving, and onsuccess runs after."
+        },
+        {
+          "term": "@salesforce/schema",
+          "match": [
+            "@salesforce/schema/..."
+          ],
+          "say": "Importing a field by reference instead of typing its name as text. Salesforce checks the field exists and blocks deleting it while you use it."
         }
       ],
       "check": [
@@ -204,6 +293,53 @@
           "body": "**\"Wire reads, imperative writes.\"** Read and cache = wire. A click that saves = imperative. Apex saved while LDS is on screen = `notifyRecordUpdateAvailable`."
         }
       ],
+      "terms": [
+        {
+          "term": "Apex",
+          "say": "Salesforce's own server code. You call it from a component when LDS can't do the job, like a custom query or logic."
+        },
+        {
+          "term": "imperatively",
+          "match": [
+            "imperative"
+          ],
+          "say": "Calling Apex yourself, like a normal function, when you choose, such as on a click. This is how you save data."
+        },
+        {
+          "term": "@AuraEnabled",
+          "say": "A tag that lets components call an Apex method. On a class property, it lets that value reach the browser."
+        },
+        {
+          "term": "cacheable",
+          "match": [
+            "cacheable=true"
+          ],
+          "say": "Means the browser may keep and reuse the answer. So the method must only read. Saving data inside it fails. @wire needs it."
+        },
+        {
+          "term": "DML",
+          "say": "Apex commands that change the database: insert, update, delete. Like writing in the record book, not just reading it."
+        },
+        {
+          "term": "Promise",
+          "say": "An answer that arrives later. An imperative Apex call returns one. You wait for it, then use the result or catch the error."
+        },
+        {
+          "term": "refreshApex",
+          "say": "Asks a wired Apex method to fetch fresh data. Give it the whole wired result, not just result.data, or nothing happens."
+        },
+        {
+          "term": "notifyRecordUpdateAvailable",
+          "match": [
+            "notifyRecordUpdateAvailable([{ recordId }])"
+          ],
+          "say": "Tells LDS a record changed somewhere else, like in Apex. LDS fetches it again and updates every component showing it."
+        },
+        {
+          "term": "provisioned value",
+          "say": "The whole object a wire hands you, holding data and error together. refreshApex needs this exact object."
+        }
+      ],
       "check": [
         "ui-q9",
         "ui-q10",
@@ -273,6 +409,63 @@
           "type": "tip",
           "title": "Remember it",
           "body": "**\"Plug in, unplug.\"** What `connectedCallback` adds, `disconnectedCallback` removes. And a parent's `errorCallback` catches its children, never itself."
+        }
+      ],
+      "terms": [
+        {
+          "term": "lifecycle hooks",
+          "say": "Methods LWC calls by itself at each step of a component's life: built, put on the page, drawn, and removed."
+        },
+        {
+          "term": "constructor",
+          "match": [
+            "constructor()"
+          ],
+          "say": "Runs first, when the component is built. Call super() first. Public properties aren't set yet, so don't use them here."
+        },
+        {
+          "term": "connectedCallback",
+          "match": [
+            "connectedCallback()"
+          ],
+          "say": "Runs when the component is put on the page. Good for loading data or adding listeners. The parent runs first, then the child."
+        },
+        {
+          "term": "renderedCallback",
+          "match": [
+            "renderedCallback()"
+          ],
+          "say": "Runs after every render, child first, then parent. Guard one-time work with a flag, and don't change watched data there, or it loops."
+        },
+        {
+          "term": "disconnectedCallback",
+          "match": [
+            "disconnectedCallback()"
+          ],
+          "say": "Runs when the component is removed from the page. Clean up here: remove listeners, stop timers, unsubscribe."
+        },
+        {
+          "term": "errorCallback",
+          "match": [
+            "errorCallback(error, stack)"
+          ],
+          "say": "A safety net in a parent. It catches errors from its child components, never its own. Show a fallback screen when it fires."
+        },
+        {
+          "term": "DOM",
+          "say": "The browser's tree of everything on the page. A component inserted into the DOM is on the page; removed from it, it's gone."
+        },
+        {
+          "term": "AuraHandledException",
+          "say": "An Apex error made for components. Throw it with a clear message, and the user sees that message instead of technical details."
+        },
+        {
+          "term": "ShowToastEvent",
+          "say": "Shows a small pop-up message, called a toast. It doesn't work in LWR sites, a newer kind of Experience Cloud site. Use lightning/toast there."
+        },
+        {
+          "term": "static resource",
+          "say": "A file you upload to Salesforce, like a script or a zip. Components load it from there. For a file inside a zip, add a slash and its path."
         }
       ],
       "check": [
@@ -348,6 +541,50 @@
           "type": "tip",
           "title": "Remember it",
           "body": "\"Down = `@api`, Up = event, Sideways = LMS.\""
+        }
+      ],
+      "terms": [
+        {
+          "term": "@api",
+          "say": "Lets a parent hand data down to a child, or call a child's method. Like a note passed down from parent to kid."
+        },
+        {
+          "term": "CustomEvent",
+          "say": "How a child tells its parent something happened. It fires an event with a name and its data. The parent listens with on plus the name."
+        },
+        {
+          "term": "detail",
+          "say": "The part of an event that carries its data. The parent reads it as event.detail."
+        },
+        {
+          "term": "Lightning Message Service",
+          "match": [
+            "LMS"
+          ],
+          "say": "A shared message channel for the page. Components that aren't related, even LWC, Aura and Visualforce, can send and hear messages on it."
+        },
+        {
+          "term": "shadow boundary",
+          "say": "The wall around each component's insides. An event that bubbles stops here, unless composed is also true."
+        },
+        {
+          "term": "bubbles",
+          "say": "Says if an event travels up through the parents. It's false by default. True lets it go up, but only to the shadow boundary."
+        },
+        {
+          "term": "composed",
+          "say": "Says if an event may cross shadow boundaries. With bubbles also true, it travels out of every component. Best avoided."
+        },
+        {
+          "term": "LightningMessageChannel",
+          "say": "The metadata that creates a message channel. Senders and listeners name the same channel to talk."
+        },
+        {
+          "term": "APPLICATION_SCOPE",
+          "match": [
+            "{ scope: APPLICATION_SCOPE }"
+          ],
+          "say": "A subscribe option for LMS. The component then also hears messages while it sits in a background tab."
         }
       ],
       "check": [
@@ -427,6 +664,58 @@
           "body": "**\"Expose it, target it, configure it.\"** `isExposed` true, then `<targets>`, then `<targetConfigs>` for properties, objects and devices."
         }
       ],
+      "terms": [
+        {
+          "term": "js-meta.xml",
+          "say": "A component's config file. It says if the component is exposed, where it can go, and which properties admins can set."
+        },
+        {
+          "term": "Lightning App Builder",
+          "say": "Salesforce's drag-and-drop page editor. Admins place exposed components on record, app and home pages."
+        },
+        {
+          "term": "isExposed",
+          "say": "The on switch in js-meta.xml. If false, admins can't use the component in App Builder or Flow, whatever targets you list."
+        },
+        {
+          "term": "targets",
+          "match": [
+            "<targets>"
+          ],
+          "say": "The list of places a component may go, like record pages, flow screens or quick actions."
+        },
+        {
+          "term": "targetConfig",
+          "match": [
+            "<targetConfigs>",
+            "targetConfigs"
+          ],
+          "say": "Settings for one target: properties admins can set, which objects it works on, and which devices."
+        },
+        {
+          "term": "quick action",
+          "say": "A button on a record page. A ScreenAction opens a pop-up with your component. An Action with no screen just runs your code."
+        },
+        {
+          "term": "headless",
+          "say": "With no screen. A headless quick action just calls your @api invoke() method when clicked."
+        },
+        {
+          "term": "FlowAttributeChangeEvent",
+          "match": [
+            "new FlowAttributeChangeEvent('prop', value)"
+          ],
+          "say": "An event a flow screen component fires to send a new value back to the flow."
+        },
+        {
+          "term": "Lightning Out",
+          "say": "Lets you show Lightning components outside Lightning pages, like on a Visualforce page."
+        },
+        {
+          "term": "Dynamic Forms",
+          "say": "An admin tool that shows or hides fields on a record page by rules, with no code."
+        }
+      ],
       "check": [
         "ui-q21",
         "ui-q23",
@@ -497,6 +786,54 @@
           "type": "tip",
           "title": "Remember it",
           "body": "**\"Big doll holds small doll.\"** Aura holds LWC, never the reverse. A **named** handler catches component events; a **nameless** one catches application events."
+        }
+      ],
+      "terms": [
+        {
+          "term": "Aura",
+          "say": "Salesforce's older Lightning component framework. LWC replaced it, but many orgs still use it, and the exam still asks about it."
+        },
+        {
+          "term": "LWC",
+          "say": "Lightning Web Components, Salesforce's newer way to build components with standard web code. It replaced Aura."
+        },
+        {
+          "term": "component event",
+          "say": "An Aura event that travels up to the components around it, capture first, then bubble. Its handler needs a matching name."
+        },
+        {
+          "term": "application event",
+          "say": "An Aura event sent to every handler in the app, like a loudspeaker. Its handler has no name. New builds use LMS instead."
+        },
+        {
+          "term": "$A.enqueueAction",
+          "match": [
+            "$A.enqueueAction(action)"
+          ],
+          "say": "Puts an Aura server call in the queue to send. Without it, the Apex call never runs."
+        },
+        {
+          "term": "setCallback",
+          "say": "Gives an Aura server call the function to run when the answer comes back."
+        },
+        {
+          "term": "ltng:require",
+          "say": "An Aura tag that loads outside script and style files from static resources. afterScriptsLoaded runs your code once they're ready."
+        },
+        {
+          "term": "renderAs",
+          "match": [
+            "renderAs=\"pdf\""
+          ],
+          "say": "A Visualforce page setting. renderAs=\"pdf\" turns the page into a PDF, which only Visualforce can do."
+        },
+        {
+          "term": "lightning:actionOverride",
+          "say": "An Aura interface that lets a component replace a standard button, like New. Wrap your LWC in it to override one."
+        },
+        {
+          "term": "Lightning Out",
+          "say": "Lets you show Lightning components outside Lightning, like on a Visualforce page or another website."
         }
       ],
       "check": [
@@ -570,6 +907,51 @@
           "body": "**Transient = travel light.** Transient and static variables are **not** saved in view state. Lighter bag, faster page."
         }
       ],
+      "terms": [
+        {
+          "term": "Visualforce",
+          "say": "Salesforce's older page tech: HTML-like tags plus an Apex class. Still used for PDFs and Salesforce Classic."
+        },
+        {
+          "term": "controller",
+          "say": "The Apex class behind a Visualforce page. It holds the page's data and what its buttons do."
+        },
+        {
+          "term": "standard controller",
+          "say": "Salesforce's ready-made controller for an object. It gives save, edit and delete for free, and respects the user's access."
+        },
+        {
+          "term": "extension",
+          "say": "An extra Apex class that adds to or overrides a controller's methods. Like the house pizza plus your own topping."
+        },
+        {
+          "term": "custom controller",
+          "say": "An Apex class you write with all the page's logic. It runs in system mode, so add with sharing yourself."
+        },
+        {
+          "term": "system mode",
+          "say": "Code runs with full power, ignoring the user's object and field permissions. Sharing is ignored too, unless the class says with sharing."
+        },
+        {
+          "term": "with sharing",
+          "say": "An Apex class keyword. It makes the code respect sharing, so users only get records they may see. It doesn't check fields."
+        },
+        {
+          "term": "StandardSetController",
+          "match": [
+            "ApexPages.StandardSetController"
+          ],
+          "say": "A controller for lists of records, like a list view or mass action. It holds up to 10,000 records."
+        },
+        {
+          "term": "view state",
+          "say": "The page's memory, kept in a hidden field and sent on every trip to the server. The max is 170 KB, and it can't be raised."
+        },
+        {
+          "term": "transient",
+          "say": "A keyword for variables the page doesn't need to remember. They aren't saved in view state, so the page stays light."
+        }
+      ],
       "check": [
         "ui-q29",
         "ui-q30",
@@ -638,6 +1020,57 @@
           "body": "`actionFunction` = \"Visualforce does the redraw.\" Remoting = \"JS does everything, fast and stateless.\""
         }
       ],
+      "terms": [
+        {
+          "term": "AJAX",
+          "say": "Talking to the server in the background, then redrawing only part of the page. No full reload."
+        },
+        {
+          "term": "partial page refresh",
+          "say": "Redrawing just one part of a page instead of the whole thing. Like swapping one tile in a mosaic."
+        },
+        {
+          "term": "rerender",
+          "match": [
+            "rerender=\"id1,id2\""
+          ],
+          "say": "Names which components to redraw, by id, after an action. A component that wasn't drawn at page load can't be rerendered."
+        },
+        {
+          "term": "apex:actionSupport",
+          "say": "Adds AJAX to a browser event on a component, like onchange. When it happens, a controller action runs."
+        },
+        {
+          "term": "apex:actionFunction",
+          "match": [
+            "actionFunction"
+          ],
+          "say": "Makes a JavaScript function that calls a controller action. Visualforce sends the view state and does the redraw."
+        },
+        {
+          "term": "apex:actionRegion",
+          "say": "Marks part of a form. Only the fields inside it are sent and checked when an action runs."
+        },
+        {
+          "term": "immediate",
+          "match": [
+            "immediate=\"true\""
+          ],
+          "say": "immediate=\"true\" skips validation and doesn't save what the user typed. Good for Cancel, wrong when you need typed values."
+        },
+        {
+          "term": "JavaScript remoting",
+          "say": "Calling an Apex method straight from JavaScript. It's fast and sends no view state, but your JavaScript must update the page."
+        },
+        {
+          "term": "@RemoteAction",
+          "say": "A tag on a static Apex method so JavaScript remoting can call it."
+        },
+        {
+          "term": "Continuation",
+          "say": "Lets a page wait for a slow outside web call without tying up the server. It doesn't count as a long-running request."
+        }
+      ],
       "check": [
         "ui-q33",
         "ui-q34",
@@ -698,6 +1131,73 @@
           "type": "tip",
           "title": "Remember it",
           "body": "**\"Glass, token, gate.\"** Glass: escape output (XSS). Token: no DML on page load (CSRF). Gate: `WITH USER_MODE` or `stripInaccessible` in Apex (FLS)."
+        }
+      ],
+      "terms": [
+        {
+          "term": "XSS",
+          "match": [
+            "cross-site scripting"
+          ],
+          "say": "Cross-site scripting. A stranger sneaks code into text your page shows, and the page runs it. Escaping the text stops it."
+        },
+        {
+          "term": "escaping",
+          "match": [
+            "escape"
+          ],
+          "say": "Turning special characters into plain text, so code shows as words and can't run. Like a note behind glass."
+        },
+        {
+          "term": "JSENCODE",
+          "match": [
+            "JSENCODE()"
+          ],
+          "say": "Escapes a value for use inside a script tag, so it can't break out and run as code."
+        },
+        {
+          "term": "CSRF",
+          "match": [
+            "cross-site request forgery"
+          ],
+          "say": "Cross-site request forgery. Another site tricks a signed-in user's browser into sending a request, like a save. Visualforce forms carry a secret token to stop it."
+        },
+        {
+          "term": "CSP",
+          "match": [
+            "Content Security Policy"
+          ],
+          "say": "Content Security Policy. A rule list of what a Lightning page may load. Inline scripts and scripts from outside sites are blocked."
+        },
+        {
+          "term": "Trusted URL",
+          "say": "An outside web address your org allows. Add one so your components may send requests to that site."
+        },
+        {
+          "term": "LWS",
+          "match": [
+            "Lightning Web Security"
+          ],
+          "say": "Lightning Web Security. It puts each namespace's code in its own sandbox and makes risky browser features safer. It replaces Lightning Locker."
+        },
+        {
+          "term": "Lightning Locker",
+          "say": "The older security layer for Lightning components. It walls off each namespace, but blocks importing modules from other namespaces. LWS replaces it."
+        },
+        {
+          "term": "user mode",
+          "match": [
+            "WITH USER_MODE",
+            "AccessLevel.USER_MODE"
+          ],
+          "say": "Telling Apex: act like the person using the app. Then it checks their object access, field access and sharing, all three."
+        },
+        {
+          "term": "stripInaccessible",
+          "match": [
+            "Security.stripInaccessible()"
+          ],
+          "say": "A quiet cleaner. You hand it records, it removes fields the user may not touch, and gives back clean copies. No error."
         }
       ],
       "check": [

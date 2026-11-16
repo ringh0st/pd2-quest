@@ -59,6 +59,50 @@
           "body": "**\"Async gets a bigger brain, not bigger hands.\"** Brain = queries, memory and thinking time (SOQL, heap, CPU). Hands = saves, rows and callouts. Those stay the same."
         }
       ],
+      "terms": [
+        {
+          "term": "transaction",
+          "say": "One full run of work, start to finish, like everything one Save click starts. It all saves together, or nothing saves."
+        },
+        {
+          "term": "limits",
+          "match": [
+            "limit"
+          ],
+          "say": "Hard caps on what one transaction may use, like queries or memory. Many companies share the servers, so the caps keep it fair."
+        },
+        {
+          "term": "LimitException",
+          "say": "The error when code goes over a limit. It can't be caught. Everything stops, and nothing from that run is saved."
+        },
+        {
+          "term": "SOQL",
+          "say": "How Apex asks the database for records. You get 100 queries per transaction, or 200 when the code runs async."
+        },
+        {
+          "term": "DML",
+          "say": "Code that saves changes: insert, update, delete and more. You get 150 DML statements per transaction, sync or async."
+        },
+        {
+          "term": "CPU time",
+          "say": "Time your code spends thinking, like loops and building text. Waiting for the database or a callout doesn't count."
+        },
+        {
+          "term": "heap",
+          "say": "The memory your code uses to hold data while it runs. Like desk space: 10 MB, or 25 MB when async."
+        },
+        {
+          "term": "callout",
+          "match": [
+            "callouts"
+          ],
+          "say": "When Apex calls another system over the internet. You get up to 100 per transaction."
+        },
+        {
+          "term": "async",
+          "say": "Code that runs later, in the background, not while the user waits. Batch, Queueable and @future are kinds. It gets more SOQL, heap and CPU."
+        }
+      ],
       "check": [
         "perf-q1",
         "perf-q2",
@@ -131,6 +175,48 @@
           "body": "**\"No Q in the loop, no D in the loop.\"** No Queries and no DML inside a for loop. Ever."
         }
       ],
+      "terms": [
+        {
+          "term": "trigger",
+          "say": "Code that runs by itself when records are saved. It can get up to 200 records at once, so it must handle them all together."
+        },
+        {
+          "term": "bulkifying",
+          "say": "Writing code so a few queries and saves handle any number of records. Never one query or save per record."
+        },
+        {
+          "term": "Set",
+          "say": "A collection that keeps each value only once. Great for gathering Ids with no repeats."
+        },
+        {
+          "term": "Map",
+          "say": "Pairs of a key and a value, like a phone book. Give it an Id, get the record back fast, no loop needed."
+        },
+        {
+          "term": "DML",
+          "say": "Code that saves changes: insert, update, delete. Max 150 per transaction, so save a whole List at once."
+        },
+        {
+          "term": "SOQL for loop",
+          "say": "A loop that reads query results in chunks of 200. It uses less memory, but every row still counts toward the 50,000 limit."
+        },
+        {
+          "term": "heap",
+          "say": "The memory your code uses while it runs. Load too much at once and the run stops."
+        },
+        {
+          "term": "aggregate query",
+          "say": "A query that does the math in the database, like SUM or COUNT. You get the totals back, not every record."
+        },
+        {
+          "term": "interface",
+          "say": "A list of methods a class promises to have. Every class that signs it can be swapped for another."
+        },
+        {
+          "term": "@future",
+          "say": "A way to run a method later, in the background. Only 50 calls per transaction, so never one per record."
+        }
+      ],
       "check": [
         "perf-q5",
         "perf-q6",
@@ -197,6 +283,43 @@
           "body": "**\"30-15 standard, 10-5 custom.\"** Caps: **1,000,000** standard, **333,333** custom. Standard indexes get three times the room."
         }
       ],
+      "terms": [
+        {
+          "term": "index",
+          "match": [
+            "indexes"
+          ],
+          "say": "A sorted shortcut list for one field. The database jumps straight to matches instead of reading every row."
+        },
+        {
+          "term": "selective",
+          "say": "A query is selective when an indexed filter keeps the matches small enough. Then the index gets used, and it's fast."
+        },
+        {
+          "term": "optimizer",
+          "say": "The part of Salesforce that decides how to run your query. It picks the cheapest way: use an index, or read every row."
+        },
+        {
+          "term": "threshold",
+          "say": "The most rows a filter may match and still count as selective. Go over it, and the index is skipped."
+        },
+        {
+          "term": "filter",
+          "say": "The part of a query that says which rows you want, like WHERE Status = 'Open'."
+        },
+        {
+          "term": "External ID",
+          "say": "A field that holds a record's Id from another system. Marking a field External ID makes Salesforce index it for you."
+        },
+        {
+          "term": "deterministic",
+          "say": "Same inputs, same answer, every time. A formula using TODAY() isn't, because its answer changes each day. Only deterministic formulas can be indexed."
+        },
+        {
+          "term": "non-selective",
+          "say": "A query whose filters match too many rows to use an index. In a trigger on an object over 200,000 records, it throws an error."
+        }
+      ],
       "check": [
         "perf-q9",
         "perf-q10",
@@ -257,6 +380,44 @@
           "type": "tip",
           "title": "Remember it",
           "body": "**\"Under 1, it runs. Over 1, it's done.\"** The three big killers: **NOT, %start and null**."
+        }
+      ],
+      "terms": [
+        {
+          "term": "Query Plan",
+          "say": "A Developer Console tool that shows the ways Salesforce could run your query, and what each costs. Check it before you deploy."
+        },
+        {
+          "term": "Cost",
+          "say": "A score for how heavy a plan is. Not seconds. Below 1 means selective, above 1 means not."
+        },
+        {
+          "term": "Leading Operation Type",
+          "say": "The plan column that says how the query starts. Index means it uses an index. TableScan means it reads every row."
+        },
+        {
+          "term": "TableScan",
+          "say": "Reading every single row, one by one, with no index. Slow on big tables."
+        },
+        {
+          "term": "negative operators",
+          "say": "Filters that say what you don't want, like != or NOT IN. They can't use an index well, so list what you do want."
+        },
+        {
+          "term": "leading wildcard",
+          "say": "A % at the start of a LIKE search, like '%corp'. The index can't help, so every row gets checked. A % at the end is fine."
+        },
+        {
+          "term": "null",
+          "say": "Empty: no value at all. Custom indexes leave out empty values by default, so a filter on null can't use them."
+        },
+        {
+          "term": "non-deterministic",
+          "say": "A formula whose answer can change even with the same inputs, like one using TODAY(). It can't be indexed."
+        },
+        {
+          "term": "skinny table",
+          "say": "A narrow copy of one object's most-used fields, kept in sync by Salesforce. Reads skip combining tables, so they're faster. Only Support can create one."
         }
       ],
       "check": [
@@ -327,6 +488,51 @@
           "type": "tip",
           "title": "Remember it",
           "body": "**\"10k is the line.\"** One owner or one parent past 10,000 records? Spread it out."
+        }
+      ],
+      "terms": [
+        {
+          "term": "LDV",
+          "match": [
+            "Large data volumes"
+          ],
+          "say": "Large data volumes: millions of records. At that size, slow queries, locks and sharing changes start to hurt."
+        },
+        {
+          "term": "data skew",
+          "say": "Too many records piled on one owner or one parent, about 10,000 or more. Like one checkout lane with every shopper."
+        },
+        {
+          "term": "ownership skew",
+          "say": "One user owns more than 10,000 records of one object. Moving that user in the role hierarchy makes sharing recalculate for all of them."
+        },
+        {
+          "term": "lookup skew",
+          "say": "Huge numbers of records point to the same record through a lookup field. Saves all touch that one record, so they wait in line."
+        },
+        {
+          "term": "UNABLE_TO_LOCK_ROW",
+          "say": "The error when a save waits too long for a record another save has locked. Common when many saves hit one parent."
+        },
+        {
+          "term": "sharing recalculation",
+          "say": "Salesforce rechecking who may see which records. With millions of records it can take a very long time."
+        },
+        {
+          "term": "Defer Sharing Calculations",
+          "say": "Pausing sharing recalculation during big changes. When you're done, it runs once, instead of after every change."
+        },
+        {
+          "term": "serial mode",
+          "say": "Bulk API batches run one at a time, not side by side. Slower, but saves stop fighting over the same lock."
+        },
+        {
+          "term": "PK chunking",
+          "say": "Splitting a huge extract into pieces by Id range. Each piece is its own quick query."
+        },
+        {
+          "term": "Big Objects",
+          "say": "Storage for billions of rows that rarely change, like history. You can only filter on their index fields, in order."
         }
       ],
       "check": [
@@ -401,6 +607,57 @@
           "body": "**Sticky note, whiteboard, notebook.** Static = one transaction. Org = everyone. Session = one user. Always handle the miss."
         }
       ],
+      "terms": [
+        {
+          "term": "caching",
+          "say": "Keeping a copy of data close by, so the next read is instant. No new query or callout needed."
+        },
+        {
+          "term": "static variables",
+          "match": [
+            "static variable"
+          ],
+          "say": "Variables that last for one whole transaction, shared by all code in that run. Then they're wiped."
+        },
+        {
+          "term": "Platform Cache",
+          "say": "Salesforce memory that keeps data between transactions. Faster than fetching again, but it can be cleared any time."
+        },
+        {
+          "term": "org cache",
+          "say": "Platform Cache shared by all users. An item can stay up to 48 hours."
+        },
+        {
+          "term": "session cache",
+          "say": "Platform Cache for one user's session. Lasts up to 8 hours. Not available in async Apex."
+        },
+        {
+          "term": "partition",
+          "match": [
+            "partitions"
+          ],
+          "say": "A named section of Platform Cache, set up in Setup. Each one gets its own share of space."
+        },
+        {
+          "term": "miss",
+          "match": [
+            "misses"
+          ],
+          "say": "You look in the cache and the item isn't there. So you fetch it again and put it back."
+        },
+        {
+          "term": "Cache.CacheBuilder",
+          "say": "An interface you implement so Salesforce fills the cache for you. On a miss, it calls your doLoad method to get the value."
+        },
+        {
+          "term": "trigger recursion",
+          "say": "A trigger that makes itself run again by saving the same records. A static Set of done Ids stops the loop."
+        },
+        {
+          "term": "nested loops",
+          "say": "A loop inside a loop. 1,000 times 1,000 is a million steps. A Map lookup is much faster."
+        }
+      ],
       "check": [
         "perf-q21",
         "perf-q22",
@@ -473,6 +730,57 @@
           "body": "`OFFSET` **stops at 2,000.** For deep paging use **keyset**: `WHERE Id > :lastId ORDER BY Id LIMIT 50`. Think: a bookmark, not a page number."
         }
       ],
+      "terms": [
+        {
+          "term": "LWC",
+          "match": [
+            "Lightning web components"
+          ],
+          "say": "Lightning web components: Salesforce's modern building blocks for screens. Each one is a small piece of a page."
+        },
+        {
+          "term": "debouncing",
+          "match": [
+            "debounce"
+          ],
+          "say": "Waiting until typing stops, about 300 ms, before calling the server. One call, not one per key."
+        },
+        {
+          "term": "lazy loading",
+          "say": "Loading a part only when it's needed, not everything up front."
+        },
+        {
+          "term": "cacheable=true",
+          "say": "Marks an Apex method as read-only, so its results can be saved and reused. Needed for @wire. It can't save changes."
+        },
+        {
+          "term": "@wire",
+          "say": "Connects a component to data. It fetches the data for you and fetches again when its inputs change."
+        },
+        {
+          "term": "LDS",
+          "match": [
+            "Lightning Data Service"
+          ],
+          "say": "Lightning Data Service. Reads and saves single records with no Apex. All components share one cache, so they show the same data."
+        },
+        {
+          "term": "lwc:if",
+          "say": "Builds a part of the page only when its condition is true. Hiding a part with CSS still builds it."
+        },
+        {
+          "term": "infinite loading",
+          "say": "Loading more rows when the user scrolls to the bottom, instead of thousands at once."
+        },
+        {
+          "term": "refreshApex()",
+          "say": "Asks wired Apex data to fetch fresh results after a change. Pass it the whole value the wire gave you."
+        },
+        {
+          "term": "keyset",
+          "say": "Paging by remembering the last Id you saw, then asking for the ones after it. Works past OFFSET's 2,000 limit."
+        }
+      ],
       "check": [
         "perf-q25",
         "perf-q26",
@@ -536,6 +844,54 @@
           "type": "tip",
           "title": "Remember it",
           "body": "**\"170 to carry, transient to spare.\"** Find the heaviest variables in the **View State** tab of the Development Mode footer."
+        }
+      ],
+      "terms": [
+        {
+          "term": "Visualforce",
+          "say": "Salesforce's older way to build pages, with a page plus an Apex controller behind it."
+        },
+        {
+          "term": "view state",
+          "say": "A saved copy of the controller's data, carried with the page on every postback. Max 170 KB, and it can't be raised."
+        },
+        {
+          "term": "postback",
+          "say": "When a form sends the page back to the server, like on a button click. The view state rides along."
+        },
+        {
+          "term": "transient",
+          "say": "A keyword that keeps a variable out of view state. It isn't saved, so it's null after a postback. Rebuild it when needed."
+        },
+        {
+          "term": "StandardSetController",
+          "say": "A built-in controller for lists of records. It pages through them for you, a few at a time."
+        },
+        {
+          "term": "Continuation",
+          "say": "A way for a page to wait for a slow callout without tying up the server. A callback runs when the answer arrives."
+        },
+        {
+          "term": "controller state",
+          "say": "The controller's data saved while a Continuation waits. It has its own 80 KB limit, apart from view state."
+        },
+        {
+          "term": "callback",
+          "say": "The method that runs when the slow callout's answer comes back."
+        },
+        {
+          "term": "Test.setContinuationResponse",
+          "match": [
+            "Test.setContinuationResponse(label, res)"
+          ],
+          "say": "In a test, gives the Continuation a fake answer, since real callouts can't run in tests."
+        },
+        {
+          "term": "Test.invokeContinuationMethod",
+          "match": [
+            "Test.invokeContinuationMethod(controller, con)"
+          ],
+          "say": "In a test, runs the callback method for you, because it won't run on its own."
         }
       ],
       "check": [
@@ -612,6 +968,51 @@
           "type": "tip",
           "title": "Remember it",
           "body": "**\"Search with S, select with Q, sum in the database.\"** Slow callout from a page? **Continuation**: 3 at once, 120 seconds tops."
+        }
+      ],
+      "terms": [
+        {
+          "term": "SOSL",
+          "say": "Salesforce's text search. Type a word, get matches from many objects at once. Up to 2,000 rows per search."
+        },
+        {
+          "term": "SOQL",
+          "say": "Asking for exact records by their field values, like WHERE Name = 'Acme'. One main object, plus related ones."
+        },
+        {
+          "term": "aggregate",
+          "say": "Letting the database do the math, like SUM or COUNT. You get one answer row per group, not every record."
+        },
+        {
+          "term": "TYPEOF",
+          "say": "Lets one query pick different fields depending on what kind of record a field points to, like an Account or an Opportunity."
+        },
+        {
+          "term": "Queueable",
+          "say": "Async Apex you can chain: one job starts the next. It can take objects, not just simple values, and can make callouts."
+        },
+        {
+          "term": "Batch Apex",
+          "say": "Async Apex for huge jobs. It splits records into chunks, and each chunk gets its own fresh limits."
+        },
+        {
+          "term": "Platform Events",
+          "say": "Messages one part of the system sends and others listen for. The listener runs in its own transaction."
+        },
+        {
+          "term": "@future",
+          "say": "The simplest async Apex. It takes only simple values, like Ids or text, and returns nothing."
+        },
+        {
+          "term": "Continuation",
+          "match": [
+            "Continuations"
+          ],
+          "say": "A way to wait for slow callouts without tying up the server. Up to 3 at once, 120 seconds max."
+        },
+        {
+          "term": "callback",
+          "say": "The method that runs once, after all of a Continuation's answers come back. It may save changes."
         }
       ],
       "check": [

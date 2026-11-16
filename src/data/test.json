@@ -61,6 +61,51 @@
           "body": "\"**Bring your own lunch.**\" Tests eat only the data they pack: a factory, `@TestSetup` or `Test.loadData`. And SOSL is shy in tests, so give it a script."
         }
       ],
+      "terms": [
+        {
+          "term": "empty database",
+          "say": "In a test, Salesforce hides your org's real records. The test starts with nothing and makes its own. Same start every time, same result every time."
+        },
+        {
+          "term": "SeeAllData",
+          "match": [
+            "SeeAllData=true",
+            "@isTest(SeeAllData=true)"
+          ],
+          "say": "A switch that lets a test see the org's real records. Avoid it: the test then breaks when the records change, like in a new sandbox."
+        },
+        {
+          "term": "test data factory",
+          "say": "One shared helper class that builds test records. Every test asks it for data. Something changes, like a new required field? Fix it in one place."
+        },
+        {
+          "term": "@TestSetup",
+          "say": "A method that makes test records once for the whole class. Each test method then gets its own fresh copy, so one test can't spoil another's data."
+        },
+        {
+          "term": "roll back",
+          "say": "Undo. When a test finishes, everything it changed is thrown away, like the records were never touched. The next test starts clean."
+        },
+        {
+          "term": "static resource",
+          "say": "A file you upload to Salesforce, like a CSV or an image. Your code can read it later, like a note pinned to the fridge."
+        },
+        {
+          "term": "Test.loadData",
+          "say": "Reads a CSV file stored as a static resource and inserts each row as a record. You get test data without writing code for each one."
+        },
+        {
+          "term": "SOSL",
+          "say": "Salesforce's text search. It looks for words across many objects at once. In a test it finds nothing unless you tell it what to return."
+        },
+        {
+          "term": "Test.setFixedSearchResults",
+          "match": [
+            "Test.setFixedSearchResults(ids)"
+          ],
+          "say": "Tells SOSL in a test which record Ids to return. Without it, searches in tests come back empty."
+        }
+      ],
       "check": [
         "test-q1",
         "test-q2",
@@ -127,6 +172,64 @@
           "body": "\"**Stop means Go.**\" Async code doesn't run until you hit `stopTest()`. Asserts before it see the world before the job ran."
         }
       ],
+      "terms": [
+        {
+          "term": "governor limits",
+          "say": "Hard caps on what one transaction may use, like 100 SOQL queries. Go over one and everything stops with an error you can't catch."
+        },
+        {
+          "term": "async",
+          "say": "Short for asynchronous: work that runs later, in the background, not right now. In a test it waits until stopTest()."
+        },
+        {
+          "term": "Test.startTest()",
+          "match": [
+            "startTest()",
+            "startTest",
+            "Test.startTest"
+          ],
+          "say": "Marks where the real test begins. Code after it gets a fresh set of governor limits, so your setup work doesn't use them up."
+        },
+        {
+          "term": "Test.stopTest()",
+          "match": [
+            "stopTest()",
+            "stopTest",
+            "Test.stopTest"
+          ],
+          "say": "The finish line. All async work queued since startTest() runs right here, at once. So check the results after this line, not before."
+        },
+        {
+          "term": "scope size",
+          "say": "How many records a batch hands to execute() at once. Default 200. A test can run only one chunk, so insert no more than that."
+        },
+        {
+          "term": "System.schedule",
+          "say": "Puts a job on the calendar using a cron expression. In a test, the job runs at stopTest(), no matter what time the cron says."
+        },
+        {
+          "term": "cron",
+          "match": [
+            "cron expression"
+          ],
+          "say": "A short text that says when a scheduled job runs, like \"every day at 8 AM.\" Like an alarm clock setting."
+        },
+        {
+          "term": "CronTrigger",
+          "say": "The record Salesforce keeps for each scheduled job. Query it to check the cron expression and when the job will run next."
+        },
+        {
+          "term": "test event bus",
+          "say": "In a test, published platform events wait in line here. They're delivered at stopTest() or when you call deliver()."
+        },
+        {
+          "term": "IsParallel=true",
+          "match": [
+            "@IsTest(IsParallel=true)"
+          ],
+          "say": "Lets a test class run at the same time as others, for speed. Such tests can't schedule or enqueue jobs or get the standard price book Id."
+        }
+      ],
       "check": [
         "test-q6",
         "test-q7",
@@ -186,6 +289,60 @@
           "body": "`runAs` = \"**Records, not Rights.**\" It changes whose records you can see, not what you're allowed to do."
         }
       ],
+      "terms": [
+        {
+          "term": "System.runAs",
+          "match": [
+            "System.runAs(user)",
+            "System.runAs()",
+            "runAs"
+          ],
+          "say": "Lets a test act as another user for a block of code. It only changes which records you can see, not what you're allowed to do."
+        },
+        {
+          "term": "assert",
+          "match": [
+            "asserts"
+          ],
+          "say": "A check inside a test: \"this should be true.\" If it isn't, the test fails. A test with no asserts proves nothing."
+        },
+        {
+          "term": "record sharing",
+          "say": "Rules that decide which records a user can see. runAs does respect these, like a library card only opening certain shelves."
+        },
+        {
+          "term": "system mode",
+          "say": "How Apex runs by default: it ignores the user's object and field permissions. Like a janitor with a master key."
+        },
+        {
+          "term": "user mode",
+          "match": [
+            "WITH USER_MODE",
+            "AccessLevel.USER_MODE"
+          ],
+          "say": "Telling the code: \"act like the person using the app.\" Then it checks their object, field and sharing rules, all three."
+        },
+        {
+          "term": "setup objects",
+          "say": "Records that set up the org itself, like User, Group or PermissionSetAssignment. They can't be saved with normal records in one transaction."
+        },
+        {
+          "term": "MIXED_DML_OPERATION",
+          "say": "The error you get when one transaction saves setup objects and normal records together. Fix it with System.runAs or an @future method."
+        },
+        {
+          "term": "@future",
+          "say": "Marks a method to run later, in the background, in its own transaction. That is why it can save setup records apart from normal ones."
+        },
+        {
+          "term": "Assert.fail",
+          "say": "Fails the test on purpose. Put it right after code that should throw an error: if no error comes, the test fails."
+        },
+        {
+          "term": "dependency injection",
+          "say": "Handing a class its helpers from outside instead of letting it build them. Then a test can hand it a fake helper."
+        }
+      ],
       "check": [
         "test-q11",
         "test-q12",
@@ -237,6 +394,60 @@
           "type": "tip",
           "title": "Remember it",
           "body": "**H**TTP gets **H**ttpCalloutMock and `respond`. **S**OAP gets `WebServiceMock`, `doInvoke` and `response_x`. Either way: **set the mock first**."
+        }
+      ],
+      "terms": [
+        {
+          "term": "callout",
+          "say": "Your code calling another system over the internet, like asking a weather website for today's forecast. Real callouts aren't allowed in tests."
+        },
+        {
+          "term": "mock",
+          "match": [
+            "mocks"
+          ],
+          "say": "A fake that stands in for the real thing and gives a ready-made answer. Like a toy phone that always says the same words."
+        },
+        {
+          "term": "Test.setMock",
+          "match": [
+            "Test.setMock()"
+          ],
+          "say": "Tells the test which fake to use for callouts. Call it before the code makes the callout, or the test fails."
+        },
+        {
+          "term": "endpoint",
+          "match": [
+            "endpoints"
+          ],
+          "say": "The web address a callout goes to. Like the address on a letter: it says where the request is sent."
+        },
+        {
+          "term": "respond",
+          "match": [
+            "respond(HttpRequest)"
+          ],
+          "say": "The one method of HttpCalloutMock, the fake for HTTP callouts. It gets the request and hands back a fake response, like a pretend shop clerk."
+        },
+        {
+          "term": "StaticResourceCalloutMock",
+          "say": "A ready-made fake that answers every callout with the same body, read from a static resource (a file stored in Salesforce)."
+        },
+        {
+          "term": "MultiStaticResourceCalloutMock",
+          "say": "A ready-made fake for several web addresses. Each address gets its own answer file, stored as a static resource."
+        },
+        {
+          "term": "WSDL2Apex",
+          "say": "A tool that reads a WSDL file (a SOAP service's description) and writes Apex classes for calling that service."
+        },
+        {
+          "term": "WebServiceMock",
+          "say": "The interface for faking SOAP callouts. Its doInvoke method returns nothing; you put the fake reply in the response map under response_x."
+        },
+        {
+          "term": "uncommitted work pending",
+          "say": "The error you get when DML runs before a callout in one transaction. In tests, do DML before startTest and the callout inside it."
         }
       ],
       "check": [
@@ -300,6 +511,52 @@
           "type": "tip",
           "title": "Remember it",
           "body": "\"**No seam, no swap.**\" The class must accept its helper from outside, or there's nothing to replace."
+        }
+      ],
+      "terms": [
+        {
+          "term": "Stub API",
+          "say": "Salesforce's built-in way to make fake versions of your own classes while a test runs. Then you can test one class on its own."
+        },
+        {
+          "term": "stub",
+          "say": "A fake stand-in for a real class. Your code calls it like normal, but it gives answers you chose. Like a stunt double."
+        },
+        {
+          "term": "handleMethodCall",
+          "say": "The one method of a StubProvider. Every call on the stub lands here, and you decide what to return."
+        },
+        {
+          "term": "Test.createStub",
+          "match": [
+            "Test.createStub(Type, StubProvider)",
+            "createStub()"
+          ],
+          "say": "Builds the stub from a class type and your StubProvider. It returns a plain Object, so you must cast it to the real type."
+        },
+        {
+          "term": "cast",
+          "say": "Telling Apex \"treat this Object as this type.\" Like putting the right label on a box so you can use what's inside."
+        },
+        {
+          "term": "inject",
+          "say": "Pass the fake into the class you're testing, from outside, instead of letting the class make the real one itself."
+        },
+        {
+          "term": "static",
+          "say": "Belongs to the class, not to one object. Static methods can't be stubbed, because the stub replaces an object, not the class."
+        },
+        {
+          "term": "namespace",
+          "say": "A name prefix that keeps one package's code apart from others. You can stub only classes in the same namespace as your createStub call."
+        },
+        {
+          "term": "seam",
+          "say": "A spot where a class lets you plug in its helper from outside, like a constructor argument. No seam, no swap."
+        },
+        {
+          "term": "dependency",
+          "say": "A helper class that another class needs to do its job. To stub it, the class must accept it from outside."
         }
       ],
       "check": [
@@ -371,6 +628,60 @@
           "body": "The Jest recipe: \"**Append, emit, await, assert.**\" Put the element on the page, push the data, wait one tick, then check."
         }
       ],
+      "terms": [
+        {
+          "term": "LWC",
+          "say": "Lightning web components: Salesforce's building blocks for screens, written in JavaScript, HTML and CSS."
+        },
+        {
+          "term": "Jest",
+          "say": "A JavaScript test tool. It tests LWC on your computer, with no org and no browser. Jest tests don't count toward Apex code coverage."
+        },
+        {
+          "term": "DOM",
+          "say": "The page's tree of elements. A component must be added to it before it renders or gets wire data."
+        },
+        {
+          "term": "shadowRoot",
+          "match": [
+            "element.shadowRoot"
+          ],
+          "say": "The private inside of a component. Tests reach inner elements through element.shadowRoot, like opening a box's lid."
+        },
+        {
+          "term": "wire adapter",
+          "match": [
+            "wire adapters"
+          ],
+          "say": "Feeds data into a component on its own, without a button press. In Jest you swap it for a test adapter and push fake data."
+        },
+        {
+          "term": "test adapter",
+          "match": [
+            "test adapters"
+          ],
+          "say": "A fake wire adapter in Jest. emit sends fake data, error sends a fake error, getLastConfig shows what the component asked for."
+        },
+        {
+          "term": "imperatively",
+          "say": "Called directly by your code, at the moment you choose, instead of wired to load on its own."
+        },
+        {
+          "term": "virtual: true",
+          "say": "Tells Jest the module to mock isn't a real file on disk. Apex imports exist only in the org, so their mocks need it."
+        },
+        {
+          "term": "await Promise.resolve()",
+          "match": [
+            "flushPromises"
+          ],
+          "say": "Waits one tick so the component can redraw. Then your asserts see the new screen. flushPromises is a helper that does the same."
+        },
+        {
+          "term": "Debug Mode",
+          "say": "A per-user setting that sends JavaScript un-minified (readable, not squashed), so you can debug LWC in the browser."
+        }
+      ],
       "check": [
         "test-q23",
         "test-q24",
@@ -439,6 +750,57 @@
           "body": "\"**Every Wise Investigator Digs For Finer Facts**\" = Error, Warn, Info, Debug, Fine, Finer, Finest. A message shows only if **Apex Code** is at its level or louder."
         }
       ],
+      "terms": [
+        {
+          "term": "debug log",
+          "say": "A written record of what happened in one transaction: which code ran, queries, errors, and limits. Like footage from a camera."
+        },
+        {
+          "term": "trace flag",
+          "match": [
+            "trace flags"
+          ],
+          "say": "Turns on debug logs for one user, Apex class or trigger, or the Automated Process, for up to 24 hours, using a debug level."
+        },
+        {
+          "term": "debug level",
+          "say": "How much detail a log keeps, set per category like Apex Code or Database. Like a camera's zoom."
+        },
+        {
+          "term": "Apex Code",
+          "say": "The log category for your Apex code. A System.debug message shows only if Apex Code is set to that message's level or more detailed."
+        },
+        {
+          "term": "FINEST",
+          "say": "The most detailed log level. The Apex Replay Debugger needs Apex Code at FINEST to replay a log."
+        },
+        {
+          "term": "replay",
+          "say": "The Apex Replay Debugger in VS Code plays back a saved debug log line by line. Like rewinding a video; it never runs the code again."
+        },
+        {
+          "term": "breakpoint",
+          "match": [
+            "breakpoints"
+          ],
+          "say": "A spot where you pause to look around: values of variables and which methods called which."
+        },
+        {
+          "term": "checkpoint",
+          "match": [
+            "checkpoints"
+          ],
+          "say": "A heap snapshot at a line of code: a photo of all your variables at that moment. No code changes needed."
+        },
+        {
+          "term": "LimitException",
+          "say": "The error when code passes a governor limit. It can't be caught, so check the Limits class before you get close."
+        },
+        {
+          "term": "Apex Exception Email",
+          "say": "A Setup page where you add people to get emails when Apex throws an error nobody handled."
+        }
+      ],
       "check": [
         "test-q28",
         "test-q29",
@@ -503,6 +865,60 @@
           "type": "tip",
           "title": "Remember it",
           "body": "Sandbox refresh days: \"**1, 1, 5, 29**\" = Developer, Developer Pro, Partial Copy, Full. And change sets **add, never subtract**."
+        }
+      ],
+      "terms": [
+        {
+          "term": "sandbox",
+          "match": [
+            "sandboxes"
+          ],
+          "say": "A copy of your production org for building and testing. Some copy only the setup; Partial Copy and Full also copy real data."
+        },
+        {
+          "term": "scratch org",
+          "match": [
+            "scratch orgs"
+          ],
+          "say": "A short-lived, empty org built from your source code. It lasts 1 to 30 days, then goes away, like a pop-up tent."
+        },
+        {
+          "term": "change set",
+          "match": [
+            "change sets"
+          ],
+          "say": "A bundle of changes sent from one org to another, made with clicks. Only between orgs tied to the same production org. It can't delete."
+        },
+        {
+          "term": "sandbox template",
+          "say": "Picks which objects' records a Partial Copy sandbox copies over from production."
+        },
+        {
+          "term": "source tracking",
+          "say": "Keeps notes on what changed on your computer and in the org, so you only push or pull the changes."
+        },
+        {
+          "term": "Dev Hub",
+          "say": "The org that's allowed to make scratch orgs and second-generation packages. Usually your production org, with Dev Hub turned on."
+        },
+        {
+          "term": "unlocked package",
+          "match": [
+            "unlocked packages"
+          ],
+          "say": "A versioned bundle of your metadata that you can install and upgrade. Like a flat-pack kit with a version number."
+        },
+        {
+          "term": "promote",
+          "say": "Mark a package version as released, so it can go into production. It needs 75% Apex code coverage first."
+        },
+        {
+          "term": "destructiveChanges.xml",
+          "say": "A list of metadata to delete, sent with a deploy. Pre deletes first; post deletes after the rest deploys."
+        },
+        {
+          "term": "DevOps Center",
+          "say": "A click-based tool for moving changes through stages, with Git keeping the history. The modern replacement for change sets."
         }
       ],
       "check": [
@@ -572,6 +988,51 @@
           "type": "tip",
           "title": "Remember it",
           "body": "\"**75 everywhere**\": 75% org-wide, 75% per class with `RunSpecifiedTests`, 75% to promote a package, 75% of active flows. And every trigger needs **some** coverage."
+        }
+      ],
+      "terms": [
+        {
+          "term": "code coverage",
+          "say": "The share of your Apex lines that tests actually ran. Production needs at least 75% across the org."
+        },
+        {
+          "term": "test level",
+          "say": "A setting on a deploy that picks which tests run: none, the ones you list, all local tests, or every test."
+        },
+        {
+          "term": "quick deploy",
+          "say": "Deploying a validation that already passed, without running tests again. It works for 10 days after that validation."
+        },
+        {
+          "term": "validation",
+          "match": [
+            "validates"
+          ],
+          "say": "A practice deploy: it checks the code and runs the tests, but saves nothing. A pass can be quick deployed later."
+        },
+        {
+          "term": "NoTestRun",
+          "say": "Runs no tests. The default outside production. Not allowed in production when deploying Apex."
+        },
+        {
+          "term": "RunSpecifiedTests",
+          "say": "Runs only the tests you list. Then each class and trigger you deploy needs 75% coverage from those tests, not just the org."
+        },
+        {
+          "term": "RunLocalTests",
+          "say": "Runs all tests in the org except those from installed managed and unlocked packages. The production default when deploying Apex."
+        },
+        {
+          "term": "RunAllTestsInOrg",
+          "say": "Runs every test in the org, including tests from managed packages. Thorough, but slow."
+        },
+        {
+          "term": "org-wide",
+          "say": "Counted across all your Apex code together, not class by class. Average for the whole school, not one student's grade."
+        },
+        {
+          "term": "autolaunched flows",
+          "say": "Flows that start on their own, with no screen. If flows deploy as active, tests must cover 75% of them."
         }
       ],
       "check": [
