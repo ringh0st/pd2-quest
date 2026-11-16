@@ -1,4 +1,5 @@
-// Code highlighting with Prism (MIT): real grammars for Apex, SOQL, JavaScript, HTML/XML and shell.
+// Code highlighting with Prism (MIT): real grammars for Apex, SOQL, JavaScript, HTML/XML and shell, plus a small
+// grammar for Salesforce formulas (formula fields, validation rules, flow formulas).
 // Only the languages this app uses are bundled. Tokens are rendered as React elements (no innerHTML).
 import Prism from 'prismjs/components/prism-core.js';
 import 'prismjs/components/prism-clike.js';
@@ -8,8 +9,20 @@ import 'prismjs/components/prism-javascript.js';
 import 'prismjs/components/prism-markup.js';
 import 'prismjs/components/prism-bash.js';
 
-const ALIAS = { apex: 'apex', soql: 'sql', sosl: 'sql', sql: 'sql', js: 'javascript', javascript: 'javascript', html: 'markup', xml: 'markup', markup: 'markup', bash: 'bash', sh: 'bash', shell: 'bash' };
-export const LANG_LABEL = { apex: 'Apex', soql: 'SOQL', sosl: 'SOSL', sql: 'SQL', js: 'JavaScript', javascript: 'JavaScript', html: 'HTML', xml: 'XML', markup: 'HTML', bash: 'Terminal', sh: 'Terminal', text: 'Text' };
+// Salesforce formulas: FUNCTION( calls, `Field__c` / `Account.Name` / `$User.Id` references, "text" literals.
+Prism.languages.formula = {
+  comment: /\/\*[\s\S]*?\*\//,
+  string: /"(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*'/,
+  function: /\b[A-Z][A-Z0-9_]*(?=\s*\()/,
+  variable: /\$?[A-Za-z_]\w*(?:\.[A-Za-z_]\w*)+|\$[A-Za-z_]\w*|\b\w+__[crx]\b/,
+  boolean: /\b(?:TRUE|FALSE|NULL)\b/i,
+  number: /\b\d+(?:\.\d+)?\b/,
+  operator: /&&|\|\||<>|!=|<=|>=|[-+*\/^&=<>!]/,
+  punctuation: /[(),]/,
+};
+
+const ALIAS = { formula: 'formula', apex: 'apex', soql: 'sql', sosl: 'sql', sql: 'sql', js: 'javascript', javascript: 'javascript', html: 'markup', xml: 'markup', markup: 'markup', bash: 'bash', sh: 'bash', shell: 'bash' };
+export const LANG_LABEL = { apex: 'Apex', soql: 'SOQL', sosl: 'SOSL', sql: 'SQL', js: 'JavaScript', javascript: 'JavaScript', html: 'HTML', xml: 'XML', markup: 'HTML', bash: 'Terminal', sh: 'Terminal', text: 'Text', formula: 'Formula' };
 
 /** Prism token stream for `code` in `lang` (plain strings when the language is unknown). */
 export function highlight(code, lang = 'apex') {

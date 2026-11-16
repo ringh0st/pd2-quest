@@ -21,7 +21,7 @@ export const BADGES = [
   { id: 'q100', icon: 'target', tone: 'flame', shape: 'rosette', name: 'Century', about: 'Answer 100 questions', test: (s) => Object.values(s.items).reduce((n, i) => n + i.right + i.wrong, 0) >= 100 },
   { id: 'mock', icon: 'exam', tone: 'teal', shape: 'shield', name: 'Mock passer', about: 'Pass a mock exam', test: (s, c) => s.exams.some((e) => e.score >= c.passing) },
   { id: 'mock85', icon: 'rocket', tone: 'rose', shape: 'shield', name: 'Ready for launch', about: 'Score 85%+ on a full mock', test: (s, c) => s.exams.some((e) => e.score >= 85 && e.total >= c.fullLength) },
-  { id: 'shopper', icon: 'shirt', tone: 'rose', shape: 'rosette', name: 'Fashion dev', about: 'Buy something in the shop', test: (s) => s.owned.length > 0 },
+  { id: 'shopper', icon: 'shirt', tone: 'rose', shape: 'rosette', name: 'Style icon', about: 'Buy something in the shop', test: (s) => s.owned.length > 0 },
   { id: 'parker', icon: 'park', tone: 'steel', shape: 'rosette', name: 'Thought parker', about: 'Park a distracting thought', test: (s) => s.parkedEver > 0 },
   { id: 'bolt7', icon: 'bolt', tone: 'gold', shape: 'star', name: 'Bolt chaser', about: 'Play the Daily Bolt 7 times', test: (s) => (s.boltCount ?? 0) >= 7 },
 ];
