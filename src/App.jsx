@@ -1,4 +1,4 @@
-import { Suspense, lazy, useCallback, useEffect, useRef, useState } from 'react';
+import { Suspense, lazy, useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { MotionConfig } from 'motion/react';
 import { useRoute, go } from './hooks/useRoute.js';
 import { useStore } from './state/store.js';
@@ -37,6 +37,7 @@ import { setMusicSettings } from './audio/music.js';
 import { setPreferredVoice } from './lib/speech.js';
 import { setSplashUp } from './lib/updates.js';
 import { takeSkipSplash } from './lib/track.js';
+import { closeStartMenu, startMenuRequested, subscribeStartMenu } from './lib/startMenu.js';
 import { UpdateBanner } from './components/UpdateBanner.jsx';
 import { APP_NAME } from './lib/appInfo.js';
 
@@ -138,8 +139,11 @@ export default function App() {
   const [splash, setSplash] = useState(() => !takeSkipSplash() && (!navigator.webdriver || window.__PD2_SHOW_SPLASH === true));
   const hideSplash = useCallback(() => {
     setSplash(false);
+    closeStartMenu();
     document.getElementById('boot-splash')?.remove();
   }, []);
+  // "Change exam" opens the same screen straight at the exam buttons (no loading).
+  const menuOpen = useSyncExternalStore(subscribeStartMenu, startMenuRequested, () => false);
   useEffect(() => { if (!splash) document.getElementById('boot-splash')?.remove(); setSplashUp(splash); }, [splash]);
 
   return (
@@ -155,8 +159,8 @@ export default function App() {
         </div>
         {!focus && onboarded && <BottomNav path={route.path} dueCards={dueCardCount(cards)} />}
         <CelebrationLayer />
-        {!splash && <UpdateBanner />}
-        {splash && <SplashScreen onDone={hideSplash} />}
+        {!splash && !menuOpen && <UpdateBanner />}
+        {(splash || menuOpen) && <SplashScreen onDone={hideSplash} instant={!splash} />}
       </FeedbackProvider>
     </MotionConfig>
   );

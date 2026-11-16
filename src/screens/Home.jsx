@@ -18,6 +18,8 @@ import { DailyQuests } from '../components/game/DailyQuests.jsx';
 import { ParkIt } from '../components/ParkIt.jsx';
 import { InstallHelpButton } from '../components/InstallHelp.jsx';
 import { ThemeToggle } from '../components/ThemeToggle.jsx';
+import { openStartMenu } from '../lib/startMenu.js';
+import { track } from '../lib/track.js';
 import { StudyPlanCard } from '../components/plan/StudyPlanCard.jsx';
 import { Icon } from '../components/icons/Icon.jsx';
 import { BossArt } from '../components/art/BossArt.jsx';
@@ -103,7 +105,13 @@ export function Home() {
     <main className="screen" id="main">
       <motion.header className="spread wrap" {...enter(0)}>
         <p className="muted small" style={{ fontWeight: 700, flex: '1 1 140px' }}><Icon name={greetingIcon()} className="ic-gold" /> {greeting()}{s.name ? `, ${s.name}` : ''}</p>
-        <div className="row" style={{ gap: 8 }}>
+        <div className="row wrap" style={{ gap: 8 }}>
+          <button
+            type="button" className="chip exam-chip" onClick={() => { sfx.tap(); haptic('light'); openStartMenu(); }}
+            aria-label={`Studying for ${track.name}. Change exam`} aria-haspopup="dialog"
+          >
+            {track.short}<Icon name="down" />
+          </button>
           <button className="chip" style={{ border: 0, minHeight: 44, fontSize: 17 }} onClick={tap('/me')}>
             <span className="sr-only">Streak: </span>
             <motion.span aria-hidden="true" style={{ display: 'inline-grid' }} animate={reduced || !streak || calm ? {} : { scale: [1, 1.15, 1], rotate: [0, -5, 5, 0] }} transition={{ duration: 1.6, repeat: 1 }}><Icon name="flame" className={streak ? 'ic-flame' : ''} /></motion.span>

@@ -20,8 +20,9 @@ const SPLASH_MS = 4000;
 const FADE_MS = 450;
 const LINES = ['Charging Zap’s batteries…', 'Polishing the stars…', 'Shuffling your flashcards…', 'Waking up the Bosses…'];
 
-export function SplashScreen({ onDone }) {
-  const [ready, setReady] = useState(false);
+/** `instant`: opened from the app to change exams, so it starts at the exam buttons (no loading) and Escape closes it. */
+export function SplashScreen({ onDone, instant = false }) {
+  const [ready, setReady] = useState(instant);
   const [leaving, setLeaving] = useState(false);
   const [line, setLine] = useState(0);
   const ref = useRef(null);
@@ -32,12 +33,20 @@ export function SplashScreen({ onDone }) {
   useHoldCelebrations(true); // rewards and pop-ups wait until the splash is gone
 
   useEffect(() => {
+    if (instant) return undefined;
     const done = setTimeout(() => setReady(true), SPLASH_MS);
     const lines = setInterval(() => setLine((i) => (i + 1) % LINES.length), SPLASH_MS / LINES.length);
     // Focus the splash itself so Enter or a tap can skip the loading without a visible focus ring.
     ref.current?.focus({ preventScroll: true });
     return () => { clearTimeout(done); clearInterval(lines); };
-  }, []);
+  }, [instant]);
+
+  useEffect(() => {
+    if (!instant) return undefined;
+    const onKey = (e) => { if (e.key === 'Escape') setLeaving(true); };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [instant]);
 
   // When loading is done, the Start/Play button takes focus (Enter or Space presses it).
   useEffect(() => { if (ready) startRef.current?.focus({ preventScroll: true }); }, [ready]);
@@ -128,6 +137,7 @@ export function SplashScreen({ onDone }) {
       </footer>
 
       {!ready && <button type="button" className="splash-skip" onClick={(e) => { e.stopPropagation(); skip(); }}>Skip</button>}
+      {instant && <button type="button" className="splash-skip" onClick={(e) => { e.stopPropagation(); sfx.tap(); setLeaving(true); }}>Back</button>}
     </div>
   );
 }
