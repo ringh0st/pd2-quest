@@ -442,7 +442,7 @@
         {
           "type": "text",
           "title": "Managed packages",
-          "body": "A **managed package** hides its code and metadata: you can't see or change them. The provider can **upgrade** it for you. Its contents **don't count** against your app, tab and object limits. Its parts carry a **namespace prefix**, a unique tag like `acme__`. Most AgentExchange apps are managed."
+          "body": "A **managed package** hides its code and metadata: you can't see or change them. The provider can **upgrade** it for you. Listed on AgentExchange, its contents **don't count** against your edition's app, tab and object allocation. Its parts carry a **namespace prefix**, a unique tag like `acme__`. Most AgentExchange apps are managed."
         },
         {
           "type": "code",
@@ -803,8 +803,8 @@
     },
     {
       "id": "deploy-f17",
-      "front": "Do managed package objects count against your org's limits?",
-      "back": "No. Managed package contents don't count against app, tab and object limits. Unmanaged package contents do."
+      "front": "Do managed package objects count against your edition's object allocation?",
+      "back": "Not if the package is listed on AgentExchange: its apps, tabs and objects stay off the edition's allocation (they still count toward the org's total limit). Unmanaged contents do count."
     },
     {
       "id": "deploy-f18",
@@ -1710,7 +1710,7 @@
       "id": "deploy-q24",
       "lesson": "deploy-5",
       "difficulty": 2,
-      "q": "Riverbend Schools is close to its custom object limit. It wants an AgentExchange app with 40 custom objects. Which kind of package keeps those objects off the limit?",
+      "q": "Riverbend Schools is close to its custom object limit. It wants an AgentExchange app with 40 custom objects. Which kind of package keeps those objects off the edition's object allocation?",
       "options": [
         "An unmanaged package",
         "A managed package",
@@ -1720,12 +1720,12 @@
       "answer": [
         1
       ],
-      "explain": "Managed package contents don't count against app, tab and object limits. Unmanaged package contents do.",
+      "explain": "Contents of a managed package listed on AgentExchange don't count against your edition's app, tab and object allocation (they still count toward the org's total limit). Unmanaged package contents do count.",
       "wrong": [
-        "Unmanaged package contents count against the limits.",
+        "Unmanaged package contents count against the allocation.",
         "",
-        "Only managed package contents are left off the limits.",
-        "Managed package contents don't count."
+        "Only managed package contents stay off the edition's allocation.",
+        "Managed AgentExchange contents don't count against the allocation."
       ],
       "source": "Trailhead: AgentExchange Basics"
     },
@@ -1736,7 +1736,7 @@
       "q": "Which two are true of managed packages? (Choose 2)",
       "options": [
         "You must uninstall them to get a new version",
-        "Their contents count against your object limit",
+        "Their objects use up your edition's object allocation",
         "You can edit their Apex directly in production",
         "You can't view or change the provider's code",
         "Their parts carry the provider's namespace prefix"
@@ -1748,7 +1748,7 @@
       "explain": "A managed package's code and metadata are hidden, and its parts carry a namespace prefix. The provider upgrades it.",
       "wrong": [
         "That's how unmanaged packages work.",
-        "Managed contents don't count against app, tab and object limits.",
+        "Managed AgentExchange contents don't count against the edition's allocation.",
         "You can't change a managed package's code.",
         "",
         ""
@@ -2461,7 +2461,7 @@
       ],
       "explain": "A change set becomes unavailable once its source sandbox is refreshed or deleted. It may still look available for a while, so assume it isn't and send a new one.",
       "wrong": [
-        "A change set becomes unavailable once its source sandbox is refreshed or deleted.",
+        "Uploading doesn't free it from its source. Refreshing that sandbox makes it unavailable.",
         "",
         "Inbound change sets deploy as a whole, never in parts.",
         "The refresh already made the change set unavailable."
@@ -2482,7 +2482,7 @@
       "answer": [
         0
       ],
-      "explain": "Before a change set can be uploaded, an admin in the target org must authorize the connection. Here the target is the sandbox.",
+      "explain": "Before a change set can be uploaded, an admin in the target org must authorize the connection. Here the target is the sandbox. Each direction is authorized on its own.",
       "wrong": [
         "",
         "The sending org doesn't authorize the connection. The target org does.",
@@ -2523,7 +2523,7 @@
       "difficulty": 3,
       "pack": "hard",
       "q": "An admin deploys this change set to production. It has no profiles in it. Which two results should she expect? (Choose 2)",
-      "code": "Outbound change set: Projects\n- Custom object: Project__c, with all fields\n- Custom tab: Projects\n- Report: Open Projects (folder: Unfiled Public Reports)\n- Report: Project Health (folder: Ops Reports)",
+      "code": "Outbound change set: Projects\n- Custom object: Project__c, with all fields\n- Custom tab: Projects\n- Report folder: Ops Reports\n- Report: Project Health (folder: Ops Reports)\n- Report: Open Projects (folder: Unfiled Public Reports)",
       "lang": "text",
       "options": [
         "The deployment fails because no profile is included",
@@ -2640,8 +2640,8 @@
       "wrong": [
         "",
         "Profile access doesn't create licenses. Seats come from the provider.",
-        "A second install doesn't add licenses.",
-        "A managed package can't be cloned or copied."
+        "It's already installed, and installing again doesn't add seats.",
+        "A managed package's parts are locked, and seats come only from the provider."
       ],
       "source": "Manage Licenses for Installed Packages"
     },
@@ -2659,7 +2659,7 @@
       "answer": [
         1
       ],
-      "explain": "Objects, fields, tabs and apps from a managed AgentExchange package don't count against your edition's allocation. The records stored in them still count against your data storage.",
+      "explain": "Objects, fields, tabs and apps from a managed AgentExchange package don't count against your edition's allocation. They still count toward the org's total limits. The records stored in them use your data storage.",
       "wrong": [
         "Its fields don't count against the edition allocation either.",
         "",
