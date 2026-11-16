@@ -2,8 +2,8 @@
 // Routes: #/placement/<worldId>  and  #/placement/lesson/<lessonId>
 import { useMemo, useState } from 'react';
 import { motion } from 'motion/react';
-import { sectionById, lessonById } from '../data/index.js';
-import { WORLD_THEMES, isWorldOpen } from '../game/worlds.js';
+import { sectionById, lessonById, themeOf } from '../data/index.js';
+import { isWorldOpen } from '../game/worlds.js';
 import { placementQuestions, placementResult, testOutQuestions, testOutPassed, PLACEMENT_UNLOCK, TEST_OUT_SIZE } from '../game/placement.js';
 import { useStore, testOut } from '../state/store.js';
 import { PracticeRunner } from '../components/PracticeRunner.jsx';
@@ -38,7 +38,7 @@ export function Placement({ a, b }) {
   if (!section || (lessonMode && !lesson) || !questions.length) {
     return <main className="screen" id="main"><h1>Not found</h1><button className="btn" onClick={() => go('/map')}>Back to the map</button></main>;
   }
-  const theme = WORLD_THEMES[section.id];
+  const theme = themeOf(section.id);
   const back = lessonMode ? `/lesson/${lesson.id}` : `/world/${section.id}`;
   const wasLocked = !isWorldOpen(section.id, stars, unlocked);
 

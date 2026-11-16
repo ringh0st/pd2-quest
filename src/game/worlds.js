@@ -1,32 +1,21 @@
 // The adventure: each exam section is a themed world with lessons, Hard challenges and a Boss.
 
-export const WORLD_THEMES = {
-  fund: {
-    name: 'Sharing Shrine',
-    sky: ['#FFE3EC', '#FFF4E0'], skyDark: ['#2B1A1C', '#1B1614'],
-    boss: { name: 'The Sharing Sphinx', taunt: 'Who can see this record? Answer, or be locked out forever!', defeat: 'Fine… your access is… granted.' },
-  },
-  auto: {
-    name: 'Async Forge',
-    sky: ['#FFE6D6', '#FFF6E8'], skyDark: ['#2E1D12', '#1C1612'],
-    boss: { name: 'The Recursion Hydra', taunt: 'Cut off one trigger and two more fire!', defeat: 'Static Set<Id>… my one weakness…' },
-  },
-  ui: {
-    name: 'Pixel Bay',
-    sky: ['#DDF6F1', '#FFF8EC'], skyDark: ['#14261F', '#161A16'],
-    boss: { name: 'The Re-render Kraken', taunt: 'I will re-render your component… forever!', defeat: 'You used a guard flag?! Blub…' },
-  },
-  test: {
-    name: 'Bug Swamp',
-    sky: ['#E6F5D8', '#FFF8EA'], skyDark: ['#1D2616', '#171713'],
-    boss: { name: 'The Flaky Test Toad', taunt: 'Sometimes I pass, sometimes I fail. Ribbit!', defeat: 'You mocked my callouts… croak.' },
-  },
-  perf: {
-    name: 'Turbo Peaks',
-    sky: ['#E8EEFF', '#FFF6EE'], skyDark: ['#26221C', '#171412'],
-    boss: { name: 'The Governor', taunt: '101 SOQL queries? LIMIT EXCEPTION!', defeat: 'Bulkified… I am… defeated.' },
-  },
+// How each world looks, by section id (its emblem and Boss art are keyed the same way). Names and Bosses are
+// content: each exam names its worlds in src/data/<exam>/exam.json (`worlds`), so the same look can carry
+// different names in different exams.
+export const WORLD_STYLES = {
+  fund: { sky: ['#FFE3EC', '#FFF4E0'], skyDark: ['#2B1A1C', '#1B1614'] },
+  auto: { sky: ['#FFE6D6', '#FFF6E8'], skyDark: ['#2E1D12', '#1C1612'] },
+  ui: { sky: ['#DDF6F1', '#FFF8EC'], skyDark: ['#14261F', '#161A16'] },
+  test: { sky: ['#E6F5D8', '#FFF8EA'], skyDark: ['#1D2616', '#171713'] },
+  perf: { sky: ['#E8EEFF', '#FFF6EE'], skyDark: ['#26221C', '#171412'] },
 };
+const FALLBACK_WORLD = { name: 'World', boss: { name: 'The Boss', taunt: 'Answer me this!', defeat: 'You win… this time.' } };
+
+/** A world's look plus its name and Boss from the exam's content (`section.world`). */
+export function worldTheme(section) {
+  return { ...WORLD_STYLES.fund, ...WORLD_STYLES[section?.id], ...FALLBACK_WORLD, ...section?.world };
+}
 
 export const HARD_EVERY = 3;          // a Hard challenge after every 3 lessons
 export const HARD_SIZE = 5;
@@ -46,7 +35,7 @@ export function levelsFor(section) {
       out.push({ id: `${section.id}-hard-${hard}`, kind: 'hard', title: `Challenge ${hard}`, covers, world: section.id });
     }
   });
-  out.push({ id: `${section.id}-boss`, kind: 'boss', title: WORLD_THEMES[section.id]?.boss.name ?? 'Boss', world: section.id });
+  out.push({ id: `${section.id}-boss`, kind: 'boss', title: worldTheme(section).boss.name, world: section.id });
   return out;
 }
 

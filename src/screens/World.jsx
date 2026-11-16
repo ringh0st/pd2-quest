@@ -5,8 +5,8 @@ import { useEffect, useRef } from 'react';
 import { savedRunIds } from '../state/runSession.js';
 import { motion } from 'motion/react';
 import { useStore } from '../state/store.js';
-import { sectionById } from '../data/index.js';
-import { WORLD_THEMES, isLevelOpen, isWorldOpen, worldStars } from '../game/worlds.js';
+import { sectionById, themeOf } from '../data/index.js';
+import { isLevelOpen, isWorldOpen, worldStars } from '../game/worlds.js';
 import { worldLevels, routeForLevel } from '../state/gameSelectors.js';
 import { sectionMastery } from '../engine/mastery.js';
 import { Zap } from '../components/game/Zap.jsx';
@@ -42,7 +42,7 @@ export function World({ id }) {
   const reduced = useReducedMotion();
   const mapRef = useRef(null);
   const sec = sectionById[id];
-  const t = WORLD_THEMES[id];
+  const t = themeOf(id);
   const open = sec && t && isWorldOpen(id, s.stars, s.unlockedWorlds);
 
   // Open on the current level, roughly centred (after the app's own scroll-to-top on route change).

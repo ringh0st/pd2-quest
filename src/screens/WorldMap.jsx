@@ -1,8 +1,8 @@
 // The adventure map: five themed worlds (one per exam section). Worlds open with stars, or early with coins.
 import { motion } from 'motion/react';
 import { useStore, unlockWorld } from '../state/store.js';
-import { sections, exam } from '../data/index.js';
-import { WORLD_THEMES, WORLD_UNLOCK_STARS, WORLD_UNLOCK_COINS, isWorldOpen, worldStars, totalStars } from '../game/worlds.js';
+import { sections, exam, themeOf } from '../data/index.js';
+import { WORLD_UNLOCK_STARS, WORLD_UNLOCK_COINS, isWorldOpen, worldStars, totalStars } from '../game/worlds.js';
 import { CoinChip } from '../components/game/CoinChip.jsx';
 import { useReducedMotion } from '../hooks/useMotionPrefs.js';
 import { useFeedback } from '../components/Feedback.jsx';
@@ -32,7 +32,7 @@ export function WorldMap() {
       <p className="muted small">Five worlds, one per exam section. Beat lessons, crush Hard levels, defeat each Boss.</p>
       <ul className="list-plain world-list">
         {sections.map((sec, i) => {
-          const t = WORLD_THEMES[sec.id];
+          const t = themeOf(sec.id);
           const open = isWorldOpen(sec.id, s.stars, s.unlockedWorlds);
           const ws = worldStars(sec, s.stars);
           const need = WORLD_UNLOCK_STARS[sec.id] - total;

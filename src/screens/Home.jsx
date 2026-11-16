@@ -6,10 +6,9 @@ import { levelFor, rankFor } from '../engine/xp.js';
 import { liveStreak } from '../engine/streak.js';
 import { readiness, weakestSection, mockEstimate, readyToBook } from '../engine/mastery.js';
 import { dayKey, daysUntil, daysBetween } from '../engine/dates.js';
-import { sections, exam } from '../data/index.js';
+import { sections, exam, themeOf } from '../data/index.js';
 import { dueQuestionCount, greeting } from '../state/selectors.js';
 import { continueLevel, routeForLevel, mapCleared, firstImperfectLevel } from '../state/gameSelectors.js';
-import { WORLD_THEMES } from '../game/worlds.js';
 import { zapSays } from '../game/mascot.js';
 import { ProgressRing } from '../components/ProgressRing.jsx';
 import { CountUp } from '../components/CountUp.jsx';
@@ -63,7 +62,7 @@ function firstLine(s) {
 function primaryAction(s, dueQ) {
   const next = continueLevel(s.stars, s.unlockedWorlds);
   if (next) {
-    const t = WORLD_THEMES[next.world];
+    const t = themeOf(next.world);
     return {
       label: next.kind === 'boss' ? `Fight ${t.boss.name}!` : next.kind === 'hard' ? `${next.title}: Hard level` : next.title,
       sub: <span className="play-sub"><WorldEmblem world={next.world} size={20} />{t.name}{next.kind === 'lesson' ? ` · ${next.minutes} min` : ''}</span>,

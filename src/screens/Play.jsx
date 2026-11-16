@@ -1,9 +1,9 @@
 // Hard challenges and Boss battles. Intro, then the run (hearts, helpers), then stars on the win screen.
 import { useMemo, useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
-import { sectionById } from '../data/index.js';
+import { sectionById, themeOf } from '../data/index.js';
 import { levelById, nextLevelAfter, levelOpen } from '../state/gameSelectors.js';
-import { WORLD_THEMES, HARD_SIZE, BOSS_HP, BOSS_HEARTS, starsFor } from '../game/worlds.js';
+import { HARD_SIZE, BOSS_HP, BOSS_HEARTS, starsFor } from '../game/worlds.js';
 import { COINS } from '../game/economy.js';
 import { shuffle } from '../engine/session.js';
 import { useStore, saveStars, addCoins, earn, useHelper, refundHelper, getState, checkBadges } from '../state/store.js';
@@ -73,7 +73,7 @@ export function Play({ id }) {
   if (!level || level.kind === 'lesson') return <main className="screen"><p>Level not found.</p><button className="btn" onClick={() => go('/map')}>Map</button></main>;
   if (!levelOpen(id, stars)) return <main className="screen" id="main"><h1 className="title-with-icon"><span className="ic-tile" aria-hidden="true"><Icon name="lock" /></span>Finish the level before this one first.</h1><button className="btn" onClick={() => go(`/world/${level.world}`)}><Icon name="back" /> Back to the map</button></main>;
 
-  const theme = WORLD_THEMES[level.world];
+  const theme = themeOf(level.world);
   const isBoss = level.kind === 'boss';
   const baseHearts = (isBoss ? BOSS_HEARTS : 3) + (rematch ? 1 : 0);
 

@@ -1,7 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { levelsFor, isLevelOpen, starsFor, isWorldOpen, worldStars, WORLD_THEMES } from '../src/game/worlds.js';
+import { levelsFor, isLevelOpen, starsFor, isWorldOpen, worldStars, WORLD_STYLES } from '../src/game/worlds.js';
+import { TRACKS } from '../src/lib/track.js';
 import { fiftyFifty, canBuy, canBuyHelper, HELPERS, chestCoins, COINS } from '../src/game/economy.js';
 import { questsFor, isQuestDone, emptyDayStats } from '../src/game/quests.js';
 import { BADGES } from '../src/game/badges.js';
@@ -10,9 +11,20 @@ import { seeded } from '../src/game/random.js';
 const load = (id) => JSON.parse(readFileSync(`src/data/pd2/${id}.json`, 'utf8'));
 const ids = ['fund', 'auto', 'ui', 'test', 'perf'];
 
-test('every world has a theme and ends with a boss', () => {
+test('every exam names each of its worlds and Bosses, and every world has a look', () => {
+  for (const t of Object.values(TRACKS)) {
+    const worlds = JSON.parse(readFileSync(`src/data/${t.id}/exam.json`, 'utf8')).worlds;
+    for (const id of t.sections) {
+      assert.ok(WORLD_STYLES[id], `${t.id}/${id} has no look`);
+      const w = worlds?.[id];
+      assert.ok(w?.name && w.boss?.name && w.boss.taunt && w.boss.defeat, `${t.id}/${id} has no name or Boss in exam.json`);
+    }
+  }
+});
+
+test('every world ends with a boss', () => {
   for (const id of ids) {
-    assert.ok(WORLD_THEMES[id], id);
+    assert.ok(WORLD_STYLES[id], id);
     const lv = levelsFor(load(id));
     assert.equal(lv.at(-1).kind, 'boss');
     assert.ok(lv.some((l) => l.kind === 'hard'));

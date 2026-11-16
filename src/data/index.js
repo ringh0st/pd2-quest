@@ -1,6 +1,7 @@
 // Loads the chosen exam's facts and every section's content (src/data/<track>/). Order follows the official exam guide.
 // Only the current exam's files are downloaded; switching exams reloads the app (see lib/track.js).
 import { currentTrack, track } from '../lib/track.js';
+import { worldTheme } from '../game/worlds.js';
 
 const loaders = import.meta.glob('./*/*.json', { import: 'default' });
 const ORDER = track.sections;
@@ -37,6 +38,7 @@ export const sections = ORDER
       ...data,
       weight: meta.weight ?? data.weight,
       objectives: meta.objectives ?? [],
+      world: exam.worlds?.[id],
       short: SHORT[id],
       accent: `var(${ACCENT[id]})`,
       questions: data.questions.map((q) => ({ ...q, section: id, mockOnly: isMockOnly(q, new Set(data.lessons.flatMap((l) => l.check))) })),
@@ -52,3 +54,6 @@ export const allFlashcards = sections.flatMap((s) => s.flashcards);
 export const lessonById = table(
   sections.flatMap((s) => s.lessons.map((l, i) => [l.id, { ...l, section: s.id, index: i }])),
 );
+
+/** A world's look, name and Boss, by section id. */
+export const themeOf = (id) => worldTheme(sectionById[id] ?? { id });
