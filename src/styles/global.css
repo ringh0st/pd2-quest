@@ -1142,7 +1142,7 @@ h1[tabindex='-1']:focus, h2[tabindex='-1']:focus { outline: none; }
 .splash-ribbon { fill: var(--primary); }
 .splash-badge-ring { fill: #FFC94D; stroke: #C27A06; stroke-width: 2.5; }
 .splash-badge-face { fill: #FFF3C4; stroke: #E9A21A; stroke-width: 1.5; }
-.splash-badge-text { font: 800 11.5px 'Lexend', system-ui, sans-serif; fill: #7A3E00; letter-spacing: 0.02em; }
+.splash-badge-star { fill: #E9A21A; stroke: #7A3E00; stroke-width: 1.2; stroke-linejoin: round; }
 .splash-zap { position: absolute; left: 22%; bottom: -4%; transform: translateX(-50%); animation: splashFly 1s cubic-bezier(.34,1.56,.64,1) 0.1s both; }
 @keyframes splashFly { from { opacity: 0; transform: translate(-50%, 70%) scale(0.6) rotate(-12deg); } }
 /* title */
@@ -1327,3 +1327,12 @@ input, textarea, select { font-family: inherit; }
 .splash-track-text { display: grid; gap: 1px; line-height: 1.15; }
 .splash-track-name { font-size: calc(20px * var(--text-scale)); font-weight: 800; }
 .splash-track-sub { font-size: calc(13px * var(--text-scale)); font-weight: 700; opacity: 0.8; }
+/* opening screen with the exam buttons showing: smaller art and title, so every exam fits on small phones
+   (and the screen scrolls if it still doesn't, e.g. at the largest text size) */
+.splash { overflow-x: hidden; overflow-y: auto; }
+.splash.picking .splash-stage { width: min(200px, 50vw); }
+.splash.picking .splash-word { font-size: clamp(36px, 11vw, 60px); }
+.splash.picking .splash-facts { display: none; }
+.splash-track { min-height: 54px; padding-block: 6px; }
+/* the turning rays are scenery: pinned to the screen, so they never make the opening screen scrollable */
+.splash-rays { position: fixed; }

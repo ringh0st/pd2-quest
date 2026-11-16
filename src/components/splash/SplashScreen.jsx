@@ -56,7 +56,7 @@ export function SplashScreen({ onDone }) {
   return (
     <div
       ref={ref} tabIndex={-1}
-      className={`splash${leaving ? ' leaving' : ''}`}
+      className={`splash${leaving ? ' leaving' : ''}${ready ? ' picking' : ''}`}
       onClick={ready ? undefined : skip}
       onKeyDown={(e) => !ready && ['Enter', 'Escape', ' '].includes(e.key) && skip()}
       role="dialog" aria-modal="true"
@@ -73,7 +73,7 @@ export function SplashScreen({ onDone }) {
             <path d="M-11 18 L-16 38 L-6 32 L0 40 L4 20 Z M11 18 L16 38 L6 32 L0 40 L-4 20 Z" className="splash-ribbon" />
             <circle r="22" className="splash-badge-ring" />
             <circle r="16.5" className="splash-badge-face" />
-            <text y="5.5" textAnchor="middle" className="splash-badge-text">PD</text>
+            <path className="splash-badge-star" d="M0 -10 L2.9 -3.6 L9.5 -3.1 L4.5 1.3 L6 8 L0 4.4 L-6 8 L-4.5 1.3 L-9.5 -3.1 L-2.9 -3.6 Z" />
           </g>
         </svg>
         <div className="splash-zap"><Zap mood="cheer" size={108} hat={null} bounce={false} label="" /></div>
