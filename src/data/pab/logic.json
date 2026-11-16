@@ -4814,6 +4814,1324 @@
         "No approval is part of this setup."
       ],
       "source": "Create Custom Actions Using Apex Invocable Method"
+    },
+    {
+      "id": "logic-q92",
+      "lesson": "logic-1",
+      "difficulty": 1,
+      "q": "An Opportunity field should show a ticked box when the amount is over 100,000. Nobody should edit it. Which formula return type fits?",
+      "options": [
+        "Text",
+        "Number, set to 1 or 0",
+        "Checkbox",
+        "Percent"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "A Checkbox formula returns true or false. It shows as a checkbox on the record.",
+      "wrong": [
+        "Text shows words, not a box that is ticked or not.",
+        "A number shows a value, not a ticked box.",
+        "",
+        "Percent shows a share, not true or false."
+      ],
+      "source": "Formula Data Types"
+    },
+    {
+      "id": "logic-q93",
+      "lesson": "logic-1",
+      "difficulty": 2,
+      "q": "`Amount__c` is 500 and `Fee__c` is empty. Blank Field Handling is set to \"Treat blank fields as blanks\". What does this currency formula show?",
+      "code": "Amount__c + Fee__c",
+      "lang": "formula",
+      "options": [
+        "Nothing: the result is blank",
+        "500, because the empty fee counts as zero",
+        "0, because one of the fields is empty",
+        "An error, because `Fee__c` has no value"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "With \"Treat blank fields as blanks\", a blank input makes the result blank. Choose \"Treat blank fields as zeros\" to get 500.",
+      "wrong": [
+        "",
+        "That happens only with \"Treat blank fields as zeros\".",
+        "A blank input gives a blank result here, not zero.",
+        "Empty fields don't cause an error. The result is just blank."
+      ],
+      "source": "Build a Formula Field"
+    },
+    {
+      "id": "logic-x50",
+      "lesson": "logic-1",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "An admin writes this checkbox formula to flag contracts signed before 2025. It doesn't work. What is wrong?",
+      "code": "Signed_Date__c < 2025-01-01",
+      "lang": "formula",
+      "options": [
+        "The date needs quotes, like `\"2025-01-01\"`, to be a date",
+        "A checkbox formula can't compare two date values with `<`",
+        "Fixed dates aren't allowed in formulas, so it must be built from `TODAY()`",
+        "`2025-01-01` is read as math, not a date. Use `DATE(2025, 1, 1)`"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "Formulas don't support date literals. `2025-01-01` is read as 2025 minus 1 minus 1. Build a fixed date with `DATE()`.",
+      "wrong": [
+        "In quotes it is text, not a date. Dates and text can't be compared.",
+        "Comparisons return TRUE or FALSE, which suits a checkbox.",
+        "Fixed dates are fine. Build them with `DATE()`.",
+        ""
+      ],
+      "source": "Using Date, Date/Time, and Time Values in Formulas"
+    },
+    {
+      "id": "logic-q94",
+      "lesson": "logic-1",
+      "difficulty": 2,
+      "q": "A case was opened on Monday at 09:00 and closed on Tuesday at 21:00. What does this Number formula show?",
+      "code": "(ClosedDate - CreatedDate) * 24",
+      "lang": "formula",
+      "options": [
+        "1.5",
+        "36",
+        "1",
+        "12"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "Subtracting two Date/Time values gives days as a decimal: 1.5 here. Times 24, that is 36 hours.",
+      "wrong": [
+        "1.5 is the gap in days. The formula then multiplies it by 24.",
+        "",
+        "Date/Time subtraction keeps fractions of a day, so it isn't cut to 1.",
+        "12 is only the gap in clock time. A whole day also passed."
+      ],
+      "source": "Using Date, Date/Time, and Time Values in Formulas"
+    },
+    {
+      "id": "logic-q95",
+      "lesson": "logic-2",
+      "difficulty": 1,
+      "q": "A custom object, Ticket, has a lookup field `Event__c`. Which reference reads the event's `Venue__c` field in a formula on Ticket?",
+      "options": [
+        "`Event__c.Venue__c`",
+        "`Ticket__r.Event__c.Venue__c`",
+        "`Event__r.Venue__c`",
+        "`Venue__c.Event__r`"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "For a custom lookup, change `__c` to `__r` to reach the parent. Then add the parent's field.",
+      "wrong": [
+        "`Event__c` holds the Id. To go through the relationship, use `__r`.",
+        "The formula already sits on Ticket. It starts from the lookup.",
+        "",
+        "The relationship comes first, then the parent's field."
+      ],
+      "source": "Tips for Building Cross-Object Formulas"
+    },
+    {
+      "id": "logic-q96",
+      "lesson": "logic-2",
+      "difficulty": 2,
+      "q": "A text formula on Account should show the owner's full name. `Owner.Name` gives the error \"Field doesn't exist\". Which formula works?",
+      "options": [
+        "`Owner.FirstName & \" \" & Owner.LastName`",
+        "`TEXT(Owner.Name)`",
+        "`$User.FirstName & \" \" & $User.LastName`",
+        "`LastModifiedBy.FirstName & \" \" & LastModifiedBy.LastName`"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "Name fields built from other fields can't be used in formulas. Build the name from first and last name instead.",
+      "wrong": [
+        "",
+        "`Owner.Name` still can't be used, even inside `TEXT()`.",
+        "`$User` is the person viewing the record, not the owner.",
+        "That is the person who last edited the account, not the owner."
+      ],
+      "source": "Tips for Building Cross-Object Formulas"
+    },
+    {
+      "id": "logic-q97",
+      "lesson": "logic-2",
+      "difficulty": 2,
+      "q": "Which items count toward an object's limit of 10 unique relationships? (Choose 2)",
+      "options": [
+        "A related list of child records shown on the object's page layout",
+        "A validation rule on the object that reads a parent's field",
+        "A report type that joins the object to its parent object for reports",
+        "A roll-up summary on the parent of the object",
+        "A lookup filter on the object that uses a related record's field"
+      ],
+      "answer": [
+        1,
+        4
+      ],
+      "explain": "The limit of 10 unique relationships is shared by all formula fields, rules and lookup filters on the object.",
+      "wrong": [
+        "Page layouts don't count toward this limit.",
+        "",
+        "Report types don't count toward this limit.",
+        "This limit counts formulas, rules and lookup filters only.",
+        ""
+      ],
+      "source": "Tips for Building Cross-Object Formulas"
+    },
+    {
+      "id": "logic-x51",
+      "lesson": "logic-2",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "This formula shows \"Standard\" on the record page. In list views and reports it shows \"Other\" for the same records. Why?",
+      "code": "IF(LastModifiedBy.Profile.Name = \"Standard User\",\n   \"Standard\", \"Other\")",
+      "lang": "formula",
+      "options": [
+        "List views and reports can't show formula fields",
+        "A formula only works out its value when the record page opens",
+        "Reports use the profile of the person running the report",
+        "In those views, `Profile.Name` gives an internal value"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "In list views and reports, `Profile.Name` returns an internal value. Use `OR()` to test both the name and that value.",
+      "wrong": [
+        "They can show formula fields. Here the value is just different.",
+        "Formulas work in list views and reports too.",
+        "The formula reads the record's last modifier, not the viewer.",
+        ""
+      ],
+      "source": "Tips for Building Cross-Object Formulas"
+    },
+    {
+      "id": "logic-x52",
+      "lesson": "logic-2",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "The org uses several currencies. An opportunity in EUR has a formula that reads `Account.Budget__c`, a currency field. The account is in USD. What does the formula show?",
+      "options": [
+        "The budget in USD, with a dollar sign",
+        "The budget converted into EUR",
+        "The USD number, shown with a euro sign",
+        "An error, because the currencies differ"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "A cross-object formula converts a referenced currency value into the currency of the record that holds the formula.",
+      "wrong": [
+        "The value isn't kept in the account's currency.",
+        "",
+        "The value is converted, not just relabeled.",
+        "Different currencies are fine. The formula converts the value."
+      ],
+      "source": "Tips for Building Cross-Object Formulas"
+    },
+    {
+      "id": "logic-x53",
+      "lesson": "logic-2",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "Pine & Co. wants each order line to show the product's price as it was when the line was created. Later price changes must not change old lines. Which solution fits?",
+      "options": [
+        "A cross-object formula that reads the product's current price",
+        "A roll-up summary field on the product",
+        "A currency field set by a before-save flow on create",
+        "A validation rule that blocks price changes on products"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "To keep a value from one moment, copy it into a normal field. A before-save flow on create is the fastest way.",
+      "wrong": [
+        "A formula always shows the parent's current value, so old lines would change.",
+        "A roll-up sits on the parent and adds up children. It doesn't copy values down.",
+        "",
+        "The business still needs to change prices."
+      ],
+      "source": "Before-Save Record-Triggered Flows"
+    },
+    {
+      "id": "logic-x54",
+      "lesson": "logic-3",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "Read the setup. The project's total is now 95 hours. A user saves a new 8-hour time entry. What happens?",
+      "code": "Project__c\n  Total_Hours__c: roll-up, SUM of Time_Entry__c.Hours__c\n  Validation rule: Total_Hours__c > 100",
+      "lang": "text",
+      "options": [
+        "The entry isn't saved: it would make the project invalid",
+        "It saves, and the project shows 103 with a warning",
+        "It saves, because the rule runs only when someone edits the project",
+        "It saves, and the total updates within 30 minutes"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "Salesforce blocks a child save that would make the parent invalid. Here the new total would break the project's validation rule.",
+      "wrong": [
+        "",
+        "Salesforce doesn't save a child that would break the parent's rule.",
+        "A change to a roll-up re-checks the parent's rules.",
+        "The 30-minute delay is for mass recalculations, not normal saves."
+      ],
+      "source": "Roll-Up Summary Field"
+    },
+    {
+      "id": "logic-q98",
+      "lesson": "logic-3",
+      "difficulty": 2,
+      "q": "Which detail fields can a MAX roll-up summary use? (Choose 2)",
+      "options": [
+        "A date field",
+        "A text field",
+        "A checkbox field",
+        "A percent field",
+        "A picklist field"
+      ],
+      "answer": [
+        0,
+        3
+      ],
+      "explain": "MIN and MAX accept number, currency, percent, date and date/time fields. SUM accepts only number, currency and percent.",
+      "wrong": [
+        "",
+        "MIN and MAX work on numbers, currency, percent, dates and date/times.",
+        "A checkbox has no largest value to pick.",
+        "",
+        "Picklist values can't be used as a MAX field."
+      ],
+      "source": "Roll-Up Summary Field"
+    },
+    {
+      "id": "logic-q99",
+      "lesson": "logic-3",
+      "difficulty": 2,
+      "q": "A validation rule on Order checks the roll-up field `Line_Total__c`. Where can the rule's error message be shown? (Choose 2)",
+      "options": [
+        "Next to the `Line_Total__c` roll-up field",
+        "On each order line record",
+        "At the top of the page",
+        "In an email to the order's owner",
+        "Next to an editable field on the layout, such as `Ship_Date__c`"
+      ],
+      "answer": [
+        2,
+        4
+      ],
+      "explain": "Roll-ups can be used in validation rules but not as the error location. Show the error at the top or next to another field.",
+      "wrong": [
+        "Roll-ups aren't on edit pages, so they can't be the error location.",
+        "The error shows on the record being saved.",
+        "",
+        "Validation errors show on the page, not in email.",
+        ""
+      ],
+      "source": "Roll-Up Summary Field"
+    },
+    {
+      "id": "logic-x55",
+      "lesson": "logic-3",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A formula on Order Line, `Margin__c`, shows #Error! on 2 of 10 lines. The order has a COUNT roll-up and a SUM roll-up of `Margin__c`. What do they show?",
+      "options": [
+        "COUNT shows 8; SUM leaves out the 2 error lines",
+        "Both roll-up fields show #Error! until the lines are fixed",
+        "COUNT shows 10; SUM shows #Error!",
+        "COUNT shows 10; SUM leaves out the 2 error lines"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "COUNT includes records whatever their formula values. SUM, MIN and MAX skip formula values that are #Error!.",
+      "wrong": [
+        "COUNT includes every line, even ones with a formula error.",
+        "Errors don't spread to the roll-ups.",
+        "SUM skips the error values instead of failing.",
+        ""
+      ],
+      "source": "Roll-Up Summary Field"
+    },
+    {
+      "id": "logic-q100",
+      "lesson": "logic-4",
+      "difficulty": 2,
+      "q": "Which can test a picklist field's value directly in a validation rule? (Choose 2)",
+      "options": [
+        "`CONTAINS()`",
+        "`ISPICKVAL()`",
+        "`BEGINS()`",
+        "`CASE()`",
+        "The `=` operator"
+      ],
+      "answer": [
+        1,
+        3
+      ],
+      "explain": "Picklists work only with `ISPICKVAL()`, `CASE()` and `TEXT()`. Most other functions and `=` give an error.",
+      "wrong": [
+        "It works on text. A picklist must go through `TEXT()` first.",
+        "",
+        "It works on text. A picklist must go through `TEXT()` first.",
+        "",
+        "Comparing a picklist with `=` gives an error."
+      ],
+      "source": "Tips for Working with Picklist and Multi-Select Picklist Values in Formulas"
+    },
+    {
+      "id": "logic-x56",
+      "lesson": "logic-4",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "This validation rule is on Contact. Which values can a user save in `Postal_Code__c`? (Choose 2)",
+      "code": "AND(\n  NOT(ISBLANK(Postal_Code__c)),\n  NOT(REGEX(Postal_Code__c, \"[0-9]{5}\"))\n)",
+      "lang": "formula",
+      "options": [
+        "An empty value",
+        "1234",
+        "12345-6789",
+        "ABCDE",
+        "12345"
+      ],
+      "answer": [
+        0,
+        4
+      ],
+      "explain": "`REGEX()` must match the whole value. The rule allows a blank value or exactly five digits.",
+      "wrong": [
+        "",
+        "Four digits don't match the pattern, so the rule fires.",
+        "The pattern must match the whole value. The extra part breaks it.",
+        "Letters don't match `[0-9]`, so the rule fires.",
+        ""
+      ],
+      "source": "Validation Rules"
+    },
+    {
+      "id": "logic-x57",
+      "lesson": "logic-4",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "This rule is on Account. An admin uses the Mass Transfer Records tool to give 300 accounts a new owner. Many have no region. What happens?",
+      "code": "AND(\n  ISCHANGED(OwnerId),\n  ISBLANK(Region__c)\n)",
+      "lang": "formula",
+      "options": [
+        "Every transfer fails until each account has a region filled in",
+        "It works: validation rules don't run for Mass Transfer",
+        "Only accounts with a region get the new owner",
+        "The tool asks which rule to skip for each account"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "Validation rules run when one record's owner changes. They don't run when the Mass Transfer tool changes many owners.",
+      "wrong": [
+        "Mass Transfer skips validation rules.",
+        "",
+        "The rule doesn't run, so no accounts are held back.",
+        "The tool doesn't ask. Validation rules just don't run."
+      ],
+      "source": "Validation Rule Considerations"
+    },
+    {
+      "id": "logic-q101",
+      "lesson": "logic-4",
+      "difficulty": 1,
+      "q": "A user saves a record that breaks three validation rules at once. What do they see?",
+      "options": [
+        "Only the first rule's message",
+        "Only the message of the newest rule",
+        "All three error messages at once",
+        "One general error with no details"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "When one rule fails, Salesforce still checks the others. It shows all the error messages together.",
+      "wrong": [
+        "Salesforce keeps checking the other rules after one fails.",
+        "There is no priority by date. All messages show.",
+        "",
+        "Each rule shows its own message."
+      ],
+      "source": "Validation Rule Considerations"
+    },
+    {
+      "id": "logic-q102",
+      "lesson": "logic-5",
+      "difficulty": 1,
+      "q": "When an account is deleted, a log record must be created. Which automation fits?",
+      "options": [
+        "A record-triggered flow on Account, set to run on delete",
+        "A schedule-triggered flow that looks for deleted accounts each night",
+        "A screen flow that users run after each delete",
+        "A platform event-triggered flow on account events"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "A record-triggered flow can run when a record is created, updated or deleted. The delete option runs just before the delete.",
+      "wrong": [
+        "",
+        "It runs at set times, not when one record is deleted.",
+        "This depends on people remembering to run it.",
+        "It reacts to event messages, not to deleted records."
+      ],
+      "source": "Flow Types"
+    },
+    {
+      "id": "logic-q103",
+      "lesson": "logic-5",
+      "difficulty": 2,
+      "q": "An admin builds an Autolaunched Flow (No Trigger) to set a field on new leads and activates it. New leads arrive, but nothing happens. Why?",
+      "options": [
+        "New leads need the Run Flows permission before flows can run",
+        "Autolaunched flows run only in sandboxes",
+        "It needs a screen before it can run",
+        "Nothing launches it; this type runs only when called"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "An Autolaunched Flow (No Trigger) runs only when called, for example by a button, Apex, the API or another flow. Use a record-triggered flow for saves.",
+      "wrong": [
+        "Permissions aren't the problem. Nothing starts this flow.",
+        "They run in production too.",
+        "Autolaunched flows have no screens.",
+        ""
+      ],
+      "source": "Flow Types"
+    },
+    {
+      "id": "logic-x58",
+      "lesson": "logic-5",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A partner system creates Order records through the API. For each new order, a welcome email must go to the customer. A teammate says this needs a platform event-triggered flow. What is the best choice?",
+      "options": [
+        "A platform event-triggered flow, since the data comes from outside",
+        "A record-triggered flow on Order, which runs for API saves too",
+        "A screen flow that the sales team runs for each order",
+        "A schedule-triggered flow that emails all orders once a week"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "A record-triggered flow runs whenever the record is saved, from the UI or the API. Platform event flows need an event message.",
+      "wrong": [
+        "No platform event is published here. The orders are normal record saves.",
+        "",
+        "Nobody should have to start it by hand.",
+        "The email should go when each order is created."
+      ],
+      "source": "Flow Types"
+    },
+    {
+      "id": "logic-q104",
+      "lesson": "logic-5",
+      "difficulty": 2,
+      "q": "Which needs call for a screen flow? (Choose 2)",
+      "options": [
+        "Set a field on the record each time the record is saved",
+        "Close old tasks automatically every Sunday night at midnight",
+        "A rep picks a return reason from a list, then confirms",
+        "Site visitors fill in a guided form on an Experience Cloud page",
+        "React to an event message from an outside system"
+      ],
+      "answer": [
+        2,
+        3
+      ],
+      "explain": "A screen flow is for people: it shows screens and collects input. Background work uses other flow types.",
+      "wrong": [
+        "That runs in the background. Use a record-triggered flow.",
+        "That runs on a schedule. Use a schedule-triggered flow.",
+        "",
+        "",
+        "Use a platform event-triggered flow."
+      ],
+      "source": "Flow Types"
+    },
+    {
+      "id": "logic-q105",
+      "lesson": "logic-6",
+      "difficulty": 1,
+      "q": "In the Start element of a record-triggered flow, which choice makes it run before the record is saved?",
+      "options": [
+        "Actions and Related Records",
+        "An asynchronous path",
+        "Fast Field Updates",
+        "A scheduled path"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "Optimize the flow for Fast Field Updates to run before save. Actions and Related Records runs after save.",
+      "wrong": [
+        "This runs after the record is saved.",
+        "This runs in the background after the save.",
+        "",
+        "This runs later, after the save."
+      ],
+      "source": "Before-Save Record-Triggered Flows"
+    },
+    {
+      "id": "logic-q106",
+      "lesson": "logic-6",
+      "difficulty": 2,
+      "q": "An after-save flow on Lead uses Update Records to set a field on the same lead. Why is a before-save flow a better choice? (Choose 2)",
+      "options": [
+        "Only a before-save flow can send the lead owner an email",
+        "A before-save flow runs after the Apex after triggers",
+        "Only a before-save flow can update the lead's related tasks",
+        "The lead isn't saved to the database a second time",
+        "It skips another round of assignment rules and other automation"
+      ],
+      "answer": [
+        3,
+        4
+      ],
+      "explain": "A before-save flow changes the record before it is stored. This avoids a second save and the automation that comes with it.",
+      "wrong": [
+        "Before-save flows can't send emails.",
+        "Before-save flows run before the Apex before triggers.",
+        "Before-save flows can't change related records.",
+        "",
+        ""
+      ],
+      "source": "Before-Save Record-Triggered Flows"
+    },
+    {
+      "id": "logic-q107",
+      "lesson": "logic-6",
+      "difficulty": 2,
+      "q": "This flow should email the sales manager only when an opportunity's Amount goes up. Which condition should its Decision use?",
+      "code": "Start\nObject: Opportunity\nTrigger the flow when: A record is updated\nOptimize the flow for: Actions and Related Records",
+      "lang": "text",
+      "options": [
+        "`$Record.Amount > $Record__Prior.Amount`",
+        "`$Record__Prior.Amount > $Record.Amount`",
+        "`$Record.Amount <> $Record__Prior.Amount`",
+        "`$Record.Amount > 0`"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "`$Record__Prior` holds the values from before the update. Compare it with `$Record` to see which way a field changed.",
+      "wrong": [
+        "",
+        "This is true when the amount goes down.",
+        "This is also true when the amount goes down.",
+        "This is true for any positive amount, changed or not."
+      ],
+      "source": "Global Variables Resource"
+    },
+    {
+      "id": "logic-x59",
+      "lesson": "logic-6",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "Account has a formula field that shows the phone of a related contact. A record-triggered flow runs when an account is updated. A user changes that contact's phone. What happens?",
+      "options": [
+        "The flow runs once for the account",
+        "The flow runs after a 30-minute recalculation",
+        "The flow runs only if its condition uses the formula field",
+        "It doesn't run, though the account shows the new phone"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "A formula shows new values as they change, but nothing saves the account. Flows on the account don't run.",
+      "wrong": [
+        "The account isn't saved, so its flows don't start.",
+        "Formulas aren't stored and recalculated like roll-ups.",
+        "Entry conditions don't make an unsaved record start a flow.",
+        ""
+      ],
+      "source": "Record-Triggered Flow Considerations"
+    },
+    {
+      "id": "logic-x60",
+      "lesson": "logic-6",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "When an opportunity is Closed Won, Salesforce must send its details to an outside billing system. What should the admin build?",
+      "options": [
+        "A before-save flow that calls the billing action",
+        "An after-save flow with an asynchronous path",
+        "An after-save flow that makes the call on its main path",
+        "A validation rule that sends the data when the stage changes"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "Callouts can't run while a record saves. An asynchronous path runs after the save is committed, so it can call out.",
+      "wrong": [
+        "Before-save flows can only change the triggering record.",
+        "",
+        "Outside calls can't run while the record is still saving.",
+        "Validation rules only check data. They can't call other systems."
+      ],
+      "source": "Record-Triggered Flow Considerations"
+    },
+    {
+      "id": "logic-q108",
+      "lesson": "logic-6",
+      "difficulty": 2,
+      "q": "Two after-save flows on Case run when a case is created. Flow B must always run after Flow A. What should the admin do?",
+      "options": [
+        "Activate Flow A first, then activate Flow B",
+        "Make Flow B a before-save flow",
+        "Set the flows' Trigger Order values",
+        "Give Flow A more versions than Flow B"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "The Trigger Order value sets the run order of an object's flows with the same trigger. Flow Trigger Explorer lets you drag them into order.",
+      "wrong": [
+        "When you activated a flow doesn't set its run order.",
+        "Before-save flows run before after-save flows, so B would run first.",
+        "",
+        "Version counts don't affect run order."
+      ],
+      "source": "Manage Record-Triggered Flows"
+    },
+    {
+      "id": "logic-q109",
+      "lesson": "logic-7",
+      "difficulty": 1,
+      "q": "Which flow element shows information to a user and collects their input?",
+      "options": [
+        "Screen",
+        "Assignment",
+        "Decision",
+        "Get Records"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "The Screen element collects information from the user or shows it to them.",
+      "wrong": [
+        "",
+        "Assignment sets variable values in the background.",
+        "Decision picks a path. It shows nothing to the user.",
+        "Get Records reads data. It shows nothing to the user."
+      ],
+      "source": "Screen Element"
+    },
+    {
+      "id": "logic-q110",
+      "lesson": "logic-7",
+      "difficulty": 2,
+      "q": "On one flow screen, a Reason box should appear only when the user ticks \"Refund needed\" on that same screen. What should the admin use?",
+      "options": [
+        "A Decision element that leads to a second screen",
+        "A validation rule on the object",
+        "A formula field on the record",
+        "Set Component Visibility on the Reason box"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "Conditional visibility shows a screen component only when its conditions are met, right on the same screen.",
+      "wrong": [
+        "That works, but it adds a screen. The need is on the same screen.",
+        "Validation rules check saved data. They don't hide screen fields.",
+        "A formula field can't show or hide a screen component.",
+        ""
+      ],
+      "source": "Conditionally Show Screen Components"
+    },
+    {
+      "id": "logic-q111",
+      "lesson": "logic-7",
+      "difficulty": 2,
+      "q": "A custom button on Patient opens a screen flow with this URL. What does the `retURL` part do?",
+      "code": "/flow/Patient_Check_In?recordId={!Patient__c.Id}&retURL=/{!Patient__c.Id}",
+      "lang": "text",
+      "options": [
+        "Passes the patient's Id into the flow",
+        "Sends the user to the patient record after Finish",
+        "Restarts the flow at the first screen when it ends",
+        "Opens the flow in a new browser tab"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "By default, a finished screen flow goes back to its first screen. `retURL` sends the user to another page instead.",
+      "wrong": [
+        "The `recordId` part does that.",
+        "",
+        "That is what happens without `retURL`.",
+        "`retURL` sets where the user goes after Finish."
+      ],
+      "source": "Additional Options for Launching a Flow Using its URL"
+    },
+    {
+      "id": "logic-x61",
+      "lesson": "logic-7",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A screen flow on the Contact record page needs all the contact's field values, without a Get Records element. What must the flow have?",
+      "options": [
+        "A text variable named `recordId`, available for input",
+        "A Contact record variable named `contact`, available for output only",
+        "A Contact record variable named `recordId`, available for input",
+        "A text variable named `$Record`, available for input"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "On a record page, the Flow component can pass the whole record into a record variable named `recordId` that allows input.",
+      "wrong": [
+        "A text variable gets only the Id, not the field values.",
+        "The name must be `recordId`, and it must allow input.",
+        "",
+        "`$Record` is for triggered flows. Screen flows on a page use `recordId`."
+      ],
+      "source": "Embed a Screen Flow in a Lightning Page"
+    },
+    {
+      "id": "logic-x62",
+      "lesson": "logic-7",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A screen flow on the Account record page updates a field the rep's profile can't edit. The update fails. Why?",
+      "options": [
+        "It runs in user context, so the rep's field access applies",
+        "It runs in system context, and sharing rules block the update",
+        "Screen flows can't update records from a Lightning page",
+        "The rep needs the Manage Flow permission to update records"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "A flow on a Lightning page runs in user context by default. The rep's profile and permission sets decide what it can change.",
+      "wrong": [
+        "",
+        "Flows on a Lightning page don't run in system context by default.",
+        "They can, if the running user has access.",
+        "Manage Flow is for building flows, not for running them."
+      ],
+      "source": "Flow Run Context"
+    },
+    {
+      "id": "logic-q112",
+      "lesson": "logic-8",
+      "difficulty": 2,
+      "q": "A parent flow calls the Calc Region flow as a subflow. In the Subflow element, the admin can't set `postalCode`. Why?",
+      "code": "Flow: Calc Region (autolaunched)\nVariable: postalCode (Text)\n  Available for input: No\n  Available for output: No",
+      "lang": "text",
+      "options": [
+        "`postalCode` must be available for output",
+        "Subflows can only receive record variables",
+        "The parent flow must be a screen flow",
+        "`postalCode` isn't available for input"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "A parent can set only the variables that allow input. Tick Available for input on `postalCode`.",
+      "wrong": [
+        "Output lets the parent read values back. Input lets it send them.",
+        "Text variables can be passed too.",
+        "Any flow that supports Subflow can pass inputs.",
+        ""
+      ],
+      "source": "Subflow Element"
+    },
+    {
+      "id": "logic-q113",
+      "lesson": "logic-8",
+      "difficulty": 2,
+      "q": "Who is the running user of a schedule-triggered flow?",
+      "options": [
+        "The admin who activated the flow",
+        "The Default Workflow User",
+        "The owner of each record the flow processes",
+        "The last user who edited the flow"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "Schedule-triggered flows run as the Default Workflow User from Process Automation Settings.",
+      "wrong": [
+        "Activation doesn't make you the running user.",
+        "",
+        "One user runs every interview.",
+        "Editing the flow doesn't change the running user."
+      ],
+      "source": "Schedule-Triggered Flow Limits and Considerations"
+    },
+    {
+      "id": "logic-x63",
+      "lesson": "logic-8",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A record-triggered flow on Case should show the user a confirmation screen. The admin tries to call a screen flow as a subflow. What happens?",
+      "options": [
+        "It works once the screen flow version is activated",
+        "The screen shows to the user who saved the case",
+        "Not allowed: it can't call a screen flow",
+        "It works, but only in a sandbox"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "A record-triggered flow is an autolaunched flow. An autolaunched flow can't reference a screen flow.",
+      "wrong": [
+        "Activation doesn't help. The call isn't allowed.",
+        "Record-triggered flows run in the background and show no screens.",
+        "",
+        "The rule is the same in every org."
+      ],
+      "source": "Record-Triggered Flow Considerations"
+    },
+    {
+      "id": "logic-x64",
+      "lesson": "logic-8",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A screen flow calls a subflow whose flow has no active version. It works when the admin tests it. A sales rep runs it, and it fails. Why?",
+      "options": [
+        "Only flow admins can run inactive flows",
+        "Subflows always run the oldest version",
+        "Sales reps can't run any flow that has subflows",
+        "The subflow needs a `recordId` input to run"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "If the called flow has no active version, only flow admins can run it. For others, the flow fails. Activate the called flow.",
+      "wrong": [
+        "",
+        "With no active version, the latest version is used.",
+        "Users can run flows with subflows.",
+        "Inputs aren't the issue. The called flow isn't active."
+      ],
+      "source": "Subflow Element"
+    },
+    {
+      "id": "logic-x65",
+      "lesson": "logic-8",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "Which statements about schedule-triggered flows are true? (Choose 2)",
+      "options": [
+        "Their start time uses the org's default time zone",
+        "A custom button on a list view can also start them",
+        "Deleting one from Scheduled Jobs cancels its future runs",
+        "They run as the admin who last activated the flow",
+        "They can repeat every hour"
+      ],
+      "answer": [
+        0,
+        2
+      ],
+      "explain": "A schedule-triggered flow starts only on its schedule, set in the org's time zone. Deleting it from Scheduled Jobs cancels later runs.",
+      "wrong": [
+        "",
+        "They start only at their set time and frequency.",
+        "",
+        "They run as the Default Workflow User.",
+        "They run once, daily or weekly."
+      ],
+      "source": "Schedule-Triggered Flow Limits and Considerations"
+    },
+    {
+      "id": "logic-q114",
+      "lesson": "logic-9",
+      "difficulty": 2,
+      "q": "Who can recall an in-progress flow approval submission? (Choose 2)",
+      "options": [
+        "Any approver assigned to a later stage of the approval",
+        "The submitter, for a request they submitted",
+        "Any user who can view the record",
+        "Only the record owner's manager",
+        "A user with the Approval Admin permission"
+      ],
+      "answer": [
+        1,
+        4
+      ],
+      "explain": "A submitter can recall what they submitted. Anyone with the Approval Admin permission can recall any in-progress approval.",
+      "wrong": [
+        "Approvers act on their own work items. They can't recall.",
+        "",
+        "Viewing the record doesn't allow a recall.",
+        "Managers have no special recall right.",
+        ""
+      ],
+      "source": "Considerations for Migrating from Approval Processes"
+    },
+    {
+      "id": "logic-x66",
+      "lesson": "logic-9",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "An Autolaunched Flow Approval Process should go on only for requests over 10,000. Where should the admin put this check?",
+      "options": [
+        "Entry conditions in the Start element",
+        "A validation rule on the record",
+        "The Lock the record setting on the first approval step",
+        "Background steps in stage 1, then a Decision"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "Autolaunched flow approvals have no Start entry conditions. Check the request in the first stage, then use a Decision.",
+      "wrong": [
+        "Start entry conditions are for record-triggered flow approvals.",
+        "That blocks saves. It doesn't decide whether the approval goes on.",
+        "Locking stops edits. It doesn't check the amount.",
+        ""
+      ],
+      "source": "Considerations for Migrating from Approval Processes"
+    },
+    {
+      "id": "logic-x67",
+      "lesson": "logic-9",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "Approval steps run one after another. The admin selects Allow approver to edit the locked record. Who can now edit the record during review?",
+      "options": [
+        "Both the approver and the approver's delegate",
+        "Only the assigned approver, not their delegate",
+        "Nobody, because a locked record can't be edited",
+        "Only the submitter, after recalling the request"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "With Allow approver to edit the locked record, the assigned approver can change the record. Their delegate still can't.",
+      "wrong": [
+        "Only the assigned approver can edit, not a delegate.",
+        "",
+        "This setting lets the approver edit. Admins can edit locked records too.",
+        "The setting is about the approver, during review."
+      ],
+      "source": "Record Locking in Flow Approval Processes"
+    },
+    {
+      "id": "logic-x68",
+      "lesson": "logic-9",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "Two flow approval processes on Quote both lock the record. A user starts the second one while the first is still running. What happens?",
+      "options": [
+        "Both run, and the record stays locked until both finish",
+        "The first one is canceled so the second can start",
+        "The second fails: a record has only one lock at a time",
+        "The second one waits until the first one finishes"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "A record can have only one lock at a time. Trying to lock it again causes an error.",
+      "wrong": [
+        "A second lock on a locked record causes an error.",
+        "Nothing is canceled. The new lock just fails.",
+        "",
+        "Flow approvals don't queue up like this."
+      ],
+      "source": "Record Locking in Flow Approval Processes"
+    },
+    {
+      "id": "logic-q115",
+      "lesson": "logic-9",
+      "difficulty": 2,
+      "q": "A company replaces a classic approval process with an Autolaunched Flow Approval Process. How do users start it from the record page?",
+      "options": [
+        "A custom button that references it",
+        "The classic Submit for Approval button",
+        "Saving the record starts it by itself",
+        "A nightly schedule-triggered flow submits it"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "An autolaunched flow approval starts from a custom button or link that references it, or from Apex or the API.",
+      "wrong": [
+        "",
+        "That button belongs to classic approval processes.",
+        "That is how record-triggered flow approvals work.",
+        "No schedule is needed. A button starts it."
+      ],
+      "source": "Considerations for Migrating from Approval Processes"
+    },
+    {
+      "id": "logic-q116",
+      "lesson": "logic-10",
+      "difficulty": 1,
+      "q": "An admin must stop a record-triggered flow for now but keep it for later. What should they do?",
+      "options": [
+        "Delete the flow",
+        "Remove the Run Flows permission from all users",
+        "Delete the flow's fault paths",
+        "Deactivate the flow's active version"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "A deactivated flow stays saved but doesn't run. Activate a version again to turn it back on.",
+      "wrong": [
+        "Deleting it loses the flow. They want to keep it.",
+        "Record-triggered flows don't depend on Run Flows.",
+        "The flow would still run, with worse error handling.",
+        ""
+      ],
+      "source": "Manage Record-Triggered Flows"
+    },
+    {
+      "id": "logic-q117",
+      "lesson": "logic-10",
+      "difficulty": 2,
+      "q": "A fault path sends the admin an email. Which resource in the email body shows what went wrong?",
+      "options": [
+        "`{!$Flow.CurrentDateTime}`",
+        "`{!$Flow.FaultMessage}`",
+        "`{!$Record.Id}`",
+        "`{!$User.Email}`"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "`$Flow.FaultMessage` holds the error message. Add the values of other resources too, to see why the flow failed.",
+      "wrong": [
+        "This shows the current date and time, not the error.",
+        "",
+        "This shows the record's Id, not the error.",
+        "This shows the running user's email, not the error."
+      ],
+      "source": "Configure Every Fault Path to Send You an Email"
+    },
+    {
+      "id": "logic-x69",
+      "lesson": "logic-10",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "In this screen flow, the Contact save fails. Its fault path shows an error screen. What happens to the account created just before?",
+      "code": "Screen: New customer\nCreate Records: Account (works)\nCreate Records: Contact (fails)\n  Fault path → Screen: \"Something went wrong\"",
+      "lang": "text",
+      "options": [
+        "It's rolled back, because any fault path undoes the screen's work",
+        "It's rolled back, because a screen flow always undoes everything on failure",
+        "It stays saved, because the fault path has no Roll Back Records element",
+        "It's deleted when the user closes the error screen"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "With a fault path, a screen flow rolls back only when the path has a Roll Back Records element.",
+      "wrong": [
+        "With a fault path, a screen flow rolls back only if the path says so.",
+        "That happens only when there is no fault path.",
+        "",
+        "Closing a screen doesn't delete records."
+      ],
+      "source": "Default Flow Error Handling"
+    },
+    {
+      "id": "logic-x70",
+      "lesson": "logic-10",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "This after-save flow on Case has no fault path. A validation rule on Account blocks its update. What does the user who saves the case see?",
+      "code": "Flow: Case Closed (Record-Triggered, after save)\nUpdate Records: parent Account\n  (no fault path)",
+      "lang": "text",
+      "options": [
+        "The validation rule's error; the case isn't saved",
+        "Nothing: the case saves and the account is skipped",
+        "The case saves, and an email tells the user what failed",
+        "A screen that asks the user to fix the account"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "With no fault path, the save is rolled back. When a validation rule caused the error, the user sees that rule's message.",
+      "wrong": [
+        "",
+        "With no fault path, the whole change is blocked.",
+        "The save is blocked. The fault email goes to the admin.",
+        "Record-triggered flows show no screens."
+      ],
+      "source": "Default Flow Error Handling"
+    },
+    {
+      "id": "logic-q118",
+      "lesson": "logic-10",
+      "difficulty": 2,
+      "q": "A manager wants to know who runs a screen flow and how long people spend on each screen. What should the admin use?",
+      "options": [
+        "The Setup Audit Trail for flow changes",
+        "The Scheduled Jobs page in Setup",
+        "Debug in Flow Builder",
+        "The Sample Flow Report: Screen Flow"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "The Sample Flow Report: Screen Flow shows who runs screen flows, run counts, time on screens and interview status.",
+      "wrong": [
+        "It tracks Setup changes, not flow runs.",
+        "It lists scheduled work, not screen flow runs.",
+        "Debug tests one run. It doesn't report on real users.",
+        ""
+      ],
+      "source": "Managing and Monitoring Flows"
+    },
+    {
+      "id": "logic-q119",
+      "lesson": "logic-11",
+      "difficulty": 1,
+      "q": "In Agentforce, what are an agent's actions?",
+      "options": [
+        "The rules that decide who can see records",
+        "The tools an agent uses to get work done",
+        "The reports an agent shows to managers",
+        "The log of every change the agent made"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "Actions are how agents get things done. Examples are running a flow or drafting an email.",
+      "wrong": [
+        "That is sharing, not agent actions.",
+        "",
+        "Actions do work. They aren't reports.",
+        "That is an audit trail, not actions."
+      ],
+      "source": "Agent Actions"
+    },
+    {
+      "id": "logic-q120",
+      "lesson": "logic-11",
+      "difficulty": 2,
+      "q": "A customer writes to an agent. How does the agent choose which topic should handle the request?",
+      "options": [
+        "It tries the topics one by one in alphabetical order",
+        "It asks an admin to pick the right topic for each new request",
+        "It matches the request to each topic's name and description",
+        "It uses whichever topic has the most actions in it"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "The agent compares the request and recent conversation with each topic's name and description, then picks the best match. Topics are now also called subagents.",
+      "wrong": [
+        "Order doesn't decide. The best match wins.",
+        "The agent chooses by itself.",
+        "",
+        "The number of actions doesn't matter."
+      ],
+      "source": "Subagents in the Legacy Builder"
+    },
+    {
+      "id": "logic-x71",
+      "lesson": "logic-11",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "An agent has two topics, \"Help\" and \"Billing\". Billing questions often go to Help. Which two changes help most? (Choose 2)",
+      "options": [
+        "Give both topics the same classification description",
+        "Use technical terms in the topic names",
+        "Use names that describe each job in plain words",
+        "Remove all actions from the Help topic",
+        "List the requests and words customers use in each classification description"
+      ],
+      "answer": [
+        2,
+        4
+      ],
+      "explain": "The agent matches requests to topic names and descriptions. Specific, plain, distinct ones lead to better matches.",
+      "wrong": [
+        "Topics should be distinct, not overlapping.",
+        "Plain words customers use match better.",
+        "",
+        "Actions don't decide which topic is picked.",
+        ""
+      ],
+      "source": "Subagents in the Legacy Builder"
+    },
+    {
+      "id": "logic-q121",
+      "lesson": "logic-11",
+      "difficulty": 2,
+      "q": "An agent action needs logic that only code can do. What makes an Apex method show up as an action in Agentforce Builder?",
+      "options": [
+        "`@InvocableMethod`",
+        "`@AuraEnabled(cacheable=true)`",
+        "`@future`",
+        "`@TestVisible`"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "Annotate the Apex method with `@InvocableMethod`. It then becomes available as a custom agent action.",
+      "wrong": [
+        "",
+        "That exposes Apex to Lightning components, not agents.",
+        "That runs Apex later. It doesn't make an action.",
+        "That is for tests only."
+      ],
+      "source": "Create Custom Actions Using Apex Invocable Method"
+    },
+    {
+      "id": "logic-q122",
+      "lesson": "logic-11",
+      "difficulty": 2,
+      "q": "A new admin finds a long validation formula that nobody understands. How can Setup with Agentforce help?",
+      "options": [
+        "It can't help with formulas, only with menus",
+        "It turns the rule off for everyone without asking",
+        "It rewrites the formula and saves it without asking",
+        "It can explain the formula and help change it"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "Setup with Agentforce can create, modify and explain formulas. It makes changes only after you approve them.",
+      "wrong": [
+        "It can create, change and explain formulas.",
+        "It acts only after you approve.",
+        "It acts only after you approve.",
+        ""
+      ],
+      "source": "Trailhead: Setup with Agentforce for Admins"
+    },
+    {
+      "id": "logic-q123",
+      "lesson": "logic-11",
+      "difficulty": 2,
+      "q": "Sales reps want AI-written follow-up emails that use each contact's and opportunity's data. The admin wants to build it once and reuse it. What fits?",
+      "options": [
+        "A text template in a screen flow",
+        "A prompt template built in Prompt Builder",
+        "A formula field on Opportunity",
+        "A validation rule with a long error message"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "Prompt Builder makes reusable prompt templates. They add CRM data to the prompt for AI features and agents.",
+      "wrong": [
+        "A text template fills in fields. It doesn't use AI.",
+        "",
+        "A formula calculates values. It doesn't write emails.",
+        "Validation rules check data. They don't write emails."
+      ],
+      "source": "Prompt Builder"
     }
   ]
 }
