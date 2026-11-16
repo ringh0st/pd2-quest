@@ -1,4 +1,5 @@
 import { readFileSync } from 'node:fs';
+import { termMatcher, firstMentions } from '../src/lib/terms.js';
 // Validates section content files (all of them when no path is given). Exits 1 on any error.
 const files = process.argv.slice(2).length ? process.argv.slice(2) : ['fund', 'auto', 'ui', 'test', 'perf'].map((id) => `src/data/${id}.json`);
 let failed = false;
@@ -12,6 +13,20 @@ for (const l of d.lessons) {
   if (l.cards.length < 4 || l.cards.length > 9) err.push(l.id + ' cards ' + l.cards.length);
   if (l.check.length < 2 || l.check.length > 3) err.push(l.id + ' check count');
   for (const c of l.check) { if (!qids.has(c)) err.push('missing check ' + c); else if (d.questions.find(q=>q.id===c).lesson!==l.id) err.push('check lesson mismatch '+c); }
+  if (l.terms) {
+    // key terms: well formed, short and simple, unique, and each one really shows up (highlighted) on a card
+    const seenT = new Set();
+    for (const t of l.terms) {
+      if (typeof t.term !== 'string' || !t.term || typeof t.say !== 'string' || !t.say) { err.push(`${l.id} bad term ${JSON.stringify(t).slice(0, 40)}`); continue; }
+      if (t.match && !Array.isArray(t.match)) err.push(`${l.id} term match not a list: ${t.term}`);
+      for (const m of [t.term, ...(t.match ?? [])]) { if (seenT.has(m.toLowerCase())) err.push(`${l.id} term listed twice: ${m}`); seenT.add(m.toLowerCase()); }
+      const words = t.say.split(/\s+/).length; if (words > 45) err.push(`${l.id} term "${t.term}" meaning ${words} words (max 45)`);
+    }
+    const matcher = termMatcher(l.terms);
+    const texts = l.cards.flatMap((c) => [c.body, ...(c.items ?? [])]);
+    const hit = new Set(); texts.forEach((t) => firstMentions([t], matcher).forEach((_, k) => hit.add(k)));
+    l.terms.forEach((t, k) => { if (!hit.has(k)) err.push(`${l.id} term never appears in the cards: ${t.term}`); });
+  }
   for (const c of l.cards) { const w = ((c.body||'')+' '+(c.items||[]).join(' ')).split(/\s+/).length; if (w > 65) err.push(`${l.id} card words ${w}: ${(c.title||c.body).slice(0,30)}`); }
 }
 const diff = {1:0,2:0,3:0}, pos=[0,0,0,0,0]; let multi=0;
