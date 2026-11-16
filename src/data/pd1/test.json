@@ -370,7 +370,7 @@
         {
           "type": "text",
           "title": "Run as another user",
-          "body": "`System.runAs(user)` runs a block as that user. Their **sharing** and object and field permissions apply. It works only in tests. It also lets one test create a `User` and an Account without a mixed DML error."
+          "body": "`System.runAs(user)` runs a block as that user. Their **record sharing** applies. Their object and field permissions count only where the code checks them, like user mode. It works only in tests. It also lets one test create a `User` and an Account without a mixed DML error."
         },
         {
           "type": "trap",
@@ -433,7 +433,7 @@
             "System.runAs",
             "runAs"
           ],
-          "say": "Runs part of a test as a different user, with that user's sharing and permissions."
+          "say": "Runs part of a test as a different user. Their record sharing applies. Their object and field permissions count only where the code checks them."
         }
       ]
     },
@@ -1045,7 +1045,7 @@
     {
       "id": "test-f14",
       "front": "What does `System.runAs` do in a test?",
-      "back": "Runs a block as another user, with that user's sharing and permissions. It works only in tests and avoids mixed DML errors."
+      "back": "Runs a block as another user, with that user's record sharing. Object and field permissions count only where the code checks them. Works only in tests; avoids mixed DML errors."
     },
     {
       "id": "test-f15",
