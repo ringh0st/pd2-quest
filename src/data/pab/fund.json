@@ -39,7 +39,7 @@
         {
           "type": "text",
           "title": "Fast field updates",
-          "body": "A **before-save flow** runs before the record is saved. It updates that same record about **10 times faster** than the old Process Builder tool did. It can use only Assignment, Decision, Get Records and Loop. To change other records, send an email or read the new record's Id, use an **after-save flow**."
+          "body": "A **before-save flow** runs before the record is saved. It updates that same record about **10 times faster** than the old Process Builder tool did. It can use only Assignment, Decision, Get Records and Loop, plus Custom Error. To change other records, send an email or read the new record's Id, use an **after-save flow**."
         },
         {
           "type": "code",
@@ -1188,7 +1188,7 @@
       "answer": [
         2
       ],
-      "explain": "Before-save flows support only Assignment, Decision, Get Records and Loop. Creating a task is another record, so it needs an after-save flow.",
+      "explain": "Before-save flows support only Assignment, Decision, Get Records and Loop, plus Custom Error. Creating a task is another record, so it needs an after-save flow.",
       "wrong": [
         "Get Records is supported before save.",
         "Decision is supported before save.",
