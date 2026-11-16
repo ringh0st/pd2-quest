@@ -2830,7 +2830,7 @@
         1,
         3
       ],
-      "explain": "A before-save flow supports only Assignment, Decision, Get Records and Loop. Anything else needs an after-save flow.",
+      "explain": "A before-save flow supports only Assignment, Decision, Get Records and Loop, plus Custom Error. Anything else needs an after-save flow.",
       "wrong": [
         "Creating records needs an after-save flow.",
         "",
@@ -3009,7 +3009,7 @@
         "",
         "Production orgs can be picked. Test in a sandbox first, though.",
         "Trial options don't control which orgs the picker shows.",
-        "Any user with the right permissions can install. The role name doesn't matter."
+        "Any user with the right permissions can install. The profile name doesn't matter."
       ],
       "source": "Trailhead: Install AgentExchange Packages"
     },
@@ -3249,13 +3249,13 @@
         0,
         2
       ],
-      "explain": "Criteria can use fields like checkbox, picklist, text, number and date. Formula fields, encrypted fields and lookups other than to a user or queue can't be used.",
+      "explain": "Criteria can use fields like checkbox, picklist, text, number and date. Formula fields, encrypted fields and lookups to records like accounts can't be used.",
       "wrong": [
         "",
         "Formula fields can't be used in criteria-based sharing rules.",
         "",
         "Encrypted fields can't be used in criteria-based sharing rules.",
-        "Lookups are supported only to a user or a queue."
+        "A lookup to a record like an account can't be used in the criteria."
       ],
       "source": "Salesforce Help: Sharing Rule Considerations"
     },
@@ -3477,7 +3477,7 @@
       "id": "fund-q69",
       "lesson": "fund-8",
       "difficulty": 1,
-      "q": "A dashboard needs to show one key number, like total bookings this month. Which widget fits?",
+      "q": "A support dashboard must show one number on its own: how many cases are open right now. There's no target to compare it to. Which widget fits?",
       "options": [
         "Table",
         "Gauge",
@@ -3490,7 +3490,7 @@
       "explain": "A metric widget shows one key value. A gauge also shows one value, but within a range you set.",
       "wrong": [
         "A table shows report data in columns.",
-        "A gauge places a value within a range, like progress toward a goal.",
+        "A gauge places a value within a range. There's no range here.",
         "A donut chart shows how parts make up a whole.",
         ""
       ],
@@ -3551,25 +3551,27 @@
       "lesson": "fund-8",
       "difficulty": 3,
       "pack": "hard",
-      "q": "Which two statements about dynamic dashboards are true? (Choose 2)",
+      "q": "Quarry Lane's sales director plans one dashboard for 40 reps. Each rep must see only their own numbers. Which two parts of the plan will work? (Choose 2)",
+      "code": "Part 1: save it in the director's private folder\nPart 2: View Dashboard As: the dashboard viewer\nPart 3: reps subscribe for a Monday email\nPart 4: add a dashboard filter on Product\nPart 5: schedule a refresh for 6 AM daily",
+      "lang": "text",
       "options": [
-        "You can schedule them to refresh every morning",
-        "You can add filters to them",
-        "Users can subscribe to them for email updates",
-        "You need Manage Dynamic Dashboards to create them",
-        "You can save them in a private folder"
+        "Part 1",
+        "Part 2",
+        "Part 3",
+        "Part 4",
+        "Part 5"
       ],
       "answer": [
         1,
         3
       ],
-      "explain": "Dynamic dashboards can have filters, and creating them needs Manage Dynamic Dashboards. They can't be scheduled, subscribed to or kept in a private folder.",
+      "explain": "Running as the viewer makes the dashboard dynamic, and dynamic dashboards can use filters. They can't be subscribed to, scheduled or saved in a private folder.",
       "wrong": [
-        "Dynamic dashboards must be refreshed by hand.",
+        "Dynamic dashboards can't be saved in a private folder.",
         "",
         "You can't subscribe to a dynamic dashboard.",
         "",
-        "Dynamic dashboards can't be saved in a private folder."
+        "Dynamic dashboards can't have scheduled refreshes."
       ],
       "source": "Salesforce Help: Dynamic Dashboards"
     }
