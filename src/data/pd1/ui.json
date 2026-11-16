@@ -4029,7 +4029,7 @@
         "DML ignores sharing only in `without sharing` code.",
         ""
       ],
-      "source": "Apex Developer Guide: Enforcing Sharing Rules",
+      "source": "Apex Developer Guide: Enforce Sharing Rules",
       "pack": "hard"
     },
     {
@@ -4111,7 +4111,7 @@
       "id": "ui-x43",
       "lesson": "ui-4",
       "difficulty": 3,
-      "q": "The org has 15,000 leads. What happens when a page using this controller loads?",
+      "q": "The org has 15,000 leads, and the running user can see all of them. What happens when a page using this controller loads?",
       "code": "public class BigListCtrl {\n  public ApexPages.StandardSetController setCon { get; set; }\n\n  public BigListCtrl() {\n    setCon = new ApexPages.StandardSetController(\n      Database.getQueryLocator([SELECT Id, Name FROM Lead]));\n    setCon.setPageSize(50);\n  }\n}",
       "lang": "apex",
       "options": [
@@ -4270,7 +4270,7 @@
       "answer": [
         1
       ],
-      "explain": "`stopPropagation()` stops the event from moving further up the DOM. `preventDefault()` only cancels a default action, and the event keeps going.",
+      "explain": "LWC events follow the normal DOM rules. `stopPropagation()` stops the event from moving further up. `preventDefault()` only cancels a default action, and the event keeps going.",
       "wrong": [
         "It cancels a default action. The event still travels on.",
         "",
@@ -4629,7 +4629,7 @@
         "The property must be named `recordId` to be filled in.",
         "On record pages it's normally ready in `connectedCallback()`. Quick actions are the exception."
       ],
-      "source": "LWC Developer Guide: Create Headless Quick Actions",
+      "source": "LWC Developer Guide: Create Screen Quick Actions",
       "pack": "hard"
     },
     {
@@ -4745,10 +4745,10 @@
       "wrong": [
         "Email templates aren't one of the custom action types.",
         "Sending isn't wanted, and Apex doesn't write the friendly text by itself.",
-        "A record-triggered flow runs when records are saved. An agent can't call it as an action.",
+        "It starts only when a record is saved, and nothing is saved here. It also writes no text.",
         ""
       ],
-      "source": "Agentforce Developer Guide: Create Custom Actions Using Apex InvocableMethod"
+      "source": "Agentforce Developer Guide: Create Custom Actions Using Apex Invocable Method"
     },
     {
       "id": "ui-q97",
@@ -4823,7 +4823,7 @@
       "wrong": [
         "",
         "Static variables can't be invocable variables.",
-        "Public works. `global` matters only outside a managed package.",
+        "`public` works here. `global` matters only when a managed package shares the class.",
         "`required` is a supported modifier for inputs."
       ],
       "source": "Apex Developer Guide: InvocableVariable Annotation",
