@@ -573,7 +573,7 @@
         {
           "type": "text",
           "title": "In plain words",
-          "body": "A **quick action** opens a small form so users can do one task fast: create a record, update this record, log a call or send an email. There are two kinds: **global actions** work anywhere, and **object-specific actions** work on one object's records."
+          "body": "A **quick action** opens a small form for one fast task. It can create a record, update this record, log a call or send an email. There are two kinds: **global actions** work anywhere, and **object-specific actions** work on one object's records."
         },
         {
           "type": "tip",
@@ -905,7 +905,7 @@
     {
       "id": "ui-f6",
       "front": "What does a compact layout control?",
-      "back": "The key fields at the top of a record: up to the first 7 in the Lightning Experience highlights panel, up to 10 in the mobile highlights."
+      "back": "The key fields at the top of a record. Lightning Experience shows up to the first 7. The mobile highlights show up to 10."
     },
     {
       "id": "ui-f7",
@@ -1147,7 +1147,7 @@
       "lang": "text",
       "options": [
         "Also remove the Opportunities tab from every other app contractors can open",
-        "Remove Read access to Opportunity from the Contractor profile and their permission sets",
+        "Remove Read on Opportunity from their profile and permission sets",
         "Set the Opportunities tab to Tab Hidden so search skips the object",
         "Create a second Sales app without opportunities and assign it to contractors"
       ],
@@ -1220,8 +1220,8 @@
       "options": [
         "Two page layouts assigned to the same profile",
         "A dependent picklist that filters Stage by deal type",
-        "Two opportunity record types, each with its own sales process and page layout",
-        "A validation rule that blocks the wrong Stage for each deal type"
+        "Two record types, each with its own sales process and layout",
+        "A validation rule that blocks the wrong Stage value for each type of deal"
       ],
       "answer": [
         2
@@ -1266,7 +1266,7 @@
       "code": "Primary compact layout: Property__c\n  1 Name          6 Agent\n  2 Address       7 List Date\n  3 Price         8 Open House\n  4 Status        9 Lockbox Code\n  5 Bedrooms",
       "lang": "text",
       "options": [
-        "Lightning Experience shows up to the first 7 compact layout fields in the highlights panel",
+        "Lightning Experience highlights show up to the first 7 fields",
         "The compact layout needs a record type before all fields show on desktop",
         "Desktop highlights panels show only fields that are also on the page layout",
         "Field-level security hides the extra fields from desktop users"
@@ -1292,7 +1292,7 @@
         "Remove the field from every page layout that support agents use",
         "Hide the field with a visibility rule on the claim record page",
         "Move the field into a collapsed section at the bottom of the layout",
-        "Remove read access to the field with field-level security for support users"
+        "Remove read access with field-level security"
       ],
       "answer": [
         3
@@ -1463,7 +1463,7 @@
       "options": [
         "Set each page as the org default for its profile",
         "Assign each page in the profile's page layout settings",
-        "Assign each page by app, record type and profile in Lightning App Builder",
+        "Assign them by app, record type and profile",
         "Set each page as the app default for the Sales app"
       ],
       "answer": [
@@ -1507,7 +1507,7 @@
       "difficulty": 2,
       "q": "Field technicians at Brightline should get a simpler work order record page on phones, while desktop users keep the full page. What should the app builder use?",
       "options": [
-        "A Lightning record page assigned for the phone form factor",
+        "A Lightning record page assigned to phones",
         "A separate page layout assigned to a mobile profile",
         "A compact layout with fewer fields",
         "A second record type for mobile work orders"
@@ -1585,7 +1585,7 @@
       "q": "An app builder wants to add the object-specific action Update Status to a Lightning App page for the warehouse team. What happens?",
       "options": [
         "It works once the action is added to the page layout",
-        "It can't be done, because App pages support only global actions",
+        "It can't: App pages support only global actions",
         "It works if the page is activated for the phone form factor",
         "It works after Dynamic Forms is turned on for the page"
       ],
@@ -1608,7 +1608,7 @@
       "q": "Mobile users at Sunpath ask for a custom Lightning Home page in the Salesforce mobile app, like the one desktop users have. What should the app builder tell them?",
       "options": [
         "Activate the Home page for the phone form factor in Lightning App Builder",
-        "Home pages are for Lightning Experience only; build an App page and add it to mobile navigation",
+        "Home pages are desktop only; use an App page in mobile navigation",
         "Assign the Home page to the mobile app by profile",
         "Copy the Home page into a record page for the User object"
       ],
@@ -1633,7 +1633,7 @@
         "A record type for cancelled orders",
         "A validation rule on the Status field",
         "A separate page layout section for cancellations",
-        "Dynamic Forms with a visibility rule on the field"
+        "Dynamic Forms with a field visibility rule"
       ],
       "answer": [
         3
@@ -1680,7 +1680,7 @@
       "options": [
         "One record type per region, each with its own page layout",
         "One compact layout per region",
-        "One Dynamic Forms page with visibility rules on the regional fields",
+        "One Dynamic Forms page with visibility rules",
         "One permission set per region that hides the extra fields"
       ],
       "answer": [
@@ -1729,7 +1729,7 @@
       "options": [
         "Reports ignore visibility rules unless the report is in a public folder",
         "The rule needs the device filter set to desktop",
-        "Visibility rules only control the page; field-level security still grants access",
+        "Visibility rules don't change field-level security",
         "The field must also be removed from the compact layout"
       ],
       "answer": [
@@ -1853,7 +1853,7 @@
         "Turn on Dynamic Forms on Mobile in Salesforce Mobile App setup",
         "Switch the page to a custom template that supports Dynamic Forms",
         "Create a record type so the Fields tab appears",
-        "Manage the event fields in the page layout, since Events don't support Dynamic Forms"
+        "Manage event fields in the page layout instead"
       ],
       "answer": [
         3
@@ -1897,7 +1897,7 @@
       "q": "Managers at Oakmont want to tick several leads in a list view and send them all to a review page at once. Which custom button setup fits?",
       "options": [
         "A Detail Page Button on the lead page layout",
-        "A Detail Page Link in the Custom Links section",
+        "A Detail Page Link in the lead layout's Custom Links section",
         "A List Button with Display Checkboxes selected",
         "A List Button with Display Checkboxes cleared"
       ],
@@ -2190,7 +2190,7 @@
       "code": "Invoice__c (master)\n  Invoice_Line__c (detail)\n    Invoice__c: Master-Detail(Invoice__c)\n\nNew global action > Create a Record > Target object:\n  Invoice_Line__c  (not in the list)",
       "lang": "text",
       "options": [
-        "Create an object-specific Create a Record action on Invoice__c",
+        "An object-specific Create action on Invoice__c",
         "Use a global Log a Call action that mentions the invoice line",
         "Add the global action to the global publisher layout first",
         "Grant users Create on Invoice_Line__c through a permission set"
@@ -2385,7 +2385,7 @@
       "difficulty": 1,
       "q": "Rosewood Energy wants a record page widget that shows live meter readings from an outside system and lets users pick a date range. No standard component or AgentExchange app does this. What is the right approach?",
       "options": [
-        "Use a Report Chart component with a date filter",
+        "Use a Report Chart component with a date range filter on it",
         "Use Dynamic Forms with visibility rules on date fields",
         "Have a developer build a custom Lightning web component",
         "Use a Rich Text component with a link to the system"
@@ -2460,7 +2460,7 @@
       "q": "Admins want to type a different heading for the same custom component on each Lightning page, without asking the developer each time. What should the developer add?",
       "options": [
         "A visibility rule that picks a heading for each page",
-        "A design property in the component's config file for admins to fill in",
+        "A design property admins set in App Builder",
         "A separate copy of the component for each page",
         "A custom label that admins edit in the page layout"
       ],
@@ -2483,20 +2483,20 @@
       "pack": "hard",
       "q": "A developer must make an older Aura component available on any type of Lightning page in App Builder. Which interface should the component implement?",
       "options": [
-        "`force:appHostable`",
+        "`flexipage:availableForRecordHome`",
         "`flexipage:availableForAllPageTypes`",
         "`force:lightningQuickAction`",
-        "`lightning:isUrlAddressable`"
+        "`forceCommunity:availableForAllPageTypes`"
       ],
       "answer": [
         1
       ],
       "explain": "Aura components implement `flexipage:availableForAllPageTypes` to be used on any Lightning page in App Builder.",
       "wrong": [
-        "That interface lets a component be used as a Lightning component tab.",
+        "That interface covers record pages only, not every page type.",
         "",
         "That interface makes the component a quick action.",
-        "That interface lets the component open from a URL."
+        "That interface is for Experience Builder sites, not Lightning App Builder."
       ],
       "source": "Custom Lightning Page Components"
     },
@@ -2555,7 +2555,7 @@
       "difficulty": 2,
       "q": "Sales reps want a phone screen with their open tasks, a pipeline chart and their recent records. What should the app builder do?",
       "options": [
-        "Build an App page with standard components, activate it and add it to mobile navigation",
+        "Activate an App page and add it to mobile navigation",
         "Build a Home page and activate it for the phone form factor",
         "Add the components to the opportunity compact layout",
         "Create a global action that opens a Visualforce page"
@@ -2580,7 +2580,7 @@
       "options": [
         "A page layout that removes the chart for mobile users",
         "A separate record type for mobile opportunities",
-        "A visibility rule on the chart that filters by device form factor",
+        "A device visibility rule on the chart",
         "A compact layout without the chart"
       ],
       "answer": [
@@ -2605,7 +2605,7 @@
       "options": [
         "In the account compact layout",
         "In the mobile navigation menu",
-        "In the page layout's Salesforce Mobile and Lightning Experience Actions section",
+        "In the Mobile and Lightning Experience Actions section",
         "In the Quick Actions in the Salesforce Classic Publisher section"
       ],
       "answer": [
@@ -2629,7 +2629,7 @@
       "options": [
         "Recreate it as a URL detail page button on the page layout",
         "Set the custom link to open in a new window",
-        "Add the custom link to the mobile navigation menu",
+        "Add the custom link as an item in the mobile navigation menu",
         "Add the custom link to the account compact layout"
       ],
       "answer": [
@@ -2654,7 +2654,7 @@
         "Recreate the rules in the page layout for mobile users",
         "Assign the page again for the phone form factor",
         "Move the fields into the compact layout",
-        "Enable Dynamic Forms on Mobile in Salesforce Mobile App setup"
+        "Enable Dynamic Forms on Mobile"
       ],
       "answer": [
         3
@@ -2676,7 +2676,7 @@
       "q": "Dynamic actions work for mobile users on a custom object's record page. On the Account record page they don't show on mobile. What is missing?",
       "options": [
         "Add the actions to the global publisher layout",
-        "Enable Dynamic Actions on Mobile in the Salesforce Mobile App setup",
+        "Enable Dynamic Actions on Mobile",
         "Rebuild the actions as custom buttons",
         "Assign the Account page to the phone form factor only"
       ],
