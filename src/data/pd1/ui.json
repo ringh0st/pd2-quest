@@ -239,7 +239,7 @@
           "title": "User mode checks all three",
           "lang": "apex",
           "code": "List<Account> accs =\n  [SELECT Name, Rating FROM Account WITH USER_MODE];\ninsert as user newAcc;",
-          "body": "**User mode** checks CRUD, FLS and sharing. If the user lacks access, it throws an error."
+          "body": "**User mode** checks CRUD, FLS and sharing. A missing object or field permission throws an error. Records the user can't see are simply left out."
         },
         {
           "type": "code",
@@ -1378,7 +1378,7 @@
       "id": "ui-q12",
       "lesson": "ui-2",
       "difficulty": 2,
-      "q": "A query must stay dynamic. Which version safely uses the user-typed `name` inside the quoted value?",
+      "q": "A query must stay dynamic. Which version still matches the user-typed `name` exactly, and safely?",
       "options": [
         "`'... WHERE Name = \\'' + String.escapeHtml4(name) + '\\''`",
         "`'... WHERE Name = \\'' + name.normalizeSpace() + '\\''`",
@@ -2716,7 +2716,7 @@
       "lesson": "ui-1",
       "difficulty": 3,
       "pack": "hard",
-      "q": "Users edit a rich `Bio__c` field on their contact record. A partner portal page shows it like this. A developer says it's safe because the data lives in the org. What should the reviewer ask for?",
+      "q": "Users type a plain-text `Bio__c` field on their contact record. A partner portal page shows it like this. A developer says it's safe because the data lives in the org. What should the reviewer ask for?",
       "code": "<apex:page controller=\"BioCtrl\">\n  <apex:outputText value=\"{!bio}\" escape=\"false\"/>\n</apex:page>",
       "lang": "html",
       "options": [
@@ -3088,7 +3088,7 @@
       "lesson": "ui-4",
       "difficulty": 3,
       "pack": "hard",
-      "q": "A custom controller saved at API 64.0 has no sharing keyword and queries `Salary__c`. The page must respect record sharing and field security. Which two changes are needed? (Choose 2)",
+      "q": "A custom controller saved at API 64.0 has no sharing keyword and queries `Salary__c`. All of its code must respect record sharing, and this query must also respect field security. Which two changes do that? (Choose 2)",
       "options": [
         "Add `escape=\"false\"` to the outputs",
         "Declare the class `with sharing`",
@@ -3100,7 +3100,7 @@
         1,
         2
       ],
-      "explain": "At this API version, custom controller code runs in system mode. `with sharing` restores record access rules, and `WITH USER_MODE` adds the CRUD and FLS checks.",
+      "explain": "At this API version, custom controller code runs in system mode. `with sharing` makes all the class's code respect record access, and `WITH USER_MODE` makes this query check CRUD and FLS too.",
       "wrong": [
         "This turns off XSS protection and has nothing to do with access.",
         "",
@@ -3226,7 +3226,7 @@
       "options": [
         "Grandparent components can never listen for custom events at all",
         "Event names must start with `on`, so it should be `onrowclick`",
-        "`bubbles` and `composed` default to `false`, so it stops at `c-table`",
+        "`bubbles` and `composed` default to `false`, so it stays inside `c-table`",
         "The event needs a `detail` value or it won't be delivered at all"
       ],
       "answer": [
@@ -3559,7 +3559,7 @@
       "lesson": "ui-9",
       "difficulty": 3,
       "pack": "hard",
-      "q": "An agent sends 3 requests and the second one has an unknown order. What is wrong with this code?",
+      "q": "The action gets 3 requests in one call, and the second has an unknown order. What is wrong with this code?",
       "code": "for (Request r : reqs) {\n  List<Order> found = [SELECT Status FROM Order\n                       WHERE OrderNumber = :r.orderNo];\n  if (found.isEmpty()) continue;\n  results.add(new Result(found[0].Status));\n}\nreturn results;",
       "lang": "apex",
       "options": [

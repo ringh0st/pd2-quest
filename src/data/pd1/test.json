@@ -336,7 +336,7 @@
         {
           "type": "text",
           "title": "In plain words",
-          "body": "You can't call a trigger or a flow by name from a test. You make them run the way users do: by saving records. Controllers are plain classes, so tests create them and call their methods. Then you check the results."
+          "body": "You can't call a trigger or a record-triggered flow from a test. You make them run the way users do: by saving records. Controllers are plain classes, so tests create them and call their methods. Then you check the results."
         },
         {
           "type": "tip",
@@ -894,7 +894,7 @@
           "title": "Test levels",
           "items": [
             "`NoTestRun`: dev orgs and sandboxes only; their default",
-            "`RunSpecifiedTests`: only named tests; each class and trigger needs 75%",
+            "`RunSpecifiedTests`: only named tests; each deployed class and trigger needs 75%",
             "`RunLocalTests`: all tests not from installed packages; production default with Apex",
             "`RunAllTestsInOrg`: every test, packages too"
           ]
@@ -1814,23 +1814,23 @@
       "pack": "hard",
       "q": "A batch class throws an unhandled exception inside `execute` during a test. Which two statements describe what happens? (Choose 2)",
       "options": [
-        "The test method fails unless it catches the exception after `stopTest`",
+        "The exception reaches the test method, so the test fails",
         "The exception is logged and the test passes",
-        "The `finish` method doesn't run",
+        "To handle it, the `catch` block must come after `Test.stopTest()`",
         "The batch retries the chunk once before failing",
-        "Only the asserts after `stopTest` are skipped"
+        "The test fails only if `finish` also throws an exception"
       ],
       "answer": [
         0,
         2
       ],
-      "explain": "In a test, exceptions from a batch job pass to the calling test method. The test fails unless a `catch` placed after `stopTest` handles it. The exception also stops `finish` from running.",
+      "explain": "In a test, exceptions from a batch job pass to the calling test method, so it fails. To handle one, wrap the code in `try` and put the `catch` after `stopTest`, where the job runs.",
       "wrong": [
         "",
         "The exception reaches the test method, so it fails.",
         "",
         "Batch jobs don't retry a failed chunk.",
-        "The whole test method fails, not just some asserts."
+        "An exception in `execute` is enough to fail the test."
       ],
       "source": "Apex Developer Guide: Use Batch Apex"
     },
@@ -1962,7 +1962,7 @@
       "lesson": "test-4",
       "difficulty": 3,
       "pack": "hard",
-      "q": "`limitedUser` can see only the Accounts they own. `AccountFinder` is declared `without sharing`. The org has 3 Accounts in total, and the user owns 1. What does `found` hold?",
+      "q": "`limitedUser` can see only the Accounts they own. `AccountFinder` is declared `without sharing`. The test inserted 3 Accounts, and the user owns 1 of them. What does `found` hold?",
       "code": "System.runAs(limitedUser) {\n  List<Account> found = AccountFinder.findAll();\n  // AccountFinder: public without sharing class\n  // findAll(): return [SELECT Id FROM Account];\n}",
       "lang": "apex",
       "options": [
@@ -2459,7 +2459,7 @@
       "lesson": "test-6",
       "difficulty": 3,
       "pack": "hard",
-      "q": "A support user without field-level access to `Discount__c` runs this anonymous Apex script. What happens?",
+      "q": "A support user has the Author Apex permission but no field-level access to `Discount__c`. They run this anonymous Apex script. What happens?",
       "code": "List<Opportunity> opps = [SELECT Id FROM Opportunity WHERE StageName = 'Closed Won'];\nfor (Opportunity o : opps) {\n  o.Discount__c = 0;\n}\nupdate opps;",
       "lang": "apex",
       "options": [
@@ -2535,7 +2535,7 @@
         "A Full sandbox",
         "A Dev Hub org",
         "A Developer Pro sandbox",
-        "A trial org"
+        "An existing scratch org"
       ],
       "answer": [
         1
@@ -2545,7 +2545,7 @@
         "A Full sandbox can't create scratch orgs.",
         "",
         "A Developer Pro sandbox can't create scratch orgs.",
-        "A trial org doesn't create scratch orgs; a Dev Hub does."
+        "A scratch org is made by a Dev Hub; it can't create other scratch orgs."
       ],
       "source": "Salesforce DX Developer Guide: Create Scratch Orgs"
     },
