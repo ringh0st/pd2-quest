@@ -1,5 +1,5 @@
 // Lesson: swipe through 4-7 tiny cards, then 2-3 check questions, then a celebration.
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { lessonById, sectionById, questionById } from '../data/index.js';
 import { completeLesson, earn, getState, saveStars, checkBadges } from '../state/store.js';
@@ -7,6 +7,7 @@ import { XP } from '../engine/xp.js';
 import { CodeBlock } from '../components/CodeBlock.jsx';
 import { PracticeRunner } from '../components/PracticeRunner.jsx';
 import { Rich } from '../lib/rich.jsx';
+import { termMatcher, firstMentions } from '../lib/terms.js';
 import { go } from '../hooks/useRoute.js';
 import { useReducedMotion } from '../hooks/useMotionPrefs.js';
 import { sfx } from '../audio/sfx.js';
@@ -47,6 +48,8 @@ export function Lesson({ id }) {
   const [dir, setDir] = useState(1);
   const [summary, setSummary] = useState(null);
   const reduced = useReducedMotion();
+  const [term, setTerm] = useState(null); // index into lesson.terms, shown under the card
+  const matcher = useMemo(() => termMatcher(lesson?.terms), [lesson]);
 
   if (!lesson) return <main className="screen"><p>Lesson not found.</p></main>;
   const sec = sectionById[lesson.section];
@@ -65,7 +68,7 @@ export function Lesson({ id }) {
       if (!checks.length) finish({ right: 0, total: 0 });
       return;
     }
-    setDir(d); setI(n);
+    setDir(d); setI(n); setTerm(null);
     saveRun(lesson.id, { phase: 'cards', i: n });
   };
 
@@ -107,6 +110,16 @@ export function Lesson({ id }) {
       />
     );
   }
+
+  const cardTexts = [card.type !== 'code' ? card.body : null, ...(card.items ?? []), card.type === 'code' ? card.body : null];
+  const claims = matcher ? firstMentions(cardTexts, matcher) : new Map();
+  const pickTerm = (k) => {
+    sfx.tap(); haptic('light'); setTerm(k);
+    // the meaning opens under the card: bring it into view above the sticky buttons
+    if (k !== null) requestAnimationFrame(() => document.getElementById('term-panel')?.scrollIntoView({ block: 'nearest', behavior: reduced ? 'auto' : 'smooth' }));
+  };
+  const glossary = (owner) => (matcher ? { matcher, claims, owner, active: term, onTerm: pickTerm } : undefined);
+  const shownTerm = term !== null && claims.has(term) ? lesson.terms[term] : null;
 
   return (
     <main className="screen focus" id="main">
@@ -152,13 +165,31 @@ export function Lesson({ id }) {
                 text={[card.title, card.body, ...(card.items ?? []), card.type === 'code' ? 'There is a code example on this card.' : ''].filter(Boolean).join('. ')}
               />
             </div>
-            {cardLabel(card).title && <h2>{cardLabel(card).title}</h2>}
-            {card.body && card.type !== 'code' && <p><Rich text={card.body} /></p>}
-            {card.type === 'list' && <ul>{card.items.map((it, k) => <li key={k}><Rich text={it} /></li>)}</ul>}
-            {card.type === 'code' && <><CodeBlock code={card.code} lang={card.lang} />{card.body && <p className="small"><Rich text={card.body} /></p>}</>}
+            {cardLabel(card).title && <h2><Rich text={cardLabel(card).title} /></h2>}
+            {card.body && card.type !== 'code' && <p><Rich text={card.body} glossary={glossary(0)} /></p>}
+            {card.type === 'list' && <ul>{card.items.map((it, k) => <li key={k}><Rich text={it} glossary={glossary(1 + k)} /></li>)}</ul>}
+            {card.type === 'code' && <><CodeBlock code={card.code} lang={card.lang} />{card.body && <p className="small"><Rich text={card.body} glossary={glossary(cardTexts.length - 1)} /></p>}</>}
           </motion.article>
         </AnimatePresence>
       </div>
+
+      {matcher && (
+        <section id="term-panel" className="term-panel" aria-live="polite" aria-label="What this word means">
+          {shownTerm ? (
+            <motion.div key={term} className="term-box" initial={reduced ? { opacity: 0 } : { opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.18 }}>
+              <div className="term-head">
+                <Icon name="idea" className="ic-gold" />
+                <strong className="grow">{shownTerm.term}</strong>
+                <SpeakButton label={`Read “${shownTerm.term}” aloud`} text={`${shownTerm.term}. ${shownTerm.say}`} />
+                <button type="button" className="icon-btn" onClick={() => setTerm(null)} aria-label="Close the meaning"><Icon name="close" /></button>
+              </div>
+              <p>{shownTerm.say}</p>
+            </motion.div>
+          ) : claims.size > 0 ? (
+            <p className="small muted term-hint"><span className="term-sample">Underlined words</span> are key terms. Tap one to see what it means.</p>
+          ) : null}
+        </section>
+      )}
 
       <div className="dots" aria-hidden="true">{cards.map((_, k) => <span key={k} className={k === i ? 'on' : ''} />)}</div>
       <p className="small muted center">Swipe or tap the buttons</p>

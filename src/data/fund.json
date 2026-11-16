@@ -116,6 +116,64 @@
         "fund-q4",
         "fund-q5",
         "fund-q6"
+      ],
+      "terms": [
+        {
+          "term": "Sharing",
+          "match": [
+            "sharing"
+          ],
+          "say": "Sharing decides which records you can see. Like a class where you may open your own notebook, but not your friend's."
+        },
+        {
+          "term": "CRUD",
+          "say": "Four things you can do to records: Create (make one), Read (look at it), Update (change it), Delete (throw it away). CRUD says which of the four you may do."
+        },
+        {
+          "term": "FLS",
+          "match": [
+            "field-level security"
+          ],
+          "say": "Field-level security. Rules for single boxes on a record. You may see a person's name, but the Salary box can be hidden or locked for you."
+        },
+        {
+          "term": "Apex",
+          "say": "Salesforce's own code. On its own, Apex acts like a grown-up with every key: it can see and change everything, even what the user can't. That's why you must tell it to check."
+        },
+        {
+          "term": "user mode",
+          "match": [
+            "USER_MODE",
+            "WITH USER_MODE"
+          ],
+          "say": "Telling the code: \"act like the person using the app.\" Then it only sees and changes what that person may. It checks CRUD, FLS and sharing, all three."
+        },
+        {
+          "term": "SOQL",
+          "say": "How Apex asks the database a question, like \"give me all Accounts named Acme.\" A clause is one part of that question, like WHERE (which ones) or ORDER BY (in what order)."
+        },
+        {
+          "term": "WITH SECURITY_ENFORCED",
+          "match": [
+            "SECURITY_ENFORCED"
+          ],
+          "say": "The older way to make a query check. It only checks if you may read the fields you ask for. It forgets sharing and the WHERE part. If something isn't allowed, it stops with an error."
+        },
+        {
+          "term": "QueryException",
+          "say": "The error a query throws when it can't do what you asked. Like a door alarm: everything stops and it tells you what went wrong."
+        },
+        {
+          "term": "stripInaccessible",
+          "match": [
+            "Security.stripInaccessible"
+          ],
+          "say": "A quiet cleaner. You hand it records, it rubs out the fields the user may not touch, and gives you clean copies. No error, no alarm. Save the clean copies, not the originals."
+        },
+        {
+          "term": "describe",
+          "say": "Asking Salesforce about something, like \"what is this field, and may this user edit it?\" Like reading the label on a box before you open it."
+        }
       ]
     },
     {

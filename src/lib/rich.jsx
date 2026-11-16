@@ -43,11 +43,58 @@ export function isCodeOnly(text = '') {
   return !String(text).includes('`') && /[{};]\s*$|^\s*(public|private|global|static|@\w+|<\w)/.test(String(text)) && /[{}]/.test(String(text));
 }
 
-export function Rich({ text = '', autoCode = false }) {
+/**
+ * `glossary` (optional): { matcher, claims, owner, active, onTerm } from a lesson's key terms.
+ * A term becomes a tap target only in the text that first mentions it on the card (`claims`, from
+ * `firstMentions`), and only its first mention there.
+ */
+export function Rich({ text = '', autoCode = false, glossary: g }) {
+  const glossary = g && { ...g, used: new Set([...g.claims].filter(([, o]) => o !== g.owner).map(([k]) => k)) };
   const parts = String(text).split(/(\*\*[^*]+\*\*|`[^`]+`)/g);
   return parts.map((p, i) => {
-    if (p.startsWith('**') && p.endsWith('**')) return <strong key={i}>{p.slice(2, -2)}</strong>;
-    if (p.startsWith('`') && p.endsWith('`')) return <InlineCode key={i} text={p.slice(1, -1)} />;
+    if (p.startsWith('**') && p.endsWith('**')) {
+      const inner = p.slice(2, -2);
+      return <strong key={i}>{glossary ? linkTerms(inner, glossary, i) : inner}</strong>;
+    }
+    if (p.startsWith('`') && p.endsWith('`')) {
+      const code = <InlineCode key={i} text={p.slice(1, -1)} />;
+      return glossary ? wrapWhole(p.slice(1, -1), code, glossary, i) : code;
+    }
+    if (glossary) return linkTerms(p, glossary, i);
     return autoCode ? autoMark(p, i) : p;
   });
+}
+
+function TermButton({ k, glossary, children }) {
+  const on = glossary.active === k;
+  return (
+    <button
+      type="button" className={`term${on ? ' on' : ''}`} aria-expanded={on} aria-controls="term-panel"
+      onClick={(e) => { e.stopPropagation(); glossary.onTerm(on ? null : k); }}
+    >{children}</button>
+  );
+}
+
+/** A whole code span that is itself a term (e.g. `stripInaccessible`). */
+function wrapWhole(text, node, glossary, keyBase) {
+  const k = glossary.matcher.indexOf(text);
+  if (k === undefined || glossary.used.has(k)) return node;
+  glossary.used.add(k);
+  return <TermButton key={`t${keyBase}`} k={k} glossary={glossary}>{node}</TermButton>;
+}
+
+/** Plain text: the first mention of each term on the card becomes a tap target. */
+function linkTerms(text, glossary, keyBase) {
+  const out = [];
+  let last = 0;
+  for (const m of text.matchAll(glossary.matcher.regex)) {
+    const k = glossary.matcher.indexOf(m[0]);
+    if (k === undefined || glossary.used.has(k)) continue;
+    glossary.used.add(k);
+    if (m.index > last) out.push(text.slice(last, m.index));
+    out.push(<TermButton key={`${keyBase}-${m.index}`} k={k} glossary={glossary}>{m[0]}</TermButton>);
+    last = m.index + m[0].length;
+  }
+  if (last < text.length) out.push(text.slice(last));
+  return out;
 }
