@@ -3212,11 +3212,11 @@
       "lesson": "test-1",
       "difficulty": 3,
       "pack": "hard",
-      "q": "A package holds only these two classes. The test run reports the line counts shown. What is the overall code coverage?",
+      "q": "These are the only two Apex classes in the org. The test run reports the line counts shown. What is the org's overall code coverage?",
       "code": "CLASS            COVERED   UNCOVERED   PERCENT\nImportService         95           5       95%\nExportService        120          80       60%",
       "lang": "text",
       "options": [
-        "77.5%, so the package passes",
+        "77.5%, so the org passes",
         "About 72%, so it is below 75%",
         "95%, since the best class sets the total",
         "60%, since the lowest class sets the total"
@@ -3473,7 +3473,7 @@
         2,
         3
       ],
-      "explain": "The queueable delay is ignored in tests. An exception during `stopTest` stops the synchronous processing, so `finish` doesn't run.",
+      "explain": "The queueable delay is ignored in tests. An exception during `stopTest` halts the async processing, so `finish` never runs and the exception reaches the test method.",
       "wrong": [
         "A test can run only one `execute` chunk.",
         "Async calls inside the block don't count toward the queued job limit.",
@@ -3517,7 +3517,7 @@
       "options": [
         "It commits the records created inside it",
         "It can be used only in test methods",
-        "It runs the code inside it in system mode",
+        "It doesn't count toward any governor limit",
         "It switches every class called inside it to `with sharing`",
         "It ignores user license limits, so tests can create users"
       ],
@@ -3529,7 +3529,7 @@
       "wrong": [
         "Test data is rolled back, inside `runAs` or not.",
         "",
-        "It runs code as the chosen user, not in system mode.",
+        "Each `runAs` call counts toward the DML statement limit.",
         "Each class keeps the sharing mode where it is defined.",
         ""
       ],
@@ -3539,7 +3539,7 @@
       "id": "test-q62",
       "lesson": "test-4",
       "difficulty": 2,
-      "q": "A controller extension has this `save` action. Which assert proves that `save` sends the user to the order's record page?",
+      "q": "A controller extension has this `save` action. The test inserted `ord` and built `ext` around it. Which assert proves that `save` sends the user to the order's record page?",
       "code": "public PageReference save() {\n  upsert ord;\n  return new PageReference('/' + ord.Id);\n}",
       "lang": "apex",
       "options": [
@@ -3628,7 +3628,7 @@
       "wrong": [
         "Apex Code covers Apex statements and `System.debug` lines.",
         "Database covers DML and SOQL events, not the limit summary.",
-        "System covers calls to system methods.",
+        "System covers calls to system methods, not limit usage.",
         ""
       ],
       "source": "Salesforce Help: Debug Log Levels"
@@ -3735,25 +3735,25 @@
       "lesson": "test-6",
       "difficulty": 3,
       "pack": "hard",
-      "q": "A developer plans to debug a loop with Developer Console checkpoints. Which two statements are true? (Choose 2)",
+      "q": "A developer plans to debug a class with Developer Console checkpoints. Which two statements are true? (Choose 2)",
       "options": [
         "Up to five checkpoints can be on at the same time",
         "They pause the code until the developer clicks Continue",
         "They can be set in Visualforce markup as well",
-        "They work without the View All Data permission",
-        "A line in a loop is captured once, not on every pass"
+        "Setting them needs the View All Data permission",
+        "They capture results only for code run from a test"
       ],
       "answer": [
         0,
-        4
+        3
       ],
-      "explain": "Up to five checkpoints can be active. Each one captures results only once, by default before the first time the line runs.",
+      "explain": "Up to five checkpoints can be on at once, and setting them needs View All Data. They take a snapshot of memory without pausing the code.",
       "wrong": [
         "",
         "Checkpoints take a snapshot; they don't pause the code.",
         "Checkpoints can't be set in Visualforce markup.",
-        "Setting checkpoints needs View All Data.",
-        ""
+        "",
+        "Execute Anonymous or a user trace flag also gives results."
       ],
       "source": "Salesforce Help: Set Checkpoints in Apex Code"
     },
@@ -3838,7 +3838,7 @@
         "`sf org create scratch --definition-file config/project-scratch-def.json --duration-days 45`",
         "`sf org create sandbox --definition-file config/project-scratch-def.json --duration-days 21`",
         "`sf org create scratch --definition-file config/project-scratch-def.json --duration-days 21`",
-        "`sf org create scratch --definition-file config/project-scratch-def.json --target-org prod`"
+        "`sf org create scratch --definition-file config/project-scratch-def.json --alias qa`"
       ],
       "answer": [
         2
@@ -3846,9 +3846,9 @@
       "explain": "`sf org create scratch` with `--duration-days 21` gives 21 days. Scratch orgs last 1 to 30 days.",
       "wrong": [
         "45 days is over the 30-day maximum.",
-        "Sandboxes don't use a scratch definition file or a duration.",
+        "That creates a sandbox, and sandboxes take no `--duration-days`.",
         "",
-        "The duration is missing, so it gets the 7-day default."
+        "With no duration, the org gets the 7-day default."
       ],
       "source": "Salesforce CLI Command Reference: org create scratch"
     },
@@ -3909,24 +3909,24 @@
       "q": "A team lead explains source tracking to new hires. Which two statements are true? (Choose 2)",
       "options": [
         "It keeps a copy of every change to record data",
-        "Scratch orgs have it on by default",
+        "Developer and Developer Pro sandboxes can use it",
         "Production orgs never allow it",
-        "It must be turned on by hand in each new scratch org",
-        "`--ignore-conflicts` lets a production deploy overwrite newer changes"
+        "Full sandboxes have it on by default",
+        "In production, `--ignore-conflicts` is needed to overwrite newer changes"
       ],
       "answer": [
         1,
         2
       ],
-      "explain": "Source tracking follows metadata changes between a project and an org. It's on by default in scratch orgs, and production never allows it.",
+      "explain": "Source tracking follows metadata changes between a project and an org. Scratch orgs and Developer or Developer Pro sandboxes can use it. Production, Partial Copy and Full sandboxes can't.",
       "wrong": [
         "It tracks metadata, not record data.",
         "",
         "",
-        "It's on by default, unless turned off with `--no-track-source`.",
-        "That flag has no effect in orgs without source tracking."
+        "Full and Partial Copy sandboxes don't support it.",
+        "That flag has no effect in orgs without source tracking, like production."
       ],
-      "source": "Salesforce CLI Command Reference: project deploy preview"
+      "source": "Salesforce CLI Command Reference: org enable tracking"
     },
     {
       "id": "test-q72",
@@ -4007,7 +4007,7 @@
       "options": [
         "Whether to copy Chatter data",
         "A refresh interval of 1 day",
-        "A storage upgrade to 2 GB",
+        "Skipping the Apex classes to save time",
         "Whether to include field tracking history",
         "An end date when the sandbox deletes itself"
       ],
@@ -4019,7 +4019,7 @@
       "wrong": [
         "",
         "A Full sandbox can be refreshed every 29 days.",
-        "Storage upgrades are for Developer and Developer Pro sandboxes.",
+        "Every sandbox copies all metadata, Apex included.",
         "",
         "Admins can't set an end date when creating a sandbox; scratch orgs have one."
       ],
@@ -4066,7 +4066,7 @@
       "explain": "The flex queue holds at most 100 batch jobs. When it's full, `Database.executeBatch` throws a `LimitException`.",
       "wrong": [
         "",
-        "Jobs reach Queued only when the system moves them from the flex queue.",
+        "With the flex queue full, the job isn't added at all.",
         "Salesforce never drops waiting jobs to make room.",
         "Apex doesn't wait; it throws an exception."
       ],
@@ -4090,7 +4090,7 @@
       ],
       "explain": "`System.abortJob` with the `CronTrigger` Id stops a scheduled job.",
       "wrong": [
-        "`NextFireTime` is set by the system and can't be updated.",
+        "`CronTrigger` can only be queried, never updated.",
         "",
         "`System.schedule` creates a job; it doesn't stop one.",
         "`executeBatch` starts a batch class; it doesn't take an Id."
@@ -4127,23 +4127,23 @@
       "id": "test-q77",
       "lesson": "test-9",
       "difficulty": 2,
-      "q": "A release manager wants this production deployment to save the components that work and skip the ones with errors. What should they expect?",
-      "code": "sf project deploy start --manifest manifest/package.xml \\\n  --ignore-errors --target-org prod",
+      "q": "A release manager runs this production deployment of 30 components. One Apex class in it fails to compile. What happens?",
+      "code": "sf project deploy start --manifest manifest/package.xml \\\n  --test-level RunLocalTests --target-org prod",
       "lang": "bash",
       "options": [
-        "It works; the flag skips the failed components",
-        "It works only when no Apex is in the deployment",
-        "It works only with `--test-level NoTestRun`",
-        "It isn't allowed; production deploys are all or nothing"
+        "The other 29 deploy, and the class is skipped",
+        "The class deploys too, but is marked as invalid",
+        "Only components listed before the class deploy",
+        "Nothing deploys; it all rolls back"
       ],
       "answer": [
         3
       ],
-      "explain": "A production deployment must roll back completely if anything fails. Partial deploys work only in other orgs, such as sandboxes.",
+      "explain": "A production deployment is all or nothing. If any component fails, every change rolls back. Salesforce says never to use `--ignore-errors` for production.",
       "wrong": [
-        "Production requires a full rollback on any error.",
-        "The all-or-nothing rule covers every production deploy.",
-        "`NoTestRun` isn't allowed in production for Apex, and doesn't change rollback.",
+        "Production never keeps part of a failed deployment.",
+        "Apex that doesn't compile is never deployed.",
+        "Order in the manifest doesn't matter; it's all or nothing.",
         ""
       ],
       "source": "Metadata API Developer Guide: deploy()"
