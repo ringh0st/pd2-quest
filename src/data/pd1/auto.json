@@ -4264,11 +4264,11 @@
       "answer": [
         0
       ],
-      "explain": "The Run Asynchronously path runs right after the triggering save is done. It's meant for requests to outside systems, so the save isn't slowed or blocked.",
+      "explain": "The Run Asynchronously path runs right after the save that started the flow is complete. It's meant for requests to outside systems, so that save isn't slowed or blocked.",
       "wrong": [
         "",
-        "Before-save flows only allow Assignment, Decision, Get Records and Loop.",
-        "The immediate path runs inside the save, so the user waits on the outside system.",
+        "Fast Field Updates can only change the record that started the flow, so they can't run actions.",
+        "The immediate path runs during the save, so the outside request would slow or block it.",
         "It depends on a person remembering, so sends get missed."
       ],
       "source": "Trailhead: Record-Triggered Flows"
@@ -4381,13 +4381,13 @@
         "A `static final` variable can be set again in any static method",
         "A `final` variable must be assigned where it's declared",
         "A `final` member variable can be set in a constructor",
-        "A `final` List can still have items added to it"
+        "A `static final` variable can be set in a static block"
       ],
       "answer": [
         3,
         4
       ],
-      "explain": "A `final` variable is assigned only once. A member can be set where declared, in an initializer block or in a constructor. It locks the variable, not the contents of the List it points to.",
+      "explain": "A `final` variable is assigned only once. A member can be set where declared, in an initialization block or in a constructor. A `static final` can be set where declared or in a static block.",
       "wrong": [
         "You can't use `final` on a method; methods can't be overridden unless they're `virtual`.",
         "It's assigned once, where declared or in a static block.",
@@ -4852,7 +4852,7 @@
       "lesson": "auto-6",
       "difficulty": 3,
       "pack": "hard",
-      "q": "An after update trigger on Opportunity adds the new owner to a public group by inserting a `GroupMember` record. Users now get a `MIXED_DML_OPERATION` error when they save Opportunities. What is the best fix?",
+      "q": "An after update trigger on Opportunity adds the new owner to a public group. It inserts a `GroupMember` record in the same transaction as the Opportunity save. Saves now fail with a `MIXED_DML_OPERATION` error. What is the best fix?",
       "options": [
         "Move the `GroupMember` insert into an `@future` method",
         "Use `Database.insert(members, false)` to skip the error",
@@ -4862,7 +4862,7 @@
       "answer": [
         0
       ],
-      "explain": "DML on setup objects like `GroupMember` can't share a transaction with DML on records like Opportunity. An `@future` method runs it in a separate transaction.",
+      "explain": "DML on setup objects like `GroupMember` can't be mixed with DML on other records, like Opportunity, in one transaction. An `@future` method runs the insert in a separate transaction.",
       "wrong": [
         "",
         "Partial success doesn't lift the rule; the insert still fails.",
@@ -4881,7 +4881,7 @@
       "lang": "apex",
       "options": [
         "`acc` is inserted again and gets a new Id",
-        "It fails, because a rolled-back sObject can never be saved",
+        "It works, because the rollback also cleared `acc.Id`",
         "It fails, because `acc` still has its Id after the rollback",
         "Nothing; `Database.rollback` ends the transaction, so the line never runs"
       ],
@@ -4891,7 +4891,7 @@
       "explain": "A rollback doesn't clear the Id on an sObject inserted after the savepoint. Inserting a record that already has an Id fails, so create a fresh sObject instead.",
       "wrong": [
         "`acc` keeps its old Id, and insert won't accept a record with an Id.",
-        "A new sObject with the same values can be saved.",
+        "A rollback doesn't clear the Id, so this insert fails.",
         "",
         "Code keeps running after `Database.rollback`."
       ],
@@ -5216,7 +5216,7 @@
       "lesson": "auto-9",
       "difficulty": 3,
       "pack": "hard",
-      "q": "A trigger uses `static Boolean hasRun` to stop recursion. A data load inserts 450 records in one call, and the last 250 skip the trigger logic. Which two statements explain this? (Choose 2)",
+      "q": "A trigger handler class uses `static Boolean hasRun` to stop recursion. Apex code inserts 450 records with one `insert` statement, and the last 250 skip the trigger logic. Which two statements explain this? (Choose 2)",
       "options": [
         "Static variables reset at the start of each new chunk",
         "Records over 200 always skip triggers in a single DML call",
@@ -5228,7 +5228,7 @@
         2,
         4
       ],
-      "explain": "The trigger runs once per 200-record chunk, all in one transaction. A static flag set in chunk one is still true later, so a `Set<Id>` guard is safer.",
+      "explain": "A DML call with over 200 records runs the trigger once per batch of 200, all in one transaction. A static flag set in the first batch is still true later, so a `Set<Id>` guard is safer.",
       "wrong": [
         "Statics last for the whole transaction, not one chunk.",
         "All records run through the trigger, 200 at a time.",
@@ -5502,7 +5502,7 @@
         0,
         2
       ],
-      "explain": "Before-save flows allow only Assignment, Decision, Get Records and Loop. In after-save flows, Flow bulkifies the action and sends a list of inputs in one call.",
+      "explain": "Fast Field Updates can only change the record that started the flow, so an Apex action needs an after-save flow. There, Flow bulkifies the action and sends a list of inputs in one call.",
       "wrong": [
         "",
         "`public` works in the same org; `global` matters for managed packages.",
