@@ -85,7 +85,7 @@ export function Me() {
           const m = Math.round(sectionMastery(sec, s.items) * 100);
           return (
             <a key={sec.id} href={`#/world/${sec.id}`} className="stack-s" style={{ color: 'inherit', textDecoration: 'none' }}>
-              <div className="spread small"><span className="ic-label me-sec" style={{ '--sec-accent': sec.accent }}><span className="ic-sec"><Icon name={sec.id} /></span><span>{sec.title} <span className="muted">({sec.weight}%)</span></span></span><strong>{m}%</strong></div>
+              <div className="spread small"><span className="ic-label me-sec" style={{ '--sec-accent': sec.accent }}><span className="ic-sec"><Icon name={sec.icon} /></span><span>{sec.title} <span className="muted">({sec.weight}%)</span></span></span><strong>{m}%</strong></div>
               <div className="bar"><span style={{ width: `${Math.max(2, m)}%`, background: sec.accent }} /></div>
             </a>
           );

@@ -126,7 +126,7 @@ export function Sprint({ query }) {
       <h1 className="sr-only">Practice sprint, round {round.n}</h1>
       {(sec || query.hard) && <p className="small muted center" style={{ fontWeight: 700 }}>
           {query.hard && <><Icon name="flame" className="ic-flame" /> Exam-hard </>}
-          {sec && <><Icon name={sec.id} className="ic-sec" style={{ '--sec-accent': `var(--sec-${sec.id})` }} /> {sec.short} </>}
+          {sec && <><Icon name={sec.icon} className="ic-sec" style={{ '--sec-accent': sec.accent }} /> {sec.short} </>}
           practice
         </p>}
       <PracticeRunner key={round.n} questions={round.questions} onExit={() => go('/')} onDone={done} topRight={timer} />

@@ -132,7 +132,7 @@ export function Lesson({ id }) {
         <ParkIt />
       </div>
       <div>
-        <p className="small muted ic-label" style={{ fontWeight: 700 }}><Icon name={sec.id} className="ic-sec" style={{ '--sec-accent': `var(--sec-${sec.id})` }} />{sec.title}</p>
+        <p className="small muted ic-label" style={{ fontWeight: 700 }}><Icon name={sec.icon} className="ic-sec" style={{ '--sec-accent': sec.accent }} />{sec.title}</p>
         <h1 style={{ fontSize: 'calc(22px * var(--text-scale))' }}>{lesson.title}</h1>
         {/* stays in the layout (just hidden) after the first card, so the cards don't jump up */}
         <a

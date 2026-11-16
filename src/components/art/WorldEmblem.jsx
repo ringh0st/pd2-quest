@@ -1,8 +1,10 @@
 // A world's emblem: one hand-built vector badge per world, drawn on a 48-unit grid so it reads at 28px
 // and holds detail at 96px. Colors come from tokens (the world's --sec-* accent plus shared tokens),
-// so every emblem follows light and dark mode. world: fund|auto|ui|test|perf.
+// so every emblem follows light and dark mode. `world` is a section id; its look (fund|auto|ui|test|perf) comes
+// from the exam's content (lookOf).
 
 import { useId } from 'react';
+import { lookOf } from '../../data/index.js';
 
 const mix = (a, pct, b) => `color-mix(in srgb, ${a} ${pct}%, ${b})`;
 const INK = '#2A2133'; // features drawn on colored fills, so one dark ink works in both themes
@@ -163,10 +165,10 @@ function Peaks() {
 const EMBLEMS = { fund: Shrine, auto: Forge, ui: Bay, test: Swamp, perf: Peaks };
 
 export function WorldEmblem({ world, size = 48, className = '' }) {
-  const Art = EMBLEMS[world] ?? Shrine;
+  const Art = EMBLEMS[lookOf(world)] ?? Shrine;
   const clip = `emblem-${useId().replace(/:/g, '')}`;
   return (
-    <svg className={`art world-emblem ${className}`} width={size} height={size} viewBox="0 0 48 48" aria-hidden="true" focusable="false" data-world={world}>
+    <svg className={`art world-emblem ${className}`} width={size} height={size} viewBox="0 0 48 48" aria-hidden="true" focusable="false" data-world={lookOf(world)}>
       <defs><clipPath id={clip}><circle cx="24" cy="24.75" r="22.75" /></clipPath></defs>
       <g clipPath={`url(#${clip})`}><Art /></g>
     </svg>

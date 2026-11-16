@@ -10,7 +10,7 @@ import { sfx } from '../audio/sfx.js';
 import { haptic } from '../audio/haptics.js';
 import { useFeedback } from './Feedback.jsx';
 import { useReducedMotion } from '../hooks/useMotionPrefs.js';
-import { sectionById } from '../data/index.js';
+import { sectionById, iconOf } from '../data/index.js';
 import { ParkIt } from './ParkIt.jsx';
 import { useHoldCelebrations } from '../hooks/useFocusMode.js';
 import { Zap } from './game/Zap.jsx';
@@ -177,12 +177,12 @@ export function PracticeRunner({ questions, onDone, onExit, topRight, requeue = 
       </div>
       {header?.({ combo, heartsLeft, lastRight, revealed, stats: stats.current })}
       {topRight && <div className="row" style={{ justifyContent: 'space-between' }}>
-        <span className="chip trunc" title={sec?.title}><Icon name={q.section} /> {sec?.short ?? sec?.title}</span>
+        <span className="chip trunc" title={sec?.title}><Icon name={iconOf(q.section)} /> {sec?.short ?? sec?.title}</span>
         <ComboChip combo={combo} reduced={reduced} />
       </div>}
       {!topRight && !header && (
         <div className="row" style={{ justifyContent: 'space-between' }}>
-          <span className="chip trunc" title={sec?.title}><Icon name={q.section} /> {sec?.short ?? sec?.title}</span>
+          <span className="chip trunc" title={sec?.title}><Icon name={iconOf(q.section)} /> {sec?.short ?? sec?.title}</span>
           {heartsLeft != null && <ComboChip combo={combo} reduced={reduced} />}
         </div>
       )}

@@ -1,8 +1,9 @@
-// The world bosses (one look per section id): friendly-menacing characters built from simple shapes on a 96-unit grid.
+// The world bosses (one per world look; `world` is a section id, resolved by lookOf): friendly-menacing characters built from simple shapes on a 96-unit grid.
 // mood: idle (gentle bob) | hit (squash and shake) | taunt (lean in, grin) | defeated (dizzy eyes, tilt, fade).
 // With reduced motion or Calm mode the pose is shown still. Tiny sizes (under 40px) never move.
 import { motion } from 'motion/react';
 import { useReducedMotion, useCalm } from '../../hooks/useMotionPrefs.js';
+import { lookOf } from '../../data/index.js';
 
 const INK = '#2A2133';        // features sit on colored bodies, so one dark ink works in both themes
 const WHITE = '#FFFFFF';
@@ -289,11 +290,11 @@ const ORIGIN = { transformOrigin: '48px 86px', transformBox: 'view-box' };
 export function BossArt({ world, size = 96, mood = 'idle', className = '' }) {
   const reduced = useReducedMotion();
   const calm = useCalm();
-  const Art = BOSSES[world] ?? Sphinx;
+  const Art = BOSSES[lookOf(world)] ?? Sphinx;
   const m = MOVES[mood] ? mood : 'idle';
   const still = reduced || calm || size < 40;
   return (
-    <svg className={`art boss-art ${className}`} width={size} height={size} viewBox="0 0 96 96" aria-hidden="true" focusable="false" data-world={world} data-mood={m}>
+    <svg className={`art boss-art ${className}`} width={size} height={size} viewBox="0 0 96 96" aria-hidden="true" focusable="false" data-world={lookOf(world)} data-mood={m}>
       {/* ground shadow */}
       <ellipse cx="48" cy="91" rx="30" ry="3.4" fill="var(--text)" opacity="0.12" />
       {still ? (

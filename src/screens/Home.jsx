@@ -6,7 +6,7 @@ import { levelFor, rankFor } from '../engine/xp.js';
 import { liveStreak } from '../engine/streak.js';
 import { readiness, weakestSection, mockEstimate, readyToBook } from '../engine/mastery.js';
 import { dayKey, daysUntil, daysBetween } from '../engine/dates.js';
-import { sections, exam, themeOf } from '../data/index.js';
+import { sections, exam, themeOf, iconOf, accentOf } from '../data/index.js';
 import { dueQuestionCount, greeting } from '../state/selectors.js';
 import { continueLevel, routeForLevel, mapCleared, firstImperfectLevel } from '../state/gameSelectors.js';
 import { zapSays } from '../game/mascot.js';
@@ -174,7 +174,7 @@ export function Home() {
             : <span className="ic-tile" aria-hidden="true"><Icon name={dueQ ? 'review' : 'bolt'} /></span>}<span className="lbl">{dueQ ? (dueQ > 10 ? '5-min catch-up' : 'Reviews due') : 'Quick sprint'}</span>
         </a>
         <a className="stat card link" href={`#/sprint?section=${weak?.id}`} onClick={() => sfx.tap()} aria-label={`Weak spot: ${weak?.title}. Practice it`}>
-          <span className="ic-tile" style={{ '--tile-accent': `var(--sec-${weak?.id})` }} aria-hidden="true"><Icon name={weak?.id} /></span><span className="lbl">Weak spot</span>
+          <span className="ic-tile" style={{ '--tile-accent': accentOf(weak?.id) }} aria-hidden="true"><Icon name={iconOf(weak?.id)} /></span><span className="lbl">Weak spot</span>
         </a>
       </motion.div>
 

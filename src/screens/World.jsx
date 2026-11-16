@@ -90,7 +90,7 @@ export function World({ id }) {
         <CoinChip />
       </div>
       <div className="card tight stack-s world-info">
-        <p className="small with-icon"><Icon name={sec.id} style={{ color: 'var(--accent)' }} /> <span><strong>{sec.title}</strong> · {sec.weight}% of exam · {mastery}% mastered</span></p>
+        <p className="small with-icon"><Icon name={sec.icon} style={{ color: 'var(--accent)' }} /> <span><strong>{sec.title}</strong> · {sec.weight}% of exam · {mastery}% mastered</span></p>
         <div className="spread small">
           <span className="with-icon"><Icon name="star" fill className="ic-gold-fill" /> {ws.got}/{ws.max}<span className="sr-only"> stars</span></span>
           <span>{n} levels</span>

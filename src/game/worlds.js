@@ -14,7 +14,7 @@ const FALLBACK_WORLD = { name: 'World', boss: { name: 'The Boss', taunt: 'Answer
 
 /** A world's look plus its name and Boss from the exam's content (`section.world`). */
 export function worldTheme(section) {
-  return { ...WORLD_STYLES.fund, ...WORLD_STYLES[section?.id], ...FALLBACK_WORLD, ...section?.world };
+  return { ...WORLD_STYLES.fund, ...WORLD_STYLES[section?.look ?? section?.id], ...FALLBACK_WORLD, ...section?.world };
 }
 
 export const HARD_EVERY = 3;          // a Hard challenge after every 3 lessons

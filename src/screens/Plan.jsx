@@ -1,6 +1,6 @@
 // Week-by-week study plan built from the exam date (route #/plan).
 import { usePlan } from '../components/plan/StudyPlanCard.jsx';
-import { sectionById } from '../data/index.js';
+import { sectionById, iconOf, accentOf } from '../data/index.js';
 import { go } from '../hooks/useRoute.js';
 import { FINAL_DAYS } from '../engine/plan.js';
 import { Icon } from '../components/icons/Icon.jsx';
@@ -36,7 +36,7 @@ export function Plan() {
                   <p className="small">
                     {w.levels} level{w.levels === 1 ? '' : 's'} in{' '}
                     {w.worlds.map((id, k) => (
-                      <span key={id}>{k ? ', ' : ''}<span style={{ whiteSpace: 'nowrap' }}><Icon name={id} className="ic-sec" style={{ '--sec-accent': `var(--sec-${id})` }} /> {sectionById[id]?.short}</span></span>
+                      <span key={id}>{k ? ', ' : ''}<span style={{ whiteSpace: 'nowrap' }}><Icon name={iconOf(id)} className="ic-sec" style={{ '--sec-accent': accentOf(id) }} /> {sectionById[id]?.short}</span></span>
                     ))}
                     {w.bosses ? <> · <span style={{ whiteSpace: 'nowrap' }}><Icon name="swords" className="ic-bad" /> {w.bosses} boss fight{w.bosses === 1 ? '' : 's'}</span></> : ''}
                   </p>

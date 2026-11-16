@@ -46,7 +46,7 @@ export function WorldMap() {
                   <WorldEmblem world={sec.id} size={64} className="world-emblem-big" />
                   <div className="grow">
                     <h2>{t.name}</h2>
-                    <p className="small with-icon"><Icon name={sec.id} style={{ color: 'var(--accent)' }} /> {sec.title} · {sec.weight}% of exam</p>
+                    <p className="small with-icon"><Icon name={sec.icon} style={{ color: 'var(--accent)' }} /> {sec.title} · {sec.weight}% of exam</p>
                   </div>
                 </div>
                 <div className="stack-s">

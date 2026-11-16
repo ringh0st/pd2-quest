@@ -113,7 +113,7 @@ export function Cards({ query }) {
         <ParkIt />
       </div>
       <span className="chip ic-label" style={{ justifySelf: 'start', gap: 6 }}>
-        <Icon name={sec.id} className="ic-sec" style={{ '--sec-accent': `var(--sec-${sec.id})` }} />{sec.short}
+        <Icon name={sec.icon} className="ic-sec" style={{ '--sec-accent': sec.accent }} />{sec.short}
         {!cards[card.id]?.seen && <> · <Icon name="sparkles" className="ic-gold" />new</>}
       </span>
 

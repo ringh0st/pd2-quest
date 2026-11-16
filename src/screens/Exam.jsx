@@ -2,7 +2,7 @@
 // An exam in progress is saved on every change and can be resumed after a reload or app switch.
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { motion } from 'motion/react';
-import { sections, sectionById, exam } from '../data/index.js';
+import { sections, sectionById, exam, iconOf } from '../data/index.js';
 import { buildExam, isCorrect, shuffleOptions } from '../engine/session.js';
 import { seeded } from '../game/random.js';
 import { useStore, answerQuestion, earn, recordExam, getState } from '../state/store.js';
@@ -405,7 +405,7 @@ function ExamResult({ result, onClose }) {
           const p = Math.round((r.right / r.total) * 100);
           return (
             <div key={s.id} className="stack-s">
-              <div className="spread small"><span className="ic-label"><Icon name={s.id} className="ic-sec" style={{ '--sec-accent': `var(--sec-${s.id})` }} />{s.short}</span><strong>{r.right}/{r.total} · {p}%</strong></div>
+              <div className="spread small"><span className="ic-label"><Icon name={s.icon} className="ic-sec" style={{ '--sec-accent': s.accent }} />{s.short}</span><strong>{r.right}/{r.total} · {p}%</strong></div>
               <div className="bar" aria-hidden="true"><span style={{ width: `${Math.max(2, p)}%` }} /></div>
             </div>
           );
@@ -417,7 +417,7 @@ function ExamResult({ result, onClose }) {
       <ol className="list-plain stack">
         {list.map(({ q, chosen, ok }) => (
           <li key={q.id} className={`feedback ${ok ? 'right' : 'wrong'}`}>
-            <div className="verdict small"><Icon name={ok ? 'ok' : 'wrong'} /> {ok ? 'Correct' : chosen.length ? 'Missed' : 'Blank'} · <Icon name={q.section} /> {sectionById[q.section].short}</div>
+            <div className="verdict small"><Icon name={ok ? 'ok' : 'wrong'} /> {ok ? 'Correct' : chosen.length ? 'Missed' : 'Blank'} · <Icon name={iconOf(q.section)} /> {sectionById[q.section].short}</div>
             <p><Rich text={cleanQuestion(q.q)} autoCode /></p>
             {q.code && <CodeBlock code={q.code} lang={q.lang} />}
             <ul className="list-plain stack-s small">

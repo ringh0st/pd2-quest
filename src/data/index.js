@@ -8,9 +8,10 @@ const ORDER = track.sections;
 const load = (name) => loaders[`./${currentTrack}/${name}.json`]?.() ?? Promise.resolve(null);
 const [exam, ...sectionFiles] = await Promise.all([load('exam'), ...ORDER.map(load)]);
 const files = Object.fromEntries(ORDER.map((id, i) => [`./${id}.json`, sectionFiles[i]]));
-// Short names fit chips and headers on a 320px phone.
+// How a section looks: `look` picks its world art, sky and accent colour (one of WORLD_STYLES' keys: fund, auto,
+// ui, test, perf) and `icon` its Icon. Both come from exam.json (worlds[id].look, sections[].icon), defaulting to
+// the section id. `short` (from exam.json sections[].short) fits chips on a 320px phone.
 const SHORT = { fund: 'Fundamentals', auto: 'Automation', ui: 'User Interface', test: 'Testing', perf: 'Performance' };
-const ACCENT = { fund: '--sec-fund', auto: '--sec-auto', ui: '--sec-ui', test: '--sec-test', perf: '--sec-perf' };
 
 export { exam };
 
@@ -39,8 +40,10 @@ export const sections = ORDER
       weight: meta.weight ?? data.weight,
       objectives: meta.objectives ?? [],
       world: exam.worlds?.[id],
-      short: SHORT[id],
-      accent: `var(${ACCENT[id]})`,
+      look: exam.worlds?.[id]?.look ?? id,
+      icon: meta.icon ?? id,
+      short: meta.short ?? SHORT[id] ?? data.title,
+      accent: `var(--sec-${exam.worlds?.[id]?.look ?? id})`,
       questions: data.questions.map((q) => ({ ...q, section: id, mockOnly: isMockOnly(q, new Set(data.lessons.flatMap((l) => l.check))) })),
       flashcards: data.flashcards.map((f) => ({ ...f, section: id })),
     };
@@ -57,3 +60,7 @@ export const lessonById = table(
 
 /** A world's look, name and Boss, by section id. */
 export const themeOf = (id) => worldTheme(sectionById[id] ?? { id });
+/** A section's world look key (WORLD_STYLES / emblem / Boss art), Icon name and accent colour, by section id. */
+export const lookOf = (id) => sectionById[id]?.look ?? id;
+export const iconOf = (id) => sectionById[id]?.icon ?? id;
+export const accentOf = (id) => sectionById[id]?.accent ?? `var(--sec-${id})`;
