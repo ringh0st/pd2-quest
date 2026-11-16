@@ -1311,3 +1311,18 @@ html { background: var(--bg); }
 .voice-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
 .voice-row .input { flex: 1 1 14em; min-width: 0; text-overflow: ellipsis; }
 .voice-picker p { margin: 0; }
+/* ===== "Fill the whole screen" (iPhone home-screen app, Settings) =====
+   Some iOS versions give the page a viewport --screen-extra short of the real bottom (see lib/screenFit.js).
+   Everything pinned to the bottom of the viewport is stretched or moved down by that much, so the app
+   reaches the real bottom edge; the dock then sits just above the home indicator line. */
+:root[data-screen-short][data-fill-screen='on'] { --nav-gap: 14px; }
+:root[data-screen-short][data-fill-screen='on'] body,
+:root[data-screen-short][data-fill-screen='on'] .overlay,
+:root[data-screen-short][data-fill-screen='on'] .scrim,
+:root[data-screen-short][data-fill-screen='on'] .confetti,
+:root[data-screen-short][data-fill-screen='on'] .splash,
+:root[data-screen-short][data-fill-screen='on'] .break-screen { bottom: calc(-1 * var(--screen-extra)); }
+:root[data-screen-short][data-fill-screen='on'] .bottom-nav { bottom: calc(var(--nav-gap) - var(--screen-extra)); }
+:root[data-screen-short][data-fill-screen='on'] .sheet { bottom: calc(-1 * var(--screen-extra)); padding-bottom: 34px; }
+:root[data-screen-short][data-fill-screen='on'] .update-banner { bottom: calc(var(--nav-h) + var(--nav-gap) + 16px - var(--screen-extra)); }
+:root[data-screen-short][data-fill-screen='on'] body { height: auto; }

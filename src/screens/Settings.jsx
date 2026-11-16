@@ -1,5 +1,5 @@
 import { APP_NAME, APP_VERSION, STUDIO_NAME } from '../lib/appInfo.js';
-import { useRef } from 'react';
+import { useRef, useSyncExternalStore } from 'react';
 import { useStore, updateSettings, setState, resetProgress, exportProgress, importProgress } from '../state/store.js';
 import { FEEL_PRESETS, presetFor } from '../state/feelPresets.js';
 import { InstallHelpButton } from '../components/InstallHelp.jsx';
@@ -8,6 +8,7 @@ import { go } from '../hooks/useRoute.js';
 import { useFeedback } from '../components/Feedback.jsx';
 import { ReminderSettings } from '../components/ReminderSettings.jsx';
 import { VoicePicker } from '../components/VoicePicker.jsx';
+import { screenIsShort, subscribeScreenFit } from '../lib/screenFit.js';
 import { Icon } from '../components/icons/Icon.jsx';
 import { sfx, setSoundEnabled } from '../audio/sfx.js';
 import { haptic, setHapticsEnabled } from '../audio/haptics.js';
@@ -21,6 +22,7 @@ export function Settings() {
   const { showToast } = useFeedback();
   const fileRef = useRef(null);
   const preset = presetFor(st);
+  const screenShort = useSyncExternalStore(subscribeScreenFit, screenIsShort, () => false);
   const backup = () => {
     const blob = new Blob([exportProgress()], { type: 'application/json' });
     const a = document.createElement('a');
@@ -78,6 +80,12 @@ export function Settings() {
           options={Object.entries(FEEL_PRESETS).map(([k, p]) => iconOption(k, p.icon, p.label))}
         />
         {!preset && <p className="small muted">Custom mix. Tap a preset to reset all of these at once.</p>}
+        {screenShort && (
+          <Switch
+            label="Fill the whole screen" hint="Uses the empty strip at the bottom of the iPhone app. If the bottom bar looks wrong, turn this off."
+            checked={!!st.fillScreen} onChange={(v) => updateSettings({ fillScreen: v })}
+          />
+        )}
         <Segmented label="Theme" value={st.theme} onChange={(v) => updateSettings({ theme: v })} options={[iconOption('system', 'phone', 'Auto'), iconOption('light', 'sun', 'Light'), iconOption('dark', 'moon', 'Dark')]} />
         <Switch label="Calm mode" hint="Quieter colors, no confetti, no idle animations" checked={st.calm} onChange={(v) => updateSettings({ calm: v })} />
         <Segmented label="Motion" value={st.motion} onChange={(v) => updateSettings({ motion: v })} options={[['system', 'Auto'], ['full', 'Full'], ['reduced', 'Reduced']]} />

@@ -13,6 +13,7 @@ import { initInstallCapture } from './lib/install.js';
 import { startReminderLoop } from './lib/reminders.js';
 import { unlockAudioOnFirstGesture } from './audio/audioContext.js';
 import { initUpdates } from './lib/updates.js';
+import { initScreenFit } from './lib/screenFit.js';
 
 // Ask the browser to keep our saved progress (Safari may clear site data that isn't installed).
 navigator.storage?.persist?.().catch(() => {});
@@ -27,6 +28,7 @@ initUpdates(); // apply new versions behind the splash, or offer them with a ban
 unlockAudioOnFirstGesture(); // iPhone needs a tap before any sound
 initInstallCapture(); // catch the browser's install prompt early
 startReminderLoop(); // only does anything if the learner turned phone reminders on
+initScreenFit(); // iPhone home-screen app: measure the empty strip some iOS versions leave at the bottom
 
 createRoot(document.getElementById('root')).render(
   <StrictMode><ErrorBoundary><App /></ErrorBoundary></StrictMode>,

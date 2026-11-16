@@ -66,6 +66,7 @@ function useApplySettings() {
     setMusicSettings({ sound: st.sound, music: st.music });
     setHapticsEnabled(st.haptics);
     setPreferredVoice(st.voice);
+    root.dataset.fillScreen = st.fillScreen ? 'on' : 'off';
   }, [st, sysDark, reduced, accent]);
   return reduced;
 }
