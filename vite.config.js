@@ -19,9 +19,9 @@ export default defineConfig({
       injectRegister: false, // registered in src/lib/updates.js (update during the splash, else a banner)
       includeAssets: ['icon.svg', 'apple-touch-icon.png'],
       manifest: {
-        name: 'Dev Quest: Salesforce PD1 & PD2 Prep',
+        name: 'Dev Quest: Salesforce certification prep',
         short_name: 'Dev Quest',
-        description: 'Bite-sized, ADHD-friendly prep for the Salesforce Platform Developer I and II exams.',
+        description: 'Bite-sized, ADHD-friendly prep for Salesforce certification exams.',
         start_url: './',
         scope: './',
         display: 'standalone',

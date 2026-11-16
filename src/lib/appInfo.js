@@ -3,7 +3,7 @@ import { track } from './track.js';
 
 /** The app as a whole (opening screen, Home Screen icon); each exam inside it is a Quest. */
 export const BRAND_NAME = 'Dev Quest';
-export const BRAND_TAGLINE = 'Salesforce Platform Developer I & II';
+export const BRAND_TAGLINE = 'Salesforce certification prep';
 export const APP_NAME = track.name;
 export const APP_TAGLINE = track.exam;
 export const STUDIO_NAME = 'Ringhost’s Games';
