@@ -38,20 +38,20 @@ export function answerXp(correct, combo, firstTime = false) {
   return Math.round((XP.correct + (firstTime ? XP.firstTry : 0)) * comboMultiplier(combo));
 }
 
+// Rank titles by level. Each exam can name its own in exam.json (`ranks`, same [level, title] shape).
 export const RANKS = [
   [1, 'Trailhead Rookie'],
-  [3, 'Apex Apprentice'],
-  [5, 'Trigger Tamer'],
-  [7, 'Governor Whisperer'],
-  [9, 'Async Ace'],
-  [12, 'LWC Wizard'],
-  [15, 'Integration Ninja'],
-  [19, 'Platform Architect'],
+  [3, 'Quick Learner'],
+  [5, 'Steady Climber'],
+  [7, 'Rising Star'],
+  [9, 'Problem Solver'],
+  [12, 'Exam Explorer'],
+  [15, 'Certified Mind'],
+  [19, 'Salesforce Sage'],
   [24, 'Quest Legend'],
 ];
-
-export function rankFor(level) {
-  let name = RANKS[0][1];
-  for (const [lv, title] of RANKS) if (level >= lv) name = title;
+export function rankFor(level, ranks = RANKS) {
+  let name = ranks[0][1];
+  for (const [lv, title] of ranks) if (level >= lv) name = title;
   return name;
 }

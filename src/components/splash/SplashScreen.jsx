@@ -16,7 +16,7 @@ import { TRACKS, TRACK_IDS, currentTrack, hasChosenTrack, switchTrack, chooseTra
 
 const SPLASH_MS = 4000;
 const FADE_MS = 450;
-const LINES = ['Bulkifying the triggers…', 'Warming up the governor limits…', 'Shuffling your flashcards…', 'Waking up the Bosses…'];
+const LINES = ['Charging Zap’s batteries…', 'Polishing the stars…', 'Shuffling your flashcards…', 'Waking up the Bosses…'];
 
 export function SplashScreen({ onDone }) {
   const [ready, setReady] = useState(false);

@@ -3,7 +3,7 @@ import { levelFor, rankFor } from '../engine/xp.js';
 import { liveStreak } from '../engine/streak.js';
 import { sectionMastery, readiness, accuracy } from '../engine/mastery.js';
 import { dayKey } from '../engine/dates.js';
-import { sections } from '../data/index.js';
+import { sections, exam } from '../data/index.js';
 import { totalLessons } from '../state/selectors.js';
 import { ProgressRing } from '../components/ProgressRing.jsx';
 import { CountUp } from '../components/CountUp.jsx';
@@ -47,7 +47,7 @@ export function Me() {
           <div><div style={{ fontSize: 'calc(13px * var(--text-scale))', fontWeight: 700 }} className="muted">LEVEL</div><div style={{ fontSize: 30, fontWeight: 700 }}>{lv.level}</div></div>
         </ProgressRing>
         <div className="stack-s grow">
-          <strong style={{ fontSize: 19 }}>{rankFor(lv.level)}</strong>
+          <strong style={{ fontSize: 19 }}>{rankFor(lv.level, exam.ranks)}</strong>
           <span className="muted small"><CountUp value={s.xp} /> XP total · {lv.span - lv.into} XP to level {lv.level + 1}</span>
         </div>
         <span className="me-zap"><Zap size={64} mood="happy" /></span>

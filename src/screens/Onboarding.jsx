@@ -82,7 +82,7 @@ export function Onboarding() {
       <motion.div {...anim(3)}>
         <button className="btn primary block big" onClick={() => start()}>Start my first lesson <Icon name="play" fill /></button>
         <button className="btn block" style={{ marginTop: 10 }} onClick={() => start(`/placement/${sections[0].id}`)}>
-          Know Apex? Skip ahead
+          Know some already? Skip ahead
         </button>
         {TRACK_IDS.filter((id) => id !== track.id).map((id) => (
           <button key={id} type="button" className="btn block ghost" style={{ marginTop: 10 }} onClick={() => switchTrack(id)}>

@@ -158,7 +158,7 @@ export function Home() {
             <div className="bar gold" role="progressbar" aria-label="Level progress" aria-valuenow={Math.round(lv.progress * 100)} aria-valuemin={0} aria-valuemax={100}>
               <span style={{ width: `${Math.max(3, lv.progress * 100)}%` }} />
             </div>
-            <span className="small muted">{rankFor(lv.level)}</span>
+            <span className="small muted">{rankFor(lv.level, exam.ranks)}</span>
           </div>
         </div>
 
