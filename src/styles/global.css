@@ -1148,18 +1148,16 @@ h1[tabindex='-1']:focus, h2[tabindex='-1']:focus { outline: none; }
 /* title */
 .splash-title { display: grid; justify-items: center; gap: 10px; margin: 0; line-height: 1; }
 .splash-word { display: flex; font-family: 'Lexend', var(--font-body); font-size: clamp(44px, 14vw, 72px); font-weight: 700; letter-spacing: -0.02em; }
-.splash-letter { display: inline-block; color: var(--primary); text-shadow: 0 3px 0 var(--primary-ledge); animation: splashPop 600ms cubic-bezier(.34,1.56,.64,1) calc(1.35s + var(--i) * 70ms) both, splashFloat 2.4s ease-in-out calc(2.3s + var(--i) * 120ms) 2; }
+.splash-letter { display: inline-block; color: var(--primary); text-shadow: 0 3px 0 var(--primary-ledge); animation: splashPop 600ms cubic-bezier(.34,1.56,.64,1) calc(1.35s + var(--i) * 70ms) both; }
 .splash-letter:nth-child(n+5) { color: var(--gold-text); text-shadow: 0 3px 0 color-mix(in srgb, var(--gold-text) 45%, #2b2118); }
 :root[data-theme='dark'] .splash-letter:nth-child(n+5) { color: var(--gold); text-shadow: 0 3px 0 #8A5A00; }
 .splash-space { display: inline-block; width: 0.28em; }
 @keyframes splashPop { from { opacity: 0; transform: translateY(40%) scale(0.3) rotate(-14deg); } 60% { transform: translateY(-12%) scale(1.12) rotate(4deg); } }
-@keyframes splashFloat { 50% { transform: translateY(-5px); } }
 .splash-tagline {
   padding: 5px 14px; border-radius: 999px; font-size: calc(13px * var(--text-scale)); font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase;
   color: var(--on-primary); background: var(--primary); box-shadow: 0 3px 0 var(--primary-ledge);
   animation: splashRise 500ms cubic-bezier(.34,1.56,.64,1) 2s both;
 }
-.splash-facts { font-weight: 700; font-size: var(--fs-small); color: var(--text-muted); animation: splashRise 500ms ease-out 2.3s both; }
 @keyframes splashRise { from { opacity: 0; transform: translateY(12px) scale(0.92); } }
 /* loading */
 .splash-loading { display: grid; justify-items: center; gap: 8px; width: min(240px, 70vw); margin-top: 6px; animation: splashRise 400ms ease-out 0.4s both; }
@@ -1327,12 +1325,16 @@ input, textarea, select { font-family: inherit; }
 .splash-track-text { display: grid; gap: 1px; line-height: 1.15; }
 .splash-track-name { font-size: calc(20px * var(--text-scale)); font-weight: 800; }
 .splash-track-sub { font-size: calc(13px * var(--text-scale)); font-weight: 700; opacity: 0.8; }
-/* opening screen with the exam buttons showing: smaller art and title, so every exam fits on small phones
-   (and the screen scrolls if it still doesn't, e.g. at the largest text size) */
+/* opening screen: one fixed layout from the first frame (art and title sized to fit every exam button on small
+   phones; the screen scrolls only if it still doesn't fit, e.g. at the largest text size) */
 .splash { overflow-x: hidden; overflow-y: auto; }
-.splash.picking .splash-stage { width: min(200px, 50vw); }
-.splash.picking .splash-word { font-size: clamp(36px, 11vw, 60px); }
-.splash.picking .splash-facts { display: none; }
+.splash-stage { width: min(200px, 50vw); }
+.splash-word { font-size: clamp(36px, 11vw, 60px); }
+/* the exam buttons and the loading bar share one spot; the buttons always take their space */
+.splash-action { display: grid; width: min(320px, 86vw); margin-top: 6px; }
+.splash-action > * { grid-area: 1 / 1; }
+.splash-action .splash-tracks { width: 100%; margin-top: 0; }
+.splash-action .splash-loading { align-self: center; justify-self: center; margin-top: 0; }
 .splash-track { min-height: 54px; padding-block: 6px; }
 /* the turning rays are scenery: pinned to the screen, so they never make the opening screen scrollable */
 .splash-rays { position: fixed; }

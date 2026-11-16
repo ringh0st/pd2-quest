@@ -2,7 +2,8 @@
 // by letter and a bar fills for about 4 seconds while the app loads underneath. Then the two exams
 // appear as big buttons, PD1 Quest and PD2 Quest (the last one studied is the main button); picking
 // the other exam reloads the app into it. A tap during loading skips to the
-// button. Shows the exam facts, the studio and the version. Static with reduced motion.
+// button. Shows the studio and the version. Static with reduced motion. The layout never changes while it
+// shows: the exam buttons hold their place (invisible) during loading and fade in without moving anything.
 import { useEffect, useRef, useState } from 'react';
 import { motion } from 'motion/react';
 import { Zap } from '../game/Zap.jsx';
@@ -11,6 +12,7 @@ import { useStore } from '../../state/store.js';
 import { sfx } from '../../audio/sfx.js';
 import { haptic } from '../../audio/haptics.js';
 import { useHoldCelebrations } from '../../hooks/useFocusMode.js';
+import { useReducedMotion } from '../../hooks/useMotionPrefs.js';
 import { APP_VERSION, BRAND_NAME, BRAND_TAGLINE, COPYRIGHT_YEAR, STUDIO_NAME } from '../../lib/appInfo.js';
 import { TRACKS, TRACK_IDS, currentTrack, hasChosenTrack, switchTrack, chooseTrack } from '../../lib/track.js';
 
@@ -26,6 +28,7 @@ export function SplashScreen({ onDone }) {
   const startRef = useRef(null);
   const returning = useStore((s) => s.onboarded);
   const chosen = hasChosenTrack() || returning; // people who studied PD2 before exams existed keep it as their main button
+  const reduced = useReducedMotion();
   useHoldCelebrations(true); // rewards and pop-ups wait until the splash is gone
 
   useEffect(() => {
@@ -56,7 +59,7 @@ export function SplashScreen({ onDone }) {
   return (
     <div
       ref={ref} tabIndex={-1}
-      className={`splash${leaving ? ' leaving' : ''}${ready ? ' picking' : ''}`}
+      className={`splash${leaving ? ' leaving' : ''}`}
       onClick={ready ? undefined : skip}
       onKeyDown={(e) => !ready && ['Enter', 'Escape', ' '].includes(e.key) && skip()}
       role="dialog" aria-modal="true"
@@ -88,18 +91,18 @@ export function SplashScreen({ onDone }) {
         <span className="splash-tagline">{BRAND_TAGLINE}</span>
       </h1>
 
-      <p className="splash-facts" aria-hidden="true">Bite-sized exam prep · plain words · real exam focus</p>
-
-      {ready ? (
-        <div className="splash-tracks" role="group" aria-label="Pick your exam">
+      {/* The exam buttons hold their place from the start (invisible while loading), so nothing moves when they appear. */}
+      <div className="splash-action">
+        <div className="splash-tracks" role="group" aria-label="Pick your exam" aria-hidden={!ready} inert={!ready}>
           {TRACK_IDS.map((id, k) => {
             const main = chosen && id === currentTrack;
             return (
               <motion.button
                 key={id} ref={main || (!chosen && k === 0) ? startRef : undefined} type="button"
                 className={`btn big splash-start splash-track${main ? ' primary' : ''}`} onClick={pick(id)}
-                initial={{ opacity: 0, scale: 0.7, y: 10 }} animate={{ opacity: 1, scale: 1, y: 0 }}
-                transition={{ type: 'spring', stiffness: 420, damping: 18, delay: k * 0.08 }}
+                initial={false} animate={{ opacity: ready ? 1 : 0 }}
+                transition={{ duration: reduced ? 0 : 0.28, ease: 'easeOut', delay: ready && !reduced ? k * 0.06 : 0 }}
+                tabIndex={ready ? undefined : -1}
               >
                 <Icon name="play" fill />
                 <span className="splash-track-text">
@@ -110,12 +113,13 @@ export function SplashScreen({ onDone }) {
             );
           })}
         </div>
-      ) : (
-        <div className="splash-loading" aria-hidden="true">
-          <div className="splash-bar"><span className="splash-fill" style={{ animationDuration: `${SPLASH_MS}ms` }} /></div>
-          <p key={line} className="splash-line">{LINES[line]}</p>
-        </div>
-      )}
+        {!ready && (
+          <div className="splash-loading" aria-hidden="true">
+            <div className="splash-bar"><span className="splash-fill" style={{ animationDuration: `${SPLASH_MS}ms` }} /></div>
+            <p key={line} className="splash-line">{LINES[line]}</p>
+          </div>
+        )}
+      </div>
 
       <footer className="splash-footer">
         <p className="splash-studio">A <strong>{STUDIO_NAME}</strong> production</p>
