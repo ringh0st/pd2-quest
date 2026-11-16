@@ -1,4 +1,4 @@
-// The adventure map: five themed worlds (one per exam section). Worlds open with stars, or early with coins.
+// The adventure map: one themed world per exam section. Worlds open with stars, or early with coins.
 import { motion } from 'motion/react';
 import { useStore, unlockWorld } from '../state/store.js';
 import { sections, exam, themeOf } from '../data/index.js';
@@ -29,7 +29,7 @@ export function WorldMap() {
           <CoinChip />
         </div>
       </header>
-      <p className="muted small">Five worlds, one per exam section. Beat lessons, crush Hard levels, defeat each Boss.</p>
+      <p className="muted small">{sections.length} worlds, one per exam section. Beat lessons, crush Hard levels, defeat each Boss.</p>
       <ul className="list-plain world-list">
         {sections.map((sec, i) => {
           const t = themeOf(sec.id);

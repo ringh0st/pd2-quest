@@ -1,4 +1,4 @@
-// The five world bosses: friendly-menacing characters built from simple shapes on a 96-unit grid.
+// The world bosses (one look per section id): friendly-menacing characters built from simple shapes on a 96-unit grid.
 // mood: idle (gentle bob) | hit (squash and shake) | taunt (lean in, grin) | defeated (dizzy eyes, tilt, fade).
 // With reduced motion or Calm mode the pose is shown still. Tiny sizes (under 40px) never move.
 import { motion } from 'motion/react';

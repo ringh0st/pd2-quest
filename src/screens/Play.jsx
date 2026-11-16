@@ -9,7 +9,7 @@ import { shuffle } from '../engine/session.js';
 import { useStore, saveStars, addCoins, earn, useHelper, refundHelper, getState, checkBadges } from '../state/store.js';
 import { saveRun, loadRun, clearRun, questionsFor } from '../state/runSession.js';
 import { useFeedback } from '../components/Feedback.jsx';
-import { totalLessons } from '../state/selectors.js';
+import { badgeContext } from '../state/selectors.js';
 import { PracticeRunner } from '../components/PracticeRunner.jsx';
 import { WinScreen } from '../components/game/WinScreen.jsx';
 import { Zap } from '../components/game/Zap.jsx';
@@ -111,7 +111,7 @@ export function Play({ id }) {
     const bonus = firstClear ? (isBoss ? COINS.bossWin : COINS.hardWin) : 0;
     addCoins(bonus);
     if (st) earn(isBoss ? 40 : 20);
-    checkBadges({ totalLessons: totalLessons() });
+    checkBadges(badgeContext());
     setResult({ ...r, stars: st, prev: saved.before, coins: saved.coins + bonus, xp: (r.xp ?? 0) + (st ? (isBoss ? 40 : 20) : 0) });
     setPhase('done');
   };

@@ -1,6 +1,8 @@
 // Badges: milestones only, checked from saved state (nothing extra to keep in sync).
 // Art: BadgeMedal draws each one from `shape` (rosette | shield | hex | star), `tone` (its colour pair)
 // and `icon` (an Icon name for the central glyph). Unearned badges are greyed with a lock.
+// Tests get the current exam's numbers in `c` (state/selectors.js badgeContext): totalLessons, worlds,
+// passing (pass mark %) and fullLength (questions in a full mock), so every exam's badges fit it.
 import { totalStars } from './worlds.js';
 
 export const BADGES = [
@@ -13,12 +15,12 @@ export const BADGES = [
   { id: 'streak7', icon: 'leaf', tone: 'teal', shape: 'hex', name: 'Week warrior', about: '7-day streak', test: (s) => s.streak.best >= 7 },
   { id: 'streak30', icon: 'mountain', tone: 'steel', shape: 'hex', name: 'Mountain mind', about: '30-day streak', test: (s) => s.streak.best >= 30 },
   { id: 'boss1', icon: 'swords', tone: 'berry', shape: 'shield', name: 'Boss slayer', about: 'Beat your first Boss', test: (s) => Object.keys(s.stars).some((k) => k.endsWith('-boss')) },
-  { id: 'boss5', icon: 'crown', tone: 'gold', shape: 'shield', name: 'Legend of the five', about: 'Beat all 5 Bosses', test: (s) => Object.keys(s.stars).filter((k) => k.endsWith('-boss')).length >= 5 },
+  { id: 'boss5', icon: 'crown', tone: 'gold', shape: 'shield', name: 'Boss legend', about: 'Beat every world’s Boss', test: (s, c) => Object.keys(s.stars).filter((k) => k.endsWith('-boss')).length >= c.worlds },
   { id: 'stars30', icon: 'star', tone: 'gold', shape: 'rosette', name: 'Star collector', about: 'Collect 30 stars', test: (s) => totalStars(s.stars) >= 30 },
   { id: 'stars100', icon: 'sparkles', tone: 'plum', shape: 'star', name: 'Galaxy brain', about: 'Collect 100 stars', test: (s) => totalStars(s.stars) >= 100 },
   { id: 'q100', icon: 'target', tone: 'flame', shape: 'rosette', name: 'Century', about: 'Answer 100 questions', test: (s) => Object.values(s.items).reduce((n, i) => n + i.right + i.wrong, 0) >= 100 },
-  { id: 'mock', icon: 'exam', tone: 'teal', shape: 'shield', name: 'Mock passer', about: 'Pass a mock exam', test: (s) => s.exams.some((e) => e.score >= 70) },
-  { id: 'mock85', icon: 'rocket', tone: 'rose', shape: 'shield', name: 'Ready for launch', about: 'Score 85%+ on a full mock', test: (s) => s.exams.some((e) => e.score >= 85 && e.total >= 60) },
+  { id: 'mock', icon: 'exam', tone: 'teal', shape: 'shield', name: 'Mock passer', about: 'Pass a mock exam', test: (s, c) => s.exams.some((e) => e.score >= c.passing) },
+  { id: 'mock85', icon: 'rocket', tone: 'rose', shape: 'shield', name: 'Ready for launch', about: 'Score 85%+ on a full mock', test: (s, c) => s.exams.some((e) => e.score >= 85 && e.total >= c.fullLength) },
   { id: 'shopper', icon: 'shirt', tone: 'rose', shape: 'rosette', name: 'Fashion dev', about: 'Buy something in the shop', test: (s) => s.owned.length > 0 },
   { id: 'parker', icon: 'park', tone: 'steel', shape: 'rosette', name: 'Thought parker', about: 'Park a distracting thought', test: (s) => s.parkedEver > 0 },
   { id: 'bolt7', icon: 'bolt', tone: 'gold', shape: 'star', name: 'Bolt chaser', about: 'Play the Daily Bolt 7 times', test: (s) => (s.boltCount ?? 0) >= 7 },

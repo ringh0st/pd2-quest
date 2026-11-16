@@ -1,6 +1,6 @@
 // Derived views over saved progress + content.
 import { isDue } from '../engine/srs.js';
-import { sections, allFlashcards, lessonById } from '../data/index.js';
+import { sections, allFlashcards, lessonById, exam } from '../data/index.js';
 
 export function dueQuestionCount(items, now = Date.now()) {
   let n = 0;
@@ -31,6 +31,11 @@ export function nextLesson(done) {
 
 export function totalLessons() {
   return sections.reduce((n, s) => n + s.lessons.length, 0);
+}
+
+/** What badge checks need to know about the current exam (see game/badges.js). */
+export function badgeContext() {
+  return { totalLessons: totalLessons(), worlds: sections.length, passing: exam.passing, fullLength: exam.questions };
 }
 
 export function greeting(now = new Date()) {

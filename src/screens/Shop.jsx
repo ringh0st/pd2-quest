@@ -10,7 +10,7 @@ import { Sheet } from '../components/Sheet.jsx';
 import { go } from '../hooks/useRoute.js';
 import { useFeedback } from '../components/Feedback.jsx';
 import { useReducedMotion, useCalm } from '../hooks/useMotionPrefs.js';
-import { totalLessons } from '../state/selectors.js';
+import { badgeContext } from '../state/selectors.js';
 import { sfx } from '../audio/sfx.js';
 import { haptic } from '../audio/haptics.js';
 import { Icon } from '../components/icons/Icon.jsx';
@@ -97,7 +97,7 @@ export function Shop() {
     if (entry.kind !== 'helper') equip(entry.slot, entry.id);
     showToast(`Got ${entry.name}!`, 'gift');
     announce(entry.kind === 'helper' ? `Bought one ${entry.name}.` : `Bought ${entry.name}. ${entry.kind === 'outfit' ? 'Zap is wearing it.' : 'Now in use.'}`);
-    checkBadges({ totalLessons: totalLessons() });
+    checkBadges(badgeContext());
     close();
   };
   const use = (entry) => {

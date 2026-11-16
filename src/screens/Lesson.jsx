@@ -12,7 +12,7 @@ import { go } from '../hooks/useRoute.js';
 import { useReducedMotion } from '../hooks/useMotionPrefs.js';
 import { sfx } from '../audio/sfx.js';
 import { haptic } from '../audio/haptics.js';
-import { totalLessons } from '../state/selectors.js';
+import { badgeContext } from '../state/selectors.js';
 import { starsFor } from '../game/worlds.js';
 import { nextLevelAfter } from '../state/gameSelectors.js';
 import { WinScreen } from '../components/game/WinScreen.jsx';
@@ -79,7 +79,7 @@ export function Lesson({ id }) {
     if (firstTime) earn(XP.lessonDone);
     const stars = starsFor('lesson', { right: result.firstRight ?? 0, total: result.total ?? 0 });
     const saved = saveStars(lesson.id, stars);
-    checkBadges({ totalLessons: totalLessons() });
+    checkBadges(badgeContext());
     setSummary({ ...result, firstTime, stars, ...saved });
     setPhase('done');
   };

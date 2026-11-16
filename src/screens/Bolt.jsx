@@ -14,7 +14,7 @@ import { useFeedback } from '../components/Feedback.jsx';
 import { useReducedMotion, useCalm } from '../hooks/useMotionPrefs.js';
 import { Icon } from '../components/icons/Icon.jsx';
 import { HeroArt } from '../components/art/HeroArt.jsx';
-import { totalLessons } from '../state/selectors.js';
+import { badgeContext } from '../state/selectors.js';
 import { sfx } from '../audio/sfx.js';
 import { useHoldCelebrations } from '../hooks/useFocusMode.js';
 import { useStudyScreen } from '../hooks/useStudyScreen.js';
@@ -49,7 +49,7 @@ export function Bolt() {
     const coins = first ? COINS.dailyBolt + r.firstRight * 4 : 0;
     finishBolt(r.firstRight, coins);
     earn(10);
-    checkBadges({ totalLessons: totalLessons() });
+    checkBadges(badgeContext());
     if (r.firstRight >= 4) celebrate(50);
     sfx.levelUp();
     setResult({ right: r.firstRight, coins, replay: !first });
