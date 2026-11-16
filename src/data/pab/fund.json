@@ -2813,6 +2813,765 @@
         ""
       ],
       "source": "Salesforce Help: Dynamic Dashboards"
+    },
+    {
+      "id": "fund-q51",
+      "lesson": "fund-1",
+      "difficulty": 2,
+      "q": "An admin plans a before-save record-triggered flow. Which two elements can it use? (Choose 2)",
+      "options": [
+        "Create Records",
+        "Assignment",
+        "Action, to send an email",
+        "Loop",
+        "Subflow"
+      ],
+      "answer": [
+        1,
+        3
+      ],
+      "explain": "A before-save flow supports only Assignment, Decision, Get Records and Loop. Anything else needs an after-save flow.",
+      "wrong": [
+        "Creating records needs an after-save flow.",
+        "",
+        "Actions like emails need an after-save flow.",
+        "",
+        "Subflows aren't supported in a before-save flow."
+      ],
+      "source": "Salesforce Help: Before-Save Record-Triggered Flows"
+    },
+    {
+      "id": "fund-q52",
+      "lesson": "fund-1",
+      "difficulty": 2,
+      "q": "Once an opportunity is Closed Won, nobody may change its Amount. A developer offers an Apex trigger. The admin drafts this formula instead. Where should it go?",
+      "code": "AND(\n  ISPICKVAL(PRIORVALUE(StageName), \"Closed Won\"),\n  ISCHANGED(Amount)\n)",
+      "lang": "formula",
+      "options": [
+        "In a validation rule on Opportunity",
+        "In a formula field on Opportunity",
+        "In a default value on the Amount field",
+        "Keep the Apex trigger instead"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "A validation rule blocks the save and shows an error when its formula is true. It needs no code. PRIORVALUE checks the stage before the edit.",
+      "wrong": [
+        "",
+        "A formula field shows a value. It can't stop a save.",
+        "A default value only fills in a field. It can't stop a change.",
+        "Code isn't needed when a validation rule can do the job."
+      ],
+      "source": "Salesforce Help: Validation Rules"
+    },
+    {
+      "id": "fund-x25",
+      "lesson": "fund-1",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "When an account's billing address changes, the mailing address on all its contacts must change too. A developer says only an Apex after trigger can do it. What should the app builder use?",
+      "options": [
+        "A before-save flow on Account that updates the contacts",
+        "A cross-object formula in each contact's Mailing Street",
+        "The Apex after trigger, since related records need code",
+        "An after-save record-triggered flow on Account"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "Updating related records needs an after-save flow, and that is still declarative. A before-save flow can change only the record that triggered it.",
+      "wrong": [
+        "Before-save flows can't create or update related records.",
+        "Mailing Street is a standard field. You can't turn it into a formula.",
+        "An after-save flow updates related records with no code.",
+        ""
+      ],
+      "source": "Salesforce Help: Before-Save Record-Triggered Flows"
+    },
+    {
+      "id": "fund-x26",
+      "lesson": "fund-1",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A case is saved. Both automations below change Priority, and neither checks the other. Which value is saved?",
+      "code": "Before-save record-triggered flow on Case:\n  set Priority to High\nApex before trigger on Case:\n  set Priority to Low",
+      "lang": "text",
+      "options": [
+        "High, because flows always run after Apex",
+        "Low, since the flow runs just before the Apex trigger",
+        "High, because the record is saved a second time by the flow",
+        "Neither, because the save fails when two tools change one field"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "Before-save flow updates run immediately before Apex before triggers. So the trigger runs last and its value is the one saved.",
+      "wrong": [
+        "Before-save flows run before Apex before triggers, not after.",
+        "",
+        "A before-save flow doesn't save the record again. That's why it's fast.",
+        "Two tools can set the same field. The last one to run wins."
+      ],
+      "source": "Salesforce Help: Before-Save Record-Triggered Flows"
+    },
+    {
+      "id": "fund-q53",
+      "lesson": "fund-2",
+      "difficulty": 1,
+      "q": "An admin wants a prebuilt flow from AgentExchange. She'll save it as her own flow and then change its logic. What is she looking for?",
+      "options": [
+        "A flow template",
+        "A Bolt solution",
+        "A test drive",
+        "A consultant listing"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "Flow solutions include flow templates. You install a template, save it as your own flow, then customize it.",
+      "wrong": [
+        "",
+        "A Bolt solution is a whole industry solution, set up with a partner's help.",
+        "A test drive is a read-only demo org. It's a way to try things, not a solution type.",
+        "Consultants are experts you hire. They aren't a prebuilt flow."
+      ],
+      "source": "Trailhead: Tour Solutions by Type"
+    },
+    {
+      "id": "fund-q54",
+      "lesson": "fund-2",
+      "difficulty": 2,
+      "q": "Fernhill Foods wants to hire a consulting firm for a big rollout in Germany. Which two parts of a consultant's AgentExchange listing help most? (Choose 2)",
+      "options": [
+        "The test drive org",
+        "The Expertise tab",
+        "The package type on the More Details tab",
+        "The Geographic Focus map",
+        "The Trialforce trial"
+      ],
+      "answer": [
+        1,
+        3
+      ],
+      "explain": "Consultant listings have an Expertise tab with products, industries and certifications. The Geographic Focus map shows where the firm works.",
+      "wrong": [
+        "Test drives are for trying solutions, not consultants.",
+        "",
+        "Package type is a detail of packaged solutions, not consultants.",
+        "",
+        "Trialforce trials are for trying solutions, not consultants."
+      ],
+      "source": "Trailhead: Explore AgentExchange Listings"
+    },
+    {
+      "id": "fund-q55",
+      "lesson": "fund-2",
+      "difficulty": 2,
+      "q": "An admin is checking an app listing. She wants its package type and the date it passed the security review. Where should she look?",
+      "options": [
+        "The listing summary",
+        "The Reviews tab, filtered by badge",
+        "The Overview tab",
+        "The More Details tab"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "The More Details tab shows technical details. For packaged solutions, that includes package type, contents and the security review date.",
+      "wrong": [
+        "The summary shows key details and lets you install or start a trial.",
+        "The Reviews tab shows ratings and feedback from the community.",
+        "The Overview tab shows the company and the price.",
+        ""
+      ],
+      "source": "Trailhead: Explore AgentExchange Listings"
+    },
+    {
+      "id": "fund-x27",
+      "lesson": "fund-2",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "Rosa clicks Get It Now on a listing. Her production org is missing from the Connected Salesforce Accounts list. What is the most likely cause?",
+      "code": "Trailblazer profile, connected accounts:\n  Production org: connected\n  Sandbox: connected\nRosa's user in production:\n  Profile: Sales Operations (custom)\n  Manage Billing: not granted",
+      "lang": "text",
+      "options": [
+        "Her user in that org lacks the Manage Billing permission",
+        "Production orgs never show up there; install it in the sandbox",
+        "The listing offers only a test drive",
+        "Managed packages can't be installed by a Sales Operations user"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "The account picker shows only orgs linked to your Trailblazer profile where you can install. Trailhead says to check the link and the Manage Billing permission.",
+      "wrong": [
+        "",
+        "Production orgs can be picked. Test in a sandbox first, though.",
+        "Trial options don't control which orgs the picker shows.",
+        "Any user with the right permissions can install. The role name doesn't matter."
+      ],
+      "source": "Trailhead: Install AgentExchange Packages"
+    },
+    {
+      "id": "fund-q56",
+      "lesson": "fund-3",
+      "difficulty": 1,
+      "q": "What does a permission set do?",
+      "options": [
+        "Replaces the user's profile",
+        "Sets the user's place in the role hierarchy",
+        "Sets the org-wide default for an object",
+        "Adds permissions on top of the profile"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "A permission set grants extra permissions without changing the profile. A user can have many permission sets.",
+      "wrong": [
+        "A user keeps exactly one profile. Permission sets add to it.",
+        "Roles set a user's place in the hierarchy.",
+        "Org-wide defaults are set in Sharing Settings.",
+        ""
+      ],
+      "source": "Trailhead: Control Access to Objects"
+    },
+    {
+      "id": "fund-q57",
+      "lesson": "fund-3",
+      "difficulty": 2,
+      "q": "Every Billing Specialist needs the same four permission sets, and new hires join each month. Two of the sets are also used by other teams. What is the easiest way to manage this?",
+      "options": [
+        "A permission set group with all four sets",
+        "One custom profile per Billing Specialist",
+        "Copy all four sets into one large new permission set",
+        "Give Billing Specialists the System Administrator profile"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "A permission set group bundles sets for one job, so new hires get one assignment. The same sets can still be reused in other groups.",
+      "wrong": [
+        "",
+        "One profile per user is hard to keep up to date.",
+        "A copy must be updated by hand whenever an original set changes.",
+        "This gives far more access than the job needs."
+      ],
+      "source": "Trailhead: Control Access to Objects"
+    },
+    {
+      "id": "fund-q58",
+      "lesson": "fund-3",
+      "difficulty": 2,
+      "q": "Salesforce suggests granting most access with permission sets. Which two settings does it still suggest setting in profiles? (Choose 2)",
+      "options": [
+        "Login hours",
+        "Object permissions",
+        "Page layout assignment",
+        "Field-level security",
+        "User permissions like Run Reports"
+      ],
+      "answer": [
+        0,
+        2
+      ],
+      "explain": "Profiles hold a user's defaults, like default apps, record types, IP ranges, login hours and page layout assignment. Object, field and user permissions belong in permission sets.",
+      "wrong": [
+        "",
+        "Object permissions are best granted with permission sets.",
+        "",
+        "Field permissions are best granted with permission sets.",
+        "User permissions are best granted with permission sets."
+      ],
+      "source": "Trailhead: Control Access to Objects"
+    },
+    {
+      "id": "fund-x28",
+      "lesson": "fund-3",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "Lee has this access. What can Lee do with Budget__c records?",
+      "code": "Profile: Minimum Access - Salesforce\n  Budget__c: no object permissions\nPermission set: Budget Fields\n  Budget__c: no object permissions\n  Budget__c.Amount__c: Read Access, Edit Access",
+      "lang": "text",
+      "options": [
+        "Read and edit Amount__c on every budget",
+        "Read Amount__c, but not edit it",
+        "Nothing, since he has no object access",
+        "Edit Amount__c only on budgets he owns"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "Field-level security works only inside an object the user can reach. Without at least Read on Budget__c, the field permission gives nothing.",
+      "wrong": [
+        "Field permissions don't grant access to the object itself.",
+        "Field permissions can't open records when object access is missing.",
+        "",
+        "Owning records doesn't help without Read on the object."
+      ],
+      "source": "Salesforce Help: Control Who Sees What"
+    },
+    {
+      "id": "fund-q59",
+      "lesson": "fund-4",
+      "difficulty": 2,
+      "q": "An admin wants managers not to inherit access to their reps' records. For which object can she clear Grant Access Using Hierarchies?",
+      "options": [
+        "Opportunity, with a Private default",
+        "Account, with a Private default",
+        "Commission__c, a custom object with a Private default",
+        "Payout__c, a custom detail object Controlled by Parent"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "You can clear Grant Access Using Hierarchies only for custom objects. The object also can't be Controlled by Parent.",
+      "wrong": [
+        "Standard objects always grant access through the hierarchy.",
+        "Standard objects always grant access through the hierarchy.",
+        "",
+        "The setting can't be cleared on objects Controlled by Parent."
+      ],
+      "source": "Salesforce Help: Set Your Internal Organization-Wide Sharing Defaults"
+    },
+    {
+      "id": "fund-q60",
+      "lesson": "fund-4",
+      "difficulty": 2,
+      "q": "Two reps have the same profile, no permission sets, and different roles. What can be different for them?",
+      "options": [
+        "Which other users' records they can see",
+        "Which objects they can create and edit",
+        "Which page layouts they see on each record",
+        "Which fields they can view and edit"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "Roles control record access. Profiles and permission sets control object and field access, and profiles set page layouts.",
+      "wrong": [
+        "",
+        "Object permissions come from the profile, which is the same.",
+        "Page layouts are assigned by profile, which is the same.",
+        "Field-level security comes from the profile, which is the same."
+      ],
+      "source": "Salesforce Help: Control Who Sees What"
+    },
+    {
+      "id": "fund-x29",
+      "lesson": "fund-4",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "Aldergrove Bank sets the Account org-wide default to Private. Which two defaults can the admin then choose for Contact? (Choose 2)",
+      "options": [
+        "Public Read Only",
+        "Private",
+        "Public Read/Write",
+        "Public Read/Write/Transfer",
+        "Controlled by Parent"
+      ],
+      "answer": [
+        1,
+        4
+      ],
+      "explain": "When Account is Private, Contact must be Private or Controlled by Parent. Opportunity and Case must be Private too.",
+      "wrong": [
+        "Contact can't be more open than Private while Account is Private.",
+        "",
+        "Contact can't be more open than Private while Account is Private.",
+        "This option exists only for cases and leads.",
+        ""
+      ],
+      "source": "Salesforce Help: Set Your Internal Organization-Wide Sharing Defaults"
+    },
+    {
+      "id": "fund-q61",
+      "lesson": "fund-5",
+      "difficulty": 2,
+      "q": "An admin wants a sharing rule for Asset_Note__c, but there is no way to create one. Its org-wide default is Public Read/Write. Why?",
+      "options": [
+        "Sharing rules work only on standard objects",
+        "Sharing rules first need a public group with members",
+        "Sharing rules need the Manage Users permission",
+        "The default must be Private or Public Read Only"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "Sharing rules only add access. So the default must be Private or Public Read Only before you can create one.",
+      "wrong": [
+        "Custom objects can have sharing rules.",
+        "A public group is one target. It isn't needed before creating a rule.",
+        "Rules are managed with Manage Sharing, not Manage Users. The default is the real cause here.",
+        ""
+      ],
+      "source": "Salesforce Help: Sharing Rule Considerations"
+    },
+    {
+      "id": "fund-q62",
+      "lesson": "fund-5",
+      "difficulty": 2,
+      "q": "Mia is in the Support role and in the Escalations public group. What access does she get to an open case owned by someone else?",
+      "code": "Case default: Private\nRule 1: Status equals Open\n  share with role Support: Read Only\nRule 2: Status equals Open\n  share with public group Escalations: Read/Write",
+      "lang": "text",
+      "options": [
+        "Read/Write, since the most permissive access wins",
+        "Read Only, since the stricter rule wins",
+        "No access, since the two rules conflict",
+        "Read Only, since the role-based rule is applied first"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "When several sharing rules give a user different access, the user gets the most permissive level.",
+      "wrong": [
+        "",
+        "Sharing never takes access away. The stricter rule doesn't win.",
+        "Rules don't cancel each other out. Access adds up.",
+        "Order doesn't matter. The most permissive access applies."
+      ],
+      "source": "Salesforce Help: Sharing Rule Considerations"
+    },
+    {
+      "id": "fund-x30",
+      "lesson": "fund-5",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "An admin builds a criteria-based sharing rule on a custom object. Which two fields can she use in the criteria? (Choose 2)",
+      "options": [
+        "A checkbox field",
+        "A formula field that returns text",
+        "A picklist field",
+        "An encrypted text field",
+        "A lookup field to Account"
+      ],
+      "answer": [
+        0,
+        2
+      ],
+      "explain": "Criteria can use fields like checkbox, picklist, text, number and date. Formula fields, encrypted fields and lookups other than to a user or queue can't be used.",
+      "wrong": [
+        "",
+        "Formula fields can't be used in criteria-based sharing rules.",
+        "",
+        "Encrypted fields can't be used in criteria-based sharing rules.",
+        "Lookups are supported only to a user or a queue."
+      ],
+      "source": "Salesforce Help: Sharing Rule Considerations"
+    },
+    {
+      "id": "fund-q63",
+      "lesson": "fund-6",
+      "difficulty": 1,
+      "q": "Which user permission do you need to create and manage restriction rules?",
+      "options": [
+        "Manage Sharing",
+        "View All Data",
+        "Manage Users",
+        "Customize Application"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "Creating and managing restriction rules needs the Manage Sharing permission.",
+      "wrong": [
+        "",
+        "View All Data lets you see records. It doesn't let you manage rules.",
+        "Manage Users is for users, roles and profiles, not restriction rules.",
+        "Restriction rules ask for Manage Sharing, not this permission."
+      ],
+      "source": "Salesforce Help: Create a Restriction Rule"
+    },
+    {
+      "id": "fund-q64",
+      "lesson": "fund-6",
+      "difficulty": 2,
+      "q": "Grant__c is Private. Reviewers own a few grants each. The admin adds an active restriction rule for reviewers: Region__c equals West. What can a reviewer now see?",
+      "options": [
+        "Every West grant, since the rule shares them",
+        "Only West grants they already had access to",
+        "Every grant they could see before the rule",
+        "No grants, since Private blocks the rule"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "Restriction rules filter the records a user already has access to. They never grant access to new records.",
+      "wrong": [
+        "Restriction rules don't share records. Only sharing tools grant access.",
+        "",
+        "The rule filters out the grants that aren't West.",
+        "The rule works with a Private default. It filters the reviewer's own records."
+      ],
+      "source": "Salesforce Help: Restriction Rules"
+    },
+    {
+      "id": "fund-x31",
+      "lesson": "fund-6",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "Two rival sales teams must not see each other's opportunities anywhere: list views, reports, search. Opportunity is Public Read Only today. What should the admin do?",
+      "options": [
+        "Create a restriction rule on Opportunity for each team",
+        "Create a scoping rule on Opportunity for each team",
+        "Make Opportunity Private, then share by team",
+        "Hide the Opportunity tab from the other team's profile"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "Restriction rules aren't available for opportunities. So lock the object down with a Private default, then open access per team.",
+      "wrong": [
+        "Restriction rules aren't available for opportunities.",
+        "Scoping rules only set a default view. Users can still find the other records.",
+        "",
+        "Hiding a tab doesn't remove record access in reports or search."
+      ],
+      "source": "Salesforce Help: Restriction Rules"
+    },
+    {
+      "id": "fund-x32",
+      "lesson": "fund-6",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "An admin drafted this restriction rule. Restriction rules allow only the equals operator. How can she meet the need?",
+      "code": "Object: Claim__c\nUser criteria: Department equals Field Ops\nNeed: show only claims where Region__c (picklist)\n  is West or North",
+      "lang": "text",
+      "options": [
+        "Write a formula in the record criteria instead",
+        "Make two active rules for Field Ops, one for each region",
+        "It can't be done with equals; use a scoping rule",
+        "One rule with West and North both chosen as values"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "Record criteria use equals only, but one criterion can take several values. For a picklist, choose all the values that are allowed.",
+      "wrong": [
+        "Formulas aren't supported in restriction rules.",
+        "Only one active rule should apply to a user. If two apply, only one is observed.",
+        "A scoping rule wouldn't block the other regions' records.",
+        ""
+      ],
+      "source": "Salesforce Help: Create a Restriction Rule"
+    },
+    {
+      "id": "fund-q65",
+      "lesson": "fund-7",
+      "difficulty": 1,
+      "q": "Which report format groups rows and shows subtotals for each group?",
+      "options": [
+        "Tabular",
+        "Summary",
+        "Joined",
+        "A report chart"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "Summary reports group rows, show subtotals and can show charts. They are the most used format.",
+      "wrong": [
+        "Tabular is a simple list with no groups.",
+        "",
+        "Joined reports show several report blocks side by side.",
+        "A report chart is a picture added to a report. It isn't a format."
+      ],
+      "source": "Trailhead: Format Your Report"
+    },
+    {
+      "id": "fund-q66",
+      "lesson": "fund-7",
+      "difficulty": 2,
+      "q": "An admin saved a custom report type as In Development. Two sales reps who test it can't find it. Why?",
+      "options": [
+        "The admin must first refresh the report type list",
+        "Only Manage Custom Report Types users can use it",
+        "The reps need View All Data",
+        "In Development types appear only in sandboxes"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "While a type is In Development, only users with Manage Custom Report Types can see it and run reports on it. Set it to Deployed to share it.",
+      "wrong": [
+        "There is no refresh step. The status hides it.",
+        "",
+        "View All Data doesn't unhide a report type that's In Development.",
+        "The status works the same in production and sandboxes."
+      ],
+      "source": "Salesforce Help: Create a Custom Report Type in the Legacy Custom Report Type Builder"
+    },
+    {
+      "id": "fund-q67",
+      "lesson": "fund-7",
+      "difficulty": 2,
+      "q": "A sales operations analyst, who isn't an admin, must build new custom report types. Which permission does she need?",
+      "options": [
+        "Create and Customize Reports",
+        "Manage Reports in Public Folders",
+        "Manage Dynamic Dashboards",
+        "Manage Custom Report Types"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "Creating and updating custom report types needs the Manage Custom Report Types permission.",
+      "wrong": [
+        "This builds reports from existing report types. It can't create report types.",
+        "This manages reports in shared folders, not report types.",
+        "This is for dynamic dashboards, not report types.",
+        ""
+      ],
+      "source": "Salesforce Help: Create a Custom Report Type in the Legacy Custom Report Type Builder"
+    },
+    {
+      "id": "fund-q68",
+      "lesson": "fund-7",
+      "difficulty": 2,
+      "q": "A custom report type starts from Opportunity. Users also want the account's Industry in their reports. No new fields may be added to Opportunity. What should the admin do?",
+      "options": [
+        "Add Account as the type's B object",
+        "Add fields related via lookup in the layout",
+        "Add a cross filter on Account to each report",
+        "Create a formula field on Opportunity for Industry"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "Add fields related via lookup brings in fields from objects outside the type's structure, like the opportunity's account.",
+      "wrong": [
+        "Related objects in a report type are child objects. Account is the parent here.",
+        "",
+        "A cross filter filters records. It doesn't add columns.",
+        "This adds a field to Opportunity, which isn't allowed here."
+      ],
+      "source": "Salesforce Help: Create a Custom Report Type in the Legacy Custom Report Type Builder"
+    },
+    {
+      "id": "fund-x33",
+      "lesson": "fund-7",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "An admin builds this custom report type. What happens with the relationship from B to C?",
+      "code": "Primary object (A): Accounts\nB: Opportunities\n  \"A\" records may or may not have related \"B\" records\nC: Opportunity Products\n  Planned: each \"B\" record must have at least one \"C\" record",
+      "lang": "text",
+      "options": [
+        "It uses \"must have\", as planned",
+        "The type can't be saved with mixed rules",
+        "It also becomes \"may or may not have\"",
+        "C is dropped, since B is optional"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "Once a relationship uses \"may or may not have\", all later ones in the type use it too. So the type can't require products here.",
+      "wrong": [
+        "After a \"may or may not\" link, later links can't require child records.",
+        "Salesforce doesn't block it. It applies the same rule to later links.",
+        "",
+        "C stays in the type. Only its relationship rule changes."
+      ],
+      "source": "Salesforce Help: Create a Custom Report Type in the Legacy Custom Report Type Builder"
+    },
+    {
+      "id": "fund-q69",
+      "lesson": "fund-8",
+      "difficulty": 1,
+      "q": "A dashboard needs to show one key number, like total bookings this month. Which widget fits?",
+      "options": [
+        "Table",
+        "Gauge",
+        "Donut chart",
+        "Metric"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "A metric widget shows one key value. A gauge also shows one value, but within a range you set.",
+      "wrong": [
+        "A table shows report data in columns.",
+        "A gauge places a value within a range, like progress toward a goal.",
+        "A donut chart shows how parts make up a whole.",
+        ""
+      ],
+      "source": "Trailhead: Visualize Your Data with the Lightning Dashboard Builder"
+    },
+    {
+      "id": "fund-x34",
+      "lesson": "fund-8",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "Tidewater Tours uses Professional Edition. Each rep should see only their own numbers on one shared dashboard. What is true?",
+      "options": [
+        "They can have up to 3 dynamic dashboards",
+        "Dynamic dashboards work only with Manage Users",
+        "Professional Edition doesn't include them",
+        "They can make one, if it's in a private folder"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "Dynamic dashboards are available in Enterprise, Performance, Unlimited and Developer Editions. Professional Edition doesn't have them.",
+      "wrong": [
+        "The limit of 3 is for Developer Edition.",
+        "Creating them needs Manage Dynamic Dashboards, and the edition must support them.",
+        "",
+        "Dynamic dashboards can't be saved in a private folder."
+      ],
+      "source": "Salesforce Help: Dynamic Dashboards"
+    },
+    {
+      "id": "fund-x35",
+      "lesson": "fund-8",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A sales VP wants one dashboard. Each manager sees their own team's data. Managers must also switch it to show what one of their reps sees. What setup meets this?",
+      "code": "Setup A: View as the VP; managers have Run Reports\nSetup B: View as the dashboard viewer;\n  managers have View All Records on Opportunity\nSetup C: View as the dashboard viewer;\n  let viewers choose whom they view it as;\n  managers have View My Team's Dashboards\nSetup D: View as the dashboard viewer;\n  each manager keeps a copy in a private folder",
+      "lang": "text",
+      "options": [
+        "Setup A",
+        "Setup B",
+        "Setup C",
+        "Setup D"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "Run the dashboard as the viewer and let viewers choose whom they view it as. Managers need View My Team's Dashboards or View All Data.",
+      "wrong": [
+        "Run as the VP, the dashboard shows everyone the VP's data.",
+        "View All Records ignores sharing, so managers would see every team.",
+        "",
+        "A private folder hides the dashboard, and dynamic dashboards can't be saved there."
+      ],
+      "source": "Trailhead: Visualize Your Data with the Lightning Dashboard Builder"
+    },
+    {
+      "id": "fund-x36",
+      "lesson": "fund-8",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "Which two statements about dynamic dashboards are true? (Choose 2)",
+      "options": [
+        "You can schedule them to refresh every morning",
+        "You can add filters to them",
+        "Users can subscribe to them for email updates",
+        "You need Manage Dynamic Dashboards to create them",
+        "You can save them in a private folder"
+      ],
+      "answer": [
+        1,
+        3
+      ],
+      "explain": "Dynamic dashboards can have filters, and creating them needs Manage Dynamic Dashboards. They can't be scheduled, subscribed to or kept in a private folder.",
+      "wrong": [
+        "Dynamic dashboards must be refreshed by hand.",
+        "",
+        "You can't subscribe to a dynamic dashboard.",
+        "",
+        "Dynamic dashboards can't be saved in a private folder."
+      ],
+      "source": "Salesforce Help: Dynamic Dashboards"
     }
   ]
 }
