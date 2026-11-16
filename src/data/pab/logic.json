@@ -380,7 +380,7 @@
           "items": [
             "Every save: the screen, the **API**, data imports",
             "Even when the checked field is not on the page layout",
-            "Not for records made with **Quick Create**",
+            "Not for records made with **Quick Create**, or owners changed with **Mass Transfer**",
             "The error shows at the **top of the page** or **next to a field**"
           ]
         },
@@ -1126,7 +1126,7 @@
           "type": "list",
           "title": "How an agent is built",
           "items": [
-            "**Topics**: the jobs it handles, each with **instructions**",
+            "**Topics** (renamed **subagents** in April 2026, same job): the jobs it handles, each with **instructions**",
             "**Actions**: what it can do",
             "Custom actions can be built from a **flow**, an **Apex invocable method** or a **prompt template**"
           ]
@@ -4941,24 +4941,24 @@
       "id": "logic-q96",
       "lesson": "logic-2",
       "difficulty": 2,
-      "q": "A text formula on Account should show the owner's full name. `Owner.Name` gives the error \"Field doesn't exist\". Which formula works?",
+      "q": "A formula field on Case shows `Account.Credit_Limit__c`. Some support reps can't open the related account records because of sharing. What do they see in that field on the case?",
       "options": [
-        "`Owner.FirstName & \" \" & Owner.LastName`",
-        "`TEXT(Owner.Name)`",
-        "`$User.FirstName & \" \" & $User.LastName`",
-        "`LastModifiedBy.FirstName & \" \" & LastModifiedBy.LastName`"
+        "A blank value, because they can't open the account",
+        "#Error!, because they have no access to the account",
+        "The account's credit limit, even without account access",
+        "Nothing: Salesforce hides the field from their layout"
       ],
       "answer": [
-        0
+        2
       ],
-      "explain": "Name fields built from other fields can't be used in formulas. Build the name from first and last name instead.",
+      "explain": "A cross-object formula shows the parent's value even to users who can't open the parent record. To hide it, use field-level security on the formula field.",
       "wrong": [
+        "The formula still shows the value. Record access doesn't blank it.",
+        "No error appears. The value shows as normal.",
         "",
-        "`Owner.Name` still can't be used, even inside `TEXT()`.",
-        "`$User` is the person viewing the record, not the owner.",
-        "That is the person who last edited the account, not the owner."
+        "Layouts don't change by themselves. The field stays visible."
       ],
-      "source": "Tips for Building Cross-Object Formulas"
+      "source": "What Is a Cross-Object Formula?"
     },
     {
       "id": "logic-q97",
@@ -5215,7 +5215,7 @@
         "Letters don't match `[0-9]`, so the rule fires.",
         ""
       ],
-      "source": "Validation Rules"
+      "source": "REGEX"
     },
     {
       "id": "logic-x57",
@@ -5295,7 +5295,7 @@
       "difficulty": 2,
       "q": "An admin builds an Autolaunched Flow (No Trigger) to set a field on new leads and activates it. New leads arrive, but nothing happens. Why?",
       "options": [
-        "New leads need the Run Flows permission before flows can run",
+        "The lead owners need the Run Flows permission first",
         "Autolaunched flows run only in sandboxes",
         "It needs a screen before it can run",
         "Nothing launches it; this type runs only when called"
@@ -5327,14 +5327,14 @@
       "answer": [
         1
       ],
-      "explain": "A record-triggered flow runs whenever the record is saved, from the UI or the API. Platform event flows need an event message.",
+      "explain": "Every save, from a page or through the API, goes through the same save steps. Those steps include record-triggered flows. Platform event flows need an event message.",
       "wrong": [
         "No platform event is published here. The orders are normal record saves.",
         "",
         "Nobody should have to start it by hand.",
         "The email should go when each order is created."
       ],
-      "source": "Flow Types"
+      "source": "Triggers and Order of Execution"
     },
     {
       "id": "logic-q104",
@@ -5576,7 +5576,7 @@
         "That is what happens without `retURL`.",
         "`retURL` sets where the user goes after Finish."
       ],
-      "source": "Additional Options for Launching a Flow Using its URL"
+      "source": "Customize a Flow URL to Control Finish Behavior"
     },
     {
       "id": "logic-x61",
@@ -5891,7 +5891,7 @@
         "The flow would still run, with worse error handling.",
         ""
       ],
-      "source": "Manage Record-Triggered Flows"
+      "source": "Activate or Deactivate a Flow"
     },
     {
       "id": "logic-q117",
@@ -5989,7 +5989,7 @@
         "Debug tests one run. It doesn't report on real users.",
         ""
       ],
-      "source": "Managing and Monitoring Flows"
+      "source": "Screen Flows Report"
     },
     {
       "id": "logic-q119",
@@ -6018,7 +6018,7 @@
       "id": "logic-q120",
       "lesson": "logic-11",
       "difficulty": 2,
-      "q": "A customer writes to an agent. How does the agent choose which topic should handle the request?",
+      "q": "A customer writes to an agent. How does the agent choose which topic (now called a subagent) should handle the request?",
       "options": [
         "It tries the topics one by one in alphabetical order",
         "It asks an admin to pick the right topic for each new request",
@@ -6028,7 +6028,7 @@
       "answer": [
         2
       ],
-      "explain": "The agent compares the request and recent conversation with each topic's name and description, then picks the best match. Topics are now also called subagents.",
+      "explain": "The agent compares the request and recent chat with each topic's name and classification description. Then it picks the best match. Since April 2026, topics are called subagents. They work the same.",
       "wrong": [
         "Order doesn't decide. The best match wins.",
         "The agent chooses by itself.",
@@ -6042,7 +6042,7 @@
       "lesson": "logic-11",
       "difficulty": 3,
       "pack": "hard",
-      "q": "An agent has two topics, \"Help\" and \"Billing\". Billing questions often go to Help. Which two changes help most? (Choose 2)",
+      "q": "An agent has two topics (now called subagents), \"Help\" and \"Billing\". Billing questions often go to Help. Which two changes help most? (Choose 2)",
       "options": [
         "Give both topics the same classification description",
         "Use technical terms in the topic names",
@@ -6081,7 +6081,7 @@
       "explain": "Annotate the Apex method with `@InvocableMethod`. It then becomes available as a custom agent action.",
       "wrong": [
         "",
-        "That exposes Apex to Lightning components, not agents.",
+        "On its own, it exposes Apex to Lightning components. It doesn't make an agent action.",
         "That runs Apex later. It doesn't make an action.",
         "That is for tests only."
       ],
@@ -6094,7 +6094,7 @@
       "q": "A new admin finds a long validation formula that nobody understands. How can Setup with Agentforce help?",
       "options": [
         "It can't help with formulas, only with menus",
-        "It turns the rule off for everyone without asking",
+        "It can only open a Help article about formulas",
         "It rewrites the formula and saves it without asking",
         "It can explain the formula and help change it"
       ],
@@ -6104,7 +6104,7 @@
       "explain": "Setup with Agentforce can create, modify and explain formulas. It makes changes only after you approve them.",
       "wrong": [
         "It can create, change and explain formulas.",
-        "It acts only after you approve.",
+        "It can explain the formula itself, not just point to Help.",
         "It acts only after you approve.",
         ""
       ],
