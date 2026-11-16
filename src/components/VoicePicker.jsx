@@ -1,7 +1,8 @@
-// Settings: which of the device's voices reads aloud. Automatic picks the most natural one the device has;
-// "Try it" plays a sample. The list fills in once the browser has loaded its voices.
-import { useEffect, useId, useState } from 'react';
+// Settings: which voice reads aloud. Natural voices run on this device (a one-time download, then offline);
+// device voices are the phone's own. "Try it" plays a sample. Device voices fill in once the browser has loaded them.
+import { useEffect, useId, useState, useSyncExternalStore } from 'react';
 import { canSpeak, englishVoices, onVoicesChanged, setPreferredVoice, speak } from '../lib/speech.js';
+import { NATURAL_VOICES, isNaturalVoice, loadNaturalVoice, naturalVoiceState, subscribeNaturalVoice } from '../lib/tts/naturalVoice.js';
 import { updateSettings } from '../state/store.js';
 import { Icon } from './icons/Icon.jsx';
 
@@ -11,26 +12,59 @@ const isApple = () => /iPhone|iPad|Macintosh/.test(navigator.userAgent);
 export function VoicePicker({ value }) {
   const id = useId();
   const [voices, setVoices] = useState(() => englishVoices());
+  const natural = useSyncExternalStore(subscribeNaturalVoice, naturalVoiceState, naturalVoiceState);
   useEffect(() => onVoicesChanged(() => setVoices(englishVoices())), []);
-  if (!canSpeak()) return null;
+  if (!canSpeak() && !voices.length) return null;
   const best = voices[0];
-  const choose = (uri) => { updateSettings({ voice: uri }); setPreferredVoice(uri); };
+  const wantsNatural = isNaturalVoice(value);
+  const choose = (next) => { updateSettings({ voice: next }); setPreferredVoice(next); };
   const tryIt = () => { setPreferredVoice(value); speak(`voice-sample-${value}`, SAMPLE); };
   return (
     <div className="field voice-picker">
       <label htmlFor={id}>Read-aloud voice</label>
       <div className="voice-row">
         <select id={id} className="input" value={value} onChange={(e) => choose(e.target.value)}>
-          <option value="">{best ? `Most natural (${best.name})` : 'Most natural on this device'}</option>
-          {voices.map((v) => <option key={v.voiceURI} value={v.voiceURI}>{v.name} · {v.lang.replace('_', '-')}</option>)}
+          <optgroup label="Natural voice (on this phone, free)">
+            {NATURAL_VOICES.map((v) => <option key={v.id} value={v.id}>{v.name} · {v.about}</option>)}
+          </optgroup>
+          <optgroup label="This device">
+            <option value="">{best ? `Automatic (${best.name})` : 'Automatic'}</option>
+            {voices.map((v) => <option key={v.voiceURI} value={v.voiceURI}>{v.name} · {v.lang.replace('_', '-')}</option>)}
+          </optgroup>
         </select>
-        <button type="button" className="btn small" onClick={tryIt}><Icon name="speaker" /> Try it</button>
+        <button type="button" className="btn small" onClick={tryIt} disabled={wantsNatural && natural.status !== 'ready'}>
+          <Icon name="speaker" /> Try it
+        </button>
       </div>
-      <p className="small muted">
-        {isApple()
-          ? 'For a much more natural voice: iPhone Settings → Accessibility → Spoken Content → Voices → English, download a Premium voice (like Ava or Zoe), then reopen the app.'
-          : 'Voices marked Natural, Premium or Enhanced sound the most human. Your device or browser may let you download more.'}
-      </p>
+      {wantsNatural ? <NaturalStatus state={natural} /> : (
+        <p className="small muted">
+          {isApple()
+            ? 'Natural voices sound the most human. Device voices: for a better one, download a Premium voice in iPhone Settings → Accessibility → Spoken Content → Voices.'
+            : 'Natural voices sound the most human. They download once and then work offline.'}
+        </p>
+      )}
+    </div>
+  );
+}
+
+function NaturalStatus({ state }) {
+  if (state.status === 'ready') return <p className="small muted"><Icon name="ok" className="ic-ok" /> Natural voice ready. It works offline now.</p>;
+  if (state.status === 'loading') {
+    const pct = Math.round(state.progress * 100);
+    return (
+      <div className="stack-s" aria-live="polite">
+        <div className="bar" role="progressbar" aria-label="Downloading the natural voice" aria-valuemin={0} aria-valuemax={100} aria-valuenow={pct}>
+          <span style={{ width: `${Math.max(4, pct)}%` }} />
+        </div>
+        <p className="small muted">Getting the natural voice ready… {pct ? `${pct}%` : ''} (about 90 MB, only once; Wi-Fi is best)</p>
+      </div>
+    );
+  }
+  return (
+    <div className="stack-s">
+      {state.status === 'error' && <p className="small" role="alert">The natural voice couldn’t load. Check the connection and try again.</p>}
+      <button type="button" className="btn small" onClick={loadNaturalVoice}><Icon name="download" /> Get the natural voice (about 90 MB, once)</button>
+      <p className="small muted">Until it’s ready, your phone’s own voice reads aloud.</p>
     </div>
   );
 }

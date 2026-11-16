@@ -1,11 +1,15 @@
-// Read aloud with the device's own voices (Web Speech API), picking its most natural one. One utterance at a time; tapping the
+// Read aloud: the on-device natural voice when it's chosen and downloaded (lib/tts/naturalVoice.js), otherwise the
+// device's own voices (Web Speech API), picking its most natural one. One utterance at a time; tapping the
 // same button again stops it. Markup like **bold** and `code` marks is removed before speaking.
+import { isNaturalVoice, loadNaturalVoice, naturalVoiceState, speakNatural, stopNatural } from './tts/naturalVoice.js';
+
 const synth = typeof window !== 'undefined' ? window.speechSynthesis : null;
 let current = null;
 const subs = new Set();
 const emit = () => subs.forEach((f) => f());
 
-export const canSpeak = () => !!synth && typeof window.SpeechSynthesisUtterance === 'function';
+const hasDeviceVoice = () => !!synth && typeof window.SpeechSynthesisUtterance === 'function';
+export const canSpeak = () => hasDeviceVoice() || isNaturalVoice(preferred);
 
 /** Text as it should be heard: no markdown marks, code dots read naturally. */
 export function speakable(text = '') {
@@ -46,8 +50,11 @@ export function onVoicesChanged(fn) {
   return () => synth.removeEventListener('voiceschanged', fn);
 }
 
-let preferred = ''; // voiceURI chosen in Settings ('' = automatic)
-export function setPreferredVoice(uri) { preferred = uri || ''; }
+let preferred = ''; // chosen in Settings: a natural voice id, a device voiceURI, or '' (automatic)
+export function setPreferredVoice(uri) {
+  preferred = uri || '';
+  if (isNaturalVoice(preferred) && naturalVoiceState().status === 'idle') loadNaturalVoice(); // from the browser cache after the first time
+}
 
 function pickVoice() {
   const voices = englishVoices();
@@ -55,22 +62,29 @@ function pickVoice() {
 }
 
 export function speak(id, text) {
-  if (!canSpeak()) return;
   if (current === id) { stopSpeaking(); return; } // tap again = stop
-  synth.cancel();
+  stopSpeaking();
+  const finished = () => { if (current === id) { current = null; emit(); } };
+  if (isNaturalVoice(preferred) && naturalVoiceState().status === 'ready') {
+    current = id;
+    emit();
+    speakNatural(speakable(text), preferred, finished);
+    return;
+  }
+  if (!hasDeviceVoice()) return;
   const u = new SpeechSynthesisUtterance(speakable(text));
   const v = pickVoice();
   if (v) { u.voice = v; u.lang = v.lang; } else u.lang = 'en-US';
   u.rate = 1;
-  u.onend = u.onerror = () => { if (current === id) { current = null; emit(); } };
+  u.onend = u.onerror = finished;
   current = id;
   emit();
   synth.speak(u);
 }
 
 export function stopSpeaking() {
-  if (!synth) return;
-  synth.cancel();
+  stopNatural();
+  synth?.cancel();
   current = null;
   emit();
 }

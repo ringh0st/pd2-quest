@@ -9,6 +9,7 @@ const { version } = JSON.parse(readFileSync('./package.json', 'utf8'));
 export default defineConfig({
   base: './',
   build: { chunkSizeWarningLimit: 1000 },
+  worker: { format: 'es' }, // the natural-voice worker (lib/tts/kokoroWorker.js) is a module worker
   define: { 'import.meta.env.VITE_APP_VERSION': JSON.stringify(version) },
   plugins: [
     react(),
@@ -34,6 +35,13 @@ export default defineConfig({
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,svg,png,woff2}'],
+        // The natural voice's engine is big and optional: not installed with the app, but kept once it's used.
+        globIgnores: ['**/kokoroWorker-*.js', '**/*.wasm'],
+        runtimeCaching: [{
+          urlPattern: /\/assets\/(kokoroWorker-.*\.js|ort-wasm.*\.(mjs|wasm))$/,
+          handler: 'CacheFirst',
+          options: { cacheName: 'natural-voice-engine', expiration: { maxEntries: 6 } },
+        }],
         navigateFallback: 'index.html',
       },
     }),
