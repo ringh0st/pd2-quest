@@ -594,7 +594,7 @@
           "items": [
             "Updates fields on the **same record** that triggered it",
             "Change `$Record` directly; no Update Records element needed",
-            "Only **Assignment, Decision, Get Records and Loop**",
+            "Only **Assignment, Decision, Get Records and Loop**, plus Custom Error",
             "Runs just before Apex before triggers"
           ]
         },
@@ -1304,7 +1304,7 @@
     {
       "id": "logic-f20",
       "front": "When should you use a before-save flow?",
-      "back": "To update fields on the record that triggered it. It's the fastest choice. It can use only Assignment, Decision, Get Records and Loop."
+      "back": "To update fields on the record that triggered it. It's the fastest choice. It uses Assignment, Decision, Get Records and Loop, plus Custom Error."
     },
     {
       "id": "logic-f21",
@@ -1598,7 +1598,7 @@
       "difficulty": 3,
       "pack": "hard",
       "q": "An admin saves this formula on Case. Salesforce rejects it with a compile size error, even though it has fewer than 3,900 characters. What is the most likely reason?",
-      "code": "CASE(Region_Formula__c,\n  \"EMEA\", DATEVALUE(Promise_Time__c) + 3,\n  \"APAC\", DATEVALUE(Promise_Time__c) + 5,\n  DATEVALUE(Promise_Time__c) + 7)\n\n// Region_Formula__c is itself a long formula field",
+      "code": "CASE(Region_Formula__c,\n  \"EMEA\", DATEVALUE(Promise_Time__c) + 3,\n  \"APAC\", DATEVALUE(Promise_Time__c) + 5,\n  DATEVALUE(Promise_Time__c) + 7)\n\n/* Region_Formula__c is itself a long formula field */",
       "lang": "formula",
       "options": [
         "The formula references a field from the parent account",
@@ -1659,7 +1659,7 @@
       "answer": [
         0
       ],
-      "explain": "`PRIORVALUE()` and `ISCHANGED()` work in validation rules and flow formulas, not formula fields. To keep the old value, a record-triggered flow can copy it into a normal field.",
+      "explain": "`PRIORVALUE()` and `ISCHANGED()` work in validation rules, not in formula fields. To keep the old value, a record-triggered flow can copy it into a normal field.",
       "wrong": [
         "",
         "Formula fields can't use `PRIORVALUE()`.",
@@ -1818,7 +1818,7 @@
       "difficulty": 2,
       "q": "Two formula fields on Opportunity read `Account.Industry` and `Account.Rating`. A validation rule on Opportunity reads `Account.Owner.Email`. How many unique relationships do these use?",
       "code": "Formula 1: Account.Industry\nFormula 2: Account.Rating\nValidation rule: ISBLANK(Account.Owner.Email)",
-      "lang": "formula",
+      "lang": "text",
       "options": [
         "One",
         "Three",
@@ -1891,7 +1891,7 @@
       "lesson": "logic-2",
       "difficulty": 3,
       "pack": "hard",
-      "q": "Harbor Rentals wants each Booking to show the name of its account's owner. The admin writes this formula, but Salesforce won't let them pick the field. Why?",
+      "q": "Harbor Rentals wants each Booking to show the name of its account's owner. The admin writes this formula, but Salesforce says the field doesn't exist. Why?",
       "code": "Account__r.Owner.Name",
       "lang": "formula",
       "options": [
@@ -2238,7 +2238,7 @@
       "pack": "hard",
       "q": "A Warehouse is the master of Bin records. Bin has a formula field `Location_Label__c` that reads `Warehouse__r.City__c`. The admin wants a roll-up that counts bins where that label equals \"Austin\". What happens?",
       "code": "Location_Label__c (formula on Bin__c) = Warehouse__r.City__c",
-      "lang": "formula",
+      "lang": "text",
       "options": [
         "It works, because COUNT ignores formula fields",
         "It works, but only after a mass recalculation",
@@ -2946,7 +2946,7 @@
       "q": "An external app must call Salesforce to run some logic and get a result back. No user is involved and no record save starts it. Which flow type should the admin build?",
       "options": [
         "Record-Triggered Flow",
-        "Record-Triggered Flow on the target object",
+        "Platform Event-Triggered Flow",
         "Schedule-Triggered Flow",
         "Autolaunched Flow (No Trigger)"
       ],
@@ -2956,7 +2956,7 @@
       "explain": "An autolaunched flow with no trigger can be started by the REST API, Apex, buttons or subflows.",
       "wrong": [
         "No record is saved, so it never fires.",
-        "No record is saved, so it would never fire.",
+        "It waits for an event message. It can't be called directly and return a result.",
         "It must run when called, not at a set time.",
         ""
       ],
@@ -3100,7 +3100,7 @@
         1,
         3
       ],
-      "explain": "Before save allows only Assignment, Decision, Get Records and Loop.",
+      "explain": "Before save allows Assignment, Decision, Get Records and Loop, plus Custom Error. It cannot create records, run actions or call subflows.",
       "wrong": [
         "Creating records needs an after-save flow.",
         "",
@@ -3361,7 +3361,7 @@
       "code": "Start\nObject: Account\nTrigger the flow when: A record is created or updated\nOptimize the flow for: Fast Field Updates",
       "lang": "text",
       "options": [
-        "It isn't offered: before save allows only four elements",
+        "It isn't offered: before save can't create other records",
         "The task is created after the account saves",
         "The flow saves, but the task fails to create at run time",
         "The task is created before the account saves"
@@ -3369,7 +3369,7 @@
       "answer": [
         0
       ],
-      "explain": "Before save supports only Assignment, Decision, Get Records and Loop. Switch to after save to create a task.",
+      "explain": "Before save supports Assignment, Decision, Get Records and Loop, plus Custom Error. Switch to after save to create a task.",
       "wrong": [
         "",
         "Before save can't create records.",
