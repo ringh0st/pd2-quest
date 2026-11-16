@@ -8,7 +8,8 @@ const { version } = JSON.parse(readFileSync('./package.json', 'utf8'));
 // Relative base so the build works on GitHub Pages under /<repo>/.
 export default defineConfig({
   base: './',
-  build: { chunkSizeWarningLimit: 1000 },
+  // es2022: the content loader waits for the chosen exam's files at the top level (src/data/index.js)
+  build: { chunkSizeWarningLimit: 1000, target: 'es2022' },
   worker: { format: 'es' }, // the natural-voice worker (lib/tts/kokoroWorker.js) is a module worker
   define: { 'import.meta.env.VITE_APP_VERSION': JSON.stringify(version) },
   plugins: [
@@ -18,9 +19,9 @@ export default defineConfig({
       injectRegister: false, // registered in src/lib/updates.js (update during the splash, else a banner)
       includeAssets: ['icon.svg', 'apple-touch-icon.png'],
       manifest: {
-        name: 'PD2 Quest: Salesforce PD2 Prep',
-        short_name: 'PD2 Quest',
-        description: 'Bite-sized, ADHD-friendly prep for the Salesforce Platform Developer II exam.',
+        name: 'Dev Quest: Salesforce PD1 & PD2 Prep',
+        short_name: 'Dev Quest',
+        description: 'Bite-sized, ADHD-friendly prep for the Salesforce Platform Developer I and II exams.',
         start_url: './',
         scope: './',
         display: 'standalone',

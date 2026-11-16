@@ -36,7 +36,9 @@ import { scrollToTop } from './lib/scroller.js';
 import { setMusicSettings } from './audio/music.js';
 import { setPreferredVoice } from './lib/speech.js';
 import { setSplashUp } from './lib/updates.js';
+import { takeSkipSplash } from './lib/track.js';
 import { UpdateBanner } from './components/UpdateBanner.jsx';
+import { APP_NAME } from './lib/appInfo.js';
 
 const FOCUS_ROUTES = /^\/(lesson|sprint|welcome|play|bolt|placement)/;
 
@@ -104,7 +106,7 @@ function useRouteFocus(path) {
   const first = useRef(true);
   useEffect(() => {
     const key = path.split('/')[1] || '';
-    document.title = `${TITLES[key] ?? 'PD2 Quest'} · PD2 Quest`;
+    document.title = `${TITLES[key] ?? APP_NAME} · ${APP_NAME}`;
     if (first.current) { first.current = false; return; }
     const t = setTimeout(() => {
       const main = document.getElementById('main');
@@ -133,7 +135,7 @@ export default function App() {
 
   // The opening splash shows once each time the app opens; the app loads underneath it.
   // Automated test browsers (navigator.webdriver) skip it so tests can drive the app straight away.
-  const [splash, setSplash] = useState(() => !navigator.webdriver || window.__PD2_SHOW_SPLASH === true);
+  const [splash, setSplash] = useState(() => !takeSkipSplash() && (!navigator.webdriver || window.__PD2_SHOW_SPLASH === true));
   const hideSplash = useCallback(() => {
     setSplash(false);
     document.getElementById('boot-splash')?.remove();

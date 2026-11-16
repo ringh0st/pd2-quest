@@ -26,7 +26,7 @@ export const OUTFITS = [
   { id: 'grad', name: 'Grad cap', price: 150, slot: 'head', look: 'a graduation cap with a gold tassel' },
   { id: 'cowboy', name: 'Bug wrangler', price: 180, slot: 'head', look: 'a brown cowboy hat' },
   { id: 'party', name: 'Party hat', price: 200, slot: 'head', look: 'a spotty party hat' },
-  { id: 'crown', name: 'PD2 crown', price: 400, slot: 'head', look: 'a gold crown with gems' },
+  { id: 'crown', name: 'Quest crown', price: 400, slot: 'head', look: 'a gold crown with gems' },
 ];
 
 // Accent themes: every pair checked for WCAG AA (on-primary ≥4.5:1 on primary, primary ≥3:1 on bg).

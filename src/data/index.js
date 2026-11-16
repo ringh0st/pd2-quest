@@ -1,8 +1,13 @@
-// Loads the exam facts and every section's content. Order follows the official exam guide.
-import exam from './exam.json';
+// Loads the chosen exam's facts and every section's content (src/data/<track>/). Order follows the official exam guide.
+// Only the current exam's files are downloaded; switching exams reloads the app (see lib/track.js).
+import { currentTrack } from '../lib/track.js';
 
-const files = import.meta.glob('./{fund,auto,ui,test,perf}.json', { eager: true, import: 'default' });
-const ORDER = ['fund', 'auto', 'ui', 'test', 'perf'];
+const SECTIONS = { pd1: ['fund', 'auto', 'ui', 'test'], pd2: ['fund', 'auto', 'ui', 'test', 'perf'] };
+const loaders = import.meta.glob('./{pd1,pd2}/*.json', { import: 'default' });
+const ORDER = SECTIONS[currentTrack];
+const load = (name) => loaders[`./${currentTrack}/${name}.json`]?.() ?? Promise.resolve(null);
+const [exam, ...sectionFiles] = await Promise.all([load('exam'), ...ORDER.map(load)]);
+const files = Object.fromEntries(ORDER.map((id, i) => [`./${id}.json`, sectionFiles[i]]));
 // Short names fit chips and headers on a 320px phone.
 const SHORT = { fund: 'Fundamentals', auto: 'Automation', ui: 'User Interface', test: 'Testing', perf: 'Performance' };
 const ACCENT = { fund: '--sec-fund', auto: '--sec-auto', ui: '--sec-ui', test: '--sec-test', perf: '--sec-perf' };

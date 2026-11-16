@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { termMatcher, firstMentions } from '../src/lib/terms.js';
 // Validates section content files (all of them when no path is given). Exits 1 on any error.
-const files = process.argv.slice(2).length ? process.argv.slice(2) : ['fund', 'auto', 'ui', 'test', 'perf'].map((id) => `src/data/${id}.json`);
+const files = process.argv.slice(2).length ? process.argv.slice(2) : ['fund', 'auto', 'ui', 'test', 'perf'].map((id) => `src/data/pd2/${id}.json`);
 let failed = false;
 for (const file of files) {
 const d = JSON.parse(readFileSync(file));

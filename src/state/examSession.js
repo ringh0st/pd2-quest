@@ -2,7 +2,9 @@
 // Time is wall-clock while the exam is on screen; time while the app was closed is not counted.
 import { questionById } from '../data/index.js';
 
-const KEY = 'pd2quest.exam.v1';
+import { trackKey } from '../lib/track.js';
+
+const KEY = trackKey('pd2quest.exam.v1');
 
 export function saveExamSession(session) {
   try { localStorage.setItem(KEY, JSON.stringify(session)); } catch { /* storage full or blocked: keep going */ }

@@ -18,7 +18,7 @@ export function UpdateBanner() {
       initial={reduced ? false : { y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}
     >
       <Icon name="sparkles" />
-      <span className="grow">New version of PD2 Quest ready</span>
+      <span className="grow">New version of Dev Quest ready</span>
       <button type="button" className="btn small primary" onClick={() => { sfx.tap(); installUpdate(); }}>Update</button>
     </motion.div>
   );

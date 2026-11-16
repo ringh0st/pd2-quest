@@ -7,8 +7,12 @@ import { levelFor } from '../engine/xp.js';
 import { COINS, HELPERS } from '../game/economy.js';
 import { emptyDayStats, questsFor } from '../game/quests.js';
 import { newBadges } from '../game/badges.js';
+import { track, trackKey } from '../lib/track.js';
 
-const KEY = 'pd2quest.v1';
+// Progress is kept per exam (PD2 keeps its original key); settings are shared by both exams.
+const KEY = trackKey('pd2quest.v1');
+const SETTINGS_KEY = 'devquest.settings.v1';
+const BACKUP_APP = `${track.id}-quest`;
 
 export const DEFAULT_SETTINGS = {
   theme: 'system',        // system | light | dark
@@ -123,8 +127,9 @@ export function sanitizeState(saved) {
 function load() {
   try {
     const raw = localStorage.getItem(KEY);
-    if (!raw) return initialState();
-    return sanitizeState(JSON.parse(raw));
+    const loaded = raw ? sanitizeState(JSON.parse(raw)) : initialState();
+    const shared = JSON.parse(localStorage.getItem(SETTINGS_KEY) ?? 'null');
+    return shared ? { ...loaded, settings: sameShape(shared, loaded.settings) } : loaded;
   } catch {
     return initialState();
   }
@@ -133,13 +138,14 @@ function load() {
 /** Progress as a JSON string, for backup. */
 export function exportProgress() {
   const { events, ...rest } = state; // eslint-disable-line no-unused-vars
-  return JSON.stringify({ app: 'pd2-quest', exportedAt: new Date().toISOString(), state: rest });
+  return JSON.stringify({ app: BACKUP_APP, exportedAt: new Date().toISOString(), state: rest });
 }
 
 /** Restore from a backup string. Returns true when it worked. */
 export function importProgress(text) {
   try {
     const data = JSON.parse(text);
+    if (data?.app && data.app !== BACKUP_APP) return false; // a backup from the other exam
     const next = sanitizeState(data?.state ?? data);
     setState(() => next);
     return true;
@@ -155,6 +161,7 @@ function save() {
   try {
     const { events, ...rest } = state;
     localStorage.setItem(KEY, JSON.stringify(rest));
+    localStorage.setItem(SETTINGS_KEY, JSON.stringify(rest.settings));
   } catch { /* storage full or blocked: keep going in memory */ }
 }
 

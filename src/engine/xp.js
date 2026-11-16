@@ -47,7 +47,7 @@ export const RANKS = [
   [12, 'LWC Wizard'],
   [15, 'Integration Ninja'],
   [19, 'Platform Architect'],
-  [24, 'PD2 Legend'],
+  [24, 'Quest Legend'],
 ];
 
 export function rankFor(level) {

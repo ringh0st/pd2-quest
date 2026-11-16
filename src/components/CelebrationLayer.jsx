@@ -15,6 +15,7 @@ import { useRoute } from '../hooks/useRoute.js';
 import { HeroArt } from './art/HeroArt.jsx';
 import { BadgeMedal } from './art/BadgeMedal.jsx';
 import { Icon } from './icons/Icon.jsx';
+import { track } from '../lib/track.js';
 
 const SETTLE_MS = 900;
 
@@ -28,7 +29,7 @@ function line(ev) {
     case 'chest': return ev.coins
       ? { art: 'chest', icon: 'gift', tone: 'gold', title: ev.title || 'Bonus chest!', body: `+${ev.coins} coins for the shop.`, rank: 1 }
       : { art: 'chest', icon: 'gift', tone: 'gold', title: `Lucky drop: +${ev.xp} XP`, body: 'Surprise bonus for finishing a round.', rank: 1 };
-    case 'passed': return { art: 'trophy', icon: 'trophy', tone: 'gold', title: 'Platform Developer II!', body: 'You did it. Zap is so proud. Go celebrate!', rank: 4 };
+    case 'passed': return { art: 'trophy', icon: 'trophy', tone: 'gold', title: `${track.exam.replace('Salesforce ', '')}!`, body: 'You did it. Zap is so proud. Go celebrate!', rank: 4 };
     case 'badge': return { badge: ev.badge?.id, icon: 'medal', tone: 'gold', title: `Badge: ${ev.badge?.name}`, body: `${ev.badge?.about}.`, rank: 2 };
     case 'streak': {
       const n = ev.count;

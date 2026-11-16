@@ -1,6 +1,7 @@
-// The opening screen: Zap flies in, a lightning arc lights up the PD2 badge, the title pops in letter
-// by letter and a bar fills for about 4 seconds while the app loads underneath. Then a big Start (first
-// time) or Play button appears; the app opens only when it is pressed. A tap during loading skips to the
+// The opening screen: Zap flies in, a lightning arc lights up the badge, the title pops in letter
+// by letter and a bar fills for about 4 seconds while the app loads underneath. Then the two exams
+// appear as big buttons, PD1 Quest and PD2 Quest (the last one studied is the main button); picking
+// the other exam reloads the app into it. A tap during loading skips to the
 // button. Shows the exam facts, the studio and the version. Static with reduced motion.
 import { useEffect, useRef, useState } from 'react';
 import { motion } from 'motion/react';
@@ -10,8 +11,8 @@ import { useStore } from '../../state/store.js';
 import { sfx } from '../../audio/sfx.js';
 import { haptic } from '../../audio/haptics.js';
 import { useHoldCelebrations } from '../../hooks/useFocusMode.js';
-import { exam } from '../../data/index.js';
-import { APP_NAME, APP_TAGLINE, APP_VERSION, COPYRIGHT_YEAR, STUDIO_NAME } from '../../lib/appInfo.js';
+import { APP_VERSION, BRAND_NAME, BRAND_TAGLINE, COPYRIGHT_YEAR, STUDIO_NAME } from '../../lib/appInfo.js';
+import { TRACKS, TRACK_IDS, currentTrack, hasChosenTrack, switchTrack, chooseTrack } from '../../lib/track.js';
 
 const SPLASH_MS = 4000;
 const FADE_MS = 450;
@@ -24,6 +25,7 @@ export function SplashScreen({ onDone }) {
   const ref = useRef(null);
   const startRef = useRef(null);
   const returning = useStore((s) => s.onboarded);
+  const chosen = hasChosenTrack() || returning; // people who studied PD2 before exams existed keep it as their main button
   useHoldCelebrations(true); // rewards and pop-ups wait until the splash is gone
 
   useEffect(() => {
@@ -44,7 +46,12 @@ export function SplashScreen({ onDone }) {
   }, [leaving, onDone]);
 
   const skip = () => setReady(true);
-  const start = (e) => { e.stopPropagation(); sfx.start(); haptic('success'); setLeaving(true); };
+  const pick = (id) => (e) => {
+    e.stopPropagation(); sfx.start(); haptic('success');
+    if (id !== currentTrack) { switchTrack(id); return; } // reloads straight into the other exam
+    chooseTrack(id);
+    setLeaving(true);
+  };
 
   return (
     <div
@@ -53,7 +60,7 @@ export function SplashScreen({ onDone }) {
       onClick={ready ? undefined : skip}
       onKeyDown={(e) => !ready && ['Enter', 'Escape', ' '].includes(e.key) && skip()}
       role="dialog" aria-modal="true"
-      aria-label={`${APP_NAME}, ${APP_TAGLINE} exam prep, by ${STUDIO_NAME}. Version ${APP_VERSION}.${ready ? '' : ' Loading.'}`}
+      aria-label={`${BRAND_NAME}, ${BRAND_TAGLINE} exam prep, by ${STUDIO_NAME}. Version ${APP_VERSION}.${ready ? ' Pick your exam.' : ' Loading.'}`}
     >
       <div className="splash-rays" aria-hidden="true" />
 
@@ -66,7 +73,7 @@ export function SplashScreen({ onDone }) {
             <path d="M-11 18 L-16 38 L-6 32 L0 40 L4 20 Z M11 18 L16 38 L6 32 L0 40 L-4 20 Z" className="splash-ribbon" />
             <circle r="22" className="splash-badge-ring" />
             <circle r="16.5" className="splash-badge-face" />
-            <text y="5.5" textAnchor="middle" className="splash-badge-text">PD2</text>
+            <text y="5.5" textAnchor="middle" className="splash-badge-text">PD</text>
           </g>
         </svg>
         <div className="splash-zap"><Zap mood="cheer" size={108} hat={null} bounce={false} label="" /></div>
@@ -74,25 +81,35 @@ export function SplashScreen({ onDone }) {
 
       <h1 className="splash-title" aria-hidden="true">
         <span className="splash-word">
-          {[...APP_NAME].map((ch, i) => (
+          {[...BRAND_NAME].map((ch, i) => (
             <span key={i} className={ch === ' ' ? 'splash-space' : 'splash-letter'} style={{ '--i': i }}>{ch === ' ' ? ' ' : ch}</span>
           ))}
         </span>
-        <span className="splash-tagline">{APP_TAGLINE}</span>
+        <span className="splash-tagline">{BRAND_TAGLINE}</span>
       </h1>
 
-      <p className="splash-facts" aria-hidden="true">
-        {exam.questions} questions · {exam.minutes} min · {exam.passing}% to pass
-      </p>
+      <p className="splash-facts" aria-hidden="true">Bite-sized exam prep · plain words · real exam focus</p>
 
       {ready ? (
-        <motion.button
-          ref={startRef} type="button" className="btn primary big splash-start" onClick={start}
-          initial={{ opacity: 0, scale: 0.7, y: 10 }} animate={{ opacity: 1, scale: 1, y: 0 }}
-          transition={{ type: 'spring', stiffness: 420, damping: 18 }}
-        >
-          <Icon name="play" fill /> {returning ? 'Play' : 'Start'}
-        </motion.button>
+        <div className="splash-tracks" role="group" aria-label="Pick your exam">
+          {TRACK_IDS.map((id, k) => {
+            const main = chosen && id === currentTrack;
+            return (
+              <motion.button
+                key={id} ref={main || (!chosen && k === 0) ? startRef : undefined} type="button"
+                className={`btn big splash-start splash-track${main ? ' primary' : ''}`} onClick={pick(id)}
+                initial={{ opacity: 0, scale: 0.7, y: 10 }} animate={{ opacity: 1, scale: 1, y: 0 }}
+                transition={{ type: 'spring', stiffness: 420, damping: 18, delay: k * 0.08 }}
+              >
+                <Icon name="play" fill />
+                <span className="splash-track-text">
+                  <span className="splash-track-name">{TRACKS[id].name}</span>
+                  <span className="splash-track-sub">{TRACKS[id].exam.replace('Salesforce ', '')}</span>
+                </span>
+              </motion.button>
+            );
+          })}
+        </div>
       ) : (
         <div className="splash-loading" aria-hidden="true">
           <div className="splash-bar"><span className="splash-fill" style={{ animationDuration: `${SPLASH_MS}ms` }} /></div>

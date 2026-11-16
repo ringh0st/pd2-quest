@@ -7,7 +7,7 @@ import { questsFor, isQuestDone, emptyDayStats } from '../src/game/quests.js';
 import { BADGES } from '../src/game/badges.js';
 import { seeded } from '../src/game/random.js';
 
-const load = (id) => JSON.parse(readFileSync(`src/data/${id}.json`, 'utf8'));
+const load = (id) => JSON.parse(readFileSync(`src/data/pd2/${id}.json`, 'utf8'));
 const ids = ['fund', 'auto', 'ui', 'test', 'perf'];
 
 test('every world has a theme and ends with a boss', () => {

@@ -1,4 +1,5 @@
 // Last line of defence: if a screen crashes, show a calm recovery card instead of a white screen.
+import { track } from '../lib/track.js';
 import { Component } from 'react';
 import { exportProgress } from '../state/store.js';
 import { HeroArt } from './art/HeroArt.jsx';
@@ -14,14 +15,14 @@ export class ErrorBoundary extends Component {
   }
 
   componentDidCatch(error, info) {
-    console.error('PD2 Quest crashed', error, info?.componentStack);
+    console.error(`${track.name} crashed`, error, info?.componentStack);
   }
 
   backup = () => {
     const blob = new Blob([exportProgress()], { type: 'application/json' });
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
-    a.download = `pd2-quest-backup-${new Date().toISOString().slice(0, 10)}.json`;
+    a.download = `${track.id}-quest-backup-${new Date().toISOString().slice(0, 10)}.json`;
     a.click();
     URL.revokeObjectURL(a.href);
   };

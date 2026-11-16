@@ -50,8 +50,8 @@ export function ReminderSettings() {
         <Switch
           label="Also notify me on this phone"
           hint={permission === 'denied'
-            ? 'Notifications are blocked for PD2 Quest. You can allow them in your phone’s settings.'
-            : 'Only works while PD2 Quest is open or still running in the background. Phones may close it, so keep the calendar reminder too.'}
+            ? 'Notifications are blocked for Dev Quest. You can allow them in your phone’s settings.'
+            : 'Only works while Dev Quest is open or still running in the background. Phones may close it, so keep the calendar reminder too.'}
           checked={reminder.notify && permission === 'granted'}
           disabled={permission === 'denied'}
           onChange={toggleNotify}

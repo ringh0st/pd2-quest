@@ -1321,3 +1321,9 @@ html { background: var(--surface); }
    smaller text (form controls don't inherit the font by default), and didn't always zoom back out. */
 input, textarea, select { font-family: inherit; }
 .input, textarea.input, select.input { font-size: max(16px, var(--fs-body)); line-height: 1.4; }
+/* opening screen: one big button per exam (PD1 Quest / PD2 Quest) */
+.splash-tracks { display: grid; gap: 10px; width: min(320px, 86vw); margin-top: 6px; }
+.splash-track { width: 100%; min-width: 0; justify-content: flex-start; text-align: left; padding-inline: 18px; }
+.splash-track-text { display: grid; gap: 1px; line-height: 1.15; }
+.splash-track-name { font-size: calc(20px * var(--text-scale)); font-weight: 800; }
+.splash-track-sub { font-size: calc(13px * var(--text-scale)); font-weight: 700; opacity: 0.8; }

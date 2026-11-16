@@ -12,7 +12,7 @@ const syl = (w) => (w.toLowerCase().replace(/[^a-z]/g, '').replace(/e$/, '').mat
 
 let worstAll = [];
 for (const id of ids) {
-  const d = JSON.parse(fs.readFileSync(new URL(`../src/data/${id}.json`, import.meta.url)));
+  const d = JSON.parse(fs.readFileSync(new URL(`../src/data/pd2/${id}.json`, import.meta.url)));
   const texts = [];
   for (const l of d.lessons) for (const c of l.cards) {
     if (c.body) texts.push([`${l.id} card`, c.body]);

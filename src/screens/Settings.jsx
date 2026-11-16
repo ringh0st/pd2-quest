@@ -1,3 +1,4 @@
+import { track, TRACKS, TRACK_IDS, switchTrack } from '../lib/track.js';
 import { APP_NAME, APP_VERSION, STUDIO_NAME } from '../lib/appInfo.js';
 import { useRef } from 'react';
 import { useStore, updateSettings, setState, resetProgress, exportProgress, importProgress } from '../state/store.js';
@@ -25,7 +26,7 @@ export function Settings() {
     const blob = new Blob([exportProgress()], { type: 'application/json' });
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
-    a.download = `pd2-quest-backup-${new Date().toISOString().slice(0, 10)}.json`;
+    a.download = `${track.id}-quest-backup-${new Date().toISOString().slice(0, 10)}.json`;
     a.click();
     URL.revokeObjectURL(a.href);
     showToast(<><Icon name="download" /> Backup saved</>);
@@ -35,7 +36,7 @@ export function Settings() {
     e.target.value = '';
     if (!file) return;
     if (!confirm('Replace your current progress with this backup?')) return;
-    showToast(importProgress(await file.text()) ? <><Icon name="ok" /> Progress restored</> : 'That file isn’t a PD2 Quest backup');
+    showToast(importProgress(await file.text()) ? <><Icon name="ok" /> Progress restored</> : `That file isn’t a ${APP_NAME} backup`);
   };
   return (
     <main className="screen" id="main">
@@ -47,6 +48,11 @@ export function Settings() {
 
       <section className="card stack">
         <h2 className="pq-head"><span className="pq-tile"><Icon name="target" /></span><span>Goals</span></h2>
+        <Segmented
+          label="Studying for" value={track.id} onChange={(id) => id !== track.id && switchTrack(id)}
+          options={TRACK_IDS.map((id) => [id, TRACKS[id].name])}
+        />
+        <p className="small muted">Each exam keeps its own progress, streak and coins. Settings are shared.</p>
         <Segmented label="Daily goal (XP)" value={s.dailyGoal} onChange={(v) => setState({ dailyGoal: v })} options={[[20, '20'], [50, '50'], [100, '100'], [150, '150']]} />
         <Switch
           label="Ask how sure I am" hint="Check · Sure or Check · Guessing in practice. Lucky guesses come back sooner."

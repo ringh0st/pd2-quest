@@ -4,7 +4,7 @@
 
 export const REMINDER_DAYS = ['daily', 'weekdays'];
 export const DEFAULT_REMINDER = { time: '19:00', days: 'daily', notify: false };
-export const REMINDER_TITLE = 'PD2 Quest: 5 minutes';
+export const REMINDER_TITLE = 'Dev Quest: 5 minutes';
 export const REMINDER_BODY = 'Got 5 minutes? A tiny round is ready whenever you are. No pressure.';
 
 const pad = (n) => String(n).padStart(2, '0');
@@ -94,7 +94,7 @@ export function buildReminderIcs({ time, days, url, now = new Date() }) {
   const lines = [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
-    'PRODID:-//PD2 Quest//Study reminder//EN',
+    'PRODID:-//Dev Quest//Study reminder//EN',
     'CALSCALE:GREGORIAN',
     'METHOD:PUBLISH',
     'BEGIN:VEVENT',

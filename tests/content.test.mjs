@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 
 const SECTIONS = ['fund', 'auto', 'ui', 'test', 'perf'];
-const load = (id) => JSON.parse(fs.readFileSync(new URL(`../src/data/${id}.json`, import.meta.url)));
+const load = (id) => JSON.parse(fs.readFileSync(new URL(`../src/data/pd2/${id}.json`, import.meta.url)));
 // Length as displayed: `code` and **bold** marks are not shown, so they don't count.
 const shown = (o) => o.replace(/`|\*\*/g, '').length;
 

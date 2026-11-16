@@ -2,7 +2,9 @@
 // One saved run per level id. Question order is stored by id so a resume shows the same questions.
 import { questionById } from '../data/index.js';
 
-const KEY = 'pd2quest.runs.v1';
+import { trackKey } from '../lib/track.js';
+
+const KEY = trackKey('pd2quest.runs.v1');
 const MAX_AGE = 14 * 24 * 60 * 60 * 1000; // stale runs are dropped after two weeks
 
 function readAll() {

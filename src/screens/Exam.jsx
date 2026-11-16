@@ -387,7 +387,7 @@ function ExamResult({ result, onClose }) {
         <div className="card stack-s" role="note">
           <strong className="ic-label"><Icon name="compass" style={{ color: 'var(--primary)' }} />Keep it honest</strong>
           <ul className="small" style={{ margin: 0, paddingLeft: '1.2em' }}>
-            {fast && <li>That was quick: under 25 seconds a question. Real PD2 questions take longer to read, so slow down and read every option.</li>}
+            {fast && <li>That was quick: under 25 seconds a question. Real exam questions take longer to read, so slow down and read every option.</li>}
             {seenBefore > result.total / 3 && <li>You’d seen {seenBefore} of these questions before. A pass on fresh questions is stronger evidence, so try the Exam-hard mock.</li>}
             {!result.timed && <li>This was untimed. Try one timed mock before exam day.</li>}
           </ul>

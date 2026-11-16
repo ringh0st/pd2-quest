@@ -13,6 +13,8 @@ import { haptic } from '../audio/haptics.js';
 import { Icon } from '../components/icons/Icon.jsx';
 import { HeroArt } from '../components/art/HeroArt.jsx';
 import { iconOption } from './Settings.jsx';
+import { APP_NAME } from '../lib/appInfo.js';
+import { track } from '../lib/track.js';
 
 const GOALS = [iconOption(20, 'leaf', '20'), iconOption(50, 'smile', '50'), iconOption(100, 'muscle', '100'), iconOption(150, 'flame', '150')];
 
@@ -47,8 +49,8 @@ export function Onboarding() {
         <motion.div className="pq-hero" aria-hidden="true" animate={still ? {} : { rotate: [0, -6, 6, -3, 0], y: [0, -8, 0] }} transition={{ duration: 1.2, delay: 0.4 }}>
           <HeroArt kind="welcome" size={112} />
         </motion.div>
-        <h1>PD2 Quest</h1>
-        <p className="muted">Pass Salesforce Platform Developer II in tiny, fun bites. Built for brains that love quick wins.</p>
+        <h1>{APP_NAME}</h1>
+        <p className="muted">Pass {track.exam} in tiny, fun bites. Built for brains that love quick wins.</p>
       </motion.div>
       <motion.ul className="list-plain card pq-features small" {...anim(1)}>
         {FEATURES.map(([icon, tone, text]) => (
