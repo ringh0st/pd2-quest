@@ -1,11 +1,11 @@
 # Dev Quest ⚡
 
-A phone-first study app for the **Salesforce Platform Developer** exams, designed for people with ADHD, people who get distracted easily, and anyone who learns better with quick wins. One app, two exams: pick **PD1 Quest** (Platform Developer I) or **PD2 Quest** (Platform Developer II) on the opening screen, and switch any time in Settings. Each exam keeps its own progress; settings are shared.
+A phone-first study app for **Salesforce certification exams**, designed for people with ADHD, people who get distracted easily, and anyone who learns better with quick wins. One app, three exams: pick **PD1 Quest** (Platform Developer I), **PD2 Quest** (Platform Developer II) or **App Builder Quest** (Platform App Builder) on the opening screen, and switch any time in Settings. Each exam keeps its own progress; settings are shared.
 
 ## It's a game ⚡
 
-- **Zap**, your lightning-bolt study buddy: blinks, bounces, cheers your right answers, comforts the misses, tells Apex jokes and wears the hats you buy.
-- **An adventure map with one world per exam section.** PD1: Schema Shrine, Trigger Forge, Component Bay, Debug Swamp. PD2: Sharing Shrine, Async Forge, Pixel Bay, Bug Swamp, Turbo Peaks.
+- **Zap**, your lightning-bolt study buddy: blinks, bounces, cheers your right answers, comforts the misses, tells jokes about the exam you're studying and wears the hats you buy.
+- **An adventure map with one world per exam section.** PD1: Schema Shrine, Trigger Forge, Component Bay, Debug Swamp. PD2: Sharing Shrine, Async Forge, Pixel Bay, Bug Swamp, Turbo Peaks. App Builder: Setup Shrine, Data Marsh, Flow Forge, Layout Bay, Release Peaks.
 - **Levels with a rhythm**: bite-size lesson levels, a **Hard level** after every 3 lessons (5 tough questions, 3 hearts), and a **Boss** at the end of each world, with a health bar, hits and hearts.
 - **1–3 stars** per level, a "NEW BEST!" stamp and replays for ★★★. Worlds open with stars, or early with coins.
 - **Coins** for new stars, Hard levels, Bosses, daily quests and the Daily Bolt. Spend them in the **shop**: outfits for Zap, accent themes (all AA-contrast checked), confetti styles, and capped helpers (50/50, Hint, Extra heart). No real money, ever.
@@ -14,14 +14,14 @@ A phone-first study app for the **Salesforce Platform Developer** exams, designe
 
 ## What's inside
 
-| | PD1 Quest | PD2 Quest |
-| --- | --- | --- |
-| Exam sections (weights from the official guide) | Developer Fundamentals 27%, Process Automation and Logic 28%, User Interface 25%, Testing, Debugging, and Deployment 20% | Advanced Developer Fundamentals 15%, Process Automation, Logic & Integration 27%, User Interface 20%, Testing, Debugging & Deployment 20%, Performance 18% |
-| Lessons (2–4 min, one idea per card) | 38 | 49 |
-| Key terms (tap to see a very simple meaning) | 368 | 482 |
-| Practice questions (exam-hard / with code) | 398 (140 / 148) | 602 (386 / 232) |
-| Flashcards | 141 | 172 |
-| Real exam | 60 questions, 105 min, 68% to pass | 60 questions, 120 min, 70% to pass |
+| | PD1 Quest | PD2 Quest | App Builder Quest |
+| --- | --- | --- | --- |
+| Exam sections (weights from the official guide) | Developer Fundamentals 27%, Process Automation and Logic 28%, User Interface 25%, Testing, Debugging, and Deployment 20% | Advanced Developer Fundamentals 15%, Process Automation, Logic & Integration 27%, User Interface 20%, Testing, Debugging & Deployment 20%, Performance 18% | Salesforce Fundamentals 18%, Data Modeling and Management 20%, Business Logic and Process Automation 32%, User Interface 17%, App Deployment 13% |
+| Lessons (2–4 min, one idea per card) | 38 | 49 | 43 |
+| Key terms (tap to see a very simple meaning) | 368 | 482 | 399 |
+| Practice questions (exam-hard / with code, formulas or setups to read) | 398 (140 / 148) | 602 (386 / 232) | 432 (149 / 110) |
+| Flashcards | 141 | 172 | 149 |
+| Real exam | 60 questions, 105 min, 68% to pass | 60 questions, 120 min, 70% to pass | 60 questions, 105 min, 73% to pass |
 
 - Every question has instant feedback, "why not the others?" explanations and the Salesforce doc it was checked against. Lessons teach in plain words ("In plain words", "Think of it like…", the real rule, an exam trap, "Remember it").
 - **Exam simulator**: full mock and **Exam-hard mock** at the real exam's length and time, a mini mock (a third of the exam at the same pace) and an Exam-hard sprint. About 1 in 5 hard questions is kept for mocks only, so a mock always shows fresh questions.
@@ -76,10 +76,10 @@ research/            ADHD UX spec, content schema and writing briefs (plain lang
 
 ### Adding or changing an exam
 
-Everything that differs between exams is data. Add the exam to `TRACKS` in `src/lib/track.js` (name, storage prefix, section ids), then add `src/data/<exam>/exam.json` and one file per section, following `research/CONTENT_SCHEMA.md`. Screens, game rules, tests (`npm test`), content checks (`npm run validate`) and e2e scripts (`TRACK=<exam> node e2e/behavior.cjs`) pick it up from there. A section id chooses its world's look (`WORLD_STYLES` in `src/game/worlds.js`); its name and Boss come from `exam.json`.
+Everything that differs between exams is data. Add the exam to `TRACKS` in `src/lib/track.js` (name, storage prefix, section ids), then add `src/data/<exam>/exam.json` (facts, objectives, `sections[].short`/`icon`, `worlds` with each world's name, Boss and `look`, Zap's topic jokes in `zap`, rank titles in `ranks`) and one file per section, following `research/CONTENT_SCHEMA.md`. Screens, game rules, tests (`npm test`), content checks (`npm run validate`) and e2e scripts (`TRACK=<exam> node e2e/behavior.cjs`) pick it up from there. A world's `look` picks one of the five world arts, skies and accents (`WORLD_STYLES` in `src/game/worlds.js`); everything else comes from `exam.json`.
 
 ## Content note
 
-PD1 content was written in November 2026 from the official PD1 exam guide (questions align to Summer '25) and the Trailhead Cert Prep modules, then reviewed independently question by question against the official docs. PD2's Exam-hard pack (200 questions) was checked against the official Salesforce docs (Apex, LWC, Visualforce, SOQL, Platform Events, DX guides) in November 2026, including two recent changes: heap is now 10 MB sync / 25 MB async, and from API 67.0 classes with no sharing keyword run with sharing in user mode. Lessons teach both the classic and the new behaviour.
+App Builder content was written in November 2026 from the official exam guide (questions align to Summer '26) and Salesforce Help, then reviewed independently. PD1 content was written in November 2026 from the official PD1 exam guide (questions align to Summer '25) and the Trailhead Cert Prep modules, then reviewed independently question by question against the official docs. PD2's Exam-hard pack (200 questions) was checked against the official Salesforce docs (Apex, LWC, Visualforce, SOQL, Platform Events, DX guides) in November 2026, including two recent changes: heap is now 10 MB sync / 25 MB async, and from API 67.0 classes with no sharing keyword run with sharing in user mode. Lessons teach both the classic and the new behaviour.
 
 All questions and lessons are original practice material written from the public exam guide and Salesforce documentation. They are not real exam questions, and the app is not affiliated with Salesforce. Always double-check limits and behaviour against the current docs and release notes.
