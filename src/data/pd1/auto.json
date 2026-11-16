@@ -551,7 +551,7 @@
           "type": "code",
           "title": "All or nothing",
           "lang": "apex",
-          "code": "try {\n    insert newAccounts;  // one bad record = none saved\n} catch (DmlException e) {\n    System.debug(e.getNumDml() + ' failed');\n}",
+          "code": "try {\n    insert newAccounts;  // one bad record = none saved\n} catch (DmlException e) {\n    System.debug('Failed: ' + e.getNumDml());\n}",
           "body": "A DML statement throws a `DmlException` on any failure, and none of the records are saved. Catch it with try/catch."
         },
         {
@@ -1767,12 +1767,12 @@
       "difficulty": 3,
       "pack": "hard",
       "q": "This runs in one Execute Anonymous transaction. What does it print?",
-      "code": "public class Counter {\n    public static Integer total = 0;\n    public Integer mine = 0;\n    public void add() { total++; mine++; }\n}\n// Execute Anonymous\nCounter a = new Counter();\nCounter b = new Counter();\na.add(); a.add(); b.add();\nSystem.debug(Counter.total + ' ' + b.mine);",
+      "code": "public class Counter {\n    public static Integer total = 0;\n    public Integer mine = 0;\n    public void add() { total++; mine++; }\n}\n// Execute Anonymous\nCounter a = new Counter();\nCounter b = new Counter();\na.add(); a.add(); b.add();\nSystem.debug('Total ' + Counter.total + ', mine ' + b.mine);",
       "lang": "apex",
       "options": [
-        "`3 1`",
-        "`2 1`",
-        "`1 1`",
+        "`Total 3, mine 1`",
+        "`Total 2, mine 1`",
+        "`Total 1, mine 1`",
         "Nothing; an instance method can't change a `static` variable"
       ],
       "answer": [
@@ -1842,13 +1842,13 @@
       "difficulty": 3,
       "pack": "hard",
       "q": "A developer tracks stock counts by product code. What does this print?",
-      "code": "Map<String, Integer> stock = new Map<String, Integer>();\nstock.put('apple', 3);\nstock.put('Apple', 5);\nstock.put('apple', 7);\nSystem.debug(stock.size() + ' ' + stock.get('apple'));",
+      "code": "Map<String, Integer> stock = new Map<String, Integer>();\nstock.put('apple', 3);\nstock.put('Apple', 5);\nstock.put('apple', 7);\nSystem.debug('Keys ' + stock.size() + ', apple ' + stock.get('apple'));",
       "lang": "apex",
       "options": [
-        "`1 7`",
-        "`2 3`",
+        "`Keys 1, apple 7`",
+        "`Keys 2, apple 3`",
         "Nothing; `put` throws an error for a key that already exists",
-        "`2 7`"
+        "`Keys 2, apple 7`"
       ],
       "answer": [
         3
@@ -2309,7 +2309,7 @@
       "id": "auto-q27",
       "lesson": "auto-4",
       "difficulty": 2,
-      "q": "A synchronous job must update all 30,000 Contacts in an org without holding every row in memory at once. Which loop fits best?",
+      "q": "A synchronous job must read all 30,000 Contacts in an org to build a summary, without holding every row in memory at once. Which loop fits best?",
       "options": [
         "A `while` loop that runs one query per Contact",
         "A SOQL `for` loop written right around the query, so rows come in chunks",
@@ -2681,8 +2681,8 @@
       "id": "auto-q36",
       "lesson": "auto-6",
       "difficulty": 2,
-      "q": "Using the same two Contacts, the developer writes this instead. What happens?",
-      "code": "Database.SaveResult[] res = Database.insert(cons, false);",
+      "q": "`LastName` is required on Contact. This time the developer uses a Database method. What happens?",
+      "code": "List<Contact> cons = new List<Contact>{\n    new Contact(LastName = 'Ali'),\n    new Contact(FirstName = 'No last name')\n};\nDatabase.SaveResult[] res = Database.insert(cons, false);",
       "lang": "apex",
       "options": [
         "A `DmlException` is thrown and neither Contact is saved",
@@ -2955,13 +2955,13 @@
       "difficulty": 3,
       "pack": "hard",
       "q": "An Opportunity has Amount 100. A user changes it to 200. A workflow field update then sets it to 250. What does the before update trigger print when it runs the second time?",
-      "code": "trigger OppAudit on Opportunity (before update) {\n    System.debug(Trigger.old[0].Amount + ' -> ' + Trigger.new[0].Amount);\n}",
+      "code": "trigger OppAudit on Opportunity (before update) {\n    System.debug('Old ' + Trigger.old[0].Amount + ', new ' + Trigger.new[0].Amount);\n}",
       "lang": "apex",
       "options": [
-        "`200 -> 250`",
-        "`100 -> 200`",
-        "`100 -> 250`",
-        "`250 -> 250`"
+        "`Old 200, new 250`",
+        "`Old 100, new 200`",
+        "`Old 100, new 250`",
+        "`Old 250, new 250`"
       ],
       "answer": [
         2
