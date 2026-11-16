@@ -289,7 +289,7 @@
         },
         {
           "term": "deployment connection",
-          "say": "The link between two related orgs that lets change sets travel. Each org must allow incoming changes."
+          "say": "The link between two related orgs that lets change sets travel. The org that receives the changes must allow them first."
         },
         {
           "term": "target org",
@@ -689,7 +689,7 @@
         },
         {
           "term": "maintenance windows",
-          "say": "Planned times when Salesforce updates its systems. Some deployment steps don't work then.",
+          "say": "Planned times when Salesforce updates its systems. You can't upload change sets while production is being updated.",
           "match": [
             "maintenance window"
           ]
@@ -1003,7 +1003,7 @@
       "options": [
         "Validating the change set before deploying it",
         "Deploying every release on a weekend morning",
-        "Assigning the admin a muting permission set",
+        "Running all local Apex tests during the release",
         "Making the fix in a sandbox first"
       ],
       "answer": [
@@ -1013,7 +1013,7 @@
       "wrong": [
         "Validation checks that the release deploys. It doesn't spot an untracked fix.",
         "The release time doesn't stop it from overwriting the fix.",
-        "Muting permission sets turn off permissions in a group. They don't protect metadata.",
+        "Tests check Apex code. They don't notice an older rule replacing the fix.",
         ""
       ],
       "source": "Trailhead: Org Development Model"
@@ -1788,18 +1788,18 @@
       "lang": "text",
       "options": [
         "A managed package",
-        "An unmanaged package",
-        "An unlocked package",
+        "An unmanaged package listed on AgentExchange",
+        "An unlocked package, since new versions install as upgrades",
         "Change sets from the company's sandbox"
       ],
       "answer": [
         0
       ],
-      "explain": "Managed packages hide their code, get upgrades from the provider and install in any org.",
+      "explain": "Only a managed package does all three. It hides its code, the provider upgrades it, and it installs in any org.",
       "wrong": [
         "",
         "Unmanaged packages show their code and get no upgrades.",
-        "Unlocked packages are for internal apps, and their metadata can be changed.",
+        "Unlocked packages upgrade, but their code isn't hidden. They're meant for a company's own apps.",
         "Change sets can't reach other companies' orgs."
       ],
       "source": "Trailhead: AgentExchange Basics"
@@ -2118,7 +2118,7 @@
         "Custom fields travel in the change set.",
         "",
         "Flows travel in the change set.",
-        "Page layouts travel in the change set."
+        "Page layouts and record pages travel in the change set."
       ],
       "source": "Change Sets Implementation Tips"
     },
