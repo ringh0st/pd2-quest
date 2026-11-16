@@ -14,6 +14,7 @@ import { useHoldCelebrations } from '../../hooks/useFocusMode.js';
 import { Icon } from '../icons/Icon.jsx';
 import { BossArt } from '../art/BossArt.jsx';
 import { BreakCard } from '../BreakCard.jsx';
+import { exam } from '../../data/index.js';
 
 export function WinScreen({ kind, title, stars, prevStars = 0, coins = 0, xp = 0, detail, next, worldId, onRetry }) {
   const reduced = useReducedMotion();
@@ -68,7 +69,7 @@ export function WinScreen({ kind, title, stars, prevStars = 0, coins = 0, xp = 0
             {xp > 0 && <span className="chip primary">+{xp} XP</span>}
           </motion.div>
         )}
-        <p className="muted small">“{zapSays(!won ? 'lose' : stars === 3 ? 'win' : 'okwin')}”</p>
+        <p className="muted small">“{zapSays(!won ? 'lose' : stars === 3 ? 'win' : 'okwin', Math.random, exam.zap)}”</p>
         <BreakCard />
         {won && next && (
           <button className="btn primary block big" autoFocus onClick={() => { sfx.tap(); go(routeForLevel(next)); }}>

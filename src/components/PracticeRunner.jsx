@@ -10,7 +10,7 @@ import { sfx } from '../audio/sfx.js';
 import { haptic } from '../audio/haptics.js';
 import { useFeedback } from './Feedback.jsx';
 import { useReducedMotion } from '../hooks/useMotionPrefs.js';
-import { sectionById, iconOf } from '../data/index.js';
+import { sectionById, iconOf, exam } from '../data/index.js';
 import { ParkIt } from './ParkIt.jsx';
 import { useHoldCelebrations } from '../hooks/useFocusMode.js';
 import { Zap } from './game/Zap.jsx';
@@ -114,7 +114,7 @@ export function PracticeRunner({ questions, onDone, onExit, topRight, requeue = 
     setCombo(nextCombo);
     const nextHearts = !right && heartsLeft != null ? Math.max(0, heartsLeft - 1) : heartsLeft;
     setHeartsLeft(nextHearts);
-    setZapLine(zapSays(right ? (nextCombo >= 3 ? 'combo' : 'correct') : 'wrong'));
+    setZapLine(zapSays(right ? (nextCombo >= 3 ? 'combo' : 'correct') : 'wrong', Math.random, exam.zap));
     onAnswer?.(right, nextCombo);
     setRevealed(true);
     setLastRight(right);

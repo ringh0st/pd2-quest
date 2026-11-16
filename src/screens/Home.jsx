@@ -52,10 +52,10 @@ function ThreeStars() {
 }
 
 function firstLine(s) {
-  if (awayDays(s) >= 2) return zapSays('back');
+  if (awayDays(s) >= 2) return zapSays('back', Math.random, exam.zap);
   const h = new Date().getHours();
-  if (h >= 23 || h < 5) return zapSays('sleepy');
-  return zapSays('hello');
+  if (h >= 23 || h < 5) return zapSays('sleepy', Math.random, exam.zap);
+  return zapSays('hello', Math.random, exam.zap);
 }
 
 /** The one big button: next level, else (map cleared) keep crowns, reviews, or a mock. */
@@ -141,7 +141,7 @@ export function Home() {
 
       <motion.div {...enter(2)}><StudyPlanCard /></motion.div>
 
-      <motion.button className="zap-card" {...enter(2)} onClick={() => { sfx.flip(); setLine(zapSays('idle')); }} aria-label={`Zap says: ${line}. Tap for another`}>
+      <motion.button className="zap-card" {...enter(2)} onClick={() => { sfx.flip(); setLine(zapSays('idle', Math.random, exam.zap)); }} aria-label={`Zap says: ${line}. Tap for another`}>
         <ZapSays text={line} mood="happy" size={70} />
       </motion.button>
 
