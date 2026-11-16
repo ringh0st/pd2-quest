@@ -1,0 +1,3613 @@
+{
+  "id": "ui",
+  "title": "User Interface",
+  "weight": 25,
+  "summary": "Safe pages and smart components: stop XSS and SOQL injection, respect sharing and field access, and wire Visualforce, LWC, Flow and Agentforce to Apex.",
+  "lessons": [
+    {
+      "id": "ui-1",
+      "title": "XSS: keep output safe",
+      "minutes": 3,
+      "objective": "Given a scenario, prevent user interface and data access security vulnerabilities.",
+      "cards": [
+        {
+          "type": "text",
+          "title": "In plain words",
+          "body": "**Cross-site scripting** (XSS) is when an attacker sneaks a script into your page. Another user opens the page, and that script runs in their browser. It can steal their session and act as them. It happens when a page shows user input without making it safe first."
+        },
+        {
+          "type": "tip",
+          "title": "Think of it like…",
+          "body": "A school notice board. Someone pins a note that says: \"Office, hand me the keys.\" A careful office stamps every note as **just text** before pinning it. That stamp is escaping. Where it stops: the platform only stamps notes in places it controls, not inside your own scripts."
+        },
+        {
+          "type": "text",
+          "title": "Visualforce escapes for you",
+          "body": "Standard `<apex:...>` components use **escaping** by default. Dangerous characters become plain text, so `<` shows as a `<` sign, not as a tag. `<apex:outputText value=\"{!bio}\"/>` is safe. Setting `escape=\"false\"` turns that off. Then any HTML or script in the value runs."
+        },
+        {
+          "type": "list",
+          "title": "Where you are on your own",
+          "items": [
+            "A **merge field** (like `{!name}`) inside your own `<script>` block",
+            "A merge field inside an `on*` handler, like `onclick`",
+            "`<apex:includeScript>` with a URL the user controls",
+            "Any output with `escape=\"false\"`"
+          ]
+        },
+        {
+          "type": "code",
+          "title": "Encode for the spot",
+          "lang": "html",
+          "code": "<script>\n  var name = '{!JSENCODE($CurrentPage.parameters.name)}';\n</script>",
+          "body": "Each function makes data safe for one spot. `JSENCODE` for JavaScript, `HTMLENCODE` for HTML, `JSINHTMLENCODE` for JavaScript inside an HTML tag, `URLENCODE` for links."
+        },
+        {
+          "type": "text",
+          "title": "Lightning components",
+          "body": "LWC templates escape too. `{note}` always shows as text, never as HTML. The risk comes back when your code writes raw HTML itself, for example by setting `innerHTML`. Keep values in the template and let the framework draw them."
+        },
+        {
+          "type": "trap",
+          "body": "\"The data comes from our own database, so `escape=\"false\"` is fine.\" Wrong. Users typed that data. A script saved in a field is **stored XSS**: it fires for every person who views it. Keep escaping on, or encode the value yourself."
+        },
+        {
+          "type": "tip",
+          "title": "Remember it",
+          "body": "**\"Never take the stamp off.\"** Leave `escape` on. Inside your own scripts, wrap merge fields in `JSENCODE`."
+        }
+      ],
+      "check": [
+        "ui-q1",
+        "ui-q3",
+        "ui-x3"
+      ],
+      "terms": [
+        {
+          "term": "Cross-site scripting",
+          "match": [
+            "XSS"
+          ],
+          "say": "A trick where a bad person hides a script in a page. When you open the page, their script runs in your browser and can act as you."
+        },
+        {
+          "term": "session",
+          "say": "Your signed-in visit. While it lasts, the site knows it is you. If someone steals it, they can act as you without your password."
+        },
+        {
+          "term": "escaping",
+          "match": [
+            "escape"
+          ],
+          "say": "Turning special characters into harmless text before showing them. A < sign shows as a < sign, so it can never start a tag or a script."
+        },
+        {
+          "term": "merge field",
+          "say": "A placeholder in Visualforce, like {!name}. When the page loads, it is swapped for a real value from the record or the controller."
+        },
+        {
+          "term": "escape=\"false\"",
+          "say": "A setting that turns escaping off. Then HTML and scripts in the value really run. It is a classic XSS hole."
+        },
+        {
+          "term": "JSENCODE",
+          "say": "A Visualforce function that makes a value safe to put inside JavaScript. Quote marks and other risky characters can no longer break out of the string."
+        },
+        {
+          "term": "HTMLENCODE",
+          "say": "A Visualforce function that makes a value safe to show as HTML. It turns characters like < and > into harmless codes."
+        },
+        {
+          "term": "innerHTML",
+          "say": "A browser property that puts raw HTML into a page element. Whatever you hand it is treated as real markup, so never feed it user text."
+        },
+        {
+          "term": "stored XSS",
+          "say": "XSS that is saved in a record, like a comment field. Every person who later views that record runs the hidden script."
+        }
+      ]
+    },
+    {
+      "id": "ui-2",
+      "title": "SOQL injection",
+      "minutes": 3,
+      "objective": "Given a scenario, prevent user interface and data access security vulnerabilities.",
+      "cards": [
+        {
+          "type": "text",
+          "title": "In plain words",
+          "body": "**SOQL injection** is when a user types text that changes your query. It happens when code glues user input into a query string and runs it with `Database.query`. A quote mark in the input ends your string early. The words after it become part of the query."
+        },
+        {
+          "type": "tip",
+          "title": "Think of it like…",
+          "body": "A fill-in-the-blank order slip asks for \"books by ___\". Someone writes \"anyone, and also the staff files\". A careless clerk reads the whole line as an order. Where it stops: SOQL can only read data, never change it. Leaking data is bad enough."
+        },
+        {
+          "type": "code",
+          "title": "The hole",
+          "lang": "apex",
+          "code": "String q = 'SELECT Id FROM Contact WHERE Name LIKE \\'%'\n  + name + '%\\'';\nList<Contact> rows = Database.query(q);",
+          "body": "This is **dynamic SOQL**: a query built as a string while the code runs. If `name` holds a quote mark, the user can rewrite the `WHERE` part."
+        },
+        {
+          "type": "code",
+          "title": "The best fix: bind it",
+          "lang": "apex",
+          "code": "String key = '%' + name + '%';\nList<Contact> rows =\n  [SELECT Id FROM Contact WHERE Name LIKE :key];",
+          "body": "A **bind variable** like `:key` is always a value, never query words. A static query with binds is the first fix Salesforce recommends."
+        },
+        {
+          "type": "list",
+          "title": "When the query must stay dynamic",
+          "items": [
+            "Binds work in `Database.query` too, if the variable is in scope",
+            "`Database.queryWithBinds` takes the values in a map",
+            "`String.escapeSingleQuotes(name)` puts a backslash before every single quote",
+            "**Allowlist**: accept field or sort names only from a fixed list",
+            "**Type casting**: turn number input into an `Integer` or `Decimal` first"
+          ]
+        },
+        {
+          "type": "trap",
+          "body": "`escapeSingleQuotes` only handles quote marks. Input that is not inside quotes, like a field name or a number, is still open. Use an allowlist or type casting for those. Also, a bind can hold a value, never a field name."
+        },
+        {
+          "type": "tip",
+          "title": "Remember it",
+          "body": "**\"Bind it, don't glue it.\"** Glued text can change the query. Bound text stays just a value."
+        }
+      ],
+      "check": [
+        "ui-q10",
+        "ui-x4",
+        "ui-x5"
+      ],
+      "terms": [
+        {
+          "term": "SOQL injection",
+          "say": "A trick where someone types special text into a search box so your query does something you never meant, like showing hidden records."
+        },
+        {
+          "term": "SOQL",
+          "say": "Salesforce's language for asking the database for records, like \"give me all contacts named Ann.\" It can only read, never save."
+        },
+        {
+          "term": "Database.query",
+          "say": "An Apex method that runs a query written as a string. Handy for flexible queries, but risky if user text is glued into that string."
+        },
+        {
+          "term": "dynamic SOQL",
+          "say": "A query built as text while the code runs. Flexible, but if user text is glued in, the user can change the query."
+        },
+        {
+          "term": "bind variable",
+          "match": [
+            ":key"
+          ],
+          "say": "A variable placed in a query with a colon, like :key. Salesforce treats it as a plain value, so it can never change the query itself."
+        },
+        {
+          "term": "Database.queryWithBinds",
+          "say": "Runs a dynamic query and takes the values in a separate map. The values are bound, so user text cannot rewrite the query."
+        },
+        {
+          "term": "escapeSingleQuotes",
+          "match": [
+            "String.escapeSingleQuotes(name)"
+          ],
+          "say": "Puts a backslash before every single quote in user text. Then a quote cannot end your string early. It does nothing for input outside quotes."
+        },
+        {
+          "term": "Allowlist",
+          "say": "A fixed list of allowed choices. If the input is not on the list, you reject it. Great for field names and sort orders."
+        },
+        {
+          "term": "Type casting",
+          "say": "Turning text into a real type, like a number. If the text is not a number, it fails, so sneaky words never reach the query."
+        }
+      ]
+    },
+    {
+      "id": "ui-3",
+      "title": "Data access: sharing, CRUD and FLS",
+      "minutes": 4,
+      "objective": "Given a scenario, prevent user interface and data access security vulnerabilities.",
+      "cards": [
+        {
+          "type": "text",
+          "title": "In plain words",
+          "body": "Three locks guard your data. **Sharing** decides which records a user can see. **CRUD** decides what they may do with an object: Create, Read, Update, Delete. **FLS** (field-level security) decides which fields they may see or edit. Apex can skip these locks, so your code must choose to respect them."
+        },
+        {
+          "type": "tip",
+          "title": "Think of it like…",
+          "body": "An office building. Sharing is which rooms your badge opens. CRUD is whether you may use the copier at all. FLS is which drawers in a desk you may open. Where it stops: Apex can carry a master key, so the code decides which locks it checks."
+        },
+        {
+          "type": "text",
+          "title": "Sharing keywords",
+          "body": "`with sharing` respects the user's record access. `without sharing` ignores it. `inherited sharing` takes the mode of the caller. As an entry point, like an LWC controller, it runs with sharing. A method keeps the mode of the class where it is **defined**, not where it is called."
+        },
+        {
+          "type": "text",
+          "title": "Always declare one",
+          "body": "A class with no keyword is hard to predict. Its mode depends on the API version and on who calls it. The default changed in API 67.0, and the exam targets an older release. So write the keyword on every class that queries or saves data."
+        },
+        {
+          "type": "code",
+          "title": "User mode checks all three",
+          "lang": "apex",
+          "code": "List<Account> accs =\n  [SELECT Name, Rating FROM Account WITH USER_MODE];\ninsert as user newAcc;",
+          "body": "**User mode** checks CRUD, FLS and sharing. If the user lacks access, it throws an error."
+        },
+        {
+          "type": "code",
+          "title": "Strip instead of fail",
+          "lang": "apex",
+          "code": "SObjectAccessDecision d =\n  Security.stripInaccessible(AccessType.READABLE, accs);\nreturn d.getRecords();",
+          "body": "`stripInaccessible` quietly removes fields the user can't access. Use `getRecords()`, not the original list."
+        },
+        {
+          "type": "trap",
+          "body": "Sharing keywords never check CRUD or FLS. `with sharing` won't hide a salary field. And `WITH SECURITY_ENFORCED` is the older clause: it checks read access on `SELECT` and `FROM` fields only, and skips sharing. Prefer `WITH USER_MODE`."
+        },
+        {
+          "type": "tip",
+          "title": "Remember it",
+          "body": "**Rows, actions, columns.** Sharing guards rows. CRUD guards actions on an object. FLS guards columns. User mode guards all three."
+        }
+      ],
+      "check": [
+        "ui-q16",
+        "ui-q18",
+        "ui-x9"
+      ],
+      "terms": [
+        {
+          "term": "Sharing",
+          "say": "The rules for which records you can see. Like a school where you can open your own locker, but not every locker."
+        },
+        {
+          "term": "CRUD",
+          "say": "Create, Read, Update, Delete. It says which of these four things you may do with a kind of record, like Accounts."
+        },
+        {
+          "term": "FLS",
+          "match": [
+            "field-level security"
+          ],
+          "say": "Field-level security. Rules for single boxes on a record. You might see a name but not the salary box."
+        },
+        {
+          "term": "with sharing",
+          "say": "Tells Apex: only touch records this user is allowed to see. It checks records only, not fields."
+        },
+        {
+          "term": "without sharing",
+          "say": "Tells Apex: ignore which records the user may see. Use it only when the code truly needs wider access."
+        },
+        {
+          "term": "inherited sharing",
+          "say": "Tells Apex: follow the sharing mode of whoever called me. If nobody did, like when an LWC calls it, use with sharing."
+        },
+        {
+          "term": "User mode",
+          "match": [
+            "WITH USER_MODE",
+            "insert as user"
+          ],
+          "say": "Run as the person using the app. The code then only sees and changes what that person may, checking CRUD, FLS and sharing."
+        },
+        {
+          "term": "stripInaccessible",
+          "say": "A safety filter. It quietly removes the fields a user may not see or edit, and hands back clean copies of the records."
+        },
+        {
+          "term": "WITH SECURITY_ENFORCED",
+          "say": "An older query add-on that throws an error if you ask for a field the user can't read. It does not check sharing."
+        }
+      ]
+    },
+    {
+      "id": "ui-4",
+      "title": "Visualforce controllers and extensions",
+      "minutes": 4,
+      "objective": "Given a scenario, display and use custom user interface components, including Lightning components, Flow, and Visualforce. Given a scenario, implement Apex to work with various types of page components, including Lightning components, Flow, and Agentforce.",
+      "cards": [
+        {
+          "type": "text",
+          "title": "In plain words",
+          "body": "**Visualforce** is the older way to build custom pages. A page is markup with tags like `<apex:page>`. A **controller** is the code behind it: it fetches data and runs actions when users click. Visualforce still works in Lightning Experience, and the exam still tests it."
+        },
+        {
+          "type": "tip",
+          "title": "Think of it like…",
+          "body": "A restaurant. The page is the menu and tables. The controller is the kitchen. A standard controller is the house kitchen with set dishes. A custom controller is your own kitchen. An extension is a guest chef who adds dishes to an existing kitchen."
+        },
+        {
+          "type": "list",
+          "title": "Four kinds of controller",
+          "items": [
+            "**Standard controller**: `standardController=\"Account\"`. Built in: save, edit, delete, cancel",
+            "**Custom controller**: `controller=\"MyCtrl\"`. Your class, with a no-argument constructor",
+            "**Controller extension**: `extensions=\"MyExt\"`. Adds to a standard or custom controller",
+            "**Standard list controller**: add `recordSetVar` for a list of records with paging"
+          ]
+        },
+        {
+          "type": "code",
+          "title": "An extension",
+          "lang": "apex",
+          "code": "public with sharing class AccountExt {\n  private final Account acct;\n  public AccountExt(ApexPages.StandardController std) {\n    this.acct = (Account) std.getRecord();\n  }\n  public String getGreeting() { return 'Hi ' + acct.Name; }\n}",
+          "body": "The constructor takes **one** argument: the standard controller (or the custom controller). The page reads `{!greeting}`, which calls `getGreeting()`."
+        },
+        {
+          "type": "text",
+          "title": "Getters, setters and actions",
+          "body": "`{!total}` in markup calls `getTotal()`. An input bound to `{!total}` calls `setTotal()` when the form is sent. A button with `action=\"{!save}\"` calls a method that returns a **PageReference**: the page to go to next, or `null` to stay put."
+        },
+        {
+          "type": "text",
+          "title": "Who wins, who checks",
+          "body": "A page can list several extensions. If two define the same method, the **leftmost** one wins. Standard controller logic runs in **user mode**, so the user's permissions apply. At the exam's API version, your own controller code runs in **system mode**. Add `with sharing` to respect record access."
+        },
+        {
+          "type": "trap",
+          "body": "Custom controller and extension are not the same. A custom controller uses `controller=` and a **no-argument** constructor. An extension uses `extensions=` and takes **one** argument. A page can't set both `controller` and `standardController`."
+        },
+        {
+          "type": "tip",
+          "title": "Remember it",
+          "body": "**Count the constructor's arguments.** Zero means custom controller. One means extension."
+        }
+      ],
+      "check": [
+        "ui-q24",
+        "ui-q26",
+        "ui-x13"
+      ],
+      "terms": [
+        {
+          "term": "Visualforce",
+          "say": "An older Salesforce tool for building custom pages with tags like apex:page. Each page has a controller behind it."
+        },
+        {
+          "term": "controller",
+          "say": "The code behind a page. It fetches the data the page shows and runs when someone clicks a button."
+        },
+        {
+          "term": "Standard controller",
+          "say": "A ready-made controller Salesforce gives every object. It can show, save, edit and delete one record with no code."
+        },
+        {
+          "term": "Custom controller",
+          "say": "Your own Apex class that runs the whole page. It has a constructor with no arguments, and you write all the logic."
+        },
+        {
+          "term": "Controller extension",
+          "say": "An Apex class that adds extra powers to another controller. Its constructor takes that controller as its only argument."
+        },
+        {
+          "term": "Standard list controller",
+          "say": "A ready-made controller for a list of records instead of one. It gives paging, like Next and Previous, with no code."
+        },
+        {
+          "term": "PageReference",
+          "say": "An Apex value that points to a page. An action returns one to send the user somewhere, or null to stay on the same page."
+        },
+        {
+          "term": "user mode",
+          "say": "Running with the user's own permissions, so they only see and change what they're allowed to."
+        },
+        {
+          "term": "system mode",
+          "say": "Running with full power, ignoring the user's permissions and field rules. Your own controller code ran this way at the exam's API version."
+        }
+      ]
+    },
+    {
+      "id": "ui-5",
+      "title": "LWC basics: files, decorators, lifecycle",
+      "minutes": 4,
+      "objective": "Describe the use cases and best practices for Lightning Web Components, including the framework, benefits, and events.",
+      "cards": [
+        {
+          "type": "text",
+          "title": "In plain words",
+          "body": "**Lightning Web Components** (LWC) is the modern way to build Salesforce UI. It uses standard web tech: HTML, modern JavaScript and **web components** that browsers run natively. Less framework code runs, so pages are faster. Your skills also carry over to other web work."
+        },
+        {
+          "type": "tip",
+          "title": "Think of it like…",
+          "body": "LEGO bricks. Each component is a brick with its own shape. You snap small bricks into bigger ones. Where it stops: a brick hides its insides. A parent can't reach into a child's markup, thanks to the **shadow DOM**."
+        },
+        {
+          "type": "list",
+          "title": "The files in folder `myCard`",
+          "items": [
+            "`myCard.html`: the **template**, what shows on screen",
+            "`myCard.js`: the class, with data and logic",
+            "`myCard.js-meta.xml`: config, like where it can be used",
+            "Optional: `myCard.css`, an SVG icon, tests",
+            "In markup, use **kebab case**: `<c-my-card>`"
+          ]
+        },
+        {
+          "type": "list",
+          "title": "Three decorators",
+          "items": [
+            "`@api`: a public property or method. The parent sets it",
+            "`@track`: watches changes **inside** an object or array",
+            "`@wire`: streams in data from a wire adapter or Apex"
+          ]
+        },
+        {
+          "type": "text",
+          "title": "Every field is reactive",
+          "body": "Since Spring '20, every field is reactive. Assign a new value and the template redraws. You need `@track` only to notice changes inside an object or array. A child must not change its own `@api` values. The parent owns them."
+        },
+        {
+          "type": "text",
+          "title": "Lifecycle hooks",
+          "body": "`constructor()` runs first. `connectedCallback()` runs when the component joins the page, parent before child. It's a good place to load data, but children don't exist yet. `renderedCallback()` runs after each render, child before parent. `disconnectedCallback()` cleans up."
+        },
+        {
+          "type": "text",
+          "title": "LWC and Aura together",
+          "body": "**Aura** is the older component model. Both can sit on the same page. An Aura component can contain an LWC. An LWC **can't** contain an Aura component. Build new UI in LWC."
+        },
+        {
+          "type": "trap",
+          "body": "`@track` on every field is an old habit, not a rule. Plain fields already redraw when you reassign them. And `@api` is for input from the parent, not for a component's own state."
+        },
+        {
+          "type": "tip",
+          "title": "Remember it",
+          "body": "**\"Props down, events up.\"** `@api` brings data down from the parent. Events carry news back up."
+        }
+      ],
+      "check": [
+        "ui-q32",
+        "ui-q35",
+        "ui-x16"
+      ],
+      "terms": [
+        {
+          "term": "Lightning Web Components",
+          "match": [
+            "LWC"
+          ],
+          "say": "Salesforce's modern way to build screens. Each component is a small, reusable piece made of HTML and JavaScript."
+        },
+        {
+          "term": "web components",
+          "say": "A standard way, built into browsers, to make your own reusable HTML tags. LWC is built on it."
+        },
+        {
+          "term": "shadow DOM",
+          "say": "A wall around each component's insides. Code outside can't reach in and change its markup or styles."
+        },
+        {
+          "term": "template",
+          "say": "The HTML file of a component. It says what shows on the screen and where the data goes."
+        },
+        {
+          "term": "kebab case",
+          "say": "Writing names in lowercase with dashes, like my-card. In markup, the component myCard becomes c-my-card."
+        },
+        {
+          "term": "@api",
+          "say": "Makes a property or method public, so the parent can set it or call it. The child must not change it itself."
+        },
+        {
+          "term": "@track",
+          "say": "Makes LWC watch inside an object or array. Then changing one piece inside it redraws the screen."
+        },
+        {
+          "term": "@wire",
+          "say": "Fills a property with data from a wire adapter or Apex. When its inputs change, fresh data streams in by itself."
+        },
+        {
+          "term": "connectedCallback()",
+          "say": "A hook that runs when the component is added to the page. Good for loading data. Child elements are not ready yet."
+        },
+        {
+          "term": "Aura",
+          "say": "Salesforce's older component model. It still works, and an Aura component can hold an LWC, but not the other way around."
+        }
+      ]
+    },
+    {
+      "id": "ui-6",
+      "title": "LWC events: up, down and across",
+      "minutes": 3,
+      "objective": "Describe the use cases and best practices for Lightning Web Components, including the framework, benefits, and events.",
+      "cards": [
+        {
+          "type": "text",
+          "title": "In plain words",
+          "body": "Components talk in two directions. A **parent** passes data **down** by setting a **child**'s `@api` properties. A child sends news **up** by firing an **event**. The parent listens and decides what to do. Each component stays simple and reusable."
+        },
+        {
+          "type": "tip",
+          "title": "Think of it like…",
+          "body": "A family dinner. Parents pass plates down the table. A kid who wants more doesn't grab the pot. They call out, and a parent decides. Where it stops: the call can carry a little data, in `detail`."
+        },
+        {
+          "type": "code",
+          "title": "Child fires",
+          "lang": "js",
+          "code": "handleClick() {\n  this.dispatchEvent(new CustomEvent('select', {\n    detail: { id: this.itemId }\n  }));\n}",
+          "body": "`CustomEvent` creates the event and `dispatchEvent` fires it. Data rides in `detail`. Send primitives or a copy, so listeners can't change your data."
+        },
+        {
+          "type": "code",
+          "title": "Parent listens",
+          "lang": "html",
+          "code": "<c-item item-id={rec.Id} onselect={handleSelect}></c-item>",
+          "body": "Listen with `on` plus the event name: `onselect`. The handler reads `event.detail.id`."
+        },
+        {
+          "type": "list",
+          "title": "Naming rules",
+          "items": [
+            "No uppercase letters",
+            "No spaces. Use underscores to separate words",
+            "Don't start with `on`, or the handler becomes `ononselect`"
+          ]
+        },
+        {
+          "type": "text",
+          "title": "How far it travels",
+          "body": "`bubbles` and `composed` both default to **false**. Then only a listener on the child's own tag hears the event. `bubbles: true` lets it climb up through the DOM. `composed: true` also lets it cross shadow boundaries. Pick the smallest setting that works."
+        },
+        {
+          "type": "text",
+          "title": "Other paths",
+          "body": "To call a child method, mark it `@api`. Then call `this.template.querySelector('c-item').reset()`. Components with no parent-child link use **Lightning Message Service** (LMS) and a **message channel**. LMS also works with Aura and Visualforce."
+        },
+        {
+          "type": "trap",
+          "body": "`new CustomEvent('onSelect')` breaks two rules: the `on` start and an uppercase letter. Name it `select` and listen with `onselect`."
+        },
+        {
+          "type": "tip",
+          "title": "Remember it",
+          "body": "**\"Props down, events up, messages across.\"**"
+        }
+      ],
+      "check": [
+        "ui-q40",
+        "ui-q42",
+        "ui-q43"
+      ],
+      "terms": [
+        {
+          "term": "parent",
+          "say": "The component that holds another one inside its template. It passes data down and listens for news coming up."
+        },
+        {
+          "term": "child",
+          "say": "A component placed inside another one. It gets data from the parent and sends news back up with events."
+        },
+        {
+          "term": "event",
+          "say": "A message a component sends to say \"something happened,\" like a click. Whoever listens can react."
+        },
+        {
+          "term": "CustomEvent",
+          "say": "The JavaScript tool for making your own event, with a name you choose and optional data in detail."
+        },
+        {
+          "term": "dispatchEvent",
+          "say": "The method that actually sends an event. Making the event is not enough; you must dispatch it."
+        },
+        {
+          "term": "detail",
+          "say": "The part of an event that carries data, like the id of the item that was picked."
+        },
+        {
+          "term": "bubbles",
+          "say": "A yes-or-no setting. If yes, the event climbs up through the parents. By default it is no."
+        },
+        {
+          "term": "composed",
+          "say": "A yes-or-no setting. If yes, the event can cross a component's shadow wall. By default it is no."
+        },
+        {
+          "term": "Lightning Message Service",
+          "match": [
+            "LMS"
+          ],
+          "say": "A way for components that are not related to talk, even across the page. They send and listen on a shared message channel."
+        },
+        {
+          "term": "message channel",
+          "say": "A named line for Lightning Message Service. Some components publish messages on it, and others subscribe to hear them."
+        }
+      ]
+    },
+    {
+      "id": "ui-7",
+      "title": "Calling Apex from LWC: wire or imperative",
+      "minutes": 4,
+      "objective": "Given a scenario, implement Apex to work with various types of page components, including Lightning components, Flow, and Agentforce.",
+      "cards": [
+        {
+          "type": "text",
+          "title": "In plain words",
+          "body": "An LWC can call an **Apex** method to get or save data. You import the method like a JavaScript function. Then you **wire** it, so data streams in by itself. Or you call it **imperatively**: your code decides when, like on a button click."
+        },
+        {
+          "type": "tip",
+          "title": "Think of it like…",
+          "body": "A newspaper subscription versus a phone call. `@wire` is the subscription: papers come by themselves, and a new address brings new papers. Imperative is a phone call: you ask once, you get one answer. Where it stops: the subscription can only read, never change data."
+        },
+        {
+          "type": "code",
+          "title": "The Apex side",
+          "lang": "apex",
+          "code": "public with sharing class ContactCtrl {\n  @AuraEnabled(cacheable=true)\n  public static List<Contact> getContacts(Id accountId) {\n    return [SELECT Id, Name FROM Contact\n            WHERE AccountId = :accountId WITH USER_MODE];\n  }\n}",
+          "body": "To be wired, the method must be `static`, `public` or `global`, and `@AuraEnabled(cacheable=true)`."
+        },
+        {
+          "type": "code",
+          "title": "The LWC side",
+          "lang": "js",
+          "code": "import getContacts from '@salesforce/apex/ContactCtrl.getContacts';\n\nexport default class ContactList extends LightningElement {\n  @api recordId;\n  @wire(getContacts, { accountId: '$recordId' })\n  contacts; // contacts.data or contacts.error\n}",
+          "body": "The `$` makes `recordId` reactive. When it changes, the wire calls Apex again. Results land in `data` or `error`."
+        },
+        {
+          "type": "text",
+          "title": "Imperative calls",
+          "body": "Call the import like a function: `getContacts({ accountId: this.recordId })`. It returns a **Promise**, so use `then` and `catch`, or `await` inside `try`. Methods that change data **must** be called this way, because only read-only methods may be cacheable."
+        },
+        {
+          "type": "text",
+          "title": "Keep data fresh",
+          "body": "Wired Apex data is cached in the browser. After your code changes records, call `refreshApex(this.wiredResult)` with the exact value the wire gave you. For records shown by **Lightning Data Service**, call `notifyRecordUpdateAvailable(recordIds)`."
+        },
+        {
+          "type": "list",
+          "title": "Small rules",
+          "items": [
+            "Pass an object whose keys match the Apex parameter names",
+            "Since API 55.0, `@AuraEnabled` methods can't be **overloaded**",
+            "Throw `AuraHandledException` to send a friendly message",
+            "No custom logic needed? Try Lightning Data Service first, like `lightning-record-form`"
+          ]
+        },
+        {
+          "type": "trap",
+          "body": "Adding `cacheable=true` to a method that saves data doesn't make it wireable. The save fails when it runs. Wire methods that only read. Call anything that saves imperatively."
+        },
+        {
+          "type": "tip",
+          "title": "Remember it",
+          "body": "**\"Wire to read, call to write.\"**"
+        }
+      ],
+      "check": [
+        "ui-q52",
+        "ui-q49",
+        "ui-x24"
+      ],
+      "terms": [
+        {
+          "term": "Apex",
+          "say": "Salesforce's own code that runs on the server. An LWC can ask an Apex method to fetch or save data."
+        },
+        {
+          "term": "wire",
+          "match": [
+            "wired"
+          ],
+          "say": "Connecting a property to a data source, so data flows in by itself and updates when the inputs change."
+        },
+        {
+          "term": "imperatively",
+          "match": [
+            "Imperative"
+          ],
+          "say": "Calling a method yourself, at the moment you choose, like when a button is clicked. You get one answer back."
+        },
+        {
+          "term": "@AuraEnabled(cacheable=true)",
+          "match": [
+            "cacheable=true"
+          ],
+          "say": "Marks an Apex method as callable from components and safe to cache, because it only reads data. Wired methods need it."
+        },
+        {
+          "term": "Promise",
+          "say": "JavaScript's IOU. It stands for an answer that comes later. Then runs on success, catch runs on failure."
+        },
+        {
+          "term": "refreshApex",
+          "match": [
+            "refreshApex(this.wiredResult)"
+          ],
+          "say": "Asks the server again for fresh wired Apex data. You pass it the exact value the wire gave you."
+        },
+        {
+          "term": "Lightning Data Service",
+          "say": "A built-in data layer that loads and saves records for components, respects user access and shares one cache. No Apex needed."
+        },
+        {
+          "term": "overloaded",
+          "say": "Having two methods with the same name but different inputs. Since API 55.0, @AuraEnabled methods can't do this."
+        },
+        {
+          "term": "AuraHandledException",
+          "say": "An Apex error you throw on purpose. Its message travels safely to the component, so you can show it to the user."
+        }
+      ]
+    },
+    {
+      "id": "ui-8",
+      "title": "Components on pages and in Flow",
+      "minutes": 3,
+      "objective": "Given a scenario, display and use custom user interface components, including Lightning components, Flow, and Visualforce. Given a scenario, implement Apex to work with various types of page components, including Lightning components, Flow, and Agentforce.",
+      "cards": [
+        {
+          "type": "text",
+          "title": "In plain words",
+          "body": "A component helps only where people can use it. Its `js-meta.xml` file says where it may go. Set `isExposed` to `true`, then list **targets**: record pages, app pages, home pages, flow screens and more. Admins then drag it in with **Lightning App Builder** or Flow Builder."
+        },
+        {
+          "type": "tip",
+          "title": "Think of it like…",
+          "body": "A hall pass with a list of rooms. `isExposed` lets the kid leave class at all. Each target is a room they may enter. Where it stops: some rooms hand the kid something, like a record page handing over `recordId`."
+        },
+        {
+          "type": "code",
+          "title": "Config for a flow screen",
+          "lang": "xml",
+          "code": "<isExposed>true</isExposed>\n<targets>\n  <target>lightning__RecordPage</target>\n  <target>lightning__FlowScreen</target>\n</targets>\n<targetConfigs>\n  <targetConfig targets=\"lightning__FlowScreen\">\n    <property name=\"amount\" type=\"Integer\" role=\"inputOnly\"/>\n  </targetConfig>\n</targetConfigs>",
+          "body": "`targetConfig` properties show up as inputs in the builder. `role` can be `inputOnly` or `outputOnly`. With no role, a property is both."
+        },
+        {
+          "type": "text",
+          "title": "Talking to the flow",
+          "body": "Each flow property is an `@api` field. When the user changes a value, fire `FlowAttributeChangeEvent` so the flow knows. To move on, fire `FlowNavigationNextEvent`. Both come from `lightning/flowSupport`. An `@api validate()` method can block Next until the input is right."
+        },
+        {
+          "type": "text",
+          "title": "Apex from a flow",
+          "body": "A flow calls Apex through an **invocable method**. Mark one `static` method, `public` or `global`, with `@InvocableMethod`. It takes a `List` and returns a `List`, so one call can serve many records. For several inputs, use a class with `@InvocableVariable` fields."
+        },
+        {
+          "type": "list",
+          "title": "Other ways in",
+          "items": [
+            "Record page: `@api recordId` is filled in for you",
+            "Flow action with no screen: target `lightning__FlowAction` and an `@api invoke()` method",
+            "Run a flow inside an LWC: `<lightning-flow>`",
+            "Run a flow in Visualforce: `<flow:interview>`"
+          ]
+        },
+        {
+          "type": "trap",
+          "body": "`isExposed` alone is not enough. Without a matching target, the component never shows up in the builder. And a target is a page type, like `lightning__RecordPage`, not a single object."
+        },
+        {
+          "type": "tip",
+          "title": "Remember it",
+          "body": "**\"Expose, target, configure.\"** Three steps put a component where people work."
+        }
+      ],
+      "check": [
+        "ui-q55",
+        "ui-q58",
+        "ui-x29"
+      ],
+      "terms": [
+        {
+          "term": "isExposed",
+          "say": "A yes-or-no setting in the config file. Yes means admins can find the component in the builders."
+        },
+        {
+          "term": "targets",
+          "match": [
+            "target"
+          ],
+          "say": "The list of places a component is allowed to go, like record pages or flow screens. If a place isn't listed, it can't go there."
+        },
+        {
+          "term": "Lightning App Builder",
+          "say": "A drag-and-drop tool where admins build Lightning pages by placing components, with no code."
+        },
+        {
+          "term": "targetConfig",
+          "say": "Settings for one target. It lists the properties an admin can fill in when placing the component there."
+        },
+        {
+          "term": "FlowAttributeChangeEvent",
+          "say": "The event a flow screen component fires to tell the flow that one of its values changed."
+        },
+        {
+          "term": "FlowNavigationNextEvent",
+          "say": "The event a flow screen component fires to move the flow to the next screen, like pressing Next."
+        },
+        {
+          "term": "invocable method",
+          "match": [
+            "@InvocableMethod"
+          ],
+          "say": "An Apex method marked so flows (and agents) can call it as an action. It takes a list and gives back a list."
+        },
+        {
+          "term": "@InvocableVariable",
+          "say": "Marks a field in a helper class as an input or output of an invocable method, so flows can fill it or read it."
+        },
+        {
+          "term": "@api recordId",
+          "match": [
+            "recordId"
+          ],
+          "say": "A public property named recordId. On a record page, Salesforce fills it with the open record's Id for you."
+        }
+      ]
+    },
+    {
+      "id": "ui-9",
+      "title": "Apex actions for Agentforce",
+      "minutes": 3,
+      "objective": "Given a scenario, implement Apex to work with various types of page components, including Lightning components, Flow, and Agentforce.",
+      "cards": [
+        {
+          "type": "text",
+          "title": "In plain words",
+          "body": "**Agentforce** agents are AI helpers that chat with users and get tasks done. An agent does tasks through **actions**. You can build a custom action from Apex, a flow or a **prompt template**. With Apex, you write the logic, and the agent decides when to use it."
+        },
+        {
+          "type": "tip",
+          "title": "Think of it like…",
+          "body": "A smart receptionist with a toolbox. Every tool has a **label** and a **description**: \"Track an order: give me the order number.\" The receptionist reads them to pick a tool. Where it stops: vague words mean the wrong tool, or none."
+        },
+        {
+          "type": "code",
+          "title": "An Apex action",
+          "lang": "apex",
+          "code": "public with sharing class OrderStatusAction {\n  @InvocableMethod(label='Get Order Status'\n    description='Returns the status of an order by its number')\n  public static List<String> run(List<Request> reqs) { /* ... */ }\n\n  public class Request {\n    @InvocableVariable(required=true description='Order number')\n    public String orderNumber;\n  }\n}",
+          "body": "`@InvocableMethod` makes the method available in **Agentforce Builder**, just like in Flow Builder."
+        },
+        {
+          "type": "list",
+          "title": "Invocable rules",
+          "items": [
+            "The method is `static`, and `public` or `global`",
+            "Only **one** `@InvocableMethod` per class",
+            "At most one input: a `List`, often of a class with `@InvocableVariable` fields",
+            "It returns a `List`: result 1 matches request 1, and so on",
+            "Add `callout=true` if it calls an outside system"
+          ]
+        },
+        {
+          "type": "text",
+          "title": "Clear words win",
+          "body": "When you add the action, write clear **instructions**: what it does and when to use it. The agent reads them to choose. Describe each input too, like \"the 8-digit order number.\""
+        },
+        {
+          "type": "text",
+          "title": "Fail kindly, stay safe",
+          "body": "Don't let one bad input crash the whole call. Return a result for **every** request, with a success flag and a message. Treat chat input like any user input: declare `with sharing`, query `WITH USER_MODE`, and bind values, never glue them into SOQL."
+        },
+        {
+          "type": "trap",
+          "body": "Two `@InvocableMethod` methods in one class won't compile. Need two actions? Use two classes. And the input is always a `List`, even when the agent sends one value."
+        },
+        {
+          "type": "tip",
+          "title": "Remember it",
+          "body": "**\"Label it, list it, one result each.\"** Clear words, `List` in and `List` out, one answer per request."
+        }
+      ],
+      "check": [
+        "ui-q62",
+        "ui-q64",
+        "ui-x33"
+      ],
+      "terms": [
+        {
+          "term": "Agentforce",
+          "say": "Salesforce's AI agents. They chat with people and get work done by running actions."
+        },
+        {
+          "term": "actions",
+          "match": [
+            "action"
+          ],
+          "say": "The jobs an agent knows how to do, like \"check an order.\" Each one runs some logic: Apex, a flow or a prompt."
+        },
+        {
+          "term": "prompt template",
+          "say": "Saved instructions for the AI with blanks that get filled with real data, like a form letter for the AI."
+        },
+        {
+          "term": "label",
+          "say": "The short name of an action, like \"Get Order Status.\" People and the agent see it."
+        },
+        {
+          "term": "description",
+          "say": "A sentence saying what an action or input does. Clear descriptions help the agent pick the right tool."
+        },
+        {
+          "term": "@InvocableMethod",
+          "say": "Marks an Apex method so flows and agents can call it as an action. One per class, a list in and a list out."
+        },
+        {
+          "term": "Agentforce Builder",
+          "say": "The setup tool where you build agents and add their actions, topics and instructions."
+        },
+        {
+          "term": "@InvocableVariable",
+          "say": "Marks a field in a helper class as an action input or output, with its own label and description."
+        },
+        {
+          "term": "instructions",
+          "say": "Plain sentences that tell the agent what an action does and when to use it. The agent reads them to decide."
+        }
+      ]
+    }
+  ],
+  "flashcards": [
+    {
+      "id": "ui-f1",
+      "front": "What is cross-site scripting (XSS)?",
+      "back": "An attacker gets a script into a page so it runs in another user's browser. It can steal their session. Fix: keep escaping on and encode output."
+    },
+    {
+      "id": "ui-f2",
+      "front": "What does `escape=\"false\"` do in Visualforce?",
+      "back": "It turns off the built-in escaping on that component. HTML and scripts in the value then run, so it opens an XSS hole."
+    },
+    {
+      "id": "ui-f3",
+      "front": "Which Visualforce function protects a merge field inside a `<script>` block?",
+      "back": "`JSENCODE`. Use `HTMLENCODE` for HTML, `JSINHTMLENCODE` for JavaScript inside an HTML tag, and `URLENCODE` for links."
+    },
+    {
+      "id": "ui-f4",
+      "front": "How do you stop SOQL injection?",
+      "back": "Use a static query with a bind variable like `:name`. If it must be dynamic: bind there too, or use `String.escapeSingleQuotes`, an allowlist or type casting."
+    },
+    {
+      "id": "ui-f5",
+      "front": "Why doesn't `escapeSingleQuotes` protect a dynamic `ORDER BY` field?",
+      "back": "The field name isn't inside quotes, so there is nothing to escape. Check it against an allowlist of allowed field names."
+    },
+    {
+      "id": "ui-f6",
+      "front": "Can a bind variable hold a field name?",
+      "back": "No. A bind holds a value only. For field or sort names, use an allowlist."
+    },
+    {
+      "id": "ui-f7",
+      "front": "What do sharing, CRUD and FLS each guard?",
+      "back": "Sharing guards records (rows). CRUD guards actions on an object. FLS guards fields (columns). User mode checks all three."
+    },
+    {
+      "id": "ui-f8",
+      "front": "Does `with sharing` enforce field-level security?",
+      "back": "No. Sharing keywords only control which records the user sees. Use `WITH USER_MODE`, `as user` DML or `stripInaccessible` for CRUD and FLS."
+    },
+    {
+      "id": "ui-f9",
+      "front": "How does an `inherited sharing` class run when an LWC calls it?",
+      "back": "With sharing. As an entry point, like an `@AuraEnabled` method or a Visualforce controller, it runs with sharing."
+    },
+    {
+      "id": "ui-f10",
+      "front": "What does `Security.stripInaccessible` do?",
+      "back": "It quietly removes fields the user can't access and returns clean copies. Use `getRecords()` from the result, not the original list."
+    },
+    {
+      "id": "ui-f11",
+      "front": "What makes an Apex class a controller extension?",
+      "back": "A constructor with one argument: `ApexPages.StandardController` or the custom controller it extends. Add it with `extensions=` on `<apex:page>`."
+    },
+    {
+      "id": "ui-f12",
+      "front": "Two extensions define the same method. Which one wins?",
+      "back": "The leftmost one in the `extensions` list."
+    },
+    {
+      "id": "ui-f13",
+      "front": "What does an action method return in Visualforce?",
+      "back": "A `PageReference`: the page to go to next. Return `null` to stay on the same page."
+    },
+    {
+      "id": "ui-f14",
+      "front": "Which files make up an LWC?",
+      "back": "An HTML template, a JavaScript class and a `.js-meta.xml` config file. CSS, an SVG icon and tests are optional."
+    },
+    {
+      "id": "ui-f15",
+      "front": "When do you still need `@track`?",
+      "back": "Only to notice changes inside an object or array. Since Spring '20, every field redraws when you assign it a new value."
+    },
+    {
+      "id": "ui-f16",
+      "front": "Can an LWC contain an Aura component?",
+      "back": "No. An Aura component can contain an LWC, but not the other way around."
+    },
+    {
+      "id": "ui-f17",
+      "front": "When does `connectedCallback()` run?",
+      "back": "When the component is added to the page, parent before child. Child elements don't exist yet. `renderedCallback()` runs after each render, child first."
+    },
+    {
+      "id": "ui-f18",
+      "front": "How does a child LWC send data to its parent?",
+      "back": "It fires `this.dispatchEvent(new CustomEvent('name', { detail }))`. The parent listens with `onname` in its template."
+    },
+    {
+      "id": "ui-f19",
+      "front": "What are the event naming rules in LWC?",
+      "back": "No uppercase letters, no spaces (use underscores), and don't start the name with `on`."
+    },
+    {
+      "id": "ui-f20",
+      "front": "What do `bubbles` and `composed` default to?",
+      "back": "Both default to `false`. The event then reaches only a listener on the child's own tag."
+    },
+    {
+      "id": "ui-f21",
+      "front": "How do unrelated components talk?",
+      "back": "With Lightning Message Service and a message channel. It works across LWC, Aura and Visualforce."
+    },
+    {
+      "id": "ui-f22",
+      "front": "What does an Apex method need to be used with `@wire`?",
+      "back": "It must be `static`, `public` or `global`, and `@AuraEnabled(cacheable=true)`. It must not change data."
+    },
+    {
+      "id": "ui-f23",
+      "front": "When must you call Apex imperatively?",
+      "back": "When the method isn't cacheable, like any method that saves data. Also from a module that doesn't extend `LightningElement`."
+    },
+    {
+      "id": "ui-f24",
+      "front": "How do you refresh wired Apex data?",
+      "back": "Call `refreshApex()` with the exact value the wire gave you. For records in the Lightning Data Service cache, call `notifyRecordUpdateAvailable`."
+    },
+    {
+      "id": "ui-f25",
+      "front": "What does the `$` in `'$recordId'` mean in a wire?",
+      "back": "It makes the parameter reactive. When `recordId` changes, the wire calls Apex again."
+    },
+    {
+      "id": "ui-f26",
+      "front": "How do you make an LWC usable in a flow screen?",
+      "back": "Set `isExposed` to `true`, add the `lightning__FlowScreen` target, and add `targetConfig` properties for the inputs and outputs."
+    },
+    {
+      "id": "ui-f27",
+      "front": "How does a flow screen LWC tell the flow a value changed?",
+      "back": "It fires `FlowAttributeChangeEvent` from `lightning/flowSupport` with the property name and new value."
+    },
+    {
+      "id": "ui-f28",
+      "front": "What are the rules for an `@InvocableMethod`?",
+      "back": "`static`, `public` or `global`, one per class, at most one input. Input and output are lists, in matching order."
+    },
+    {
+      "id": "ui-f29",
+      "front": "What can a custom Agentforce action be built from?",
+      "back": "An Apex invocable method, a flow or a prompt template."
+    },
+    {
+      "id": "ui-f30",
+      "front": "How do you help an agent pick the right Apex action?",
+      "back": "Write a clear label, description and instructions saying what it does and when to use it. Describe each input too."
+    },
+    {
+      "id": "ui-f31",
+      "front": "An invocable action gets 3 requests and one fails. What should it return?",
+      "back": "Three results, in the same order. Mark the failed one with a success flag and a message instead of skipping it."
+    }
+  ],
+  "questions": [
+    {
+      "id": "ui-q1",
+      "lesson": "ui-1",
+      "difficulty": 1,
+      "q": "A Visualforce page shows a comment that customers type on a public site. Which markup shows it with the built-in XSS protection still on?",
+      "options": [
+        "`<apex:outputText value=\"{!comment}\"/>`",
+        "`<apex:outputText escape=\"false\" value=\"{!comment}\"/>`",
+        "`<script>var c = '{!comment}';</script>`",
+        "`<div onclick=\"show('{!comment}')\">More</div>`"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "Standard `<apex:...>` components escape dangerous characters unless you turn it off. Plain `<apex:outputText>` keeps that protection on.",
+      "wrong": [
+        "",
+        "`escape=\"false\"` turns the protection off, so HTML in the comment runs.",
+        "Merge fields inside your own `<script>` block get no automatic protection.",
+        "Merge fields inside an `on*` handler are not protected either."
+      ],
+      "source": "Visualforce Developer Guide: Cross Site Scripting (XSS)"
+    },
+    {
+      "id": "ui-q2",
+      "lesson": "ui-1",
+      "difficulty": 1,
+      "q": "What does adding `escape=\"false\"` to an `<apex:outputText>` component do?",
+      "options": [
+        "It turns off field-level security checks for the value it shows",
+        "It turns off escaping, so HTML and script in the value are rendered",
+        "It makes the value read-only, even for users who can edit it",
+        "It lets the component show values longer than 255 characters"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "Escaping turns risky characters into plain text. With `escape=\"false\"`, the value is written as raw HTML, which opens an XSS hole.",
+      "wrong": [
+        "Escaping is about how text is drawn, not about field permissions.",
+        "",
+        "An output component is already read-only; this setting changes how text is drawn.",
+        "The setting has nothing to do with text length."
+      ],
+      "source": "Visualforce Developer Guide: Cross Site Scripting (XSS)"
+    },
+    {
+      "id": "ui-q3",
+      "lesson": "ui-1",
+      "difficulty": 2,
+      "q": "A page reads a URL parameter into a JavaScript variable. A security review flags it. Which change fixes the problem?",
+      "code": "<apex:page>\n  <script>\n    var acct = '{!$CurrentPage.parameters.acct}';\n    loadAccount(acct);\n  </script>\n</apex:page>",
+      "lang": "html",
+      "options": [
+        "Wrap the merge field in `URLENCODE()`",
+        "Add `escape=\"true\"` to the `<script>` tag",
+        "Wrap the merge field in `JSENCODE()`",
+        "Move the code into `<apex:includeScript>`"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "Merge fields inside your own script get no automatic escaping. `JSENCODE` escapes quote marks and other risky characters, so the value stays inside the JavaScript string.",
+      "wrong": [
+        "`URLENCODE` is for values placed in a URL, not inside a JavaScript string.",
+        "`<script>` has no `escape` attribute; only `<apex:...>` components escape output.",
+        "",
+        "`<apex:includeScript>` loads a script file by URL. It doesn't protect inline values."
+      ],
+      "source": "Visualforce Developer Guide: Functions"
+    },
+    {
+      "id": "ui-q4",
+      "lesson": "ui-1",
+      "difficulty": 2,
+      "q": "Agents view case notes that customers type in a web form. The notes show on a Visualforce page with `escape=\"false\"` so line breaks render. What is the main risk?",
+      "options": [
+        "SOQL injection: a note can change the query that loads the case",
+        "A governor limit error when a note is longer than the field allows",
+        "Agents could edit notes they don't own, because sharing is skipped",
+        "Stored XSS: a script saved in a note runs for every agent who opens it"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "A script saved in a record and shown unescaped is stored XSS. It fires for every viewer. Keep escaping on, or encode the value.",
+      "wrong": [
+        "Showing a value doesn't change a query; nothing here builds dynamic SOQL.",
+        "Field length is checked when the note is saved, not when it is shown.",
+        "Escaping controls how text is drawn, not who can edit records.",
+        ""
+      ],
+      "source": "Visualforce Developer Guide: Cross Site Scripting (XSS)"
+    },
+    {
+      "id": "ui-q5",
+      "lesson": "ui-1",
+      "difficulty": 2,
+      "q": "Which two places get no automatic XSS protection from Visualforce? (Choose 2)",
+      "options": [
+        "A merge field inside a custom `<script>` block",
+        "The `value` of an `<apex:outputText>` with default settings",
+        "A merge field inside an `onclick` attribute",
+        "The `value` of an `<apex:outputField>`",
+        "A column `value` in an `<apex:pageBlockTable>`"
+      ],
+      "answer": [
+        0,
+        2
+      ],
+      "explain": "Standard `<apex:...>` components escape output by default. Your own JavaScript, including `on*` handlers, gets no automatic protection.",
+      "wrong": [
+        "",
+        "`<apex:outputText>` escapes by default.",
+        "",
+        "`<apex:outputField>` is a standard component and escapes its output.",
+        "Standard table components escape the values they draw."
+      ],
+      "source": "Visualforce Developer Guide: Cross Site Scripting (XSS)"
+    },
+    {
+      "id": "ui-q6",
+      "lesson": "ui-1",
+      "difficulty": 2,
+      "q": "A note record holds the text `<b>Call back</b>`. What does the user see when this LWC template shows it?",
+      "code": "<template>\n  <p>{note}</p>\n</template>",
+      "lang": "html",
+      "options": [
+        "The words \"Call back\" in bold",
+        "An error, because templates reject HTML",
+        "The literal text with the tags, as typed",
+        "An empty paragraph, because tags are removed"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "LWC template expressions are drawn as text, never as HTML. So the tags show as typed and can't run.",
+      "wrong": [
+        "The tags would need to be treated as HTML; template expressions never are.",
+        "Templates accept any string value; they just draw it as text.",
+        "",
+        "Nothing is stripped; the whole string shows as text."
+      ],
+      "source": "LWC Developer Guide: HTML Templates"
+    },
+    {
+      "id": "ui-q7",
+      "lesson": "ui-1",
+      "difficulty": 2,
+      "q": "A page builds a link that passes a user-typed search term to another page in the query string. Which function should wrap the term?",
+      "options": [
+        "`HTMLENCODE`",
+        "`URLENCODE`",
+        "`JSENCODE`",
+        "`JSINHTMLENCODE`"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "Each encoding function protects one spot. A value placed in a URL needs `URLENCODE`.",
+      "wrong": [
+        "`HTMLENCODE` is for values drawn as HTML text.",
+        "",
+        "`JSENCODE` is for values inside JavaScript.",
+        "`JSINHTMLENCODE` is for JavaScript inside an HTML tag."
+      ],
+      "source": "Visualforce Developer Guide: Functions"
+    },
+    {
+      "id": "ui-q8",
+      "lesson": "ui-1",
+      "difficulty": 1,
+      "q": "Which description matches a cross-site scripting (XSS) attack?",
+      "options": [
+        "User text changes a database query and returns hidden records",
+        "A script gets into a page and runs in another user's browser",
+        "A page is loaded in a hidden frame to trick users into clicks",
+        "A forged request reuses a signed-in user's session on purpose"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "XSS means the attacker's script runs in a victim's browser, inside a site the victim trusts. It can steal their session.",
+      "wrong": [
+        "That is SOQL injection.",
+        "",
+        "That is clickjacking.",
+        "That is cross-site request forgery (CSRF)."
+      ],
+      "source": "Visualforce Developer Guide: Cross Site Scripting (XSS)"
+    },
+    {
+      "id": "ui-q9",
+      "lesson": "ui-1",
+      "difficulty": 2,
+      "q": "What is the risk in this markup?",
+      "code": "<apex:page>\n  <apex:includeScript value=\"{!$CurrentPage.parameters.lib}\"/>\n</apex:page>",
+      "lang": "html",
+      "options": [
+        "None, because standard `apex` components escape every value",
+        "The script loads twice, once per page render and once per call",
+        "The page fails, because the value must be a static resource",
+        "Anyone who edits the URL can make the page load any script"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "`<apex:includeScript>` has no XSS protection. Its value is a script URL, so a user-controlled value lets an attacker load their own JavaScript.",
+      "wrong": [
+        "Escaping text doesn't help here: the value is a URL that gets loaded and run.",
+        "The script loads once; the danger is where it comes from.",
+        "Any URL is accepted, which is exactly the problem.",
+        ""
+      ],
+      "source": "Visualforce Developer Guide: Cross Site Scripting (XSS)"
+    },
+    {
+      "id": "ui-q10",
+      "lesson": "ui-2",
+      "difficulty": 1,
+      "q": "Which practice does Salesforce recommend first to prevent SOQL injection?",
+      "options": [
+        "A static query with a bind variable for the user input",
+        "A dynamic query run from a `without sharing` class",
+        "A dynamic query with `LIMIT 1` added to the end",
+        "A static query wrapped in a `try`/`catch` block"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "A bind variable is always treated as a value, never as query words. Static queries with binds are the first defense.",
+      "wrong": [
+        "",
+        "Sharing mode doesn't stop user text from changing the query, and `without sharing` widens access.",
+        "`LIMIT` doesn't stop the input from rewriting the `WHERE` clause.",
+        "Catching errors doesn't stop an injected query that runs fine."
+      ],
+      "source": "Apex Developer Guide: SOQL Injection"
+    },
+    {
+      "id": "ui-q11",
+      "lesson": "ui-2",
+      "difficulty": 2,
+      "q": "A search page passes the user's text into this method. Why is it open to SOQL injection?",
+      "code": "public static List<Case> search(String term) {\n  String q = 'SELECT Id, Subject FROM Case ' +\n    'WHERE Subject LIKE \\'%' + term + '%\\'';\n  return Database.query(q);\n}",
+      "lang": "apex",
+      "options": [
+        "`Database.query` always ignores the running user's sharing",
+        "`LIKE` with wildcards is not allowed in dynamic SOQL at all",
+        "The user text is glued into the query string before it runs",
+        "The query has no `LIMIT`, so it can return every Case row"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "Concatenating user input into a dynamic query lets a quote mark end the string early. The rest of the input then becomes query words.",
+      "wrong": [
+        "Sharing depends on the class, not on `Database.query`. And sharing isn't the injection problem.",
+        "`LIKE` works fine in dynamic SOQL.",
+        "",
+        "A missing `LIMIT` is a size concern, not an injection hole."
+      ],
+      "source": "Apex Developer Guide: SOQL Injection"
+    },
+    {
+      "id": "ui-q12",
+      "lesson": "ui-2",
+      "difficulty": 2,
+      "q": "A query must stay dynamic. Which version safely uses the user-typed `name` inside the quoted value?",
+      "options": [
+        "`'... WHERE Name = \\'' + String.escapeHtml4(name) + '\\''`",
+        "`'... WHERE Name = \\'' + name.normalizeSpace() + '\\''`",
+        "`'... WHERE Name = \\'' + EncodingUtil.urlEncode(name, 'UTF-8') + '\\''`",
+        "`'... WHERE Name = \\'' + String.escapeSingleQuotes(name) + '\\''`"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "`String.escapeSingleQuotes` puts a backslash before every single quote. A quote in the input can then no longer end the string.",
+      "wrong": [
+        "`escapeHtml4` is for HTML output. It changes the text but doesn't make quotes safe in SOQL.",
+        "`normalizeSpace` only trims and collapses spaces; quote marks get through.",
+        "URL encoding changes the value you search for, and it isn't the SOQL defense.",
+        ""
+      ],
+      "source": "Apex Developer Guide: SOQL Injection"
+    },
+    {
+      "id": "ui-q13",
+      "lesson": "ui-2",
+      "difficulty": 2,
+      "q": "A developer must keep a query dynamic because users pick optional filters. Which two techniques protect the user-typed values from injection? (Choose 2)",
+      "options": [
+        "Wrap the `Database.query` call in a `try`/`catch` block",
+        "Reference the values as bind variables, like `:term`, in the query string",
+        "Declare the class `without sharing` so the query sees everything",
+        "Pass each value through `String.escapeSingleQuotes` before adding it",
+        "Call `.trim()` on each value before adding it to the string"
+      ],
+      "answer": [
+        1,
+        3
+      ],
+      "explain": "Binds keep values from ever becoming query words, and they work in `Database.query` when the variable is in scope. If values must be glued in, escape their single quotes.",
+      "wrong": [
+        "Catching errors doesn't stop an injected query that runs without error.",
+        "",
+        "This widens access and does nothing against injection.",
+        "",
+        "Trimming spaces leaves quote marks in place."
+      ],
+      "source": "Apex Developer Guide: SOQL Injection"
+    },
+    {
+      "id": "ui-q14",
+      "lesson": "ui-2",
+      "difficulty": 2,
+      "q": "What does this code do with the user's text?",
+      "code": "Map<String, Object> binds = new Map<String, Object>{\n  'nm' => userInput\n};\nList<Account> accs = Database.queryWithBinds(\n  'SELECT Id FROM Account WHERE Name = :nm',\n  binds, AccessLevel.USER_MODE);",
+      "lang": "apex",
+      "options": [
+        "Binds it as a value and runs the query with the user's access",
+        "Pastes it into the query text, so it can change the `WHERE` part",
+        "Fails, because bind names in the query must start with a `$` sign",
+        "Runs in system mode, because the map hides which fields are used"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "`Database.queryWithBinds` takes bind values from a map. The text stays a value, and `AccessLevel.USER_MODE` applies the user's CRUD, FLS and sharing.",
+      "wrong": [
+        "",
+        "Map values are bound, never pasted into the query.",
+        "Bind names use a colon, like `:nm`. The `$` is an LWC wire idea.",
+        "`AccessLevel.USER_MODE` makes it run in user mode."
+      ],
+      "source": "Apex Reference Guide: Database Class"
+    },
+    {
+      "id": "ui-q15",
+      "lesson": "ui-2",
+      "difficulty": 1,
+      "q": "What can a successful SOQL injection let an attacker do?",
+      "options": [
+        "Delete records by adding a `DELETE` to the query",
+        "Read records the query was never meant to return",
+        "Run their own Apex code on the Salesforce server",
+        "Change the org-wide sharing defaults for an object"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "SOQL only reads data, so injection changes what a query returns. It can still leak records the user should never see.",
+      "wrong": [
+        "SOQL can't delete; it has no `DELETE` statement.",
+        "",
+        "Injected text changes only the query; it can't run Apex.",
+        "A query can't change org settings."
+      ],
+      "source": "Apex Developer Guide: SOQL Injection"
+    },
+    {
+      "id": "ui-q16",
+      "lesson": "ui-3",
+      "difficulty": 1,
+      "q": "What does declaring a class `with sharing` enforce?",
+      "options": [
+        "The user's field-level security on queried fields",
+        "The user's create, edit and delete object rights",
+        "The running user's access to records",
+        "Record access, object rights and field security"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "Sharing keywords control which records the user can reach. They don't check CRUD or FLS.",
+      "wrong": [
+        "Sharing keywords never check FLS.",
+        "Sharing keywords never check object permissions.",
+        "",
+        "Only record access is enforced; user mode checks all three."
+      ],
+      "source": "Apex Developer Guide: Using the with sharing, without sharing, and inherited sharing Keywords"
+    },
+    {
+      "id": "ui-q17",
+      "lesson": "ui-3",
+      "difficulty": 1,
+      "q": "Which SOQL clause enforces object permissions, field-level security and sharing for the running user?",
+      "options": [
+        "`WITH SECURITY_ENFORCED`",
+        "`WITH SYSTEM_MODE`",
+        "`FOR UPDATE`",
+        "`WITH USER_MODE`"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "`WITH USER_MODE` runs the query as the user, checking CRUD, FLS and sharing.",
+      "wrong": [
+        "It checks object and field read access only, and doesn't enforce sharing.",
+        "System mode skips the user's permissions.",
+        "`FOR UPDATE` locks records; it doesn't check access.",
+        ""
+      ],
+      "source": "Apex Developer Guide: Enforce User Mode for Database Operations"
+    },
+    {
+      "id": "ui-q18",
+      "lesson": "ui-3",
+      "difficulty": 2,
+      "q": "A user with no read access to `SSN__c` still sees it in the component. What is the bug?",
+      "code": "List<Contact> cons = [SELECT Name, Phone, SSN__c FROM Contact];\nSObjectAccessDecision d =\n  Security.stripInaccessible(AccessType.READABLE, cons);\nreturn cons;",
+      "lang": "apex",
+      "options": [
+        "It passes `AccessType.READABLE` instead of `UPDATABLE`",
+        "It needs `WITH SECURITY_ENFORCED` in the query as well",
+        "It returns `cons` instead of `d.getRecords()`",
+        "It must check `d.getRemovedFields()` before returning"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "`stripInaccessible` returns clean copies and leaves the original list as it was. Return `d.getRecords()`.",
+      "wrong": [
+        "`READABLE` is right for data you show.",
+        "Not needed; the strip already works, its result is just ignored.",
+        "",
+        "That only reports what was removed. The original list still has the field."
+      ],
+      "source": "Apex Developer Guide: Enforce Security with the stripInaccessible Method"
+    },
+    {
+      "id": "ui-q19",
+      "lesson": "ui-3",
+      "difficulty": 2,
+      "q": "A method in a `with sharing` class is called from a `without sharing` class. How does the method run?",
+      "options": [
+        "With sharing, because the class where it is defined decides",
+        "Without sharing, because the calling class decides the mode",
+        "With sharing for queries, but without sharing for DML calls",
+        "It depends on whether the user has View All Data permission"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "A method's sharing mode comes from the class where it is defined, not where it is called. `inherited sharing` is the one exception.",
+      "wrong": [
+        "",
+        "Only an `inherited sharing` class takes the caller's mode.",
+        "Sharing mode applies to the whole class, queries and DML alike.",
+        "The keyword sets the mode; permissions decide what that mode can reach."
+      ],
+      "source": "Apex Developer Guide: Using the with sharing, without sharing, and inherited sharing Keywords"
+    },
+    {
+      "id": "ui-q20",
+      "lesson": "ui-3",
+      "difficulty": 2,
+      "q": "An LWC calls an `@AuraEnabled` method in a class declared `inherited sharing`. Nothing else calls it. How does it run?",
+      "options": [
+        "Without sharing",
+        "In the mode of the LWC's page",
+        "In system mode for reads only",
+        "With sharing"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "An `inherited sharing` class runs with sharing when it is the entry point, such as an `@AuraEnabled` method called from LWC.",
+      "wrong": [
+        "It runs without sharing only when called from a `without sharing` context.",
+        "Pages have no sharing mode; the Apex class decides.",
+        "Sharing mode is not split by reads and writes.",
+        ""
+      ],
+      "source": "Apex Developer Guide: Using the with sharing, without sharing, and inherited sharing Keywords"
+    },
+    {
+      "id": "ui-q21",
+      "lesson": "ui-3",
+      "difficulty": 2,
+      "q": "Records come from an LWC. The developer wants to save them but quietly drop fields the user can't edit, with no error. Which line fits?",
+      "options": [
+        "`update as user recs;`",
+        "`Database.update(recs, false);`",
+        "`Database.update(recs, AccessLevel.USER_MODE);`",
+        "`Security.stripInaccessible(AccessType.UPDATABLE, recs)`"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "`stripInaccessible` removes fields the user can't access and returns clean copies to save. User mode would throw instead.",
+      "wrong": [
+        "User mode DML fails when a field isn't editable.",
+        "`false` allows partial success per record; it doesn't check FLS.",
+        "User mode fails on blocked fields instead of dropping them.",
+        ""
+      ],
+      "source": "Apex Developer Guide: Enforce Security with the stripInaccessible Method"
+    },
+    {
+      "id": "ui-q22",
+      "lesson": "ui-3",
+      "difficulty": 2,
+      "q": "Why should a developer always write a sharing keyword on classes that run SOQL or DML?",
+      "options": [
+        "Without one, the mode depends on API version and caller",
+        "Classes without one fail to compile from API 60.0 onward",
+        "Without one, the class always ignores CRUD but keeps FLS",
+        "Salesforce counts the keyword toward code coverage rules"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "With no keyword, the mode depends on the API version, the parent class and the caller. An explicit keyword makes the behavior clear.",
+      "wrong": [
+        "",
+        "Classes compile fine without a keyword.",
+        "Sharing keywords are about records, not CRUD or FLS.",
+        "Coverage counts executed lines; keywords don't matter."
+      ],
+      "source": "Apex Developer Guide: Using the with sharing, without sharing, and inherited sharing Keywords"
+    },
+    {
+      "id": "ui-q23",
+      "lesson": "ui-3",
+      "difficulty": 1,
+      "q": "What does this check before the code sets the discount?",
+      "code": "if (!Schema.sObjectType.Opportunity.fields.Discount__c.isUpdateable()) {\n  throw new AuraHandledException('You can\\'t change discounts.');\n}",
+      "lang": "apex",
+      "options": [
+        "Whether the record is shared with the user",
+        "Whether `Discount__c` is required on layouts",
+        "Whether the user may edit `Discount__c`",
+        "Whether the user owns this Opportunity record"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "A describe check like `isUpdateable()` asks about field-level security for the running user. It says nothing about which records they can reach.",
+      "wrong": [
+        "Describe calls check field and object access, not record sharing.",
+        "Layout settings aren't part of this check.",
+        "",
+        "Ownership is about sharing, which this doesn't check."
+      ],
+      "source": "Apex Developer Guide: Enforcing Object and Field Permissions"
+    },
+    {
+      "id": "ui-q24",
+      "lesson": "ui-4",
+      "difficulty": 1,
+      "q": "A page uses the Account standard controller and needs one extra custom method. Which `<apex:page>` attribute adds the Apex class?",
+      "options": [
+        "`controller`",
+        "`recordSetVar`",
+        "`action`",
+        "`extensions`"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "A controller extension adds logic on top of a standard or custom controller. You add it with the `extensions` attribute.",
+      "wrong": [
+        "`controller` replaces the standard controller with a custom one, and can't be used with `standardController`.",
+        "`recordSetVar` turns on the standard list controller.",
+        "`action` names a method to run when the page loads.",
+        ""
+      ],
+      "source": "Visualforce Developer Guide: Building a Controller Extension"
+    },
+    {
+      "id": "ui-q25",
+      "lesson": "ui-4",
+      "difficulty": 1,
+      "q": "What must the constructor of a Visualforce controller extension take?",
+      "options": [
+        "No arguments at all, because the page creates the class by itself",
+        "The Id of the current record, passed in as a `String` argument",
+        "One argument: the standard controller, or the custom controller it extends",
+        "Two arguments: the standard controller and the current page"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "An extension is a class whose constructor takes a single `ApexPages.StandardController` or custom controller argument.",
+      "wrong": [
+        "A no-argument constructor is what a custom controller uses.",
+        "The record comes from the controller, via `getRecord()`.",
+        "",
+        "Only one argument is allowed."
+      ],
+      "source": "Visualforce Developer Guide: Building a Controller Extension"
+    },
+    {
+      "id": "ui-q26",
+      "lesson": "ui-4",
+      "difficulty": 2,
+      "q": "Both extensions define `getLabel()`. `ExtA` returns `'A'` and `ExtB` returns `'B'`. What does the page show?",
+      "code": "<apex:page standardController=\"Account\" extensions=\"ExtA,ExtB\">\n  {!label}\n</apex:page>",
+      "lang": "html",
+      "options": [
+        "B",
+        "A",
+        "AB",
+        "A compile error"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "When extensions define the same method, the leftmost one in the list wins. `ExtA` comes first.",
+      "wrong": [
+        "`ExtB` is second, so its method is overridden.",
+        "",
+        "Only one method runs; values are not joined.",
+        "Same-named methods across extensions are allowed."
+      ],
+      "source": "Visualforce Developer Guide: Building a Controller Extension"
+    },
+    {
+      "id": "ui-q27",
+      "lesson": "ui-4",
+      "difficulty": 2,
+      "q": "A page must show accounts 20 at a time with Next and Previous buttons, and the team wants no Apex. What should the developer use?",
+      "options": [
+        "A standard list controller, using `recordSetVar`",
+        "A custom controller that pages with `OFFSET`",
+        "A standard controller plus one extension class",
+        "An `<apex:repeat>` over a hard-coded list"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "The standard list controller works on a set of records and has built-in paging actions like `next` and `previous`. It needs no Apex.",
+      "wrong": [
+        "",
+        "A custom controller is Apex, which the team wants to avoid.",
+        "An extension is Apex too, and a plain standard controller works on one record.",
+        "A hard-coded list has no real records and no paging."
+      ],
+      "source": "Visualforce Developer Guide: Standard List Controllers"
+    },
+    {
+      "id": "ui-q28",
+      "lesson": "ui-4",
+      "difficulty": 2,
+      "q": "A button calls this action method. What happens after the user clicks it?",
+      "code": "public PageReference save() {\n  update acct;\n  return null;\n}",
+      "lang": "apex",
+      "options": [
+        "The record saves and the user goes to its detail page",
+        "The record saves and the user stays on the same page",
+        "The record saves and the user goes to the home page",
+        "Nothing saves, because actions must return a `String`"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "An action returns a `PageReference` for the next page. Returning `null` keeps the user on the current page.",
+      "wrong": [
+        "That needs a `PageReference` pointing at the record.",
+        "",
+        "Nothing points to the home page.",
+        "Action methods return `PageReference`, and `null` is allowed."
+      ],
+      "source": "Visualforce Developer Guide: Defining Action Methods"
+    },
+    {
+      "id": "ui-q29",
+      "lesson": "ui-4",
+      "difficulty": 2,
+      "q": "Which two statements about Visualforce controllers are true? (Choose 2)",
+      "options": [
+        "Standard controller logic respects the user's permissions and sharing",
+        "A custom controller must extend `ApexPages.StandardController`",
+        "A getter for `{!total}` must be named `fetchTotal()`",
+        "An extension can't use the standard controller's `save` action",
+        "One page can't set both `controller` and `standardController`"
+      ],
+      "answer": [
+        0,
+        4
+      ],
+      "explain": "Standard controller logic runs in user mode. A page uses either a standard controller or a custom one, never both.",
+      "wrong": [
+        "",
+        "A custom controller is a plain class with a no-argument constructor.",
+        "The getter must be named `getTotal()`.",
+        "Standard actions like `save` stay available on the page.",
+        ""
+      ],
+      "source": "Visualforce Developer Guide: Standard Controllers"
+    },
+    {
+      "id": "ui-q30",
+      "lesson": "ui-4",
+      "difficulty": 2,
+      "q": "A custom controller must show a friendly error at the top of the page when a save fails. What should it do?",
+      "options": [
+        "Call `System.debug()` with the message so it shows on the page",
+        "Throw an `AuraHandledException` with the message text in it",
+        "Return a `String` with the message from the action method",
+        "Call `ApexPages.addMessage()` and add `<apex:pageMessages/>` to the page"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "`ApexPages.addMessage` queues a message for the page. `<apex:pageMessages/>` shows it.",
+      "wrong": [
+        "Debug output goes to the log, not the page.",
+        "`AuraHandledException` is for Lightning components.",
+        "Action methods return a `PageReference`, not message text.",
+        ""
+      ],
+      "source": "Apex Reference Guide: ApexPages Class"
+    },
+    {
+      "id": "ui-q31",
+      "lesson": "ui-4",
+      "difficulty": 2,
+      "q": "The page markup reads `{!accountName}`. Which controller member supplies the value?",
+      "options": [
+        "`public String getAccountName()`",
+        "`public String accountName()`",
+        "`public void setAccountName()`",
+        "`public String fetchAccountName()`"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "A merge field like `{!accountName}` calls a getter named `getAccountName()`, or reads a property with that name.",
+      "wrong": [
+        "",
+        "Without the `get` prefix, it isn't a getter.",
+        "Setters receive values from inputs; they don't supply them.",
+        "Visualforce looks for the `get` prefix, not `fetch`."
+      ],
+      "source": "Visualforce Developer Guide: Build a Custom Controller"
+    },
+    {
+      "id": "ui-q32",
+      "lesson": "ui-5",
+      "difficulty": 1,
+      "q": "In the `myCard` component folder, which file says where the component can be used, such as record pages?",
+      "options": [
+        "`myCard.html`",
+        "`myCard.css`",
+        "`myCard.js`",
+        "`myCard.js-meta.xml`"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "The `.js-meta.xml` file holds the config: `isExposed`, targets and target settings.",
+      "wrong": [
+        "The HTML file is the template, what shows on screen.",
+        "The CSS file holds styles only.",
+        "The JavaScript file holds the class with data and logic.",
+        ""
+      ],
+      "source": "LWC Developer Guide: Component Folder"
+    },
+    {
+      "id": "ui-q33",
+      "lesson": "ui-5",
+      "difficulty": 1,
+      "q": "How does another LWC template use the component `myCard` from the default `c` namespace?",
+      "options": [
+        "`<c:myCard></c:myCard>`",
+        "`<c-my-card></c-my-card>`",
+        "`<c-myCard></c-myCard>`",
+        "`<my-card></my-card>`"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "In LWC markup, camel case names become kebab case with the namespace in front: `c-my-card`.",
+      "wrong": [
+        "That colon style is Aura markup.",
+        "",
+        "Uppercase letters aren't allowed in the tag name.",
+        "The namespace prefix is required."
+      ],
+      "source": "LWC Developer Guide: Component Folder"
+    },
+    {
+      "id": "ui-q34",
+      "lesson": "ui-5",
+      "difficulty": 2,
+      "q": "A parent must pass a record Id into a child component. Which decorator goes on the child's property?",
+      "options": [
+        "`@track`",
+        "`@api`",
+        "`@wire`",
+        "`@AuraEnabled`"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "`@api` makes a property public, so a parent can set it. Data flows down this way.",
+      "wrong": [
+        "`@track` watches inside objects and arrays; it doesn't make a property public.",
+        "",
+        "`@wire` gets data from an adapter or Apex.",
+        "`@AuraEnabled` is an Apex annotation, not an LWC decorator."
+      ],
+      "source": "LWC Developer Guide: Decorators"
+    },
+    {
+      "id": "ui-q35",
+      "lesson": "ui-5",
+      "difficulty": 2,
+      "q": "The template shows `{count}`. A user clicks the button. Does the number on screen go up?",
+      "code": "import { LightningElement } from 'lwc';\nexport default class Counter extends LightningElement {\n  count = 0;\n  handleClick() {\n    this.count = this.count + 1;\n  }\n}",
+      "lang": "js",
+      "options": [
+        "No, because `count` needs `@track` before it redraws",
+        "No, because `count` needs `@api` before it redraws",
+        "Only after the code calls `this.render()` by hand",
+        "Yes, because every field redraws when it gets a new value"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "Since Spring '20, all fields are reactive. Assigning a new value to a field used in the template redraws it.",
+      "wrong": [
+        "`@track` is only needed for changes inside objects or arrays.",
+        "`@api` makes the field public; it's not needed for redraws.",
+        "There's no need to force a render.",
+        ""
+      ],
+      "source": "LWC Developer Guide: Reactivity"
+    },
+    {
+      "id": "ui-q36",
+      "lesson": "ui-5",
+      "difficulty": 2,
+      "q": "The parent passes an account object to the child. What happens when `rename()` runs in the child?",
+      "code": "export default class AcctCard extends LightningElement {\n  @api account;\n  rename() {\n    this.account.Name = 'New Name';\n  }\n}",
+      "lang": "js",
+      "options": [
+        "It throws an error, because the parent owns the object",
+        "It works, and the parent sees the new name right away",
+        "It works, but only the child shows the new name",
+        "Nothing happens until `@track` is added to the property"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "Objects passed into `@api` properties are read-only to the child. Copy the data into a private field, or fire an event so the parent changes it.",
+      "wrong": [
+        "",
+        "The child can't change data the parent owns.",
+        "The change is blocked, so nobody shows the new name.",
+        "`@track` can't be combined with `@api`, and it wouldn't lift the block."
+      ],
+      "source": "LWC Developer Guide: Decorators"
+    },
+    {
+      "id": "ui-q37",
+      "lesson": "ui-5",
+      "difficulty": 2,
+      "q": "A team is choosing between Aura and LWC for new UI. Which two are real benefits of LWC? (Choose 2)",
+      "options": [
+        "An LWC can contain Aura components from the old app",
+        "LWC templates accept any JavaScript expression inline",
+        "It is built on web standards that browsers run natively",
+        "Less framework code runs, so components tend to be faster",
+        "LWC components skip the user's sharing on Apex calls"
+      ],
+      "answer": [
+        2,
+        3
+      ],
+      "explain": "LWC uses standard web components and modern JavaScript. Browsers do more of the work, so less framework code runs and pages are faster.",
+      "wrong": [
+        "An LWC can't contain an Aura component.",
+        "Templates take plain property names; logic goes in getters.",
+        "",
+        "",
+        "Sharing depends on the Apex class, not on the UI framework."
+      ],
+      "source": "LWC Developer Guide: Get Started"
+    },
+    {
+      "id": "ui-q38",
+      "lesson": "ui-5",
+      "difficulty": 2,
+      "q": "An old Aura app needs a new feature built as an LWC. Which statement is true?",
+      "options": [
+        "An LWC can contain Aura components, but not the reverse",
+        "Neither can contain the other; use separate pages instead",
+        "An Aura component can contain the LWC, but not the reverse",
+        "Either can contain the other if both share the same API version"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "Aura components can contain LWCs. An LWC can't contain an Aura component.",
+      "wrong": [
+        "This is backwards: an LWC can't hold Aura.",
+        "Aura can contain LWC, so they can share a page.",
+        "",
+        "API version doesn't change the rule."
+      ],
+      "source": "LWC Developer Guide: Aura Coexistence"
+    },
+    {
+      "id": "ui-q39",
+      "lesson": "ui-5",
+      "difficulty": 2,
+      "q": "This template doesn't compile. What should the developer do?",
+      "code": "<template>\n  <p>{firstName + ' ' + lastName}</p>\n</template>",
+      "lang": "html",
+      "options": [
+        "Wrap the expression in quotes: `\"{firstName + lastName}\"`",
+        "Add `@track` to `firstName` and `lastName`",
+        "Add a getter `get fullName()` and use `{fullName}`",
+        "Use `lwc:if` around the paragraph first"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "LWC templates allow only property names, not expressions. Put the logic in a getter and show the getter in the template.",
+      "wrong": [
+        "Quotes don't make expressions legal in templates.",
+        "Reactivity isn't the problem; the syntax is.",
+        "",
+        "`lwc:if` shows or hides markup; it doesn't allow expressions."
+      ],
+      "source": "LWC Developer Guide: HTML Templates"
+    },
+    {
+      "id": "ui-q40",
+      "lesson": "ui-6",
+      "difficulty": 1,
+      "q": "How should a child LWC send a selected value to its parent?",
+      "options": [
+        "Dispatch a `CustomEvent` with the value in `detail`",
+        "Set an `@api` property on the parent from the child",
+        "Call a method on the parent through `this.parent`",
+        "Store the value in an `@track` field the parent reads"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "Data goes up through events. The child fires a `CustomEvent`, and the parent reads `event.detail`.",
+      "wrong": [
+        "",
+        "A child can't set the parent's properties.",
+        "There is no `this.parent` in LWC.",
+        "A parent can't read a child's private fields."
+      ],
+      "source": "LWC Developer Guide: Create and Dispatch Events"
+    },
+    {
+      "id": "ui-q41",
+      "lesson": "ui-6",
+      "difficulty": 1,
+      "q": "A child runs `this.dispatchEvent(new CustomEvent('save'))`. Which attribute should the parent put on the child's tag?",
+      "options": [
+        "`onSave={handleSave}`",
+        "`onsave={handleSave}`",
+        "`on-save={handleSave}`",
+        "`save={handleSave}`"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "The listener is `on` plus the event name, all lowercase: `onsave`.",
+      "wrong": [
+        "Uppercase letters don't match the event name.",
+        "",
+        "There's no dash between `on` and the name.",
+        "The `on` prefix is required on the listener."
+      ],
+      "source": "LWC Developer Guide: Handle Events"
+    },
+    {
+      "id": "ui-q42",
+      "lesson": "ui-6",
+      "difficulty": 2,
+      "q": "Which two event names follow the LWC naming rules? (Choose 2)",
+      "options": [
+        "`itemselect`",
+        "`item_select`",
+        "`itemSelect`",
+        "`onitemselect`",
+        "`item select`"
+      ],
+      "answer": [
+        0,
+        1
+      ],
+      "explain": "Event names have no uppercase letters and no spaces, and don't start with `on`. Underscores may separate words.",
+      "wrong": [
+        "",
+        "",
+        "Uppercase letters aren't allowed.",
+        "Names shouldn't start with `on`, or the handler becomes `ononitemselect`.",
+        "Spaces aren't allowed."
+      ],
+      "source": "LWC Developer Guide: Create and Dispatch Events"
+    },
+    {
+      "id": "ui-q43",
+      "lesson": "ui-6",
+      "difficulty": 2,
+      "q": "Two LWCs sit in different regions of a Lightning app page. Neither contains the other. How should one tell the other that a filter changed?",
+      "options": [
+        "Dispatch a `CustomEvent` with `bubbles: true` set on it",
+        "Fire an Aura application event from the first LWC",
+        "Have both share one `@api` property on the page",
+        "Publish on a message channel with Lightning Message Service"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "Components with no parent-child link use Lightning Message Service. One publishes on a message channel, and the other subscribes.",
+      "wrong": [
+        "Bubbling only reaches ancestors, and the other component isn't one.",
+        "LWC can't fire Aura application events.",
+        "Pages don't share properties between unrelated components.",
+        ""
+      ],
+      "source": "LWC Developer Guide: Lightning Message Service"
+    },
+    {
+      "id": "ui-q44",
+      "lesson": "ui-6",
+      "difficulty": 2,
+      "q": "The parent calls this on a Reset button click. What must the child `c-timer` do so it works?",
+      "code": "handleReset() {\n  this.template.querySelector('c-timer').reset();\n}",
+      "lang": "js",
+      "options": [
+        "Fire a `reset` event from `connectedCallback()`",
+        "Decorate its `reset()` method with `@track`",
+        "Decorate its `reset()` method with `@api`",
+        "Wire `reset()` to an Apex method with `@wire`"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "A parent can call a child method only when the child makes it public with `@api`.",
+      "wrong": [
+        "Events go up to the parent; here the parent calls down.",
+        "`@track` is for fields, not methods.",
+        "",
+        "`@wire` gets data; it doesn't make a method public."
+      ],
+      "source": "LWC Developer Guide: Decorators"
+    },
+    {
+      "id": "ui-q45",
+      "lesson": "ui-6",
+      "difficulty": 2,
+      "q": "The child runs this. Which line in the parent's handler reads the id?",
+      "code": "this.dispatchEvent(new CustomEvent('pick', {\n  detail: { id: this.recId }\n}));",
+      "lang": "js",
+      "options": [
+        "`const id = event.id;`",
+        "`const id = event.detail.id;`",
+        "`const id = event.target.id;`",
+        "`const id = event.pick.id;`"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "Data passed in the `detail` option arrives on `event.detail`.",
+      "wrong": [
+        "The event object has no `id` of its own.",
+        "",
+        "`event.target` is the element that fired it, not the data.",
+        "The event name isn't a property."
+      ],
+      "source": "LWC Developer Guide: Handle Events"
+    },
+    {
+      "id": "ui-q46",
+      "lesson": "ui-6",
+      "difficulty": 2,
+      "q": "A parent writes `<c-child record-id={recordId}></c-child>`. Which declaration in the child receives the value?",
+      "options": [
+        "`@api record_id;`",
+        "`@api recordId;`",
+        "`@track recordId;`",
+        "`@wire recordId;`"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "Attributes in markup are kebab case; the JavaScript property is camel case. It must be public with `@api`.",
+      "wrong": [
+        "The kebab case `record-id` maps to `recordId`, not `record_id`.",
+        "",
+        "`@track` doesn't make it public.",
+        "`@wire` needs an adapter; it's not for parent input."
+      ],
+      "source": "LWC Developer Guide: Decorators"
+    },
+    {
+      "id": "ui-q47",
+      "lesson": "ui-7",
+      "difficulty": 1,
+      "q": "Which annotation must an Apex method have before a Lightning web component can call it?",
+      "options": [
+        "`@InvocableMethod`",
+        "`@RemoteAction`",
+        "`@future`",
+        "`@AuraEnabled`"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "Only methods marked `@AuraEnabled` are exposed to Lightning components, both LWC and Aura.",
+      "wrong": [
+        "`@InvocableMethod` exposes a method to flows and agents.",
+        "`@RemoteAction` is for JavaScript remoting in Visualforce.",
+        "`@future` runs a method later, in the background.",
+        ""
+      ],
+      "source": "Apex Developer Guide: AuraEnabled Annotation"
+    },
+    {
+      "id": "ui-q48",
+      "lesson": "ui-7",
+      "difficulty": 1,
+      "q": "A property is wired to an Apex method. Where do the results arrive?",
+      "options": [
+        "In its `data` and `error` properties",
+        "In its `result` and `exception` properties",
+        "In its `value` and `fault` properties",
+        "In its `records` and `errors` properties"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "The wire service fills `data` on success and `error` on failure. These names are fixed.",
+      "wrong": [
+        "",
+        "The names are fixed as `data` and `error`.",
+        "The names are fixed as `data` and `error`.",
+        "The names are fixed as `data` and `error`."
+      ],
+      "source": "LWC Developer Guide: Wire Apex Methods to Components"
+    },
+    {
+      "id": "ui-q49",
+      "lesson": "ui-7",
+      "difficulty": 2,
+      "q": "A component wires this method. What happens when the wire calls it?",
+      "code": "@AuraEnabled(cacheable=true)\npublic static Integer markViewed(Id caseId) {\n  update new Case(Id = caseId, Viewed__c = true);\n  return 1;\n}",
+      "lang": "apex",
+      "options": [
+        "It works, and the result is cached for later calls",
+        "It works, but the update is held until the page closes",
+        "It fails, because a cacheable method can't change data",
+        "It fails, because wired methods can't take any parameter"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "Only methods that read data may be `cacheable=true`. DML in a cacheable method fails when it runs, so call a saving method imperatively.",
+      "wrong": [
+        "The DML makes the call fail.",
+        "There is no delayed save.",
+        "",
+        "Wired methods take parameters through the config object."
+      ],
+      "source": "LWC Developer Guide: Client-Side Caching"
+    },
+    {
+      "id": "ui-q50",
+      "lesson": "ui-7",
+      "difficulty": 2,
+      "q": "The component sits on an Account page, but the wire never returns contacts. What is wrong?",
+      "code": "@api recordId;\n@wire(getContacts, { accountId: 'recordId' })\ncontacts;",
+      "lang": "js",
+      "options": [
+        "The wire config must be an array, not an object",
+        "`recordId` must be decorated with `@track`, not `@api`",
+        "The method name must be written as a string in the wire",
+        "It passes the text `recordId`; use `'$recordId'` instead"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "The `$` prefix makes a wire parameter point to a component property. Without it, Apex gets the literal string.",
+      "wrong": [
+        "The config is an object whose keys match the Apex parameters.",
+        "`@api recordId` is right; the page fills it in.",
+        "The wire takes the imported method, not a string.",
+        ""
+      ],
+      "source": "LWC Developer Guide: Wire Apex Methods to Components"
+    },
+    {
+      "id": "ui-q51",
+      "lesson": "ui-7",
+      "difficulty": 2,
+      "q": "`getContacts` takes one Apex parameter, `Id accountId`. Which imperative call is right?",
+      "options": [
+        "`getContacts(this.recordId).then(...)`",
+        "`getContacts({ id: this.recordId }).then(...)`",
+        "`getContacts({ accountId: this.recordId }).then(...)`",
+        "`getContacts.call(this, this.recordId).then(...)`"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "Pass one object whose keys match the Apex parameter names. The call returns a Promise.",
+      "wrong": [
+        "A bare value isn't mapped to a parameter; pass an object.",
+        "The key must match the parameter name, `accountId`.",
+        "",
+        "This still passes a bare value instead of an object."
+      ],
+      "source": "LWC Developer Guide: Call Apex Methods Imperatively"
+    },
+    {
+      "id": "ui-q52",
+      "lesson": "ui-7",
+      "difficulty": 2,
+      "q": "Which two must be true of an Apex method used with `@wire`? (Choose 2)",
+      "options": [
+        "It is `global`, not `public`",
+        "It is `static`",
+        "It returns a `List` of records",
+        "It is `@AuraEnabled(cacheable=true)`",
+        "Its class is `without sharing`"
+      ],
+      "answer": [
+        1,
+        3
+      ],
+      "explain": "A wired Apex method must be `static`, `public` or `global`, and `@AuraEnabled(cacheable=true)`.",
+      "wrong": [
+        "`public` works too.",
+        "",
+        "It can return other types, like a single record or a number.",
+        "",
+        "The sharing keyword doesn't matter for wiring; `with sharing` is the safe choice."
+      ],
+      "source": "LWC Developer Guide: Wire Apex Methods to Components"
+    },
+    {
+      "id": "ui-q53",
+      "lesson": "ui-7",
+      "difficulty": 2,
+      "q": "An Apex method called from LWC must send a clear message the component can show to the user. What should it throw?",
+      "options": [
+        "`AuraHandledException`",
+        "`DmlException`",
+        "`CalloutException`",
+        "`QueryException`"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "`AuraHandledException` carries your own message safely to the Lightning component.",
+      "wrong": [
+        "",
+        "A system exception like this isn't meant for user messages.",
+        "This is for failed callouts, not user messages.",
+        "This is for failed queries, not user messages."
+      ],
+      "source": "LWC Developer Guide: Handle Errors from Apex"
+    },
+    {
+      "id": "ui-q54",
+      "lesson": "ui-7",
+      "difficulty": 2,
+      "q": "A component lets users edit five fields on the current record. There is no custom logic. What should the developer use first?",
+      "options": [
+        "An imperative Apex method that runs an `update`",
+        "`lightning-record-edit-form` from Lightning Data Service",
+        "A wired `cacheable=true` Apex method with DML",
+        "A Visualforce page embedded in a Lightning tab"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "Lightning Data Service loads and saves records with no Apex, and it respects the user's access. Use Apex only when you need custom logic.",
+      "wrong": [
+        "Apex works but is more code to write, test and secure.",
+        "",
+        "A cacheable method can't do DML.",
+        "Visualforce is the older, heavier choice for this."
+      ],
+      "source": "LWC Developer Guide: Lightning Data Service"
+    },
+    {
+      "id": "ui-q55",
+      "lesson": "ui-8",
+      "difficulty": 1,
+      "q": "Which target lets an admin place an LWC on a screen in Flow Builder?",
+      "options": [
+        "`lightning__FlowAction`",
+        "`lightning__RecordPage`",
+        "`lightning__FlowScreen`",
+        "`lightning__AppPage`"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "The `lightning__FlowScreen` target makes a component available as a flow screen component.",
+      "wrong": [
+        "This target is for a flow action with no screen.",
+        "This target is for Lightning record pages.",
+        "",
+        "This target is for Lightning app pages."
+      ],
+      "source": "LWC Developer Guide: Configure a Component for Flow Screens"
+    },
+    {
+      "id": "ui-q56",
+      "lesson": "ui-8",
+      "difficulty": 1,
+      "q": "A component lists `lightning__RecordPage` as a target, but admins can't find it in Lightning App Builder. What is the most likely cause?",
+      "options": [
+        "`isExposed` is `false` in its config file",
+        "Its HTML template has no `lwc:if` directive",
+        "Its JavaScript class has no `@api` property",
+        "It doesn't have its own CSS file in the folder"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "A component shows in the builders only when `isExposed` is `true` and at least one target is set.",
+      "wrong": [
+        "",
+        "Template directives don't affect where a component appears.",
+        "Public properties are optional.",
+        "CSS is optional."
+      ],
+      "source": "LWC Developer Guide: XML Configuration File Elements"
+    },
+    {
+      "id": "ui-q57",
+      "lesson": "ui-8",
+      "difficulty": 2,
+      "q": "What can an admin do with `total` when placing this component on a flow screen?",
+      "code": "<targetConfig targets=\"lightning__FlowScreen\">\n  <property name=\"total\" type=\"Integer\" role=\"outputOnly\"/>\n</targetConfig>",
+      "lang": "xml",
+      "options": [
+        "Set it as an input from a flow variable, but not read it back",
+        "Both set it as an input and store it as an output value",
+        "Neither; `role` hides the property from Flow Builder",
+        "Store its value in a flow variable, but not set it as an input"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "`outputOnly` means the flow can only read the value out. With no `role`, a property is both input and output.",
+      "wrong": [
+        "That would be `inputOnly`.",
+        "That is the default when `role` is left out.",
+        "The property still shows, as an output.",
+        ""
+      ],
+      "source": "LWC Developer Guide: Configure a Component for Flow Screens"
+    },
+    {
+      "id": "ui-q58",
+      "lesson": "ui-8",
+      "difficulty": 2,
+      "q": "A flow screen component lets the user pick a product. How should it tell the flow that its `@api productId` changed?",
+      "options": [
+        "Fire a `FlowNavigationNextEvent`",
+        "Fire a `FlowAttributeChangeEvent`",
+        "Fire a `CustomEvent` named `change`",
+        "Fire a `ShowToastEvent` with the value"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "`FlowAttributeChangeEvent` from `lightning/flowSupport` tells the flow the new value of a property.",
+      "wrong": [
+        "This moves to the next screen; it doesn't report the value.",
+        "",
+        "The flow doesn't listen for custom events.",
+        "A toast only shows a message to the user."
+      ],
+      "source": "LWC Developer Guide: Set Up Your Screen Flow Components for Reactivity"
+    },
+    {
+      "id": "ui-q59",
+      "lesson": "ui-8",
+      "difficulty": 2,
+      "q": "This class won't save. Why?",
+      "code": "public with sharing class LeadActions {\n  @InvocableMethod(label='Score Leads')\n  public static List<Integer> score(List<Id> ids) { /* ... */ }\n  @InvocableMethod(label='Route Leads')\n  public static List<Id> route(List<Id> ids) { /* ... */ }\n}",
+      "lang": "apex",
+      "options": [
+        "Invocable methods must be `global`, not `public`",
+        "Only one method in a class can be `@InvocableMethod`",
+        "Invocable methods can't take a `List<Id>` as input",
+        "Invocable methods must return `void`, not a `List`"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "A class can have only one `@InvocableMethod`. Put the second action in its own class.",
+      "wrong": [
+        "`public` or `global` both work.",
+        "",
+        "A list of a primitive type like `Id` is a valid input.",
+        "Invocable methods may return a list."
+      ],
+      "source": "Apex Developer Guide: InvocableMethod Annotation"
+    },
+    {
+      "id": "ui-q60",
+      "lesson": "ui-8",
+      "difficulty": 2,
+      "q": "A component on a Lightning record page needs the Id of the record being viewed. What is the simplest way?",
+      "options": [
+        "Wire `getRecordId` from `lightning/uiRecordApi`",
+        "Read the Id from `window.location` and parse it",
+        "Call an Apex method that returns the current Id",
+        "Declare `@api recordId;` and let the page fill it"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "On a record page, Salesforce sets a public `recordId` property for you.",
+      "wrong": [
+        "There is no such adapter; `recordId` is filled in for you.",
+        "Parsing the URL is fragile and unnecessary.",
+        "Apex doesn't know which record the user is viewing.",
+        ""
+      ],
+      "source": "LWC Developer Guide: Component Record Context"
+    },
+    {
+      "id": "ui-q61",
+      "lesson": "ui-8",
+      "difficulty": 2,
+      "q": "Which two run a screen flow inside custom UI? (Choose 2)",
+      "options": [
+        "`<apex:flow>` on a Visualforce page",
+        "`<lightning-flow>` in an LWC template",
+        "`<c-flow>` in an LWC template",
+        "`<lightning-flow-screen>` in an LWC template",
+        "`<flow:interview>` on a Visualforce page"
+      ],
+      "answer": [
+        1,
+        4
+      ],
+      "explain": "An LWC runs a flow with the `lightning-flow` base component. Visualforce uses `<flow:interview>`.",
+      "wrong": [
+        "There is no `<apex:flow>` component.",
+        "",
+        "`c-` is your own namespace, not a base component.",
+        "There is no such base component.",
+        ""
+      ],
+      "source": "LWC Developer Guide: Embed a Flow in a Custom Lightning Web Component"
+    },
+    {
+      "id": "ui-q62",
+      "lesson": "ui-9",
+      "difficulty": 1,
+      "q": "What can a developer build a custom Agentforce action from?",
+      "options": [
+        "A Visualforce page, a trigger or a custom report",
+        "A validation rule, a workflow rule or an approval",
+        "A static resource, a custom label or a custom tab",
+        "An Apex invocable method, a flow or a prompt template"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "Custom agent actions can be built from Apex, flows or prompt templates.",
+      "wrong": [
+        "These aren't action types for agents.",
+        "These aren't action types for agents.",
+        "These hold content or UI, not action logic.",
+        ""
+      ],
+      "source": "Agentforce Developer Guide: Create Custom Actions Using Apex InvocableMethod"
+    },
+    {
+      "id": "ui-q63",
+      "lesson": "ui-9",
+      "difficulty": 1,
+      "q": "Which annotation makes an Apex method available as a custom action in Agentforce Builder?",
+      "options": [
+        "`@TestVisible`",
+        "`@future`",
+        "`@InvocableMethod`",
+        "`@ReadOnly`"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "`@InvocableMethod` makes the method an invocable action. Flows and agents can both use it.",
+      "wrong": [
+        "It only lets tests see private members.",
+        "It runs the method later, in the background.",
+        "",
+        "It allows larger read-only queries in some contexts."
+      ],
+      "source": "Agentforce Developer Guide: Create Custom Actions Using Apex InvocableMethod"
+    },
+    {
+      "id": "ui-q64",
+      "lesson": "ui-9",
+      "difficulty": 2,
+      "q": "An agent action needs two inputs: an order number and a customer email. How should the invocable method receive them?",
+      "options": [
+        "Two parameters, `List<String> orders, List<String> emails`",
+        "One `List` of a class with two `@InvocableVariable` fields",
+        "One `Map<String, String>` parameter of names to values",
+        "Two `@InvocableMethod` methods in the same Apex class"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "An invocable method takes at most one parameter. For several inputs, use a list of a class whose fields are marked `@InvocableVariable`.",
+      "wrong": [
+        "Only one parameter is allowed.",
+        "",
+        "A map isn't a supported input type.",
+        "Only one invocable method is allowed per class."
+      ],
+      "source": "Apex Developer Guide: InvocableVariable Annotation"
+    },
+    {
+      "id": "ui-q65",
+      "lesson": "ui-9",
+      "difficulty": 2,
+      "q": "An agent often skips a custom Apex action when users ask about refunds. Which two changes help it choose the action? (Choose 2)",
+      "options": [
+        "Write clear action instructions saying what it does and when to use it",
+        "Add `callout=true` to the `@InvocableMethod` annotation",
+        "Change the class from `public` to `global` so it is visible",
+        "Mark the method `@AuraEnabled(cacheable=true)` as well",
+        "Give each `@InvocableVariable` a clear `description` of the input"
+      ],
+      "answer": [
+        0,
+        4
+      ],
+      "explain": "The agent reads the action's instructions and input descriptions to decide when to use it. Clear words make the right choice more likely.",
+      "wrong": [
+        "",
+        "`callout=true` only says the method calls an outside system.",
+        "The action is already visible; access modifiers don't guide the agent.",
+        "This is for Lightning components and doesn't guide the agent.",
+        ""
+      ],
+      "source": "Agentforce Developer Guide: Create Custom Actions Using Apex InvocableMethod"
+    },
+    {
+      "id": "ui-q66",
+      "lesson": "ui-9",
+      "difficulty": 2,
+      "q": "An invocable method calls an outside shipping API. Which annotation setting tells Flow and agents that it makes a callout?",
+      "options": [
+        "`cacheable=true`",
+        "`callout=true`",
+        "`external=true`",
+        "`category='Callout'`"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "The `callout` setting on `@InvocableMethod` says the method calls an external system.",
+      "wrong": [
+        "`cacheable` belongs to `@AuraEnabled`.",
+        "",
+        "There is no `external` setting.",
+        "`category` only groups the action in Flow Builder."
+      ],
+      "source": "Apex Developer Guide: InvocableMethod Annotation"
+    },
+    {
+      "id": "ui-q67",
+      "lesson": "ui-9",
+      "difficulty": 2,
+      "q": "Why does an invocable method take a list and return a list, even when an agent asks about one order?",
+      "options": [
+        "So the agent can sort the answers by itself",
+        "So the results can be cached in the browser",
+        "So one call can handle many requests at once",
+        "So the method can skip governor limits safely"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "Invocable methods are bulk by design. The same action can serve one chat request or many flow records in one call.",
+      "wrong": [
+        "Lists aren't there for sorting.",
+        "Caching is an `@AuraEnabled` idea, not an invocable one.",
+        "",
+        "Nothing skips governor limits."
+      ],
+      "source": "Apex Developer Guide: InvocableMethod Annotation"
+    },
+    {
+      "id": "ui-x1",
+      "lesson": "ui-1",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "Users edit a rich `Bio__c` field on their contact record. A partner portal page shows it like this. A developer says it's safe because the data lives in the org. What should the reviewer ask for?",
+      "code": "<apex:page controller=\"BioCtrl\">\n  <apex:outputText value=\"{!bio}\" escape=\"false\"/>\n</apex:page>",
+      "lang": "html",
+      "options": [
+        "Remove `escape=\"false\"`, or wrap the value in `HTMLENCODE()`",
+        "Mark the `bio` property `transient` in the controller",
+        "Query `Bio__c` `WITH USER_MODE` in the controller",
+        "Move the value into a `<script>` block and print it there"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "Data that users typed is untrusted, even when it is stored in the org. Showing it unescaped is stored XSS, so turn escaping back on or encode it.",
+      "wrong": [
+        "",
+        "`transient` keeps a value out of view state. It doesn't make output safe.",
+        "User mode checks access to the field. It doesn't escape what the field holds.",
+        "Script blocks have no automatic protection, so this makes it worse."
+      ],
+      "source": "Visualforce Developer Guide: Cross Site Scripting (XSS)"
+    },
+    {
+      "id": "ui-x2",
+      "lesson": "ui-1",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A merge field sits inside a JavaScript string, and that JavaScript sits inside an HTML `onclick` attribute. Which Visualforce function fits this spot?",
+      "code": "<button onclick=\"select('{!item.Label__c}')\">Pick</button>",
+      "lang": "html",
+      "options": [
+        "`HTMLENCODE`",
+        "`JSENCODE`",
+        "`URLENCODE`",
+        "`JSINHTMLENCODE`"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "`JSINHTMLENCODE` is made for JavaScript inside an HTML tag. It encodes HTML-reserved characters and escapes risky JavaScript characters.",
+      "wrong": [
+        "`HTMLENCODE` handles HTML only, not quote marks that break a JavaScript string.",
+        "`JSENCODE` handles JavaScript only, not the HTML attribute around it.",
+        "`URLENCODE` is for values placed in a URL.",
+        ""
+      ],
+      "source": "Visualforce Developer Guide: Functions"
+    },
+    {
+      "id": "ui-x3",
+      "lesson": "ui-1",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A reviewer checks this Visualforce page for XSS. All values can contain text that users typed. Which two lines are vulnerable? (Choose 2)",
+      "code": "1  <apex:outputText value=\"{!acct.Description}\"/>\n2  <apex:outputText value=\"{!acct.Notes__c}\" escape=\"false\"/>\n3  <apex:outputField value=\"{!acct.Phone}\"/>\n4  <script>var n = '{!acct.Name}';</script>\n5  <apex:inputText value=\"{!searchTerm}\"/>",
+      "lang": "html",
+      "options": [
+        "Line 1",
+        "Line 2",
+        "Line 3",
+        "Line 4",
+        "Line 5"
+      ],
+      "answer": [
+        1,
+        3
+      ],
+      "explain": "Standard components escape output unless `escape=\"false\"` is set. Line 2 turns escaping off, and line 4 puts a merge field in a script block with no encoding.",
+      "wrong": [
+        "`<apex:outputText>` escapes by default.",
+        "",
+        "`<apex:outputField>` escapes its output.",
+        "",
+        "An input component shows the value safely and sends it back to the controller."
+      ],
+      "source": "Visualforce Developer Guide: Cross Site Scripting (XSS)"
+    },
+    {
+      "id": "ui-x4",
+      "lesson": "ui-2",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A table lets users sort by a column name sent from the browser. The developer adds `escapeSingleQuotes`. Is the query safe now?",
+      "code": "String col = String.escapeSingleQuotes(sortField);\nString q = 'SELECT Id, Name, Industry FROM Account ' +\n  'ORDER BY ' + col + ' LIMIT 50';\nList<Account> rows = Database.query(q);",
+      "lang": "apex",
+      "options": [
+        "Yes. `escapeSingleQuotes` removes every SOQL keyword from the input",
+        "Yes. Text after `ORDER BY` can never change which records come back",
+        "No. The value isn't in quotes, so check it against an allowlist of fields",
+        "No. Bind it as `:col` after `ORDER BY` and drop the escaping instead"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "`escapeSingleQuotes` only helps for values inside quotes. A field name sits outside quotes, so allow only names from a fixed list.",
+      "wrong": [
+        "It only adds backslashes before single quotes; keywords pass through.",
+        "Injected text could add clauses or end the query differently, so it isn't safe.",
+        "",
+        "Binds hold values only. A field name can't be a bind variable."
+      ],
+      "source": "Trailhead: Mitigate SOQL Injection"
+    },
+    {
+      "id": "ui-x5",
+      "lesson": "ui-2",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "`minAmount` comes from a URL parameter as a `String`. Which change best closes the injection hole?",
+      "code": "String q = 'SELECT Id FROM Opportunity ' +\n  'WHERE Amount > ' + minAmount;\nList<Opportunity> opps = Database.query(q);",
+      "lang": "apex",
+      "options": [
+        "Pass it through `String.escapeSingleQuotes(minAmount)` first",
+        "Convert it first with `Decimal.valueOf(minAmount)` and use the number",
+        "Wrap it in `String.valueOf(minAmount)` when building the query",
+        "Add `WITH SECURITY_ENFORCED` to the end of the query string"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "The value isn't inside quotes, so escaping quotes does nothing. Type casting to a number fails on anything that isn't a number, so no query words get through.",
+      "wrong": [
+        "There are no quotes around the value, so text like `0 OR Name != null` gets through.",
+        "",
+        "It is already a `String`; this changes nothing.",
+        "This checks field access. It doesn't stop the input from changing the query."
+      ],
+      "source": "Trailhead: Mitigate SOQL Injection"
+    },
+    {
+      "id": "ui-x6",
+      "lesson": "ui-2",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "What happens when this code runs and `acctName` holds `Acme' OR Name != '`?",
+      "code": "String acctName = ApexPages.currentPage().getParameters().get('n');\nList<Account> accs = Database.query(\n  'SELECT Id FROM Account WHERE Name = :acctName');",
+      "lang": "apex",
+      "options": [
+        "It looks for an Account whose name is exactly that whole text",
+        "It returns every Account, because the `OR` clause is added",
+        "It fails to compile, because binds only work in static SOQL",
+        "It throws a `QueryException` about the quote marks in the text"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "Dynamic SOQL supports simple bind variables that are in scope. The bound text is only a value, so it can't add an `OR` clause.",
+      "wrong": [
+        "",
+        "A bound value never becomes query words.",
+        "Simple binds to local variables work in `Database.query`.",
+        "Quote marks in a bound value are just part of the value."
+      ],
+      "source": "Apex Developer Guide: Dynamic SOQL"
+    },
+    {
+      "id": "ui-x7",
+      "lesson": "ui-2",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "Users of this Visualforce search page report seeing cases they shouldn't. Which two changes fix the problems? (Choose 2)",
+      "code": "public without sharing class SearchCtrl {\n  public String term { get; set; }\n  public List<Case> getResults() {\n    return Database.query('SELECT Id, Subject FROM Case ' +\n      'WHERE Subject LIKE \\'%' + term + '%\\'');\n  }\n}",
+      "lang": "apex",
+      "options": [
+        "Add `escape=\"false\"` to the output on the page",
+        "Mark the `term` property as `transient`",
+        "Declare the class `with sharing`",
+        "Move the query into a `before insert` trigger on Case",
+        "Use a bind variable for `term` instead of gluing it in"
+      ],
+      "answer": [
+        2,
+        4
+      ],
+      "explain": "Two separate holes. `without sharing` ignores record access, and gluing `term` into the string lets users rewrite the query.",
+      "wrong": [
+        "This turns off XSS protection and doesn't touch the query.",
+        "`transient` only keeps a value out of view state.",
+        "",
+        "A trigger runs on save, not when a user searches.",
+        ""
+      ],
+      "source": "Apex Developer Guide: SOQL Injection"
+    },
+    {
+      "id": "ui-x8",
+      "lesson": "ui-3",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A query must fail with an exception when the user can't read a field it selects. Which two options do that, instead of quietly dropping the field? (Choose 2)",
+      "options": [
+        "`WITH USER_MODE` on the query",
+        "`Security.stripInaccessible` on the results",
+        "Declaring the class `with sharing`",
+        "`WITH SECURITY_ENFORCED` on the query",
+        "Calling `Database.query` instead of static SOQL"
+      ],
+      "answer": [
+        0,
+        3
+      ],
+      "explain": "Both clauses check field access and throw a `QueryException` when it is missing. `stripInaccessible` removes fields quietly instead.",
+      "wrong": [
+        "",
+        "It strips fields silently and returns the rest.",
+        "Sharing keywords never check fields.",
+        "",
+        "Dynamic SOQL checks nothing extra by itself."
+      ],
+      "source": "Apex Developer Guide: Enforce User Mode for Database Operations"
+    },
+    {
+      "id": "ui-x9",
+      "lesson": "ui-3",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "This class is saved at API 64.0. Managers must see only employees shared with them, and must not see `Salary__c` without field access. What is true?",
+      "code": "public with sharing class TeamCtrl {\n  @AuraEnabled(cacheable=true)\n  public static List<Employee__c> getTeam() {\n    return [SELECT Name, Salary__c FROM Employee__c];\n  }\n}",
+      "lang": "apex",
+      "options": [
+        "Both are enforced, because the class is declared `with sharing`",
+        "Sharing is enforced but FLS is not, so add `WITH USER_MODE`",
+        "Neither is enforced, because `@AuraEnabled` runs in system mode",
+        "FLS is enforced, because `@AuraEnabled` methods check fields"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "`with sharing` limits rows only. At API 64.0, SOQL runs in system mode for fields, so add `WITH USER_MODE` or strip the fields.",
+      "wrong": [
+        "Sharing keywords don't check FLS.",
+        "",
+        "The `with sharing` keyword is honored for `@AuraEnabled` methods.",
+        "Apex doesn't check FLS unless you ask, for example with user mode."
+      ],
+      "source": "Apex Developer Guide: Enforce User Mode for Database Operations"
+    },
+    {
+      "id": "ui-x10",
+      "lesson": "ui-3",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "The user can create accounts but has no edit access to the `Rating` field. What happens when this runs?",
+      "code": "Account a = new Account(Name = 'Acme', Rating = 'Hot');\ninsert as user a;",
+      "lang": "apex",
+      "options": [
+        "The account saves without a rating",
+        "The insert fails with an exception",
+        "The account saves with the rating",
+        "The account saves and logs a warning"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "User mode DML enforces FLS. Setting a field the user can't edit makes the operation fail.",
+      "wrong": [
+        "That is what `stripInaccessible` would do; user mode fails instead.",
+        "",
+        "User mode checks the field, so this can't happen.",
+        "User mode throws an error; it doesn't just warn."
+      ],
+      "source": "Apex Developer Guide: Enforce User Mode for Database Operations"
+    },
+    {
+      "id": "ui-x11",
+      "lesson": "ui-3",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "Which two statements about the sharing keywords are true? (Choose 2)",
+      "options": [
+        "`without sharing` also skips validation rules on DML",
+        "They don't enforce object permissions or field-level security",
+        "A trigger can be declared `with sharing` to respect access",
+        "An `inherited sharing` entry point runs without sharing",
+        "An inner class doesn't take the sharing mode of its outer class"
+      ],
+      "answer": [
+        1,
+        4
+      ],
+      "explain": "Sharing keywords control record access only. Inner and outer classes each have their own sharing mode.",
+      "wrong": [
+        "Validation rules always run on DML; sharing has nothing to do with them.",
+        "",
+        "Triggers can't have a sharing declaration.",
+        "As an entry point, it runs with sharing.",
+        ""
+      ],
+      "source": "Apex Developer Guide: Using the with sharing, without sharing, and inherited sharing Keywords"
+    },
+    {
+      "id": "ui-x12",
+      "lesson": "ui-4",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "Saving this page fails. Why?",
+      "code": "public with sharing class CaseCtrl {\n  public Case c { get; set; }\n  public CaseCtrl(ApexPages.StandardController std) {\n    c = (Case) std.getRecord();\n  }\n}\n\n<apex:page controller=\"CaseCtrl\">\n  {!c.Subject}\n</apex:page>",
+      "lang": "apex",
+      "options": [
+        "A custom controller needs a no-argument constructor",
+        "The class must be `global` to be used as a controller",
+        "The page must also set `recordSetVar` on `<apex:page>`",
+        "Properties with `get; set;` can't be read in markup"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "With `controller=`, the page creates the class with no arguments. This class only has a one-argument constructor, so it fits `extensions=` instead.",
+      "wrong": [
+        "",
+        "`public` classes work as controllers.",
+        "`recordSetVar` is for list controllers and doesn't fix the constructor.",
+        "Properties with `get; set;` are exactly how markup reads values."
+      ],
+      "source": "Visualforce Developer Guide: Build a Custom Controller"
+    },
+    {
+      "id": "ui-x13",
+      "lesson": "ui-4",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "The page shows only `{!account.Name}`. Calling `getTier()` throws an error saying `Industry` was not queried. Which fix is best?",
+      "code": "public with sharing class TierExt {\n  private Account acct;\n  public TierExt(ApexPages.StandardController std) {\n    acct = (Account) std.getRecord();\n  }\n  public String getTier() {\n    return acct.Industry == 'Banking' ? 'Gold' : 'Silver';\n  }\n}",
+      "lang": "apex",
+      "options": [
+        "Mark the `acct` variable `transient` so it reloads on each request",
+        "Change the page to `controller=\"TierExt\"` instead of an extension",
+        "Call `std.addFields(new List<String>{ 'Industry' })` before `getRecord()`",
+        "Cast the record to `SObject` and read the field with `get('Industry')`"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "A standard controller only loads fields the page uses. `addFields` in the constructor tells it to load extra fields.",
+      "wrong": [
+        "`transient` doesn't make the controller query more fields.",
+        "This class has a one-argument constructor, so it can't be a custom controller.",
+        "",
+        "The field still wasn't loaded, so reading it fails either way."
+      ],
+      "source": "Apex Reference Guide: StandardController Class"
+    },
+    {
+      "id": "ui-x14",
+      "lesson": "ui-4",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "This page hits the view state size limit. The list is only used to compute a total and never shows on the page. Which change helps most?",
+      "code": "public with sharing class ReportCtrl {\n  public List<Invoice__c> allInvoices;\n  public Decimal total { get; set; }\n  public ReportCtrl() {\n    allInvoices = [SELECT Amount__c FROM Invoice__c LIMIT 20000];\n    total = 0;\n    for (Invoice__c i : allInvoices) total += i.Amount__c;\n  }\n}",
+      "lang": "apex",
+      "options": [
+        "Declare `allInvoices` as `final`",
+        "Declare `allInvoices` as `private`",
+        "Declare `allInvoices` as `transient`",
+        "Add `readOnly=\"true\"` to `<apex:page>`"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "`transient` variables are not saved in view state. Marking the big list `transient` keeps it out of the page's saved state.",
+      "wrong": [
+        "`final` stops reassignment; the list is still saved in view state.",
+        "Private variables are still part of view state.",
+        "",
+        "`readOnly` raises query row limits; it doesn't shrink view state."
+      ],
+      "source": "Apex Developer Guide: Using the transient Keyword"
+    },
+    {
+      "id": "ui-x15",
+      "lesson": "ui-4",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A custom controller saved at API 64.0 has no sharing keyword and queries `Salary__c`. The page must respect record sharing and field security. Which two changes are needed? (Choose 2)",
+      "options": [
+        "Add `escape=\"false\"` to the outputs",
+        "Declare the class `with sharing`",
+        "Add `WITH USER_MODE` to the query",
+        "Make the list property `transient`",
+        "Switch to `standardController` too"
+      ],
+      "answer": [
+        1,
+        2
+      ],
+      "explain": "At this API version, custom controller code runs in system mode. `with sharing` restores record access rules, and `WITH USER_MODE` adds the CRUD and FLS checks.",
+      "wrong": [
+        "This turns off XSS protection and has nothing to do with access.",
+        "",
+        "",
+        "`transient` only keeps data out of view state.",
+        "A page can't set both `controller` and `standardController`."
+      ],
+      "source": "Visualforce Developer Guide: Controller Class Security"
+    },
+    {
+      "id": "ui-x16",
+      "lesson": "ui-5",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "`chart` is always `null` here. Why, and where should the code go?",
+      "code": "connectedCallback() {\n  const chart = this.template.querySelector('c-chart');\n  chart.draw(this.points);\n}",
+      "lang": "js",
+      "options": [
+        "The selector needs a class, not a tag; add `.c-chart`",
+        "`this.template` is only set inside the `constructor()`",
+        "Child calls need `@wire`; wire `draw` to the child",
+        "Child elements don't exist yet; use `renderedCallback()`"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "`connectedCallback()` runs before the template renders, so child elements aren't there yet. Query them in `renderedCallback()`, which runs after rendering.",
+      "wrong": [
+        "A tag selector like `c-chart` works fine.",
+        "Child elements aren't ready in the constructor either.",
+        "`@wire` gets data; it doesn't call child methods.",
+        ""
+      ],
+      "source": "LWC Developer Guide: Lifecycle Hooks"
+    },
+    {
+      "id": "ui-x17",
+      "lesson": "ui-5",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "The template loops over `items`, but new items never show up. Which two changes fix it? (Choose 2)",
+      "code": "export default class TodoList extends LightningElement {\n  items = [];\n  newItem = '';\n  handleAdd() {\n    this.items.push(this.newItem);\n  }\n}",
+      "lang": "js",
+      "options": [
+        "Decorate `items` with `@api`",
+        "Call `this.connectedCallback()` after the `push`",
+        "Move the `push` into `renderedCallback()`",
+        "Decorate `items` with `@track`",
+        "Assign a new array: `this.items = [...this.items, this.newItem];`"
+      ],
+      "answer": [
+        3,
+        4
+      ],
+      "explain": "`push` changes the inside of the array, which a plain field doesn't watch. Watch the inside with `@track`, or assign a new array.",
+      "wrong": [
+        "`@api` makes it public; the child shouldn't change it, and it adds no deep watching.",
+        "Calling a hook by hand doesn't trigger a redraw.",
+        "It's still an unwatched change, and it risks a render loop.",
+        "",
+        ""
+      ],
+      "source": "LWC Developer Guide: Reactivity"
+    },
+    {
+      "id": "ui-x18",
+      "lesson": "ui-5",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "Rows sometimes show the wrong data after a contact is removed from the list. What is the problem?",
+      "code": "<template for:each={contacts} for:item=\"c\" for:index=\"i\">\n  <li key={i}>{c.Name}</li>\n</template>",
+      "lang": "html",
+      "options": [
+        "The `for:index` directive must come before `for:item` in the tag",
+        "The key must be a unique value from the data, like `c.Id`, not the index",
+        "Lists need `iterator:it` instead of `for:each` when items are removed",
+        "The key must be set on the `<template>` tag, not on the `<li>`"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "LWC uses the key to tell items apart. An index shifts when items move or are removed, so use a unique id from the data.",
+      "wrong": [
+        "Attribute order doesn't matter.",
+        "",
+        "Both directives work, and both need a proper key.",
+        "The key goes on the first element inside the loop."
+      ],
+      "source": "LWC Developer Guide: HTML Templates"
+    },
+    {
+      "id": "ui-x19",
+      "lesson": "ui-5",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A parent component P contains a child C. In what order do the hooks run when the page first loads?",
+      "options": [
+        "P constructor, P connected, C constructor, C connected, C rendered, P rendered",
+        "P constructor, C constructor, C connected, P connected, P rendered, C rendered",
+        "C constructor, C connected, C rendered, P constructor, P connected, P rendered",
+        "P constructor, P connected, P rendered, C constructor, C connected, C rendered"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "Creation and `connectedCallback()` flow from parent to child. `renderedCallback()` flows from child to parent, so the parent finishes last.",
+      "wrong": [
+        "",
+        "The parent connects before its child is created.",
+        "The parent is created first, since it builds the child.",
+        "The parent's render isn't done until its child has rendered."
+      ],
+      "source": "LWC Developer Guide: Lifecycle Hooks"
+    },
+    {
+      "id": "ui-x20",
+      "lesson": "ui-6",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "`c-row` sits inside `c-table`, which sits inside `c-page`. `c-page` listens for `rowclick` on its `<c-table>` tag, but its handler never runs. Why?",
+      "code": "// c-row\nhandleClick() {\n  this.dispatchEvent(new CustomEvent('rowclick'));\n}",
+      "lang": "js",
+      "options": [
+        "Grandparent components can never listen for custom events at all",
+        "Event names must start with `on`, so it should be `onrowclick`",
+        "`bubbles` and `composed` default to `false`, so it stops at `c-table`",
+        "The event needs a `detail` value or it won't be delivered at all"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "By default an event doesn't bubble or cross shadow boundaries. Only a listener on the `<c-row>` tag itself hears it.",
+      "wrong": [
+        "They can, if the event bubbles and is composed, or if `c-table` fires its own event.",
+        "Event names shouldn't start with `on`; only the listener does.",
+        "",
+        "`detail` is optional."
+      ],
+      "source": "LWC Developer Guide: Configure Event Propagation"
+    },
+    {
+      "id": "ui-x21",
+      "lesson": "ui-6",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A child sends the selected contact to its parent. Which dispatch follows best practice?",
+      "options": [
+        "`new CustomEvent('select', { detail: this.contact.Id })`",
+        "`new CustomEvent('select', { detail: this.contact })`",
+        "`new CustomEvent('Select', { detail: this.contact.Id })`",
+        "`new CustomEvent('onselect', { detail: this.contact.Id })`"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "Send primitives in `detail`, or a copy. An object is passed by reference, so any listener could change your data. The name must also be lowercase with no `on` start.",
+      "wrong": [
+        "",
+        "Passing the object lets listeners change the child's data.",
+        "Uppercase letters break the naming rules.",
+        "Names shouldn't start with `on`."
+      ],
+      "source": "LWC Developer Guide: Create and Dispatch Events"
+    },
+    {
+      "id": "ui-x22",
+      "lesson": "ui-6",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "Which two statements about LWC event propagation are true? (Choose 2)",
+      "options": [
+        "LWC events use only the bubbling phase, not capture",
+        "`bubbles` is `true` by default for a `CustomEvent`",
+        "`composed: true` lets an event cross shadow boundaries",
+        "Outside a component, `event.target` shows its inner element",
+        "Listeners added on `window` are removed automatically"
+      ],
+      "answer": [
+        0,
+        2
+      ],
+      "explain": "LWC supports only the bubbling phase. `composed` controls whether an event can cross the shadow boundary.",
+      "wrong": [
+        "",
+        "`bubbles` defaults to `false`.",
+        "",
+        "Events are retargeted, so outside code sees the component itself.",
+        "You must remove `window` listeners yourself in `disconnectedCallback()`."
+      ],
+      "source": "LWC Developer Guide: Configure Event Propagation"
+    },
+    {
+      "id": "ui-x23",
+      "lesson": "ui-6",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "Users notice the page slows down after opening and closing this component many times. What is the problem?",
+      "code": "connectedCallback() {\n  this.onResize = () => this.measure();\n  window.addEventListener('resize', this.onResize);\n}",
+      "lang": "js",
+      "options": [
+        "Arrow functions can't be used as event handlers inside LWC classes",
+        "`resize` listeners must be added in the template with `onresize`",
+        "The listener must be added in `renderedCallback()`, not here",
+        "The `window` listener is never removed; remove it in `disconnectedCallback()`"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "The framework cleans up listeners in the template, but not ones you add to `window` or `document`. Remove them in `disconnectedCallback()`.",
+      "wrong": [
+        "Arrow functions work, and keeping a reference lets you remove it later.",
+        "A component's template can't listen on `window`.",
+        "`renderedCallback()` runs on every render, which would add even more listeners.",
+        ""
+      ],
+      "source": "LWC Developer Guide: Handle Events"
+    },
+    {
+      "id": "ui-x24",
+      "lesson": "ui-7",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "After marking opportunities as won, the list still shows old stages. What is the fix?",
+      "code": "@wire(getOpps)\nwiredOpps({ data, error }) {\n  if (data) this.opps = data;\n}\nasync handleWin() {\n  await markWon({ ids: this.selectedIds });\n  refreshApex(this.opps);\n}",
+      "lang": "js",
+      "options": [
+        "Call `getOpps()` again imperatively and assign it to `this.opps`",
+        "Keep the whole value the wire gives and pass that to `refreshApex()`",
+        "Add `cacheable=false` to `getOpps` so the wire never caches it",
+        "Call `this.connectedCallback()` to make the wire run once more"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "`refreshApex()` needs the exact object the wire provisioned, not the `data` inside it. Store the value in the wired function and pass it.",
+      "wrong": [
+        "This updates the field, but the wire's cache stays stale.",
+        "",
+        "Wired methods must be `cacheable=true`.",
+        "Calling a hook by hand doesn't refresh a wire."
+      ],
+      "source": "LWC Developer Guide: Client-Side Caching"
+    },
+    {
+      "id": "ui-x25",
+      "lesson": "ui-7",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "This class is saved at API 62.0. What happens?",
+      "code": "public with sharing class SearchCtrl {\n  @AuraEnabled(cacheable=true)\n  public static List<Account> find(String term) { /* ... */ }\n  @AuraEnabled(cacheable=true)\n  public static List<Account> find(String term, Integer max) { /* ... */ }\n}",
+      "lang": "apex",
+      "options": [
+        "It fails to save: `@AuraEnabled` methods can't be overloaded",
+        "It saves; the component picks a method by how many keys it sends",
+        "It saves; the wire always calls the version with fewer arguments",
+        "It saves, but only the first method can be called from LWC code"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "From API 55.0, overloading `@AuraEnabled` methods isn't allowed. Give each method its own name.",
+      "wrong": [
+        "",
+        "Overloads aren't allowed at this API version.",
+        "Overloads aren't allowed at this API version.",
+        "Overloads aren't allowed at this API version."
+      ],
+      "source": "Apex Developer Guide: AuraEnabled Annotation"
+    },
+    {
+      "id": "ui-x26",
+      "lesson": "ui-7",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "In which two cases must a component call Apex imperatively instead of with `@wire`? (Choose 2)",
+      "options": [
+        "The method takes two parameters",
+        "The method returns a `List<Contact>`",
+        "The method updates records",
+        "The component sits on a record page",
+        "The call is in a module that doesn't extend `LightningElement`"
+      ],
+      "answer": [
+        2,
+        4
+      ],
+      "explain": "A method that changes data can't be cacheable, so it can't be wired. Wire also needs a component class, so plain modules call Apex imperatively.",
+      "wrong": [
+        "Wired methods can take several parameters.",
+        "Lists are fine to wire.",
+        "",
+        "Record pages work with wired Apex.",
+        ""
+      ],
+      "source": "LWC Developer Guide: Call Apex Methods Imperatively"
+    },
+    {
+      "id": "ui-x27",
+      "lesson": "ui-7",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "`saveCase` throws `new AuraHandledException('Subject is required')`. What happens?",
+      "code": "async handleSave() {\n  try {\n    await saveCase({ c: this.caseRec });\n    this.showToast('Saved');\n  } catch (e) {\n    this.error = e.body.message;\n  }\n}",
+      "lang": "js",
+      "options": [
+        "The toast shows first, then `this.error` is set to the message",
+        "The framework hides the error, so nothing on screen changes",
+        "The toast is skipped and `this.error` gets \"Subject is required\"",
+        "The page reloads and shows a generic error from the platform"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "The awaited promise rejects, so the code jumps to `catch`. The message from `AuraHandledException` is in `e.body.message`.",
+      "wrong": [
+        "The line after `await` never runs when the call fails.",
+        "The rejected promise lands in `catch`, which sets the error.",
+        "",
+        "Nothing reloads; the component handles the error."
+      ],
+      "source": "LWC Developer Guide: Call Apex Methods Imperatively"
+    },
+    {
+      "id": "ui-x28",
+      "lesson": "ui-7",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "`selectedId` starts as `undefined` and is set when the user picks a row. What happens on first load?",
+      "code": "selectedId;\n@wire(getDetails, { recId: '$selectedId' })\ndetails;",
+      "lang": "js",
+      "options": [
+        "Apex is called right away with `recId` set to `null`",
+        "The wire throws an error because the value is missing",
+        "Apex is called once with an empty string, then again",
+        "Apex isn't called until `selectedId` has a value"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "If a wire parameter is `undefined`, the method isn't called. A `null` value, by contrast, does call it.",
+      "wrong": [
+        "`undefined` stops the call; only `null` would be sent.",
+        "The wire simply waits; no error is thrown.",
+        "No call happens while the value is `undefined`.",
+        ""
+      ],
+      "source": "LWC Developer Guide: Wire Apex Methods to Components"
+    },
+    {
+      "id": "ui-x29",
+      "lesson": "ui-8",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A record-triggered flow calls this action when 200 leads are updated together. Which two statements are true? (Choose 2)",
+      "code": "@InvocableMethod(label='Find Region')\npublic static List<String> findRegion(List<String> zips) {\n  List<String> out = new List<String>();\n  for (String z : zips) {\n    Region__c r = [SELECT Name FROM Region__c WHERE Zip__c = :z LIMIT 1];\n    out.add(r.Name);\n  }\n  return out;\n}",
+      "lang": "apex",
+      "options": [
+        "The flow can pass all 200 zips in a single call",
+        "The method runs 200 times, once for each lead",
+        "The output list may be shorter than the input list",
+        "The query in the loop can pass the 100-query limit",
+        "Each invocable call gets its own set of limits"
+      ],
+      "answer": [
+        0,
+        3
+      ],
+      "explain": "Flows bulk up Apex actions, so one call can get many inputs. A query inside the loop then runs once per input and can pass the 100 SOQL query limit.",
+      "wrong": [
+        "",
+        "Inputs are batched into one call, which is why it takes a list.",
+        "Output must match the input in size and order.",
+        "",
+        "All calls share the transaction's limits."
+      ],
+      "source": "Apex Developer Guide: InvocableMethod Annotation"
+    },
+    {
+      "id": "ui-x30",
+      "lesson": "ui-8",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A flow needs an LWC to run browser-side logic as an action, with no screen. Which setup is right?",
+      "options": [
+        "Target `lightning__FlowAction` with an `@api invoke()` method",
+        "Target `lightning__FlowScreen` with an `@api validate()` method",
+        "Target `lightning__RecordAction` with an `@api recordId` field",
+        "Target `lightning__UtilityBar` with a `connectedCallback()`"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "A flow local action uses the `lightning__FlowAction` target and runs its `@api invoke()` method. It works only in screen flows.",
+      "wrong": [
+        "",
+        "That makes a screen component with input checks.",
+        "That is a quick action on a record page.",
+        "That puts the component in the utility bar."
+      ],
+      "source": "LWC Developer Guide: Create Flow Local Actions Using Lightning Web Components"
+    },
+    {
+      "id": "ui-x31",
+      "lesson": "ui-8",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "This method is in a flow screen component. The user clicks Next with an empty email. What happens?",
+      "code": "@api\nvalidate() {\n  if (!this.email) {\n    return { isValid: false, errorMessage: 'Enter an email.' };\n  }\n  return { isValid: true };\n}",
+      "lang": "js",
+      "options": [
+        "The flow moves on and logs the message for admins",
+        "The flow fails and sends the admin an error email",
+        "The flow stays on the screen and shows the message",
+        "Nothing; `validate()` runs only when the flow ends"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "Flow calls `validate()` when the user tries to move on. `isValid: false` keeps them on the screen with the error message.",
+      "wrong": [
+        "An invalid result blocks navigation.",
+        "It's a normal check, not a flow failure.",
+        "",
+        "It runs each time the user tries to leave the screen."
+      ],
+      "source": "LWC Developer Guide: Validate Custom Flow Screen Components"
+    },
+    {
+      "id": "ui-x32",
+      "lesson": "ui-9",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "This action won't save. Which signature fixes it?",
+      "code": "public with sharing class OrderLookup {\n  @InvocableMethod(label='Find Order')\n  public static String find(String orderNo) {\n    return [SELECT Status FROM Order\n            WHERE OrderNumber = :orderNo].Status;\n  }\n}",
+      "lang": "apex",
+      "options": [
+        "`public static List<String> find(List<String> orderNos)`",
+        "`public String find(String orderNo)` without `static`",
+        "`global static String find(String orderNo)` instead",
+        "`public static String find(List<String> orderNos)`"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "An invocable method takes a list and returns a list. That lets one call handle many requests at once.",
+      "wrong": [
+        "",
+        "It must stay `static`, and it still needs lists.",
+        "`global` doesn't remove the need for lists.",
+        "The return type must be a list too."
+      ],
+      "source": "Apex Developer Guide: InvocableMethod Annotation"
+    },
+    {
+      "id": "ui-x33",
+      "lesson": "ui-9",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "An agent sends 3 requests and the second one has an unknown order. What is wrong with this code?",
+      "code": "for (Request r : reqs) {\n  List<Order> found = [SELECT Status FROM Order\n                       WHERE OrderNumber = :r.orderNo];\n  if (found.isEmpty()) continue;\n  results.add(new Result(found[0].Status));\n}\nreturn results;",
+      "lang": "apex",
+      "options": [
+        "It returns 2 results for 3 requests; return a failure result instead",
+        "It should throw an exception so the agent stops all three requests",
+        "It must query inside the loop, so the `continue` is not allowed here",
+        "Nothing; the agent matches each result to its request by the status"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "Each result must match its request by position, so the counts must be equal. Return a result with a success flag and a message for the bad one.",
+      "wrong": [
+        "",
+        "One bad input shouldn't fail the whole batch.",
+        "`continue` is legal; the problem is the missing result. The loop query should also be bulkified.",
+        "Results are matched by position, not by content."
+      ],
+      "source": "Apex Developer Guide: InvocableMethod Annotation"
+    },
+    {
+      "id": "ui-x34",
+      "lesson": "ui-9",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "An agent passes the customer name from chat into this action. Which two changes make it safer? (Choose 2)",
+      "code": "public without sharing class CustomerAction {\n  @InvocableMethod(label='Find Customer')\n  public static List<String> find(List<String> names) {\n    String q = 'SELECT Id, Phone FROM Contact WHERE Name = \\''\n      + names[0] + '\\'';\n    /* ... */\n  }\n}",
+      "lang": "apex",
+      "options": [
+        "Add a longer `description` to the `@InvocableMethod`",
+        "Bind the name as a value instead of gluing it into the string",
+        "Declare `with sharing` and query `WITH USER_MODE`",
+        "Mark the method `@AuraEnabled` as well as invocable",
+        "Set `required=true` on the input in a wrapper class"
+      ],
+      "answer": [
+        1,
+        2
+      ],
+      "explain": "Chat text is user input. Bind it to stop SOQL injection, and respect the user's access with sharing and user mode.",
+      "wrong": [
+        "Descriptions help the agent choose; they add no security.",
+        "",
+        "",
+        "This exposes the method to components; it adds no security.",
+        "Requiring a value doesn't make the value safe."
+      ],
+      "source": "Apex Developer Guide: SOQL Injection"
+    }
+  ]
+}

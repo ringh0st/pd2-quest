@@ -1,0 +1,4134 @@
+{
+  "id": "auto",
+  "title": "Process Automation and Logic",
+  "weight": 28,
+  "summary": "Make Salesforce do the work: flows, clean Apex, safe queries and triggers that handle 200 records as easily as one.",
+  "lessons": [
+    {
+      "id": "auto-1",
+      "title": "Flow and approvals: automation with clicks",
+      "minutes": 3,
+      "objective": "Identify the capabilities of the declarative process automation features.",
+      "cards": [
+        {
+          "type": "text",
+          "title": "In plain words",
+          "body": "**Declarative automation** means making Salesforce do work with clicks, not code. You build it in Setup. The main tool today is **Flow**. A flow can update records, send emails, ask users questions and run on a schedule. An **approval process** sends a record to people who say yes or no."
+        },
+        {
+          "type": "tip",
+          "title": "Think of it like…",
+          "body": "A smart kitchen. A flow is a recipe the kitchen follows by itself when something happens: milk runs low, so add milk to the list. An approval is asking a parent before a big purchase. Where it stops: some jobs are too complex for a recipe card, and those still need Apex."
+        },
+        {
+          "type": "list",
+          "title": "The flow types",
+          "items": [
+            "**Screen flow**: shows screens and guides a user step by step.",
+            "**Record-triggered flow**: runs when a record is created, updated or deleted.",
+            "**Schedule-triggered flow**: runs at a set time for a batch of records.",
+            "**Platform event-triggered flow**: runs when a platform event message arrives.",
+            "**Autolaunched flow**: no trigger. Apex, another flow or the REST API starts it."
+          ]
+        },
+        {
+          "type": "text",
+          "title": "Before or after the save",
+          "body": "A record-triggered flow picks when it runs. **Fast Field Updates** run before the save. They can change only the record that started the flow, so they're very fast. **Actions and Related Records** run after the save. They can create, update or delete other records, send emails and call Apex."
+        },
+        {
+          "type": "text",
+          "title": "Paths that wait",
+          "body": "After-save flows can add more paths. A **scheduled path** runs later, like 3 days before the Close Date. A path that runs **asynchronously** runs right after the save is committed, in its own transaction."
+        },
+        {
+          "type": "text",
+          "title": "Approval processes",
+          "body": "An **approval process** has entry criteria, approval steps and actions. Actions can run on submit, approve, reject or recall. They can update fields, send emails or create tasks. By default, the record is **locked** while it waits, so only approvers and admins can edit it."
+        },
+        {
+          "type": "trap",
+          "body": "**Workflow rules** and **Process Builder** are legacy tools. Salesforce says to build new automation in Flow. If an answer suggests a new workflow rule or process, it's usually wrong. They still show up in the order of execution, because old ones can still run."
+        },
+        {
+          "type": "tip",
+          "title": "Remember it",
+          "body": "**Before = fast, same record. After = actions, other records.** Screens need a user. Schedules need a clock. Events need a message."
+        }
+      ],
+      "check": [
+        "auto-q1",
+        "auto-q2",
+        "auto-x1"
+      ],
+      "terms": [
+        {
+          "term": "declarative automation",
+          "say": "Making Salesforce do work by itself using setup screens and clicks, instead of writing code."
+        },
+        {
+          "term": "Flow",
+          "say": "Salesforce's main click-based automation tool. You drag steps onto a canvas and connect them, like a flowchart that really runs."
+        },
+        {
+          "term": "approval process",
+          "match": [
+            "approval processes"
+          ],
+          "say": "A set path that sends a record to people to approve or reject, like asking your boss to sign a form."
+        },
+        {
+          "term": "Screen flow",
+          "say": "A flow with screens a person clicks through, like a step-by-step form or wizard."
+        },
+        {
+          "term": "Record-triggered flow",
+          "say": "A flow that starts by itself when a record is created, updated or deleted."
+        },
+        {
+          "term": "Autolaunched flow",
+          "say": "A flow with no screens and no trigger of its own. Something else starts it, like Apex or another flow."
+        },
+        {
+          "term": "Fast Field Updates",
+          "say": "The before-save choice for a record-triggered flow. It only changes the record being saved, so it's very quick."
+        },
+        {
+          "term": "Actions and Related Records",
+          "say": "The after-save choice for a record-triggered flow. It can touch other records, send emails and call Apex."
+        },
+        {
+          "term": "scheduled path",
+          "say": "A part of an after-save flow that waits and runs later, at a time based on the record, like 3 days before a date."
+        },
+        {
+          "term": "Process Builder",
+          "say": "An old click tool for automation. Salesforce now says to use Flow instead, but old processes can still run."
+        }
+      ]
+    },
+    {
+      "id": "auto-2",
+      "title": "Variables, constants and data types",
+      "minutes": 3,
+      "objective": "Understand how to declare variables, constants, methods, modifiers, Apex interfaces, and the appropriate use cases for each.",
+      "cards": [
+        {
+          "type": "text",
+          "title": "In plain words",
+          "body": "A **variable** is a named box that holds a value. In Apex, every variable has a **data type**, like `Integer`, `String` or `Account`. The type says what can go in the box. A **constant** is a box you fill once and never change."
+        },
+        {
+          "type": "tip",
+          "title": "Think of it like…",
+          "body": "Labeled jars in a kitchen. The sugar jar only takes sugar, just like an `Integer` only takes whole numbers. A constant is a jar with the lid glued on. Where it stops: an Apex jar you never filled isn't empty. It holds `null`."
+        },
+        {
+          "type": "list",
+          "title": "Common data types",
+          "items": [
+            "**Primitives**: `Integer`, `Long`, `Decimal`, `Double`, `String`, `Boolean`, `Date`, `Datetime`, `Id`.",
+            "**sObjects**: one record, like `Account` or `Invoice__c`.",
+            "**Collections**: `List` (ordered, repeats allowed), `Set` (no repeats), `Map` (key to value).",
+            "**Enums**: a fixed list of named values."
+          ]
+        },
+        {
+          "type": "code",
+          "title": "Declaring variables",
+          "lang": "apex",
+          "code": "Integer count = 0;\nString name;              // null until set\nList<Account> accts = new List<Account>();\nMap<Id, Account> byId = new Map<Id, Account>();\nSet<String> codes = new Set<String>{'A', 'B'};",
+          "body": "Write the type, then the name. A variable you don't set starts as `null`. That's true even for an `Integer` or a `Boolean`."
+        },
+        {
+          "type": "code",
+          "title": "Constants",
+          "lang": "apex",
+          "code": "public class TaxRules {\n    public static final Decimal RATE = 0.2;\n    public static final Integer MAX_LINES;\n    static {\n        MAX_LINES = 50;\n    }\n}",
+          "body": "`final` means it can be set only once. A `static final` variable is a class-wide constant. Set it where you declare it, or in a `static` block."
+        },
+        {
+          "type": "text",
+          "title": "Static or instance",
+          "body": "A **static** variable belongs to the class, not to one object. All code in the same **transaction** shares one copy, and it resets when the transaction ends. An **instance** variable belongs to each object you make with `new`."
+        },
+        {
+          "type": "text",
+          "title": "A String quirk",
+          "body": "`==` on Strings **ignores case**, so `'abc' == 'ABC'` is true. Use `equals()` when case matters. But `Map` keys and `switch` values of type `String` do care about case."
+        },
+        {
+          "type": "trap",
+          "body": "Apex `static` is not shared across users or requests. It lives for one transaction only. So a static counter can't count logins across the org. It starts fresh in every transaction."
+        },
+        {
+          "type": "tip",
+          "title": "Remember it",
+          "body": "**Type, name, value.** No value means `null`. `final` means set once. `static final` means one constant for the whole class."
+        }
+      ],
+      "check": [
+        "auto-q8",
+        "auto-q9",
+        "auto-x4"
+      ],
+      "terms": [
+        {
+          "term": "variable",
+          "say": "A named box in your code that holds a value, like a number or a name. You can read it and change it."
+        },
+        {
+          "term": "data type",
+          "say": "The kind of value a box can hold: a whole number, text, a date, a record and so on."
+        },
+        {
+          "term": "constant",
+          "say": "A value that is set once and then can never change, like the number of days in a week."
+        },
+        {
+          "term": "Primitives",
+          "match": [
+            "primitive"
+          ],
+          "say": "The simple, built-in kinds of values: numbers, text, true or false, dates and Ids."
+        },
+        {
+          "term": "sObjects",
+          "match": [
+            "sObject"
+          ],
+          "say": "A Salesforce record held in Apex, like one Account or one Contact, with its fields."
+        },
+        {
+          "term": "Collections",
+          "say": "Boxes that hold many values at once. Apex has three kinds: List, Set and Map."
+        },
+        {
+          "term": "null",
+          "say": "Means \"no value at all\". It isn't zero and it isn't empty text. It's nothing."
+        },
+        {
+          "term": "final",
+          "say": "A keyword that means \"this can be set only once\". After that, the value is locked."
+        },
+        {
+          "term": "static",
+          "say": "Belongs to the class itself, not to one object. Everyone in the same transaction shares one copy."
+        },
+        {
+          "term": "transaction",
+          "say": "Everything that happens in one request, start to finish. It all saves together, or it is all undone together."
+        }
+      ]
+    },
+    {
+      "id": "auto-3",
+      "title": "Methods, access modifiers and interfaces",
+      "minutes": 3,
+      "objective": "Understand how to declare variables, constants, methods, modifiers, Apex interfaces, and the appropriate use cases for each.",
+      "cards": [
+        {
+          "type": "text",
+          "title": "In plain words",
+          "body": "A **method** is a named set of steps your code can call, like `calculateTax()`. An **access modifier** says who may call a method or see a variable. An **interface** is a promise: any class that signs it must have certain methods."
+        },
+        {
+          "type": "tip",
+          "title": "Think of it like…",
+          "body": "Rooms in a house. `private` is your bedroom: only you. `public` is the living room: the whole family, meaning your app. `global` is the front porch: anyone, even neighbors, meaning other apps and APIs. Where it stops: `protected` is odd. It's for inner classes and subclasses only."
+        },
+        {
+          "type": "list",
+          "title": "The four access modifiers",
+          "items": [
+            "`private`: only inside this class. It's **the default** when you write nothing.",
+            "`protected`: this class, its inner classes and classes that extend it. Instance members only.",
+            "`public`: any Apex in the same app or namespace.",
+            "`global`: any Apex anywhere, plus SOAP API. The class must be `global` too."
+          ]
+        },
+        {
+          "type": "code",
+          "title": "Parts of a method",
+          "lang": "apex",
+          "code": "public static Decimal addTax(Decimal amount) {\n    return amount * 1.2;\n}",
+          "body": "Access modifier, optional `static`, then the **return type** (`void` means it returns nothing), the name and the parameters. Call a `static` method on the class name, like `TaxUtil.addTax(100)`."
+        },
+        {
+          "type": "code",
+          "title": "An interface and a class that signs it",
+          "lang": "apex",
+          "code": "public interface Discountable {\n    Decimal discount(Decimal price);\n}\npublic class VipDiscount implements Discountable {\n    public Decimal discount(Decimal price) {\n        return price * 0.9;\n    }\n}",
+          "body": "The interface lists methods with no body. The class uses `implements` and must define **every** method in it."
+        },
+        {
+          "type": "text",
+          "title": "virtual and abstract",
+          "body": "A `virtual` class can be extended, and its `virtual` methods can be replaced with `override`. An `abstract` class can't be created with `new`. Its `abstract` methods have no body, and subclasses must fill them in. Without one of these keywords, a class **can't be extended**."
+        },
+        {
+          "type": "trap",
+          "body": "Apex `public` is **not** Java's `public`. It means \"same namespace or package\". To reach code from outside the package, or from SOAP API, you need `global`. And with no modifier at all, a method is `private`."
+        },
+        {
+          "type": "tip",
+          "title": "Remember it",
+          "body": "**Me, family, team, world**: `private`, `protected`, `public`, `global`. An interface is a promise: sign it with `implements`, then keep every part."
+        }
+      ],
+      "check": [
+        "auto-q15",
+        "auto-q16",
+        "auto-x7"
+      ],
+      "terms": [
+        {
+          "term": "method",
+          "say": "A named list of steps in a class that you can run by calling its name, like pressing a button."
+        },
+        {
+          "term": "access modifier",
+          "match": [
+            "access modifiers"
+          ],
+          "say": "A word in front of a method or variable that says who is allowed to use it."
+        },
+        {
+          "term": "interface",
+          "say": "A promise that lists methods by name. Any class that signs it must write all those methods."
+        },
+        {
+          "term": "private",
+          "say": "Only code inside the same class can use it. This is what you get if you write no modifier."
+        },
+        {
+          "term": "protected",
+          "say": "The class, its inner classes and the classes that extend it can use it. Nobody else can."
+        },
+        {
+          "term": "public",
+          "say": "Any Apex in the same app or namespace can use it. In Apex it does not mean the whole world."
+        },
+        {
+          "term": "global",
+          "say": "Any Apex anywhere can use it, even other packages and the SOAP API. Use it rarely."
+        },
+        {
+          "term": "return type",
+          "say": "The kind of value a method hands back when it finishes. `void` means it hands back nothing."
+        },
+        {
+          "term": "implements",
+          "say": "The word a class uses to sign an interface's promise. Then it must write every listed method."
+        },
+        {
+          "term": "abstract",
+          "say": "A class or method that is only an outline. You can't create the class with `new`; a subclass fills it in."
+        }
+      ]
+    },
+    {
+      "id": "auto-4",
+      "title": "Control flow: if, loops and switch",
+      "minutes": 3,
+      "objective": "Given a scenario, assess how Apex control flow statements will execute and when to apply different control flow statements.",
+      "cards": [
+        {
+          "type": "text",
+          "title": "In plain words",
+          "body": "**Control flow** decides which lines run, and how many times. `if` and `else` pick a path. **Loops** repeat work. `switch` picks one branch from many values. `break` jumps out of a loop, and `continue` skips to its next turn."
+        },
+        {
+          "type": "tip",
+          "title": "Think of it like…",
+          "body": "A board game. `if` is a fork in the path. A loop is going around the board again. `switch` is a spinner that lands on one color. `break` is leaving the game early. `continue` is skipping just this turn. Where it stops: an Apex `switch` never falls through to the next branch."
+        },
+        {
+          "type": "code",
+          "title": "Loops",
+          "lang": "apex",
+          "code": "for (Integer i = 0; i < 3; i++) { }           // counter loop\nfor (Account a : accts) { }                   // list or set loop\nfor (Account a : [SELECT Id FROM Account]) { } // SOQL for loop\nwhile (n > 0) { n--; }                        // checks first\ndo { n--; } while (n > 0);                    // runs at least once",
+          "body": "A `do-while` loop always runs once before it checks. A `while` loop may run zero times."
+        },
+        {
+          "type": "code",
+          "title": "switch",
+          "lang": "apex",
+          "code": "switch on lead.Rating {\n    when 'Hot' { score = 3; }\n    when 'Warm', 'Cold' { score = 2; }\n    when null { score = 0; }\n    when else { score = 1; }\n}",
+          "body": "`switch on` works with `Integer`, `Long`, `String`, `sObject` and `Enum`. At most one `when` runs. `when else` is optional, and it must come last."
+        },
+        {
+          "type": "text",
+          "title": "Short forms",
+          "body": "The **ternary operator** is a tiny if/else on one line: `qty > 100 ? 'Big' : 'Small'`. The **safe navigation operator** `?.` returns `null` instead of throwing an error when the left side is null."
+        },
+        {
+          "type": "text",
+          "title": "SOQL for loop",
+          "body": "A **SOQL for loop** gets query results in chunks of **200**. Use it when a query could return many rows, so they don't all sit in memory at once. It still counts as one query."
+        },
+        {
+          "type": "trap",
+          "body": "A `switch` on a `String` **cares about case**, but `==` on Strings doesn't. `when 'hot'` won't match `'Hot'`. Also, you never need `break` inside a `when` block. Apex never runs the next block by accident."
+        },
+        {
+          "type": "tip",
+          "title": "Remember it",
+          "body": "**If picks. Loops repeat. Switch spins once.** `break` leaves the loop. `continue` skips one turn. `do-while` always runs at least once."
+        }
+      ],
+      "check": [
+        "auto-q22",
+        "auto-q23",
+        "auto-x10"
+      ],
+      "terms": [
+        {
+          "term": "Control flow",
+          "say": "The rules that decide which lines of code run next, and how many times they run."
+        },
+        {
+          "term": "Loops",
+          "match": [
+            "loop"
+          ],
+          "say": "Code that repeats the same steps, again and again, until a condition says stop."
+        },
+        {
+          "term": "break",
+          "say": "Jumps right out of a loop. The loop stops, and the code after it runs."
+        },
+        {
+          "term": "continue",
+          "say": "Skips the rest of this turn of the loop and goes on to the next turn."
+        },
+        {
+          "term": "switch",
+          "say": "Checks one value and runs the one block that matches it, like a spinner landing on a color."
+        },
+        {
+          "term": "when else",
+          "say": "The catch-all block in a switch. It runs when no other value matched. It must come last."
+        },
+        {
+          "term": "do-while",
+          "say": "A loop that runs its steps first and checks the condition after. So it always runs at least once."
+        },
+        {
+          "term": "ternary operator",
+          "say": "A one-line if/else: a question, then the value if yes, then the value if no."
+        },
+        {
+          "term": "safe navigation operator",
+          "say": "The `?.` sign. If the thing on its left is null, you get null back instead of a crash."
+        },
+        {
+          "term": "SOQL for loop",
+          "say": "A loop written right around a query. It fetches records in chunks of 200, which saves memory."
+        }
+      ]
+    },
+    {
+      "id": "auto-5",
+      "title": "SOQL and SOSL in Apex",
+      "minutes": 4,
+      "objective": "Given a scenario, write SOSL, SOQL, and DML statements in Apex, and assess what they will return.",
+      "cards": [
+        {
+          "type": "text",
+          "title": "In plain words",
+          "body": "**SOQL** asks the database for records of one object and its related objects, like \"all open Cases for this Account\". **SOSL** searches for words across many objects at once, like a search box. In Apex you write both inside square brackets."
+        },
+        {
+          "type": "tip",
+          "title": "Think of it like…",
+          "body": "SOQL is asking a librarian for every book on shelf B by one author. You know where to look. SOSL is typing a word into the library's search bar and getting books, magazines and DVDs back. Where it stops: both have hard limits on how much they return."
+        },
+        {
+          "type": "code",
+          "title": "SOQL in Apex",
+          "lang": "apex",
+          "code": "String region = 'West';\nList<Account> accts = [\n    SELECT Id, Name, (SELECT LastName FROM Contacts)\n    FROM Account\n    WHERE Region__c = :region\n    LIMIT 50\n];",
+          "body": "`:region` is a **bind variable**: an Apex value used in the query. It also blocks SOQL injection. The inner query is a **child subquery** that uses the relationship name `Contacts`."
+        },
+        {
+          "type": "text",
+          "title": "Parents and children",
+          "body": "Go up to a parent with a dot: `SELECT Name, Account.Name FROM Contact`. Custom relationships use `__r`, like `Invoice__r.Total__c`. Go down to children with a subquery."
+        },
+        {
+          "type": "code",
+          "title": "SOSL in Apex",
+          "lang": "apex",
+          "code": "List<List<SObject>> found = [\n    FIND 'Acme*' IN NAME FIELDS\n    RETURNING Account(Name), Contact(FirstName, LastName)\n];\nList<Account> accts = (List<Account>) found[0];",
+          "body": "SOSL returns a **list of lists**, one inner list per object, in `RETURNING` order. `FIND` is required. Search ignores case and allows wildcards like `*`."
+        },
+        {
+          "type": "list",
+          "title": "Limits to know (per transaction)",
+          "items": [
+            "**100** SOQL queries (200 in async Apex).",
+            "**50,000** rows returned by SOQL in total.",
+            "**20** SOSL queries, and **2,000** rows per SOSL query."
+          ]
+        },
+        {
+          "type": "text",
+          "title": "User mode",
+          "body": "Add `WITH USER_MODE` to make a query respect the running user's object, field and record access. `WITH SYSTEM_MODE` skips those checks. Choose one on purpose instead of trusting defaults."
+        },
+        {
+          "type": "trap",
+          "body": "Putting a query into a single record throws a `QueryException` if it finds **zero rows** or **more than one**. Putting it into a `List` just gives an empty list. \"It returns `null`\" is the classic wrong answer."
+        },
+        {
+          "type": "tip",
+          "title": "Remember it",
+          "body": "**SOQL: one object family, and you know where. SOSL: one word, many objects.** One row into one record? Be sure exactly one comes back."
+        }
+      ],
+      "check": [
+        "auto-q28",
+        "auto-q29",
+        "auto-x14"
+      ],
+      "terms": [
+        {
+          "term": "SOQL",
+          "say": "Salesforce's query language. It asks for records of one object, and its parents or children, that match your filters."
+        },
+        {
+          "term": "SOSL",
+          "say": "Salesforce's search language. It looks for a word or phrase across many objects at once."
+        },
+        {
+          "term": "bind variable",
+          "say": "An Apex value put into a query with a colon, like `:region`. It's safe, so users can't sneak code into the query."
+        },
+        {
+          "term": "child subquery",
+          "say": "A small query inside a bigger one that brings back each record's children, like an Account's Contacts."
+        },
+        {
+          "term": "__r",
+          "say": "The ending used to follow a custom relationship in a query, like `Invoice__r.Total__c` to reach a parent's field."
+        },
+        {
+          "term": "list of lists",
+          "say": "What SOSL gives back: one list for each object you searched, all inside one outer list."
+        },
+        {
+          "term": "FIND",
+          "say": "The keyword that starts every SOSL search. It holds the words you are looking for."
+        },
+        {
+          "term": "QueryException",
+          "say": "The error you get when a query goes wrong, like putting zero rows, or two, into one record."
+        },
+        {
+          "term": "WITH USER_MODE",
+          "say": "Words added to a query so it only returns what the running user may see: objects, fields and records."
+        }
+      ]
+    },
+    {
+      "id": "auto-6",
+      "title": "DML statements and Database methods",
+      "minutes": 3,
+      "objective": "Given a scenario, write SOSL, SOQL, and DML statements in Apex, and assess what they will return.",
+      "cards": [
+        {
+          "type": "text",
+          "title": "In plain words",
+          "body": "**DML** (data manipulation language) is how Apex changes records: `insert`, `update`, `upsert`, `delete`, `undelete` and `merge`. You can write a **DML statement**, like `insert accts;`. Or you can call a **Database method**, like `Database.insert(accts, false);`."
+        },
+        {
+          "type": "tip",
+          "title": "Think of it like…",
+          "body": "Mailing a stack of letters. A DML statement is all or nothing: one bad address and the whole stack comes back. A Database method with `false` is \"send what you can\": good letters go, bad ones come back with a note. Where it stops: either way, it's still one trip, one DML, for the whole stack."
+        },
+        {
+          "type": "code",
+          "title": "All or nothing",
+          "lang": "apex",
+          "code": "try {\n    insert newAccounts;  // one bad record = none saved\n} catch (DmlException e) {\n    System.debug(e.getNumDml() + ' failed');\n}",
+          "body": "A DML statement throws a `DmlException` on any failure, and none of the records are saved. Catch it with try/catch."
+        },
+        {
+          "type": "code",
+          "title": "Partial success",
+          "lang": "apex",
+          "code": "Database.SaveResult[] results =\n    Database.insert(newAccounts, false);\nfor (Database.SaveResult r : results) {\n    if (!r.isSuccess()) {\n        System.debug(r.getErrors()[0].getMessage());\n    }\n}",
+          "body": "Setting **allOrNone** to `false` lets good records save. You get one **SaveResult** per record, in the same order. Bad records don't throw an exception."
+        },
+        {
+          "type": "text",
+          "title": "upsert",
+          "body": "**upsert** inserts new records and updates existing ones in one call. It matches on `Id`, or on an **External ID** field you name: `upsert recs Order_Key__c;`. No match: insert. One match: update. Several matches: error."
+        },
+        {
+          "type": "list",
+          "title": "DML limits per transaction",
+          "items": [
+            "**150** DML statements. Each `insert`, `update` or `Database` call counts once, however many records it has.",
+            "**10,000** records processed by DML in total.",
+            "Put records in a `List` and run **one** DML. Never one per record in a loop."
+          ]
+        },
+        {
+          "type": "text",
+          "title": "Undo with a savepoint",
+          "body": "`Database.setSavepoint()` marks a point in the transaction. `Database.rollback(sp)` undoes every DML since that point. Use it when a later step fails and the earlier steps must be undone too."
+        },
+        {
+          "type": "trap",
+          "body": "`Database.insert(recs, false)` does **not** throw for bad records. Code that only uses try/catch will miss them. Always loop over the results and check `isSuccess()`."
+        },
+        {
+          "type": "tip",
+          "title": "Remember it",
+          "body": "**Statement = strict. Database with false = forgiving.** Bulk it up: one list, one DML."
+        }
+      ],
+      "check": [
+        "auto-q34",
+        "auto-q35",
+        "auto-x18"
+      ],
+      "terms": [
+        {
+          "term": "DML",
+          "say": "Apex commands that change records: insert, update, upsert, delete, undelete and merge."
+        },
+        {
+          "term": "DML statement",
+          "match": [
+            "DML statements"
+          ],
+          "say": "The short way to change records, like `insert accts;`. If any record fails, none are saved and you get an error."
+        },
+        {
+          "term": "Database method",
+          "say": "The method way to change records, like `Database.insert()`. It can let good records save while bad ones fail."
+        },
+        {
+          "term": "DmlException",
+          "say": "The error Apex throws when a DML statement fails, for example a required field is missing."
+        },
+        {
+          "term": "allOrNone",
+          "say": "A true or false setting on Database methods. False means \"save the good ones, report the bad ones\"."
+        },
+        {
+          "term": "SaveResult",
+          "say": "A small report for one record after a Database insert or update. It says if it worked, and if not, why."
+        },
+        {
+          "term": "upsert",
+          "say": "Insert or update in one step. If a matching record exists, update it. If not, create it."
+        },
+        {
+          "term": "External ID",
+          "say": "A field you mark as an outside system's key, like an order number, so upsert can match records by it."
+        },
+        {
+          "term": "Database.setSavepoint()",
+          "say": "Marks a spot in the transaction. Later you can roll back to it and undo every change made after."
+        }
+      ]
+    },
+    {
+      "id": "auto-7",
+      "title": "The save order of execution",
+      "minutes": 4,
+      "objective": "Describe the relationship between Apex transactions, the save order of execution, and the potential for recursion and/or cascading.",
+      "cards": [
+        {
+          "type": "text",
+          "title": "In plain words",
+          "body": "When a record is saved, Salesforce runs a fixed list of steps: flows, triggers, rules, then the final save. This is the **order of execution**. It tells you which automation sees which value, and why some code runs twice."
+        },
+        {
+          "type": "tip",
+          "title": "Think of it like…",
+          "body": "An airport. Check-in, security, boarding, takeoff, always in that order. Each step sees what the step before it did. Where it stops: some steps, like a workflow field update, send you back through security one more time."
+        },
+        {
+          "type": "list",
+          "title": "The save line (main steps)",
+          "items": [
+            "1. System validation, then **before-save flows**",
+            "2. **Before triggers**",
+            "3. Validation rules, then duplicate rules",
+            "4. Record saved, but not committed",
+            "5. **After triggers**",
+            "6. Assignment, auto-response and workflow rules",
+            "7. **After-save flows**",
+            "8. Roll-up summaries update the parent",
+            "9. **Commit**, then emails and async jobs"
+          ]
+        },
+        {
+          "type": "text",
+          "title": "Workflow loops back",
+          "body": "A **workflow field update** saves the record again. Before update and after update triggers run **one more time, and only once**. Custom validation rules, duplicate rules and flows don't run again."
+        },
+        {
+          "type": "text",
+          "title": "One transaction",
+          "body": "Everything in one save is one **transaction**. If an error isn't handled, the whole transaction **rolls back** and nothing is saved. Governor limits count across the whole transaction, for every trigger and flow in it."
+        },
+        {
+          "type": "text",
+          "title": "Cascading saves",
+          "body": "A trigger that updates another record starts that record's own save line, inside the same transaction. That's **cascading**. Roll-up summaries do it too: the parent goes through its own save."
+        },
+        {
+          "type": "trap",
+          "body": "Two triggers on the same object and event? Their order **isn't guaranteed**. Don't count on one running first. Use one trigger per object that calls a handler class in the order you choose."
+        },
+        {
+          "type": "tip",
+          "title": "Remember it",
+          "body": "**Flow, trigger, check, save, trigger, rules, flow, roll-up, commit.** \"Before\" steps change the record. \"After\" steps react to it."
+        }
+      ],
+      "check": [
+        "auto-q40",
+        "auto-q41",
+        "auto-x22"
+      ],
+      "terms": [
+        {
+          "term": "order of execution",
+          "say": "The fixed list of steps Salesforce runs every time a record is saved. Same steps, same order, every time."
+        },
+        {
+          "term": "before-save flows",
+          "match": [
+            "before-save flow"
+          ],
+          "say": "Record-triggered flows that run first, before the triggers, to quickly change the record being saved."
+        },
+        {
+          "term": "Before triggers",
+          "match": [
+            "before trigger"
+          ],
+          "say": "Apex triggers that run before the record is saved, after the before-save flows."
+        },
+        {
+          "term": "After triggers",
+          "match": [
+            "after trigger"
+          ],
+          "say": "Apex triggers that run after the record is saved but before it's final. Now the record has an Id."
+        },
+        {
+          "term": "After-save flows",
+          "match": [
+            "after-save flow"
+          ],
+          "say": "Record-triggered flows that run late in the save, after the triggers and workflow rules."
+        },
+        {
+          "term": "workflow field update",
+          "say": "An old-style rule that changes a field after the save. It saves the record again, so update triggers run once more."
+        },
+        {
+          "term": "transaction",
+          "say": "Everything that happens in one save, start to finish. It all succeeds together, or it is all undone together."
+        },
+        {
+          "term": "rolls back",
+          "match": [
+            "roll back"
+          ],
+          "say": "Undoes every change in the transaction, as if nothing was saved."
+        },
+        {
+          "term": "cascading",
+          "say": "When one save causes another save, like a trigger updating a parent record. It all happens in one transaction."
+        },
+        {
+          "term": "Commit",
+          "say": "The moment the changes become final in the database. Emails and async jobs only start after it."
+        }
+      ]
+    },
+    {
+      "id": "auto-8",
+      "title": "Trigger basics and context variables",
+      "minutes": 3,
+      "objective": "Given a scenario, follow best practices to write Apex classes and triggers.",
+      "cards": [
+        {
+          "type": "text",
+          "title": "In plain words",
+          "body": "An Apex **trigger** is code that runs by itself when records are inserted, updated, deleted or undeleted. Before triggers check or change records before they're saved. After triggers use the saved records, like their new Ids, to work on other records."
+        },
+        {
+          "type": "tip",
+          "title": "Think of it like…",
+          "body": "A doorbell camera. It wakes up by itself when someone arrives. A before trigger asks \"are you allowed in?\" An after trigger texts your family once you're inside. Where it stops: a trigger can wake up for 200 visitors at once, so always loop over a list."
+        },
+        {
+          "type": "code",
+          "title": "Trigger syntax",
+          "lang": "apex",
+          "code": "trigger AccountTrigger on Account (before insert, before update, after insert) {\n    if (Trigger.isBefore) {\n        for (Account a : Trigger.new) {\n            a.Name = a.Name.trim();\n        }\n    }\n}",
+          "body": "Name, object, then the events in brackets. **Context variables** like `Trigger.isBefore` tell the code why it's running."
+        },
+        {
+          "type": "list",
+          "title": "Context variables",
+          "items": [
+            "`Trigger.new`: new versions. Insert, update, undelete. Editable only in **before** triggers.",
+            "`Trigger.old`: old versions. Update and delete.",
+            "`Trigger.newMap`: Id to new record. Before update, after insert, after update, after undelete.",
+            "`Trigger.oldMap`: Id to old record. Update and delete.",
+            "`Trigger.operationType`: an enum value like `BEFORE_INSERT`."
+          ]
+        },
+        {
+          "type": "text",
+          "title": "No Id before insert",
+          "body": "In **before insert**, new records have **no Id yet**, so there's no `Trigger.newMap`. Need the Id? Use **after insert**. Changing a field on `Trigger.new` in an after trigger throws a runtime error, because the record is already saved."
+        },
+        {
+          "type": "code",
+          "title": "Blocking a save",
+          "lang": "apex",
+          "code": "for (Opportunity o : Trigger.new) {\n    if (o.Amount < 0) {\n        o.addError('Amount can\\'t be negative.');\n    }\n}",
+          "body": "`addError()` stops that record from saving and shows your message to the user."
+        },
+        {
+          "type": "text",
+          "title": "Keep triggers thin",
+          "body": "A trigger can't say `with sharing` or `without sharing`. Put that choice on the **handler class** the trigger calls. Keep triggers thin: one trigger per object, with the logic in classes."
+        },
+        {
+          "type": "trap",
+          "body": "`Trigger.new` in a delete trigger? It **isn't there**. Use `Trigger.old`. And `Trigger.old` doesn't exist in insert triggers, because there was no old record."
+        },
+        {
+          "type": "tip",
+          "title": "Remember it",
+          "body": "**Before: fix the record. After: use its Id.** New for insert, old for delete, both for update."
+        }
+      ],
+      "check": [
+        "auto-q46",
+        "auto-q47",
+        "auto-x26"
+      ],
+      "terms": [
+        {
+          "term": "trigger",
+          "say": "Apex code that runs by itself when records of one object are inserted, updated, deleted or undeleted."
+        },
+        {
+          "term": "Context variables",
+          "match": [
+            "context variable"
+          ],
+          "say": "Built-in values a trigger can read to learn what's happening: which records, which event, before or after."
+        },
+        {
+          "term": "Trigger.new",
+          "say": "The list of records being saved, with their new values. Only before triggers can change them."
+        },
+        {
+          "term": "Trigger.old",
+          "say": "The list of records as they were before this change. Only there for updates and deletes."
+        },
+        {
+          "term": "Trigger.newMap",
+          "say": "The new records in a map, looked up by Id. Not there in before insert, because new records have no Id yet."
+        },
+        {
+          "term": "Trigger.oldMap",
+          "say": "The old versions of the records in a map, looked up by Id. Only there for updates and deletes."
+        },
+        {
+          "term": "Trigger.operationType",
+          "say": "Tells you the exact event as one value, like `BEFORE_INSERT` or `AFTER_UPDATE`. Handy with `switch`."
+        },
+        {
+          "term": "addError()",
+          "say": "Marks a record as bad so it isn't saved, and shows your message to the user."
+        },
+        {
+          "term": "handler class",
+          "say": "A normal Apex class that holds the trigger's real logic. The trigger just calls it."
+        }
+      ]
+    },
+    {
+      "id": "auto-9",
+      "title": "Bulkified, limit-safe triggers",
+      "minutes": 4,
+      "objective": "Given a scenario, understand governor limits and their implications on Apex transactions.",
+      "cards": [
+        {
+          "type": "text",
+          "title": "In plain words",
+          "body": "**Bulkified** code works the same for 1 record or 200. Triggers get records in batches, so code must handle lists. The two big rules: no SOQL in loops, and no DML in loops. Otherwise you hit **governor limits**, the hard caps Salesforce sets per transaction."
+        },
+        {
+          "type": "tip",
+          "title": "Think of it like…",
+          "body": "Shopping for a party. You don't drive to the store once per guest. You write one list, make one trip and carry it all home together. Where it stops: even one trip has a size limit, like 50,000 query rows."
+        },
+        {
+          "type": "code",
+          "title": "Bad: a query in a loop",
+          "lang": "apex",
+          "code": "for (Contact c : Trigger.new) {\n    Account a = [SELECT Industry FROM Account\n                 WHERE Id = :c.AccountId];\n}",
+          "body": "One query per Contact. With 200 Contacts, that's 200 queries, far past the limit of **100**."
+        },
+        {
+          "type": "code",
+          "title": "Good: collect, query once, map",
+          "lang": "apex",
+          "code": "Set<Id> accIds = new Set<Id>();\nfor (Contact c : Trigger.new) accIds.add(c.AccountId);\nMap<Id, Account> accs = new Map<Id, Account>(\n    [SELECT Industry FROM Account WHERE Id IN :accIds]);\nfor (Contact c : Trigger.new) {\n    Account a = accs.get(c.AccountId);\n}",
+          "body": "Collect Ids in a **Set**, run **one** query, then look up each parent in a **Map**."
+        },
+        {
+          "type": "list",
+          "title": "Limits that bite (per transaction)",
+          "items": [
+            "**100** SOQL queries, or **200** in async Apex.",
+            "**150** DML statements.",
+            "**50,000** query rows and **10,000** DML rows.",
+            "**10,000 ms** of CPU time, or **60,000 ms** async.",
+            "Going over throws `LimitException`, which **can't be caught**."
+          ]
+        },
+        {
+          "type": "text",
+          "title": "Check as you go",
+          "body": "The `Limits` class shows what you've used so far, like `Limits.getQueries()` against `Limits.getLimitQueries()`. It's handy in debug logs while you tune code."
+        },
+        {
+          "type": "text",
+          "title": "Recursion",
+          "body": "A trigger that updates its own object fires itself again. That's **recursion**. Apex stops it at a **trigger depth** of 16, but it burns limits long before that. Guard it with a `static Set<Id>` of records already handled."
+        },
+        {
+          "type": "trap",
+          "body": "One `static Boolean` \"ran once\" switch looks safe. But all chunks of 200 share one transaction, so it skips every chunk after the first. Track handled records by Id in a `static Set<Id>` instead."
+        },
+        {
+          "type": "tip",
+          "title": "Remember it",
+          "body": "**Collect, query once, map, loop, DML once.** No SOQL or DML inside a `for` loop. Ever."
+        }
+      ],
+      "check": [
+        "auto-q52",
+        "auto-q53",
+        "auto-x30"
+      ],
+      "terms": [
+        {
+          "term": "Bulkified",
+          "match": [
+            "bulkify"
+          ],
+          "say": "Written to handle many records at once, using lists, so 200 records cost the same queries as one."
+        },
+        {
+          "term": "governor limits",
+          "say": "Hard caps Salesforce puts on each transaction, like 100 queries, so one org can't hog shared servers."
+        },
+        {
+          "term": "Set",
+          "say": "A collection with no repeats. Perfect for gathering Ids before one query."
+        },
+        {
+          "term": "Map",
+          "say": "A collection of pairs: a key, like an Id, and its value, like a record. You look things up by key."
+        },
+        {
+          "term": "CPU",
+          "say": "The computer time your code uses. Apex gets 10,000 ms per normal transaction."
+        },
+        {
+          "term": "LimitException",
+          "say": "The error thrown when code goes over a governor limit. No catch block can stop it."
+        },
+        {
+          "term": "Limits",
+          "say": "A built-in Apex class that tells you how much of each limit your code has used so far."
+        },
+        {
+          "term": "recursion",
+          "say": "Code that ends up starting itself again, like a trigger whose update fires the same trigger."
+        },
+        {
+          "term": "trigger depth",
+          "say": "How many triggers deep a chain of saves can go. Apex stops it at 16."
+        }
+      ]
+    },
+    {
+      "id": "auto-10",
+      "title": "Exceptions and custom exceptions",
+      "minutes": 3,
+      "objective": "Implement exception handling in Apex, including custom exceptions as needed.",
+      "cards": [
+        {
+          "type": "text",
+          "title": "In plain words",
+          "body": "An **exception** is Apex saying \"something went wrong, I can't go on\". If nothing catches it, the whole transaction rolls back and the user sees an error. **Exception handling** lets your code catch the problem and react."
+        },
+        {
+          "type": "tip",
+          "title": "Think of it like…",
+          "body": "A safety net under a trapeze. `try` is the act. `catch` is the net that grabs a fall. `finally` is cleaning the stage, fall or not. Where it stops: some falls go right through the net, like going over a governor limit."
+        },
+        {
+          "type": "code",
+          "title": "try, catch, finally",
+          "lang": "apex",
+          "code": "try {\n    insert newCase;\n} catch (DmlException e) {\n    System.debug(e.getMessage());\n} catch (Exception e) {\n    System.debug('Something else: ' + e.getTypeName());\n} finally {\n    System.debug('Always runs');\n}",
+          "body": "Catch the most specific type first. The general `Exception` catches anything left, except limit errors. `finally` runs either way."
+        },
+        {
+          "type": "list",
+          "title": "Built-in exceptions to know",
+          "items": [
+            "`DmlException`: an insert, update or other DML fails.",
+            "`QueryException`: a query into one record finds 0 or 2+ rows.",
+            "`NullPointerException`: you used a variable that is `null`.",
+            "`ListException`: a list index is out of bounds.",
+            "`SObjectException`: you read a field you didn't query.",
+            "`LimitException`: a governor limit was hit. Can't be caught."
+          ]
+        },
+        {
+          "type": "code",
+          "title": "A custom exception",
+          "lang": "apex",
+          "code": "public class InsufficientStockException extends Exception {}\n\nif (qty > onHand) {\n    throw new InsufficientStockException(\n        'Only ' + onHand + ' left.');\n}",
+          "body": "A **custom exception** is a class that `extends Exception`. Its name must end in the word **Exception**. You get message constructors for free."
+        },
+        {
+          "type": "text",
+          "title": "Useful methods",
+          "body": "`getMessage()` gives the text. `getTypeName()` gives the exception type. `getLineNumber()` and `getStackTraceString()` help debugging. For DML, `getNumDml()` and `getDmlMessage(i)` say which records failed."
+        },
+        {
+          "type": "text",
+          "title": "Show errors to users",
+          "body": "In a trigger, `addError('message')` blocks that record and shows the message. In an Apex method called by a Lightning component, throw an `AuraHandledException` so the user sees your own message."
+        },
+        {
+          "type": "trap",
+          "body": "A custom exception named `StockError` won't compile. The class name must end in **Exception**. Also, `catch (Exception e)` does **not** catch a `LimitException`. Nothing does."
+        },
+        {
+          "type": "tip",
+          "title": "Remember it",
+          "body": "**Try it, catch it, finally tidy it.** Name custom ones something-Exception. Limits can't be caught."
+        }
+      ],
+      "check": [
+        "auto-q58",
+        "auto-q59",
+        "auto-x34"
+      ],
+      "terms": [
+        {
+          "term": "exception",
+          "say": "Apex's way of saying \"something went wrong here\". It stops the code unless something catches it."
+        },
+        {
+          "term": "Exception handling",
+          "say": "Writing code that catches errors and reacts calmly, instead of letting the whole thing crash."
+        },
+        {
+          "term": "try",
+          "say": "The block of code you want to run that might fail. If it fails, Apex jumps to a matching catch."
+        },
+        {
+          "term": "catch",
+          "say": "The block that runs when a matching error happens in the try block. It's the safety net."
+        },
+        {
+          "term": "finally",
+          "say": "A block that always runs after try and catch, error or not. Good for cleaning up."
+        },
+        {
+          "term": "DmlException",
+          "say": "The error you get when saving, changing or deleting records fails."
+        },
+        {
+          "term": "NullPointerException",
+          "say": "The error you get when you use something that is empty (null), like asking for the length of no text."
+        },
+        {
+          "term": "custom exception",
+          "say": "Your own error type, made by extending `Exception`. Its name must end in \"Exception\"."
+        },
+        {
+          "term": "getMessage()",
+          "say": "Gives you the error's text, so you can log it or show it."
+        },
+        {
+          "term": "AuraHandledException",
+          "say": "A special error for Apex called by Lightning components. Its message reaches the user."
+        }
+      ]
+    },
+    {
+      "id": "auto-11",
+      "title": "Apex and Flow together",
+      "minutes": 3,
+      "objective": "Given a scenario, use declarative functionality and Apex together to automate business logic.",
+      "cards": [
+        {
+          "type": "text",
+          "title": "In plain words",
+          "body": "Flows are great, but some jobs need code, like complex math or heavy logic. You can write that one piece in Apex and let a flow call it as an **Apex action**. The flow stays the boss. Apex is a helper it calls by name."
+        },
+        {
+          "type": "tip",
+          "title": "Think of it like…",
+          "body": "A restaurant. The flow is the waiter who runs the order. Apex is a chef called in for one tricky dish. The waiter hands in a list of orders and gets a list of dishes back. Where it stops: the chef must return one dish per order, in the same order."
+        },
+        {
+          "type": "code",
+          "title": "An invocable method",
+          "lang": "apex",
+          "code": "public class DiscountAction {\n    @InvocableMethod(label='Get Discount' description='Discount per order')\n    public static List<Decimal> getDiscount(List<Id> orderIds) {\n        List<Decimal> out = new List<Decimal>();\n        for (Id oid : orderIds) out.add(10);\n        return out;\n    }\n}",
+          "body": "`@InvocableMethod` turns the method into an action in Flow Builder. The `label` is the name admins see."
+        },
+        {
+          "type": "list",
+          "title": "Invocable rules",
+          "items": [
+            "Must be `static`, and `public` or `global`, in an **outer class**.",
+            "Only **one** invocable method per class.",
+            "At most **one** input parameter, and it's a list: flows send data in bulk.",
+            "Return a list with one result per input, in the **same order**.",
+            "Need many inputs or outputs? Use a wrapper class with `@InvocableVariable` fields."
+          ]
+        },
+        {
+          "type": "text",
+          "title": "Who can call it",
+          "body": "An invocable method can be called from Flow, from the REST API, from other Apex and from **Agentforce agents** as an action. The running user needs access to the Apex class."
+        },
+        {
+          "type": "code",
+          "title": "Starting a flow from Apex",
+          "lang": "apex",
+          "code": "Map<String, Object> inputs = new Map<String, Object>{\n    'recordId' => acc.Id\n};\nFlow.Interview flow =\n    Flow.Interview.createInterview('Welcome_Pack', inputs);\nflow.start();",
+          "body": "Apex can run an autolaunched flow with `Flow.Interview`. Pass input variables in a map, then call `start()`."
+        },
+        {
+          "type": "text",
+          "title": "Choosing the mix",
+          "body": "Start with Flow when clicks can do the job. Add an Apex action for the hard part. Write a full **trigger** only when you need complex logic on many records, tight control of order, or work Flow can't do."
+        },
+        {
+          "type": "trap",
+          "body": "An invocable method that takes one `Id`, not a `List<Id>`, won't save. Flows send inputs in bulk, so the parameter must be a list. And you can't have two invocable methods in one class."
+        },
+        {
+          "type": "tip",
+          "title": "Remember it",
+          "body": "**One per class. List in, list out, same order.** The flow drives. Apex is the expert it calls."
+        }
+      ],
+      "check": [
+        "auto-q65",
+        "auto-q66",
+        "auto-x38"
+      ],
+      "terms": [
+        {
+          "term": "Apex action",
+          "say": "A step in a flow that runs an Apex method. Admins drag it in like any other flow element."
+        },
+        {
+          "term": "@InvocableMethod",
+          "say": "An annotation that lets flows, agents and the REST API call this Apex method as an action."
+        },
+        {
+          "term": "label",
+          "say": "The friendly name admins see for the action in Flow Builder."
+        },
+        {
+          "term": "static",
+          "say": "Belongs to the class itself, so it can run without creating an object first. Invocable methods must be static."
+        },
+        {
+          "term": "outer class",
+          "say": "A top-level class, not a class written inside another class. Invocable methods must live in one."
+        },
+        {
+          "term": "@InvocableVariable",
+          "say": "An annotation on a field of a wrapper class, so a flow can pass that field in or get it back."
+        },
+        {
+          "term": "Agentforce agents",
+          "say": "Salesforce AI assistants. They can use invocable Apex methods as actions to get work done."
+        },
+        {
+          "term": "Flow.Interview",
+          "say": "An Apex class for running a flow from code. You create an interview, give it inputs, then start it."
+        },
+        {
+          "term": "start()",
+          "say": "The method that actually runs a flow interview you created in Apex."
+        },
+        {
+          "term": "trigger",
+          "say": "Apex that runs by itself when records are saved. Pick it when logic is too complex for a flow."
+        }
+      ]
+    }
+  ],
+  "flashcards": [
+    {
+      "id": "auto-f1",
+      "front": "What's the difference between a before-save and an after-save record-triggered flow?",
+      "back": "Before-save (Fast Field Updates) only changes the record being saved, very fast. After-save (Actions and Related Records) can change other records, send emails and call Apex."
+    },
+    {
+      "id": "auto-f2",
+      "front": "Which flow type shows screens to a user?",
+      "back": "A screen flow. Record-triggered, schedule-triggered, platform event-triggered and autolaunched flows run with no screens."
+    },
+    {
+      "id": "auto-f3",
+      "front": "What happens to a record when it's submitted for approval?",
+      "back": "By default it's locked. Only approvers and admins can edit it until the approval process finishes."
+    },
+    {
+      "id": "auto-f4",
+      "front": "Should new automation use workflow rules or Process Builder?",
+      "back": "No. Both are legacy tools. Salesforce recommends building new automation in Flow."
+    },
+    {
+      "id": "auto-f5",
+      "front": "How do you declare a constant in Apex?",
+      "back": "Use `static final`, like `static final Integer MAX = 5;`. Set it once: where it's declared, or in a `static` block."
+    },
+    {
+      "id": "auto-f6",
+      "front": "What value does an Apex variable hold before you set it?",
+      "back": "`null`. That's true for every type, even `Integer` and `Boolean`."
+    },
+    {
+      "id": "auto-f7",
+      "front": "Does `==` care about case when comparing Strings?",
+      "back": "No. `'abc' == 'ABC'` is true. Use `equals()` for a case-sensitive check. Map keys and switch values do care about case."
+    },
+    {
+      "id": "auto-f8",
+      "front": "How long does a `static` variable keep its value?",
+      "back": "For one transaction. Everything in that transaction shares one copy. The next transaction starts fresh."
+    },
+    {
+      "id": "auto-f9",
+      "front": "What does `public` mean in Apex?",
+      "back": "Any Apex in the same namespace or package can use it. To reach code outside the package, or from SOAP API, use `global`."
+    },
+    {
+      "id": "auto-f10",
+      "front": "What access does a method get with no modifier?",
+      "back": "`private`: only code in the same class can call it."
+    },
+    {
+      "id": "auto-f11",
+      "front": "What must a class do when it implements an interface?",
+      "back": "Define every method the interface lists. If one is missing, the class won't compile."
+    },
+    {
+      "id": "auto-f12",
+      "front": "What does `virtual` let you do?",
+      "back": "Extend the class, and replace its `virtual` methods with `override`. Classes can't be extended without `virtual` or `abstract`."
+    },
+    {
+      "id": "auto-f13",
+      "front": "Which types can a `switch on` expression use?",
+      "back": "`Integer`, `Long`, `sObject`, `String` and `Enum`. `null` is a legal `when` value for all of them."
+    },
+    {
+      "id": "auto-f14",
+      "front": "Does an Apex `switch` need `break` statements?",
+      "back": "No. At most one `when` block runs, and Apex never falls through to the next block."
+    },
+    {
+      "id": "auto-f15",
+      "front": "Which loop always runs at least once?",
+      "back": "A `do-while` loop. It checks its condition after the body runs."
+    },
+    {
+      "id": "auto-f16",
+      "front": "Why use a SOQL for loop?",
+      "back": "It fetches rows in chunks of 200, so a big result doesn't sit in memory all at once. It still counts as one query."
+    },
+    {
+      "id": "auto-f17",
+      "front": "What happens if a query into one record finds no rows?",
+      "back": "Apex throws a `QueryException`. The same happens with more than one row. Put the query into a `List` to get an empty list instead."
+    },
+    {
+      "id": "auto-f18",
+      "front": "What does a SOSL query return in Apex?",
+      "back": "`List<List<SObject>>`: one inner list per object, in the order of the `RETURNING` clause."
+    },
+    {
+      "id": "auto-f19",
+      "front": "How do you get a custom parent's field in SOQL?",
+      "back": "Use the relationship name ending in `__r`, then a dot: `Warehouse__r.City__c`."
+    },
+    {
+      "id": "auto-f20",
+      "front": "What are the SOQL limits per transaction?",
+      "back": "100 queries (200 async) and 50,000 rows in total. SOSL: 20 queries and 2,000 rows per query."
+    },
+    {
+      "id": "auto-f21",
+      "front": "What's the difference between `insert recs;` and `Database.insert(recs, false)`?",
+      "back": "The statement is all or nothing and throws a `DmlException`. The method with `false` saves the good records and returns a `SaveResult` for each one."
+    },
+    {
+      "id": "auto-f22",
+      "front": "How does `upsert` decide to insert or update?",
+      "back": "It matches on Id or an External ID. No match: insert. One match: update. More than one match: error."
+    },
+    {
+      "id": "auto-f23",
+      "front": "What's the DML statement limit?",
+      "back": "150 DML statements per transaction, and 10,000 records processed by DML."
+    },
+    {
+      "id": "auto-f24",
+      "front": "How do you undo part of a transaction?",
+      "back": "Mark a point with `Database.setSavepoint()`, then call `Database.rollback(sp)` to undo every DML since that point."
+    },
+    {
+      "id": "auto-f25",
+      "front": "Which runs first: a before-save flow or a before trigger?",
+      "back": "The before-save flow. Then before triggers, then custom validation rules and duplicate rules."
+    },
+    {
+      "id": "auto-f26",
+      "front": "What runs again after a workflow field update?",
+      "back": "Before update and after update triggers, one more time only. Custom validation rules, duplicate rules and flows don't run again."
+    },
+    {
+      "id": "auto-f27",
+      "front": "Is the order of two triggers on the same object and event guaranteed?",
+      "back": "No. Use one trigger per object that calls handler logic in the order you choose."
+    },
+    {
+      "id": "auto-f28",
+      "front": "When are emails and queued async jobs started from a save?",
+      "back": "After the transaction commits. If it rolls back, they never happen."
+    },
+    {
+      "id": "auto-f29",
+      "front": "When can you change `Trigger.new`?",
+      "back": "Only in before triggers. In after triggers the records are saved, so changing them throws a runtime error."
+    },
+    {
+      "id": "auto-f30",
+      "front": "Why is there no `Trigger.newMap` in before insert?",
+      "back": "The new records don't have Ids yet. Use after insert when you need the Id."
+    },
+    {
+      "id": "auto-f31",
+      "front": "Which context variables exist in a delete trigger?",
+      "back": "`Trigger.old` and `Trigger.oldMap`. `Trigger.new` isn't available in delete triggers."
+    },
+    {
+      "id": "auto-f32",
+      "front": "How do you stop one record from saving in a trigger?",
+      "back": "Call `addError('message')` on it. The record isn't saved, and the user sees the message."
+    },
+    {
+      "id": "auto-f33",
+      "front": "What does bulkified mean?",
+      "back": "The code handles a whole batch of records with one query and one DML, not one per record. Triggers get up to 200 records at a time."
+    },
+    {
+      "id": "auto-f34",
+      "front": "Can you catch a `LimitException`?",
+      "back": "No. Going over a governor limit stops the transaction and rolls it back. No catch block can handle it."
+    },
+    {
+      "id": "auto-f35",
+      "front": "Why is a single `static Boolean` a weak recursion guard?",
+      "back": "All chunks of 200 share one transaction, so chunks after the first get skipped. Use a `static Set<Id>` of handled records."
+    },
+    {
+      "id": "auto-f36",
+      "front": "How do you create a custom exception?",
+      "back": "Write a class that extends `Exception`. Its name must end in \"Exception\", like `StockException`."
+    },
+    {
+      "id": "auto-f37",
+      "front": "When does a `finally` block run?",
+      "back": "Every time, after the try and any catch, whether or not an error happened."
+    },
+    {
+      "id": "auto-f38",
+      "front": "What does `getNumDml()` tell you?",
+      "back": "How many records failed in the `DmlException`. Use `getDmlMessage(i)` to read each failure's message."
+    },
+    {
+      "id": "auto-f39",
+      "front": "What are the rules for an `@InvocableMethod`?",
+      "back": "It's `static`, `public` or `global`, in an outer class. One per class. At most one input, a list, and a list out in the same order."
+    },
+    {
+      "id": "auto-f40",
+      "front": "Who can call an invocable method?",
+      "back": "Flow, the REST API, other Apex and Agentforce agents. The running user needs access to the Apex class."
+    },
+    {
+      "id": "auto-f41",
+      "front": "How do you run a flow from Apex?",
+      "back": "Create it with `Flow.Interview.createInterview(name, inputs)`, then call `start()`."
+    }
+  ],
+  "questions": [
+    {
+      "id": "auto-q1",
+      "lesson": "auto-1",
+      "difficulty": 1,
+      "q": "A service team wants agents to walk through a guided returns form: enter the order number, pick a reason, then confirm. Which flow type fits?",
+      "options": [
+        "Screen flow",
+        "Record-triggered flow",
+        "Schedule-triggered flow",
+        "Platform event-triggered flow"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "Only a screen flow shows screens to a person. The agent clicks through each step, so this is a screen flow.",
+      "wrong": [
+        "",
+        "It runs on a record save and has no screens.",
+        "It runs on a timer for a batch of records, with no user.",
+        "It runs when an event message arrives, with no user."
+      ],
+      "source": "Trailhead: Flow Builder Basics"
+    },
+    {
+      "id": "auto-q2",
+      "lesson": "auto-1",
+      "difficulty": 2,
+      "q": "Sales ops wants Opportunity Next Step filled with \"Qualify\" whenever a new Opportunity is saved with it blank. They want no code and the fastest option. What should the developer build?",
+      "options": [
+        "An after-save record-triggered flow that updates the record",
+        "A schedule-triggered flow that fixes blanks each night",
+        "A before-save record-triggered flow (Fast Field Updates)",
+        "A new workflow rule with a field update action"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "Changing the record that's being saved is fastest before the save. A before-save flow sets the field with no extra save.",
+      "wrong": [
+        "It works, but it saves the record a second time, which is slower.",
+        "Records stay blank until night, and it isn't on save.",
+        "",
+        "Workflow rules are legacy; build new automation in Flow."
+      ],
+      "source": "Trailhead: Record-Triggered Flows"
+    },
+    {
+      "id": "auto-q3",
+      "lesson": "auto-1",
+      "difficulty": 2,
+      "q": "Which two jobs can an after-save record-triggered flow do that a before-save flow can't? (Choose 2)",
+      "options": [
+        "Create a follow-up Task record",
+        "Update a field on the record that started the flow",
+        "Check a condition with a Decision element",
+        "Send an email alert",
+        "Show a custom error message to the user"
+      ],
+      "answer": [
+        0,
+        3
+      ],
+      "explain": "Before-save flows can only change the record being saved. Creating other records and calling actions like email alerts need the after-save option.",
+      "wrong": [
+        "",
+        "Both options can do this; it's what before-save flows are best at.",
+        "Both options can use Decision elements.",
+        "",
+        "Before-save flows can show a custom error too."
+      ],
+      "source": "Trailhead: Record-Triggered Flows"
+    },
+    {
+      "id": "auto-q4",
+      "lesson": "auto-1",
+      "difficulty": 2,
+      "q": "A manager must approve any Opportunity discount over 20% before the deal moves on. While it waits, sales reps must not be able to edit it. Which feature fits best?",
+      "options": [
+        "A validation rule on the Discount field",
+        "An approval process",
+        "A screen flow on the Opportunity page",
+        "A roll-up summary field on Account"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "An approval process routes a record to approvers and, by default, locks it while it waits. That covers both needs.",
+      "wrong": [
+        "It can block a save, but it can't ask a manager to approve.",
+        "",
+        "It guides a user, but it doesn't route or lock the record.",
+        "It adds up child values; it doesn't approve anything."
+      ],
+      "source": "Trailhead: Approve Records with Approval Processes"
+    },
+    {
+      "id": "auto-q5",
+      "lesson": "auto-1",
+      "difficulty": 1,
+      "q": "What happens to a record by default when a user submits it for approval?",
+      "options": [
+        "It's deleted until an approver accepts it",
+        "It's copied into a separate approval object",
+        "Its owner changes to the first approver",
+        "It's locked, so most users can't edit it"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "The default initial submission action locks the record. Only approvers and admins can change it while it's pending.",
+      "wrong": [
+        "Records are never deleted by submitting them.",
+        "The record stays where it is; it isn't copied.",
+        "Ownership doesn't change when a record is submitted.",
+        ""
+      ],
+      "source": "Trailhead: Approve Records with Approval Processes"
+    },
+    {
+      "id": "auto-x1",
+      "lesson": "auto-1",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "An admin builds a record-triggered flow on Case. It runs when a record is created or updated, and is optimized for Fast Field Updates. The admin wants to add a step that creates a follow-up Task, but Create Records isn't offered. Why?",
+      "code": "Flow: Case_Follow_Up (record-triggered)\nObject: Case\nTrigger: A record is created or updated\nOptimize for: Fast Field Updates\nElements: Decision -> Assignment -> [Create Records not available]",
+      "lang": "text",
+      "options": [
+        "Create Records is only offered when the flow runs on create only",
+        "Flows can't create Task records, because Task is an activity object",
+        "Fast Field Updates can change only the triggering record",
+        "Create Records needs a scheduled path before it can be used"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "A before-save flow (Fast Field Updates) can only change the triggering record. To create a Task, switch to Actions and Related Records, which runs after the save.",
+      "wrong": [
+        "Create-only or create-and-update makes no difference here.",
+        "After-save flows create Tasks all the time.",
+        "",
+        "Create Records works on the main path of an after-save flow."
+      ],
+      "source": "Trailhead: Record-Triggered Flows"
+    },
+    {
+      "id": "auto-x2",
+      "lesson": "auto-1",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "If an Opportunity is still open 3 days before its Close Date, the owner must get a reminder email. The team wants a no-code solution. What is the best approach?",
+      "options": [
+        "An after-save flow with a scheduled path 3 days before Close Date",
+        "A before-save record-triggered flow with a Pause element before the email",
+        "A schedule-triggered flow set to run once, 3 days after today",
+        "An after-save flow path set to run asynchronously, right after the save"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "Scheduled paths run later, at a time based on a date field on the record. Only after-save record-triggered flows have them.",
+      "wrong": [
+        "",
+        "Before-save flows can't wait and can't send emails.",
+        "It runs once on a fixed date, not 3 days before each Close Date.",
+        "An async path runs right after the save, not days later."
+      ],
+      "source": "Trailhead: Record-Triggered Flows"
+    },
+    {
+      "id": "auto-q6",
+      "lesson": "auto-1",
+      "difficulty": 1,
+      "q": "A team lead asks which tool to use for brand-new automation that used to be built with workflow rules or Process Builder. What does Salesforce recommend?",
+      "options": [
+        "Build a new workflow rule, since it's simpler",
+        "Build a new process in Process Builder",
+        "Always write an Apex trigger instead",
+        "Build it in Flow"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "Workflow rules and Process Builder are legacy tools. Salesforce recommends Flow for new declarative automation.",
+      "wrong": [
+        "Workflow rules are legacy; new automation belongs in Flow.",
+        "Process Builder is legacy; new automation belongs in Flow.",
+        "Clicks come first; code is for what Flow can't do.",
+        ""
+      ],
+      "source": "Trailhead: Flow Builder Basics"
+    },
+    {
+      "id": "auto-x3",
+      "lesson": "auto-1",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A company wants these automations with no code. Which two are a good fit for a record-triggered flow? (Choose 2)",
+      "options": [
+        "Let a rep step through a guided return form with input fields",
+        "Set a Lead's Rating as soon as a web-to-lead form creates it",
+        "Recalculate a score on every Account each Sunday night",
+        "React to a platform event message sent by an ERP system",
+        "Create a renewal Opportunity when an Opportunity is Closed Won"
+      ],
+      "answer": [
+        1,
+        4
+      ],
+      "explain": "Record-triggered flows run when a record is created, updated or deleted. Setting a field on create and creating a record on a stage change both start from a record save.",
+      "wrong": [
+        "A guided form needs a screen flow.",
+        "",
+        "A weekly run over many records is a schedule-triggered flow.",
+        "Event messages start a platform event-triggered flow.",
+        ""
+      ],
+      "source": "Trailhead: Record-Triggered Flows"
+    },
+    {
+      "id": "auto-q7",
+      "lesson": "auto-1",
+      "difficulty": 2,
+      "q": "A developer builds an autolaunched flow with no trigger to recalculate commissions. Which of these can start it?",
+      "options": [
+        "Only a user opening a Lightning record page",
+        "Apex code, another flow or a REST API call",
+        "Only a change to a record of its object",
+        "Only a set time each day, chosen in the flow"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "An autolaunched flow with no trigger doesn't start by itself. Something else launches it, such as Apex, a parent flow as a subflow, or the REST API.",
+      "wrong": [
+        "Opening a page doesn't start a flow by itself.",
+        "",
+        "That describes a record-triggered flow.",
+        "That describes a schedule-triggered flow."
+      ],
+      "source": "Trailhead: Flow Builder Basics"
+    },
+    {
+      "id": "auto-q8",
+      "lesson": "auto-2",
+      "difficulty": 1,
+      "q": "A developer needs a class-wide value that can never change after it's set. Which declaration does that?",
+      "options": [
+        "`public static Integer MAX_TRIES = 5;`",
+        "`public static final Integer MAX_TRIES = 5;`",
+        "`public const Integer MAX_TRIES = 5;`",
+        "`public static constant Integer MAX_TRIES = 5;`"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "Apex constants use `final`, which means \"set once\". `static final` makes one shared constant for the class.",
+      "wrong": [
+        "Without `final`, any code can change it later.",
+        "",
+        "`const` isn't how Apex declares constants.",
+        "`constant` isn't an Apex keyword."
+      ],
+      "source": "Apex Developer Guide: Constants"
+    },
+    {
+      "id": "auto-q9",
+      "lesson": "auto-2",
+      "difficulty": 2,
+      "q": "A class has a member variable `public Boolean isVip;`. A new object of the class is created and no code sets `isVip`. What does `isVip` hold?",
+      "options": [
+        "`false`",
+        "`true`",
+        "It won't compile until a default value is given",
+        "`null`"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "Every Apex variable starts as `null` until you set it. That includes `Boolean`, which is why you should set a starting value yourself.",
+      "wrong": [
+        "Apex has no automatic `false` default; it starts as `null`.",
+        "Nothing set it to `true`.",
+        "Declaring without a value is allowed.",
+        ""
+      ],
+      "source": "Apex Developer Guide: Primitive Data Types"
+    },
+    {
+      "id": "auto-q10",
+      "lesson": "auto-2",
+      "difficulty": 2,
+      "q": "A developer collects Account Ids from 200 Contacts to use in `WHERE Id IN :ids`. Many Contacts share an Account, and the Ids should not repeat. Which collection fits best?",
+      "options": [
+        "`Set<Id>`",
+        "`List<Id>`",
+        "`Map<String, Id>`",
+        "`Id[]`"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "A Set keeps only one copy of each value. So each Account Id appears once, which is perfect for an `IN` filter.",
+      "wrong": [
+        "",
+        "A List keeps duplicates.",
+        "A Map needs a key for each value; it's more than this needs.",
+        "`Id[]` is just another way to write a List, so it keeps duplicates."
+      ],
+      "source": "Apex Developer Guide: Sets"
+    },
+    {
+      "id": "auto-q11",
+      "lesson": "auto-2",
+      "difficulty": 2,
+      "q": "What does this code print?",
+      "code": "String a = 'Lumen';\nString b = 'LUMEN';\nSystem.debug(a == b);\nSystem.debug(a.equals(b));",
+      "lang": "apex",
+      "options": [
+        "`false`, then `false`",
+        "`true`, then `true`",
+        "`true`, then `false`",
+        "`false`, then `true`"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "In Apex, `==` on Strings ignores case, so the first line is true. `equals()` checks case too, so the second is false.",
+      "wrong": [
+        "`==` on Strings ignores case, so the first is true.",
+        "`equals()` is case-sensitive, so the second is false.",
+        "",
+        "It's the other way round: `==` ignores case and `equals()` doesn't."
+      ],
+      "source": "Apex Developer Guide: Expression Operators"
+    },
+    {
+      "id": "auto-q12",
+      "lesson": "auto-2",
+      "difficulty": 2,
+      "q": "Which two statements about `static` variables in Apex are true? (Choose 2)",
+      "options": [
+        "One value is shared by every user in the org",
+        "The value is kept between two separate saves by the same user",
+        "All code in the same transaction shares one copy",
+        "A `static` variable declared in a trigger keeps its value from before insert to after insert",
+        "The value resets when the transaction ends"
+      ],
+      "answer": [
+        2,
+        4
+      ],
+      "explain": "A static variable lives for one transaction and is shared by everything in it. It starts fresh in the next transaction.",
+      "wrong": [
+        "Each transaction gets its own copy; it isn't org-wide.",
+        "Two saves are two transactions, so the value resets.",
+        "",
+        "Declare it in a class instead; a static in a trigger doesn't carry over between contexts.",
+        ""
+      ],
+      "source": "Apex Developer Guide: Static and Instance Methods, Variables, and Initialization Code"
+    },
+    {
+      "id": "auto-x4",
+      "lesson": "auto-2",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "This runs in one Execute Anonymous transaction. What does it print?",
+      "code": "public class Counter {\n    public static Integer total = 0;\n    public Integer mine = 0;\n    public void add() { total++; mine++; }\n}\n// Execute Anonymous\nCounter a = new Counter();\nCounter b = new Counter();\na.add(); a.add(); b.add();\nSystem.debug(Counter.total + ' ' + b.mine);",
+      "lang": "apex",
+      "options": [
+        "`3 1`",
+        "`2 1`",
+        "`1 1`",
+        "Nothing; an instance method can't change a `static` variable"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "`total` is static, so both objects share it: three calls make it 3. `mine` is an instance variable, and `b` called `add()` once.",
+      "wrong": [
+        "",
+        "Three calls to `add()` raise the shared total to 3, not 2.",
+        "The static total is shared across both objects, not kept per object.",
+        "Instance methods can read and change `static` variables."
+      ],
+      "source": "Apex Developer Guide: Static and Instance Methods, Variables, and Initialization Code"
+    },
+    {
+      "id": "auto-x5",
+      "lesson": "auto-2",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A developer adds this class to hold a query size. What happens when they save it?",
+      "code": "public class QuerySettings {\n    public static final Integer LIMIT_ROWS;\n    public static void init() {\n        LIMIT_ROWS = 100;\n    }\n}",
+      "lang": "apex",
+      "options": [
+        "It compiles, and the first call to `init()` sets the value for the class",
+        "It compiles, but a second call to `init()` throws an error at run time",
+        "It fails to compile; a `static final` can't be set in a normal method",
+        "It compiles, and `LIMIT_ROWS` resets to `null` after each call"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "A `static final` variable can be set only once: in its declaration or in a `static` initializer block. Setting it inside a normal method is a compile error.",
+      "wrong": [
+        "The compiler rejects setting a `static final` inside a regular method.",
+        "It never gets to run; the class doesn't compile.",
+        "",
+        "It doesn't compile, so nothing resets."
+      ],
+      "source": "Apex Developer Guide: Constants"
+    },
+    {
+      "id": "auto-q13",
+      "lesson": "auto-2",
+      "difficulty": 1,
+      "q": "Which data type should hold a money amount like 1234.56 when exact decimals matter?",
+      "options": [
+        "`Integer`",
+        "`Decimal`",
+        "`Currency`",
+        "`Double`"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "`Decimal` stores exact decimal numbers, and Currency fields map to it. It's the safe choice for money.",
+      "wrong": [
+        "It holds only whole numbers.",
+        "",
+        "Apex has no `Currency` type; Currency fields map to `Decimal`.",
+        "It's a floating-point number, so tiny rounding errors can creep in."
+      ],
+      "source": "Apex Developer Guide: Primitive Data Types"
+    },
+    {
+      "id": "auto-x6",
+      "lesson": "auto-2",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A developer tracks stock counts by product code. What does this print?",
+      "code": "Map<String, Integer> stock = new Map<String, Integer>();\nstock.put('apple', 3);\nstock.put('Apple', 5);\nstock.put('apple', 7);\nSystem.debug(stock.size() + ' ' + stock.get('apple'));",
+      "lang": "apex",
+      "options": [
+        "`1 7`",
+        "`2 3`",
+        "Nothing; `put` throws an error for a key that already exists",
+        "`2 7`"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "`Map` keys of type `String` are case-sensitive, so `'apple'` and `'Apple'` are two keys. Putting `'apple'` again replaces 3 with 7.",
+      "wrong": [
+        "Map String keys care about case, so there are two keys.",
+        "A second `put` on the same key replaces the old value.",
+        "`put` on an existing key just replaces its value.",
+        ""
+      ],
+      "source": "Apex Developer Guide: Maps"
+    },
+    {
+      "id": "auto-q14",
+      "lesson": "auto-2",
+      "difficulty": 2,
+      "q": "What is `tags.size()` after this line runs?",
+      "code": "Set<String> tags = new Set<String>{'red', 'blue', 'red'};",
+      "lang": "apex",
+      "options": [
+        "3",
+        "1",
+        "2",
+        "It throws an error for the repeated value"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "A Set holds no repeats. The second `'red'` is ignored, leaving `'red'` and `'blue'`.",
+      "wrong": [
+        "A Set ignores the duplicate `'red'`.",
+        "Two different values remain: `'red'` and `'blue'`.",
+        "",
+        "Duplicates are simply skipped; no error is thrown."
+      ],
+      "source": "Apex Developer Guide: Sets"
+    },
+    {
+      "id": "auto-q15",
+      "lesson": "auto-3",
+      "difficulty": 1,
+      "q": "A method in an Apex class is declared with no access modifier. Which code can call it?",
+      "options": [
+        "Only code inside the same class",
+        "Any Apex class in the same namespace",
+        "Any Apex code, plus the SOAP API",
+        "The class and any class that extends it"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "With no modifier, a method is `private`. Only code inside the class that defines it can call it.",
+      "wrong": [
+        "",
+        "That's `public`, which you must write out.",
+        "That's `global`, which you must write out.",
+        "That's `protected`, which you must write out."
+      ],
+      "source": "Apex Developer Guide: Access Modifiers"
+    },
+    {
+      "id": "auto-q16",
+      "lesson": "auto-3",
+      "difficulty": 2,
+      "q": "An ISV sells a managed package. Subscribers must call a utility method from their own Apex code. Which declaration works?",
+      "options": [
+        "A `public` class with a `public static` method",
+        "A `public` class that has a `global static` method",
+        "A `global` class with a `public static` method",
+        "A `global` class with a `global static` method"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "Code outside the package can only reach `global` members. A `global` method must also sit in a `global` class.",
+      "wrong": [
+        "`public` only reaches code in the same namespace.",
+        "A `global` method needs a `global` class.",
+        "A `public` method stays hidden from other namespaces.",
+        ""
+      ],
+      "source": "Apex Developer Guide: Access Modifiers"
+    },
+    {
+      "id": "auto-q17",
+      "lesson": "auto-3",
+      "difficulty": 2,
+      "q": "A developer saves this interface and class. What happens?",
+      "code": "public interface Shippable {\n    Decimal cost(Integer kg);\n    String carrier();\n}\npublic class Parcel implements Shippable {\n    public Decimal cost(Integer kg) { return kg * 2.5; }\n}",
+      "lang": "apex",
+      "options": [
+        "It compiles, and `carrier()` returns `null` when called",
+        "It fails to compile, because `carrier()` isn't implemented",
+        "It compiles, but calling `carrier()` throws a runtime error",
+        "It compiles, because only one interface method is needed"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "A class that implements an interface must define every method in it. `Parcel` skips `carrier()`, so it won't compile.",
+      "wrong": [
+        "Missing interface methods stop the class from compiling.",
+        "",
+        "The class never compiles, so nothing runs.",
+        "Every method in the interface is required."
+      ],
+      "source": "Apex Developer Guide: Interfaces"
+    },
+    {
+      "id": "auto-q18",
+      "lesson": "auto-3",
+      "difficulty": 2,
+      "q": "Which two statements about the `protected` access modifier are true? (Choose 2)",
+      "options": [
+        "Classes that extend the defining class can use the member",
+        "It's the default when no modifier is written",
+        "Inner classes of the defining class can use the member",
+        "It can be used on `static` methods and variables",
+        "It makes the member visible to the SOAP API"
+      ],
+      "answer": [
+        0,
+        2
+      ],
+      "explain": "`protected` opens a member to inner classes and to subclasses. It works on instance members only.",
+      "wrong": [
+        "",
+        "The default is `private`.",
+        "",
+        "`protected` is for instance methods and member variables only.",
+        "SOAP API access needs `global`."
+      ],
+      "source": "Apex Developer Guide: Access Modifiers"
+    },
+    {
+      "id": "auto-x7",
+      "lesson": "auto-3",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "What does this code print?",
+      "code": "public virtual class Greeter {\n    public virtual String hello() { return 'Hi'; }\n}\npublic class LoudGreeter extends Greeter {\n    public override String hello() { return super.hello() + '!'; }\n}\n// elsewhere\nGreeter g = new LoudGreeter();\nSystem.debug(g.hello());",
+      "lang": "apex",
+      "options": [
+        "`Hi`",
+        "`Hi!`",
+        "Nothing; it fails to compile because `g` is typed as `Greeter`",
+        "Nothing; it throws a runtime error because `super` can't be used in an override"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "The object is a `LoudGreeter`, so its `override` runs, even through a `Greeter` variable. `super.hello()` calls the parent version and adds `!`.",
+      "wrong": [
+        "The overriding method runs, because the object is a `LoudGreeter`.",
+        "",
+        "A parent-typed variable can hold a subclass object.",
+        "`super` is allowed in an override to call the parent method."
+      ],
+      "source": "Apex Developer Guide: Extending a Class"
+    },
+    {
+      "id": "auto-x8",
+      "lesson": "auto-3",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A developer tries to save these two classes. What happens?",
+      "code": "public class BaseRule {\n    public Boolean check() { return true; }\n}\npublic class StrictRule extends BaseRule {\n    public override Boolean check() { return false; }\n}",
+      "lang": "apex",
+      "options": [
+        "It compiles, and `StrictRule.check()` returns `false`",
+        "It compiles, but `check()` returns `true` because the override is ignored",
+        "It compiles only after `StrictRule` is marked `global`",
+        "It fails, because `BaseRule` can't be extended"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "Apex classes are closed by default. A class must be `virtual` or `abstract` to be extended, and the method must be `virtual` to be overridden.",
+      "wrong": [
+        "It can't compile until `BaseRule` and `check()` are made `virtual`.",
+        "The compiler rejects the class; nothing runs.",
+        "Access level isn't the problem; the parent class isn't extendable.",
+        ""
+      ],
+      "source": "Apex Developer Guide: Extending a Class"
+    },
+    {
+      "id": "auto-x9",
+      "lesson": "auto-3",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "Card, invoice and voucher payments each have their own logic and share no code. A checkout class must call `pay(amount)` on any of them without knowing which type it has. What is the best design?",
+      "options": [
+        "Define an interface with `pay()`, and have each class implement it",
+        "Write one class with a `switch` on a type `String` inside `pay()`",
+        "Make each payment class `global` so the checkout class can find `pay()`",
+        "Copy the same `pay()` method into each class with no shared type"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "An interface is a shared promise. Checkout calls `pay()` through the interface type, and each class supplies its own logic.",
+      "wrong": [
+        "",
+        "It works, but every new payment type means editing that one class.",
+        "`global` controls who can see code; it doesn't give a shared type.",
+        "Without a shared type, checkout can't call them the same way."
+      ],
+      "source": "Apex Developer Guide: Interfaces"
+    },
+    {
+      "id": "auto-q19",
+      "lesson": "auto-3",
+      "difficulty": 2,
+      "q": "Which statement about an `abstract` class is true?",
+      "options": [
+        "All of its methods must be `abstract` and have no body",
+        "It can't declare a constructor, unlike a `virtual` class",
+        "It can't be created with `new`",
+        "It can be created with `new`, but only from inside a subclass"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "An `abstract` class is a partial blueprint. You can't make one with `new`; a subclass fills in the `abstract` methods.",
+      "wrong": [
+        "An `abstract` class can mix normal methods with `abstract` ones.",
+        "Abstract classes can have constructors.",
+        "",
+        "You never create an `abstract` class with `new`."
+      ],
+      "source": "Apex Developer Guide: Extending a Class"
+    },
+    {
+      "id": "auto-q20",
+      "lesson": "auto-3",
+      "difficulty": 1,
+      "q": "Which keyword does a class use to sign an interface's promise?",
+      "options": [
+        "`implements`",
+        "`extends`",
+        "`override`",
+        "`virtual`"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "A class signs an interface with `implements`. It then must define every method the interface lists.",
+      "wrong": [
+        "",
+        "`extends` is for inheriting from a class.",
+        "`override` replaces a parent's `virtual` method.",
+        "`virtual` lets a class or method be extended."
+      ],
+      "source": "Apex Developer Guide: Interfaces"
+    },
+    {
+      "id": "auto-q21",
+      "lesson": "auto-3",
+      "difficulty": 2,
+      "q": "Given `public class MathUtil { public static Integer twice(Integer n) { return n * 2; } }`, which call is valid from another class?",
+      "options": [
+        "`new MathUtil().twice(4)`",
+        "`MathUtil().twice(4)`",
+        "`MathUtil.twice(4)`",
+        "`this.twice(4)`"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "A static method belongs to the class, so you call it on the class name. Calling it through an object isn't legal in Apex.",
+      "wrong": [
+        "Apex doesn't allow calling a static method through an instance.",
+        "This isn't valid syntax for creating or calling anything.",
+        "",
+        "`this` points to the current object, and another class has no `twice()`."
+      ],
+      "source": "Apex Developer Guide: Static and Instance Methods, Variables, and Initialization Code"
+    },
+    {
+      "id": "auto-q22",
+      "lesson": "auto-4",
+      "difficulty": 1,
+      "q": "What does this print?",
+      "code": "Integer n = 0;\ndo {\n    n++;\n} while (n > 5);\nSystem.debug(n);",
+      "lang": "apex",
+      "options": [
+        "0",
+        "1",
+        "5",
+        "Nothing; the loop never ends"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "A `do-while` loop runs its body once before it checks. `n` becomes 1, then `1 > 5` is false, so it stops.",
+      "wrong": [
+        "The body runs once before the check, so `n` is at least 1.",
+        "",
+        "The condition is false after the first pass.",
+        "`n > 5` is false after one pass, so the loop stops."
+      ],
+      "source": "Apex Developer Guide: Loops"
+    },
+    {
+      "id": "auto-q23",
+      "lesson": "auto-4",
+      "difficulty": 2,
+      "q": "What does this print?",
+      "code": "Integer total = 0;\nfor (Integer i = 1; i <= 6; i++) {\n    if (i == 2) continue;\n    if (i == 5) break;\n    total += i;\n}\nSystem.debug(total);",
+      "lang": "apex",
+      "options": [
+        "13",
+        "19",
+        "10",
+        "8"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "`continue` skips 2 and `break` stops the loop at 5. So total = 1 + 3 + 4 = 8.",
+      "wrong": [
+        "That would add 5 too, but `break` stops before adding it.",
+        "That counts 1 to 6 without the skip and the stop.",
+        "That counts 1 to 4, but 2 is skipped.",
+        ""
+      ],
+      "source": "Apex Developer Guide: Loops"
+    },
+    {
+      "id": "auto-q24",
+      "lesson": "auto-4",
+      "difficulty": 2,
+      "q": "What does this print?",
+      "code": "String tier = 'gold';\nString perk;\nswitch on tier {\n    when 'Gold' { perk = 'Lounge'; }\n    when 'Silver' { perk = 'Upgrade'; }\n    when else { perk = 'None'; }\n}\nSystem.debug(perk);",
+      "lang": "apex",
+      "options": [
+        "`Lounge`",
+        "`null`",
+        "`None`",
+        "`Lounge` and then `None`"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "`switch` matches `String` values with case. `'gold'` doesn't match `'Gold'`, so `when else` runs.",
+      "wrong": [
+        "String `when` values are case-sensitive.",
+        "`when else` sets `perk`, so it isn't `null`.",
+        "",
+        "Only one `when` block runs, at most."
+      ],
+      "source": "Apex Developer Guide: Switch Statements"
+    },
+    {
+      "id": "auto-q25",
+      "lesson": "auto-4",
+      "difficulty": 2,
+      "q": "Which two data types can a `switch on` expression use? (Choose 2)",
+      "options": [
+        "`Decimal`",
+        "`String`",
+        "`Boolean`",
+        "`Enum`",
+        "`Date`"
+      ],
+      "answer": [
+        1,
+        3
+      ],
+      "explain": "A switch expression can be `Integer`, `Long`, `sObject`, `String` or `Enum`. Other types need an if/else chain.",
+      "wrong": [
+        "`Decimal` isn't a supported switch type.",
+        "",
+        "`Boolean` isn't supported; use if/else.",
+        "",
+        "`Date` isn't a supported switch type."
+      ],
+      "source": "Apex Developer Guide: Switch Statements"
+    },
+    {
+      "id": "auto-x10",
+      "lesson": "auto-4",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "What does this print?",
+      "code": "SObject rec = new Contact(LastName = 'Ray');\nString label;\nswitch on rec {\n    when Account a { label = 'Account ' + a.Name; }\n    when Contact c { label = 'Contact ' + c.LastName; }\n    when else { label = 'Other'; }\n}\nSystem.debug(label);",
+      "lang": "apex",
+      "options": [
+        "`Contact Ray`",
+        "`Other`",
+        "`Account null`",
+        "Nothing; `switch` can't test sObject types, so it won't compile"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "A `when` block can match an sObject type and give it a typed name. `rec` is a Contact, so the `Contact c` block runs.",
+      "wrong": [
+        "",
+        "The Contact block matches, so `when else` doesn't run.",
+        "The record isn't an Account, so that block is skipped.",
+        "`switch` supports sObject type matching like `when Contact c`."
+      ],
+      "source": "Apex Developer Guide: Switch Statements"
+    },
+    {
+      "id": "auto-x11",
+      "lesson": "auto-4",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "What does this print?",
+      "code": "Account acc = null;\nString city = acc?.BillingCity;\nString label = city == null ? 'Unknown' : city;\nSystem.debug(label);",
+      "lang": "apex",
+      "options": [
+        "Nothing; it throws a `NullPointerException` on line 2",
+        "`null`",
+        "An empty line, because `city` is an empty string",
+        "`Unknown`"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "The safe navigation operator `?.` returns `null` when the left side is null. Then the ternary picks `'Unknown'`.",
+      "wrong": [
+        "`?.` stops the error and gives `null` instead.",
+        "The ternary turns `null` into `'Unknown'`.",
+        "`city` is `null`, not an empty string.",
+        ""
+      ],
+      "source": "Apex Developer Guide: Safe Navigation Operator"
+    },
+    {
+      "id": "auto-q26",
+      "lesson": "auto-4",
+      "difficulty": 1,
+      "q": "Which loop always runs its body at least once?",
+      "options": [
+        "`while (x) { }`",
+        "`do { } while (x);`",
+        "`for (Integer i = 0; i < x; i++) { }`",
+        "`for (Account a : accts) { }`"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "A `do-while` loop checks its condition after the body. So the body always runs at least once.",
+      "wrong": [
+        "It checks first, so it can run zero times.",
+        "",
+        "It checks first, so it can run zero times.",
+        "An empty list means zero runs."
+      ],
+      "source": "Apex Developer Guide: Loops"
+    },
+    {
+      "id": "auto-q27",
+      "lesson": "auto-4",
+      "difficulty": 2,
+      "q": "A synchronous job must update all 30,000 Contacts in an org without holding every row in memory at once. Which loop fits best?",
+      "options": [
+        "A `while` loop that runs one query per Contact",
+        "A SOQL `for` loop written around the query",
+        "A list loop over a query first stored in a `List<Contact>`",
+        "A `do-while` loop that queries with `LIMIT 1` each time"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "A SOQL for loop fetches rows in chunks of 200, so they don't all sit in memory at once. It's still one query.",
+      "wrong": [
+        "One query per Contact blows past the 100-query limit.",
+        "",
+        "It works, but all 30,000 rows sit in memory at once.",
+        "One query per pass blows past the 100-query limit."
+      ],
+      "source": "Apex Developer Guide: SOQL For Loops"
+    },
+    {
+      "id": "auto-x12",
+      "lesson": "auto-4",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "What is the value of `msg` after this runs?",
+      "code": "Integer code = null;\nString msg;\nswitch on code {\n    when 1, 2 { msg = 'Low'; }\n    when null { msg = 'Missing'; }\n    when else { msg = 'High'; }\n}",
+      "lang": "apex",
+      "options": [
+        "`High`",
+        "`Low`",
+        "Nothing; it throws a `NullPointerException`",
+        "`Missing`"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "`null` is a legal `when` value for every switch type. `code` is null, so the `when null` block runs.",
+      "wrong": [
+        "`when null` matches first, so `when else` doesn't run.",
+        "`null` isn't 1 or 2.",
+        "A switch on null doesn't throw; it can match `when null`.",
+        ""
+      ],
+      "source": "Apex Developer Guide: Switch Statements"
+    },
+    {
+      "id": "auto-x13",
+      "lesson": "auto-4",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A developer turns a long if/else chain on `opp.StageName` into a `switch on` statement. Which two statements are true? (Choose 2)",
+      "options": [
+        "Values match without case, just like `==` on Strings",
+        "The same value can appear in two `when` blocks",
+        "Without `when else`, an unmatched value throws an exception",
+        "At most one `when` block runs, so no `break` is needed",
+        "A `when else` block, if used, must be the last block"
+      ],
+      "answer": [
+        3,
+        4
+      ],
+      "explain": "Apex `switch` runs one matching block and never falls through. `when else` is optional, but it must come last.",
+      "wrong": [
+        "`String` values in `when` are case-sensitive.",
+        "Each `when` value must be unique.",
+        "With no match and no `when else`, nothing happens.",
+        "",
+        ""
+      ],
+      "source": "Apex Developer Guide: Switch Statements"
+    },
+    {
+      "id": "auto-q28",
+      "lesson": "auto-5",
+      "difficulty": 1,
+      "q": "No Account in the org has the name below. What happens when this line runs?",
+      "code": "Account a = [SELECT Id FROM Account WHERE Name = 'Nobody Inc'];",
+      "lang": "apex",
+      "options": [
+        "A `QueryException` is thrown",
+        "`a` is set to `null`",
+        "`a` holds an Account with no fields set",
+        "A `NullPointerException` is thrown"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "A query put into a single record must return exactly one row. Zero rows throws a `QueryException`.",
+      "wrong": [
+        "",
+        "Apex throws instead of returning `null`.",
+        "No record is created; the query just fails.",
+        "The error comes from the query, not from using a null value."
+      ],
+      "source": "Apex Developer Guide: Built-In Exceptions and Common Methods"
+    },
+    {
+      "id": "auto-q29",
+      "lesson": "auto-5",
+      "difficulty": 1,
+      "q": "What does a SOSL query return in Apex?",
+      "options": [
+        "`List<SObject>`",
+        "`Map<String, List<SObject>>`",
+        "`List<List<SObject>>`",
+        "`Database.QueryLocator`"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "SOSL can search many objects at once. So it returns a list of lists: one inner list per object, in `RETURNING` order.",
+      "wrong": [
+        "A single list can't keep each object's results apart.",
+        "SOSL results aren't keyed by object name.",
+        "",
+        "A QueryLocator comes from SOQL, for Batch Apex."
+      ],
+      "source": "Apex Developer Guide: SOQL and SOSL Queries"
+    },
+    {
+      "id": "auto-q30",
+      "lesson": "auto-5",
+      "difficulty": 2,
+      "q": "Which query returns each Account with the email addresses of its Contacts?",
+      "options": [
+        "`SELECT Name, (SELECT Email FROM Contacts) FROM Account`",
+        "`SELECT Name, (SELECT Email FROM Contact) FROM Account`",
+        "`SELECT Name, Contacts.Email FROM Account`",
+        "`SELECT Name, (SELECT Email FROM Contacts__r) FROM Account`"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "To go down to children, use a subquery with the child relationship name. For standard Contacts that's the plural `Contacts`.",
+      "wrong": [
+        "",
+        "Subqueries use the relationship name `Contacts`, not the object name.",
+        "Dot notation goes up to a parent, not down to many children.",
+        "`__r` is for custom relationships; Contacts is standard."
+      ],
+      "source": "SOQL and SOSL Reference: Relationship Queries"
+    },
+    {
+      "id": "auto-q31",
+      "lesson": "auto-5",
+      "difficulty": 2,
+      "q": "`Shipment__c` has a lookup field `Warehouse__c` to the custom object `Warehouse__c`. Which query returns each Shipment with its warehouse's `City__c`?",
+      "options": [
+        "`SELECT Name, Warehouse__c.City__c FROM Shipment__c`",
+        "`SELECT Name, Warehouse.City__c FROM Shipment__c`",
+        "`SELECT Name, Warehouse__r.City__c FROM Shipment__c`",
+        "`SELECT Name, (SELECT City__c FROM Warehouse__r) FROM Shipment__c`"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "To follow a custom relationship up to its parent, swap `__c` for `__r`. Then add the parent field with a dot.",
+      "wrong": [
+        "`__c` names the Id field; use `__r` to follow it.",
+        "Custom relationships need the `__r` ending.",
+        "",
+        "A subquery goes down to children, not up to a parent."
+      ],
+      "source": "SOQL and SOSL Reference: Relationship Queries"
+    },
+    {
+      "id": "auto-q32",
+      "lesson": "auto-5",
+      "difficulty": 2,
+      "q": "Which two statements about SOSL are true? (Choose 2)",
+      "options": [
+        "One query can search several objects at once",
+        "It returns one `List<SObject>` with all objects mixed",
+        "Its text matching is case-sensitive",
+        "One SOSL query can return up to 50,000 rows",
+        "The `FIND` clause is required"
+      ],
+      "answer": [
+        0,
+        4
+      ],
+      "explain": "SOSL searches text across many objects in one query, and every SOSL query starts with `FIND`.",
+      "wrong": [
+        "",
+        "It returns one list per object, inside an outer list.",
+        "SOSL search ignores case.",
+        "One SOSL query returns at most 2,000 rows.",
+        ""
+      ],
+      "source": "SOQL and SOSL Reference: FIND {SearchQuery}"
+    },
+    {
+      "id": "auto-x14",
+      "lesson": "auto-5",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A batch of Accounts may or may not match the regions below. How many SOQL queries run, and what happens if nothing matches?",
+      "code": "Set<String> codes = new Set<String>{'EU', 'US'};\nList<Account> accts = [\n    SELECT Id FROM Account WHERE Region__c IN :codes\n];\nfor (Account a : accts) {\n    // update scores\n}",
+      "lang": "apex",
+      "options": [
+        "Two queries, one for each region in the set; `accts` is an empty list",
+        "One query; `accts` is an empty list and the loop body doesn't run",
+        "One query; `accts` is `null`, so the loop throws an error",
+        "Two queries, one per region; a `QueryException` is thrown"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "A bind variable with `IN :codes` sends the whole set in one query. A query into a `List` with no rows gives an empty list, not `null`.",
+      "wrong": [
+        "`IN :codes` is still a single query.",
+        "",
+        "A List query with no rows returns an empty list.",
+        "It's one query, and a List never throws for zero rows."
+      ],
+      "source": "Apex Developer Guide: SOQL and SOSL Queries"
+    },
+    {
+      "id": "auto-x15",
+      "lesson": "auto-5",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "The org has thousands of Contacts. What happens when this code runs?",
+      "code": "Contact c = [SELECT Id, LastName FROM Contact LIMIT 1];\nSystem.debug(c.Email);",
+      "lang": "apex",
+      "options": [
+        "It prints `null`, because the field wasn't loaded",
+        "It throws a `QueryException`, because `LIMIT 1` is missing an `ORDER BY`",
+        "It prints the Contact's email, loaded on demand",
+        "It throws an `SObjectException`, because `Email` wasn't in the query"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "Apex only fills fields you list in `SELECT`. Reading one you didn't query throws an `SObjectException`.",
+      "wrong": [
+        "Unqueried fields throw an error; they don't read as `null`.",
+        "`LIMIT 1` is fine without `ORDER BY`.",
+        "Apex doesn't load missing fields on demand.",
+        ""
+      ],
+      "source": "Apex Developer Guide: Built-In Exceptions and Common Methods"
+    },
+    {
+      "id": "auto-x16",
+      "lesson": "auto-5",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "On a custom search page, a user types a name. The code must find matches in Account names, Contact names and Lead emails, using one query. What fits best?",
+      "options": [
+        "Three SOQL queries, each with a `LIKE` filter",
+        "One SOQL query with a semi-join across the three objects",
+        "One SOSL query with `RETURNING Account, Contact, Lead`",
+        "One `Database.query()` call that joins the three objects"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "SOSL is built for searching words across many objects at once. One query with three objects in `RETURNING` does it.",
+      "wrong": [
+        "That's three queries, and `LIKE` is slower for text search.",
+        "A semi-join filters one object; it can't return three.",
+        "",
+        "SOQL can't return three unrelated objects in one query."
+      ],
+      "source": "Apex Developer Guide: SOQL and SOSL Queries"
+    },
+    {
+      "id": "auto-x17",
+      "lesson": "auto-5",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "The running user's profile can't see the `Amount` field on Opportunity (field-level security). Which two statements about this query are true? (Choose 2)",
+      "code": "List<Opportunity> opps = [\n    SELECT Name, Amount FROM Opportunity\n    WITH USER_MODE\n];",
+      "lang": "apex",
+      "options": [
+        "The query quietly leaves `Amount` out of the results",
+        "The query throws an exception about the field the user can't access",
+        "The running user's sharing rules are enforced too",
+        "Only object permissions are checked, not field access",
+        "`WITH USER_MODE` is only allowed in SOSL"
+      ],
+      "answer": [
+        1,
+        2
+      ],
+      "explain": "User mode applies the running user's object access, field access and sharing. A query on a field they can't see throws an exception.",
+      "wrong": [
+        "User mode throws; it doesn't silently strip the field.",
+        "",
+        "",
+        "User mode checks fields as well as objects.",
+        "SOQL supports `WITH USER_MODE`."
+      ],
+      "source": "Apex Developer Guide: Set an Access Mode for Database Operations"
+    },
+    {
+      "id": "auto-q33",
+      "lesson": "auto-5",
+      "difficulty": 2,
+      "q": "Code in a synchronous Apex trigger runs SOQL. What are the limits on query count and total rows for the transaction?",
+      "options": [
+        "100 queries and 50,000 rows",
+        "200 queries and 50,000 rows",
+        "100 queries and 10,000 rows",
+        "150 queries and 50,000 rows in total"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "A synchronous transaction can run 100 SOQL queries. Together they can return 50,000 rows.",
+      "wrong": [
+        "",
+        "200 queries is the async limit.",
+        "10,000 is the DML row limit, not the query row limit.",
+        "150 is the DML statement limit."
+      ],
+      "source": "Apex Developer Guide: Execution Governors and Limits"
+    },
+    {
+      "id": "auto-q34",
+      "lesson": "auto-6",
+      "difficulty": 1,
+      "q": "Which call lets the valid records save even when some records in the list fail?",
+      "options": [
+        "`insert records;`",
+        "`Database.insert(records, true)`",
+        "`insert records;` inside a try/catch",
+        "`Database.insert(records, false)`"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "A Database method with `allOrNone` set to `false` allows partial success. Good records save, and bad ones are reported in the results.",
+      "wrong": [
+        "A DML statement is all or nothing.",
+        "`true` means all or nothing.",
+        "try/catch handles the error, but still nothing is saved.",
+        ""
+      ],
+      "source": "Apex Developer Guide: DML Statements vs. Database Class Methods"
+    },
+    {
+      "id": "auto-q35",
+      "lesson": "auto-6",
+      "difficulty": 2,
+      "q": "`LastName` is required on Contact. What happens when this code runs?",
+      "code": "List<Contact> cons = new List<Contact>{\n    new Contact(LastName = 'Ali'),\n    new Contact(FirstName = 'No last name')\n};\ninsert cons;",
+      "lang": "apex",
+      "options": [
+        "Ali is saved, and the second Contact quietly fails",
+        "A `DmlException` is thrown and neither Contact is saved",
+        "Both are saved, and the missing LastName gets a default value",
+        "The second Contact is skipped, with no error"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "A DML statement is all or nothing. One bad record throws a `DmlException`, and none of the list is saved.",
+      "wrong": [
+        "A DML statement saves nothing when any record fails.",
+        "",
+        "Required fields don't get default values.",
+        "DML statements throw; they don't skip records silently."
+      ],
+      "source": "Apex Developer Guide: DML Statements vs. Database Class Methods"
+    },
+    {
+      "id": "auto-q36",
+      "lesson": "auto-6",
+      "difficulty": 2,
+      "q": "Using the same two Contacts, the developer writes this instead. What happens?",
+      "code": "Database.SaveResult[] res = Database.insert(cons, false);",
+      "lang": "apex",
+      "options": [
+        "A `DmlException` is thrown and neither Contact is saved",
+        "Ali saves, and the second result's `isSuccess()` is false",
+        "Neither is saved, and both results show `isSuccess()` false",
+        "Ali is saved, and a `DmlException` is thrown for the second"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "With `allOrNone` set to `false`, good records save and failures are reported in each `SaveResult`. No exception is thrown for record errors.",
+      "wrong": [
+        "`false` allows partial success, so no exception is thrown.",
+        "",
+        "The valid Contact still saves.",
+        "Record errors go in the results, not in an exception."
+      ],
+      "source": "Apex Developer Guide: DML Statements vs. Database Class Methods"
+    },
+    {
+      "id": "auto-q37",
+      "lesson": "auto-6",
+      "difficulty": 2,
+      "q": "Which two each count as exactly one DML statement toward the limit of 150? (Choose 2)",
+      "options": [
+        "A SOQL query that returns 300 rows",
+        "An `insert` inside a loop that runs 10 times",
+        "`update accts;` with 300 Accounts in the list",
+        "`Database.insert(cases, false);` with 50 Cases",
+        "Setting a field on `Trigger.new` in a before trigger"
+      ],
+      "answer": [
+        2,
+        3
+      ],
+      "explain": "Each DML statement or Database call counts once, however many records it holds. Records count separately, toward the 10,000-row limit.",
+      "wrong": [
+        "Queries count toward the SOQL limit, not DML.",
+        "That's 10 DML statements, one per pass.",
+        "",
+        "",
+        "Changing `Trigger.new` in a before trigger needs no DML at all."
+      ],
+      "source": "Apex Developer Guide: Execution Governors and Limits"
+    },
+    {
+      "id": "auto-x18",
+      "lesson": "auto-6",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "There are 400 open Opportunities. What happens when this runs in one synchronous transaction?",
+      "code": "for (Opportunity o : [SELECT Id FROM Opportunity WHERE IsClosed = false]) {\n    o.Next_Review__c = Date.today().addDays(7);\n    update o;\n}",
+      "lang": "apex",
+      "options": [
+        "It updates all 400, because the SOQL `for` loop chunks the records",
+        "It updates the first 150 Opportunities, then stops without an error",
+        "It throws a `QueryException`, because the loop is too big to query",
+        "It hits the DML statement limit, and nothing is saved"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "Each `update o;` is one DML statement. The 151st throws a `LimitException`, which can't be caught, so the whole transaction rolls back.",
+      "wrong": [
+        "Chunking helps memory, but each `update` still counts as a statement.",
+        "Hitting a limit rolls back everything; nothing partial is saved.",
+        "The query is fine; the DML count is the problem.",
+        ""
+      ],
+      "source": "Apex Developer Guide: Execution Governors and Limits"
+    },
+    {
+      "id": "auto-x19",
+      "lesson": "auto-6",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A nightly job runs `upsert orders Order_Key__c;`. `Order_Key__c` is an External ID that isn't marked unique. Two existing orders share key `K-77`, and an incoming order also has `K-77`. What happens to that incoming order?",
+      "options": [
+        "It fails, because the key matches more than one record",
+        "Both existing orders are updated with the incoming order's values",
+        "The older of the two matching orders is updated",
+        "It's inserted as a brand-new order"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "Upsert inserts on no match and updates on one match. Two or more matches is an error, and that record isn't saved.",
+      "wrong": [
+        "",
+        "Upsert never updates several records for one key.",
+        "Upsert doesn't pick one; several matches is an error.",
+        "It found matches, so it doesn't insert."
+      ],
+      "source": "Apex Developer Guide: Upserting Records"
+    },
+    {
+      "id": "auto-x20",
+      "lesson": "auto-6",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "An order line fails a validation rule. What is in the database when this code finishes?",
+      "code": "Savepoint sp = Database.setSavepoint();\ninsert newOrder;\ntry {\n    insert orderLines;\n} catch (DmlException e) {\n    Database.rollback(sp);\n}",
+      "lang": "apex",
+      "options": [
+        "The order, but no order lines",
+        "The order and the order lines that passed validation",
+        "Neither the order nor any order lines",
+        "Only the valid order lines"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "`Database.rollback(sp)` undoes every DML since the savepoint. That includes the order inserted before the failing lines.",
+      "wrong": [
+        "The rollback also undoes the order insert.",
+        "`insert orderLines` is all or nothing, and the rollback undoes the order too.",
+        "",
+        "The failed insert saved no lines."
+      ],
+      "source": "Apex Developer Guide: Transaction Control"
+    },
+    {
+      "id": "auto-q38",
+      "lesson": "auto-6",
+      "difficulty": 1,
+      "q": "Which statement about `upsert` is true?",
+      "options": [
+        "It can match on an External ID field instead of the Id",
+        "It always inserts new records and never updates",
+        "It can only match records on the Name field",
+        "It needs a separate query to find the matching records first"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "Upsert matches on the Id, or on a field you name, such as an External ID. Then it inserts or updates as needed.",
+      "wrong": [
+        "",
+        "It updates when it finds one match.",
+        "It matches on Id, an External ID or an idLookup field.",
+        "Upsert finds matches by itself."
+      ],
+      "source": "Apex Developer Guide: Upserting Records"
+    },
+    {
+      "id": "auto-x21",
+      "lesson": "auto-6",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A developer loads 1,000 Leads with `Database.insert(leads, false)`. Some Leads have bad email addresses. Which two statements are true? (Choose 2)",
+      "options": [
+        "The valid Leads are saved even though some fail",
+        "The returned list has one result per Lead, in the same order",
+        "A `DmlException` is thrown after the valid Leads save",
+        "The call uses 1,000 DML statements",
+        "Failed Leads are retried in a new transaction"
+      ],
+      "answer": [
+        0,
+        1
+      ],
+      "explain": "With `allOrNone` false, valid records save and each record gets a `SaveResult` in input order. The call is one DML statement.",
+      "wrong": [
+        "",
+        "",
+        "Partial-success calls don't throw for record errors.",
+        "One Database call is one DML statement.",
+        "Nothing retries failed records for you."
+      ],
+      "source": "Apex Developer Guide: DML Statements vs. Database Class Methods"
+    },
+    {
+      "id": "auto-q39",
+      "lesson": "auto-6",
+      "difficulty": 2,
+      "q": "Which DML operation is only available as a `Database` method, not as a DML statement?",
+      "options": [
+        "`Database.insert()`",
+        "`Database.delete()`",
+        "`Database.convertLead()`",
+        "`Database.upsert()`"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "Converting a Lead has no DML statement form. You must call `Database.convertLead()`.",
+      "wrong": [
+        "`insert` exists as a statement too.",
+        "`delete` exists as a statement too.",
+        "",
+        "`upsert` exists as a statement too."
+      ],
+      "source": "Apex Developer Guide: DML Statements vs. Database Class Methods"
+    },
+    {
+      "id": "auto-q40",
+      "lesson": "auto-7",
+      "difficulty": 1,
+      "q": "When a record is saved, which of these runs first?",
+      "options": [
+        "Before triggers on the record's object",
+        "Before-save record-triggered flows",
+        "Custom validation rules",
+        "After triggers"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "Before-save flows run first, right after system validation. Then come before triggers, then validation rules.",
+      "wrong": [
+        "They run right after before-save flows.",
+        "",
+        "They run after before triggers.",
+        "They run after the record is saved."
+      ],
+      "source": "Apex Developer Guide: Triggers and Order of Execution"
+    },
+    {
+      "id": "auto-q41",
+      "lesson": "auto-7",
+      "difficulty": 2,
+      "q": "Which two run before the record is saved to the database (not yet committed)? (Choose 2)",
+      "options": [
+        "Before triggers",
+        "Assignment rules",
+        "After-save record-triggered flows",
+        "Duplicate rules",
+        "Roll-up summary calculation"
+      ],
+      "answer": [
+        0,
+        3
+      ],
+      "explain": "Before triggers, validation rules and duplicate rules all run before the save. Assignment rules, after-save flows and roll-ups come after it.",
+      "wrong": [
+        "",
+        "They run after the after triggers.",
+        "They run after the save.",
+        "",
+        "Roll-ups run near the end, after the save."
+      ],
+      "source": "Apex Developer Guide: Triggers and Order of Execution"
+    },
+    {
+      "id": "auto-q42",
+      "lesson": "auto-7",
+      "difficulty": 2,
+      "q": "A validation rule blocks any Opportunity with `Discount__c` over 30%. A before trigger sets `Discount__c` to 40% on some records. What happens?",
+      "options": [
+        "The saves succeed, because validation ran before the trigger",
+        "The trigger's new value is ignored and the old value is saved",
+        "The rule is skipped, because it only runs for edits in the UI",
+        "The validation rule blocks those saves"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "Custom validation rules run after before triggers. So they check the values the trigger set.",
+      "wrong": [
+        "Validation rules run after before triggers.",
+        "Before trigger changes are saved, if they pass validation.",
+        "Custom validation rules run for Apex and API saves too.",
+        ""
+      ],
+      "source": "Apex Developer Guide: Triggers and Order of Execution"
+    },
+    {
+      "id": "auto-x22",
+      "lesson": "auto-7",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "An Opportunity has Amount 100. A user changes it to 200. A workflow field update then sets it to 250. What does the before update trigger print when it runs the second time?",
+      "code": "trigger OppAudit on Opportunity (before update) {\n    System.debug(Trigger.old[0].Amount + ' -> ' + Trigger.new[0].Amount);\n}",
+      "lang": "apex",
+      "options": [
+        "`200 -> 250`",
+        "`100 -> 200`",
+        "`100 -> 250`",
+        "`250 -> 250`"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "After a workflow field update, update triggers run once more. `Trigger.old` still holds the value from before the user's change.",
+      "wrong": [
+        "`Trigger.old` keeps the original 100, not the user's 200.",
+        "That was the first run, before the workflow update.",
+        "",
+        "`Trigger.old` doesn't pick up the new values."
+      ],
+      "source": "Apex Developer Guide: Triggers and Order of Execution"
+    },
+    {
+      "id": "auto-x23",
+      "lesson": "auto-7",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "An after insert trigger on Contact updates the parent Account. An after update trigger on Account then updates all that Account's Opportunities. Which statement is true?",
+      "options": [
+        "It all runs in one transaction with one set of limits",
+        "Each trigger runs in its own transaction with fresh limits",
+        "The Account trigger waits until the Contact is committed",
+        "Salesforce stops a trigger from updating a different object"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "A DML inside a trigger starts the other record's save in the same transaction. That's cascading, and every step shares the same limits.",
+      "wrong": [
+        "",
+        "Cascading saves share one transaction and one set of limits.",
+        "Commit happens once, at the very end.",
+        "Triggers can update other objects; that's how cascades happen."
+      ],
+      "source": "Apex Developer Guide: Triggers and Order of Execution"
+    },
+    {
+      "id": "auto-q43",
+      "lesson": "auto-7",
+      "difficulty": 2,
+      "q": "A workflow rule with a field update fires on a record save. How many more times do that record's before update and after update triggers run?",
+      "options": [
+        "Up to 16 more times",
+        "Until the field value stops changing",
+        "None; triggers don't run again",
+        "One more time only"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "A workflow field update saves the record again. Update triggers run one more time, and only one more time.",
+      "wrong": [
+        "16 is the trigger depth limit, not the workflow rule.",
+        "Salesforce runs them once more, then stops.",
+        "They do run once more.",
+        ""
+      ],
+      "source": "Apex Developer Guide: Triggers and Order of Execution"
+    },
+    {
+      "id": "auto-x24",
+      "lesson": "auto-7",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A record is saved and a workflow field update fires. Which two run again on that extra save? (Choose 2)",
+      "options": [
+        "Custom validation rules",
+        "Before update triggers",
+        "Before-save record-triggered flows",
+        "Duplicate rules",
+        "After update triggers"
+      ],
+      "answer": [
+        1,
+        4
+      ],
+      "explain": "On a workflow field update, the record goes through system validation and both update triggers once more. Custom validation rules, flows and duplicate rules don't run again.",
+      "wrong": [
+        "Custom validation rules don't run again.",
+        "",
+        "Flows don't run again on the workflow re-save.",
+        "Duplicate rules don't run again.",
+        ""
+      ],
+      "source": "Apex Developer Guide: Triggers and Order of Execution"
+    },
+    {
+      "id": "auto-q44",
+      "lesson": "auto-7",
+      "difficulty": 2,
+      "q": "Two before insert triggers exist on Case: `CaseDefaults` and `CaseRouting`. Routing needs the values that Defaults sets. What is the best fix?",
+      "options": [
+        "Rename them so `CaseDefaults` comes first alphabetically",
+        "Merge them into one trigger that runs the logic in order",
+        "Delete and recreate `CaseRouting` so it's the newer trigger",
+        "Add a `static` flag so `CaseRouting` waits for `CaseDefaults`"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "The order between triggers on the same object and event isn't guaranteed. One trigger that calls handlers in order fixes it.",
+      "wrong": [
+        "Names don't control trigger order.",
+        "",
+        "Creation date doesn't control trigger order.",
+        "A flag can't make a trigger wait; if Routing runs first, it just skips."
+      ],
+      "source": "Apex Developer Guide: Triggers and Order of Execution"
+    },
+    {
+      "id": "auto-x25",
+      "lesson": "auto-7",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "An after insert trigger on `Order__c` calls `System.enqueueJob()` to sync the order to an ERP. Later in the same save, a roll-up summary update makes the parent Account fail a validation rule, and the error isn't handled. What happens to the job?",
+      "options": [
+        "It runs, because it was queued before the error happened",
+        "It never runs, because the transaction rolls back",
+        "It runs, but finds no Order, because the insert was rolled back",
+        "It runs right away, before the validation rule on the Account"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "Async jobs start after the transaction commits. An unhandled error rolls back the whole transaction, so the queued job is dropped too.",
+      "wrong": [
+        "Queued jobs only start after a successful commit.",
+        "",
+        "It's dropped with the rollback; it never runs.",
+        "Async jobs never start during the save."
+      ],
+      "source": "Apex Developer Guide: Triggers and Order of Execution"
+    },
+    {
+      "id": "auto-q45",
+      "lesson": "auto-7",
+      "difficulty": 1,
+      "q": "A trigger sends an email with `Messaging.sendEmail()`. When is the email actually sent?",
+      "options": [
+        "The moment `sendEmail()` is called",
+        "Before the after triggers run",
+        "At the next scheduled job run",
+        "After the transaction commits"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "Sending email is post-commit logic. It happens after all changes are committed.",
+      "wrong": [
+        "Emails wait for the commit.",
+        "Emails go out at the end, after the commit.",
+        "No scheduled job is involved.",
+        ""
+      ],
+      "source": "Apex Developer Guide: Triggers and Order of Execution"
+    },
+    {
+      "id": "auto-q46",
+      "lesson": "auto-8",
+      "difficulty": 1,
+      "q": "Which context variable holds the records in a delete trigger?",
+      "options": [
+        "`Trigger.old`",
+        "`Trigger.new`",
+        "`Trigger.newMap`",
+        "`Trigger.isDelete`"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "Delete triggers only have the old versions of records. Use `Trigger.old` or `Trigger.oldMap`.",
+      "wrong": [
+        "",
+        "It isn't available in delete triggers.",
+        "It isn't available in delete triggers.",
+        "It's a true/false flag, not the records."
+      ],
+      "source": "Apex Developer Guide: Trigger Context Variables"
+    },
+    {
+      "id": "auto-q47",
+      "lesson": "auto-8",
+      "difficulty": 2,
+      "q": "A before update trigger on Account sets `Rating` from `AnnualRevenue`. What is the right way to save the new Rating?",
+      "options": [
+        "Call `update Trigger.new;` at the end of the trigger",
+        "Collect the records and call `Database.update(list, false)`",
+        "Set the field on `Trigger.new`; no DML is needed",
+        "Query the Accounts again and update the queried copies"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "In a before trigger, changes to `Trigger.new` are saved with the record. No extra DML is needed.",
+      "wrong": [
+        "DML on the same records in a before update trigger throws an error.",
+        "It's an extra DML on records already being saved; it fails.",
+        "",
+        "That wastes a query and a DML, and fires the triggers again."
+      ],
+      "source": "Apex Developer Guide: Context Variable Considerations"
+    },
+    {
+      "id": "auto-q48",
+      "lesson": "auto-8",
+      "difficulty": 2,
+      "q": "What happens when a Lead is inserted?",
+      "code": "trigger LeadTrigger on Lead (before insert) {\n    for (Id leadId : Trigger.newMap.keySet()) {\n        // assign territory\n    }\n}",
+      "lang": "apex",
+      "options": [
+        "A `NullPointerException`, because `Trigger.newMap` is `null`",
+        "The loop runs once, with the new Lead's Id",
+        "The loop runs once, with a temporary Id",
+        "It fails to compile, because `newMap` isn't allowed in triggers"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "New records have no Id before insert, so there's no `Trigger.newMap` there. Calling `keySet()` on `null` throws.",
+      "wrong": [
+        "",
+        "There's no Id yet in before insert.",
+        "Salesforce doesn't hand out temporary Ids.",
+        "It's allowed in other events, like after insert."
+      ],
+      "source": "Apex Developer Guide: Trigger Context Variables"
+    },
+    {
+      "id": "auto-q49",
+      "lesson": "auto-8",
+      "difficulty": 2,
+      "q": "In which two trigger events is `Trigger.newMap` available? (Choose 2)",
+      "options": [
+        "before insert",
+        "before delete",
+        "after insert",
+        "after delete",
+        "before update"
+      ],
+      "answer": [
+        2,
+        4
+      ],
+      "explain": "`newMap` needs Ids and new versions. It's there in before update, after insert, after update and after undelete.",
+      "wrong": [
+        "Records have no Ids yet in before insert.",
+        "Delete events have no new versions.",
+        "",
+        "Delete events have no new versions.",
+        ""
+      ],
+      "source": "Apex Developer Guide: Trigger Context Variables"
+    },
+    {
+      "id": "auto-x26",
+      "lesson": "auto-8",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "What happens when a Case is inserted?",
+      "code": "trigger CaseTrigger on Case (after insert) {\n    for (Case c : Trigger.new) {\n        c.Priority = 'High';\n    }\n}",
+      "lang": "apex",
+      "options": [
+        "Priority is saved as High, with no extra DML",
+        "Priority changes in memory, but nothing is saved and no error",
+        "A runtime error, because `Trigger.new` is read-only in after triggers",
+        "It fails to compile, because `Trigger.new` can't be looped in after insert"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "In after triggers the records are already saved, so `Trigger.new` can't be changed. Setting a field throws a runtime error.",
+      "wrong": [
+        "Only before triggers can change `Trigger.new`.",
+        "Apex throws an error rather than ignoring the change.",
+        "",
+        "Looping is fine; changing a field is the problem."
+      ],
+      "source": "Apex Developer Guide: Context Variable Considerations"
+    },
+    {
+      "id": "auto-x27",
+      "lesson": "auto-8",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "An Opportunity is updated. What runs in this trigger?",
+      "code": "trigger OppTrigger on Opportunity (before insert, before update, after update) {\n    switch on Trigger.operationType {\n        when BEFORE_INSERT { OppHandler.setDefaults(Trigger.new); }\n        when AFTER_UPDATE { OppHandler.syncTeam(Trigger.new, Trigger.oldMap); }\n    }\n}",
+      "lang": "apex",
+      "options": [
+        "Both `setDefaults` and `syncTeam`",
+        "Only `syncTeam`, in the after update context",
+        "Nothing, because there is no `when else` block",
+        "Nothing; it fails to compile without a `BEFORE_UPDATE` block"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "The trigger runs once before update and once after update. `BEFORE_UPDATE` has no block, so only the `AFTER_UPDATE` block runs.",
+      "wrong": [
+        "`setDefaults` only runs on `BEFORE_INSERT`.",
+        "",
+        "No match just means no block runs; `when else` is optional.",
+        "A switch doesn't need a block for every value."
+      ],
+      "source": "Apex Developer Guide: Trigger Context Variables"
+    },
+    {
+      "id": "auto-x28",
+      "lesson": "auto-8",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A Contact must not be deleted while it's the primary contact on an open Case. Users need a clear message. What is the best approach?",
+      "options": [
+        "An after delete trigger that inserts the Contact again",
+        "A before delete trigger that sets a field on `Trigger.new`",
+        "A validation rule on Contact that blocks the delete when open Cases exist",
+        "A before delete trigger that calls `addError()` on records in `Trigger.old`"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "`addError()` on a record in a before delete trigger stops that delete and shows the message. Delete triggers use `Trigger.old`.",
+      "wrong": [
+        "Re-inserting makes a new record with a new Id.",
+        "`Trigger.new` isn't available in delete triggers.",
+        "Validation rules don't run when a record is deleted.",
+        ""
+      ],
+      "source": "Apex Developer Guide: Trigger Exceptions"
+    },
+    {
+      "id": "auto-q50",
+      "lesson": "auto-8",
+      "difficulty": 2,
+      "q": "When an Account is created, a developer must create a related onboarding record that stores the new Account's Id. Which trigger event fits?",
+      "options": [
+        "before insert",
+        "before update",
+        "after insert",
+        "after undelete"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "The record gets its Id when it's saved. After insert is the first point where the new Id exists.",
+      "wrong": [
+        "The Account has no Id yet.",
+        "It doesn't run when a record is created.",
+        "",
+        "It only runs when a record is restored from the Recycle Bin."
+      ],
+      "source": "Apex Developer Guide: Trigger Context Variables"
+    },
+    {
+      "id": "auto-q51",
+      "lesson": "auto-8",
+      "difficulty": 1,
+      "q": "Which statement about triggers and sharing keywords is true?",
+      "options": [
+        "A trigger can't declare `with sharing`; the handler class can",
+        "Every trigger must declare `with sharing` to save",
+        "A trigger can declare `inherited sharing` to follow its caller",
+        "A trigger can declare `without sharing` to see all records"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "Triggers can't use sharing keywords at all. Put `with sharing` or `without sharing` on the handler class the trigger calls.",
+      "wrong": [
+        "",
+        "Triggers can't declare any sharing keyword.",
+        "Triggers can't declare any sharing keyword.",
+        "Triggers can't declare any sharing keyword."
+      ],
+      "source": "Apex Developer Guide: Use the with sharing, without sharing, and inherited sharing Keywords"
+    },
+    {
+      "id": "auto-x29",
+      "lesson": "auto-8",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "Apex code runs `insert accts;` with 450 Accounts in the list. The Account trigger has before insert logic. Which two statements are true? (Choose 2)",
+      "options": [
+        "The trigger runs in chunks of 200, 200 and then 50 records",
+        "The trigger runs once with all 450 records",
+        "`Trigger.size` is 50 in the last chunk",
+        "Each chunk is its own transaction with fresh limits",
+        "`Trigger.size` is 450 in every chunk"
+      ],
+      "answer": [
+        0,
+        2
+      ],
+      "explain": "Triggers get at most 200 records at a time, so 450 records run as 200, 200 and 50. `Trigger.size` counts the current chunk only.",
+      "wrong": [
+        "",
+        "Triggers get records in chunks of 200.",
+        "",
+        "All chunks run in the same transaction.",
+        "`Trigger.size` counts only the current chunk."
+      ],
+      "source": "Apex Developer Guide: Trigger Context Variables"
+    },
+    {
+      "id": "auto-q52",
+      "lesson": "auto-9",
+      "difficulty": 2,
+      "q": "An integration inserts 150 Contacts, each linked to an Account, in one call. What happens?",
+      "code": "trigger ContactTrigger on Contact (before insert) {\n    for (Contact c : Trigger.new) {\n        Account a = [SELECT Industry FROM Account WHERE Id = :c.AccountId];\n        c.Description = a.Industry;\n    }\n}",
+      "lang": "apex",
+      "options": [
+        "It works, because each Contact is saved in a separate transaction",
+        "It works, but it uses 150 separate transactions",
+        "Only the first 100 Contacts are saved",
+        "The trigger hits the 100 SOQL query limit and the whole call fails"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "The trigger runs one query per Contact. The 101st query throws a `LimitException`, and the whole transaction rolls back.",
+      "wrong": [
+        "One API call is one transaction for all its records.",
+        "It's one transaction, and it fails at query 101.",
+        "Hitting a limit rolls back everything; nothing partial is kept.",
+        ""
+      ],
+      "source": "Apex Developer Guide: Trigger and Bulk Request Best Practices"
+    },
+    {
+      "id": "auto-q53",
+      "lesson": "auto-9",
+      "difficulty": 2,
+      "q": "Which two changes make a trigger bulk-safe? (Choose 2)",
+      "options": [
+        "Add `LIMIT 1` to the query that sits inside the loop",
+        "Move the query out of the loop and filter with `IN :idSet`",
+        "Wrap the loop in a try/catch for `LimitException`",
+        "Add records to a list and run one `update` after the loop",
+        "Process only `Trigger.new[0]` to keep the work small"
+      ],
+      "answer": [
+        1,
+        3
+      ],
+      "explain": "Bulk-safe code runs one query and one DML for the whole batch. Collect values first, query with `IN`, and save one list.",
+      "wrong": [
+        "It's still one query per record.",
+        "",
+        "`LimitException` can't be caught.",
+        "",
+        "It ignores every other record in the batch."
+      ],
+      "source": "Apex Developer Guide: Trigger and Bulk Request Best Practices"
+    },
+    {
+      "id": "auto-x30",
+      "lesson": "auto-9",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "200 Opportunities are updated at once. How many SOQL queries and DML statements does this trigger use?",
+      "code": "trigger OppTrigger on Opportunity (after update) {\n    Set<Id> accIds = new Set<Id>();\n    for (Opportunity o : Trigger.new) accIds.add(o.AccountId);\n    List<Account> accs = [SELECT Id FROM Account WHERE Id IN :accIds];\n    for (Account a : accs) a.Last_Opp_Change__c = Date.today();\n    update accs;\n}",
+      "lang": "apex",
+      "options": [
+        "200 queries and 1 DML statement",
+        "1 query and 1 DML statement",
+        "1 query and 200 DML statements",
+        "2 queries and 2 DML statements"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "Ids are collected first, then one query and one `update` run on the whole list. The count stays the same for 1 or 200 records.",
+      "wrong": [
+        "The query runs once, outside the loop.",
+        "",
+        "The `update` runs once, on a list.",
+        "There is only one query and one `update`."
+      ],
+      "source": "Apex Developer Guide: Trigger and Bulk Request Best Practices"
+    },
+    {
+      "id": "auto-x31",
+      "lesson": "auto-9",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "What happens when this code runs in one synchronous transaction?",
+      "code": "try {\n    for (Integer i = 0; i < 200; i++) {\n        insert new Task(Subject = 'Call ' + i);\n    }\n} catch (Exception e) {\n    System.debug('Handled: ' + e.getMessage());\n}",
+      "lang": "apex",
+      "options": [
+        "The `catch` logs the error, and the first 150 Tasks stay saved",
+        "A `LimitException` the `catch` can't handle; nothing is saved",
+        "All 200 Tasks are saved, because each insert has one record",
+        "The `catch` logs the error, and no Tasks are saved"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "The 151st DML statement breaks the limit. `LimitException` can't be caught, so the transaction rolls back.",
+      "wrong": [
+        "The `catch` never runs for a limit error.",
+        "",
+        "The limit counts statements, not records: 200 statements is too many.",
+        "The `catch` never runs for a limit error."
+      ],
+      "source": "Apex Developer Guide: Execution Governors and Limits"
+    },
+    {
+      "id": "auto-q54",
+      "lesson": "auto-9",
+      "difficulty": 2,
+      "q": "An after update trigger on Account updates the same Accounts again. What stops it looping forever, and what is the best practice?",
+      "options": [
+        "Salesforce spots the loop and skips the second run, so no guard is needed",
+        "The DML limit stops it after 150 runs; no guard is needed",
+        "Mark the trigger `final` so it can't call itself again",
+        "Apex stops it at a trigger depth of 16; guard it with a `static Set<Id>`"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "Recursive saves stop at a stack depth of 16, with an error. A `static Set<Id>` of handled records stops the repeat long before that.",
+      "wrong": [
+        "Salesforce doesn't skip recursive runs for you.",
+        "It fails at depth 16, and limits are wasted on the way.",
+        "Triggers can't be marked `final`.",
+        ""
+      ],
+      "source": "Apex Developer Guide: Execution Governors and Limits"
+    },
+    {
+      "id": "auto-x32",
+      "lesson": "auto-9",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A developer calls `Database.update(accts, false)`. Some records fail, so Salesforce retries the save with the rest. Which two statements are true? (Choose 2)",
+      "options": [
+        "Each attempt is a new transaction with fresh limits",
+        "Static variables are reset before the retry",
+        "Triggers fire only once, after all retries finish",
+        "Triggers can fire again for the records being retried",
+        "Static variables keep their values between the attempts"
+      ],
+      "answer": [
+        3,
+        4
+      ],
+      "explain": "With partial success, triggers fire on the first attempt and again on retries. It's one transaction, so static variables aren't reset.",
+      "wrong": [
+        "The retries happen in the same transaction.",
+        "Static variables aren't reset between attempts.",
+        "Triggers fire on each attempt.",
+        "",
+        ""
+      ],
+      "source": "Apex Developer Guide: Triggers and Order of Execution"
+    },
+    {
+      "id": "auto-q55",
+      "lesson": "auto-9",
+      "difficulty": 1,
+      "q": "What happens when Apex goes over a governor limit?",
+      "options": [
+        "A `LimitException` is thrown, and it can't be caught",
+        "A `DmlException` is thrown, and a `catch` block can retry it",
+        "`Limits.reset()` runs, and the code keeps going",
+        "A warning goes to the debug log, and the code continues"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "Governor limits are hard stops. Going over throws a `LimitException`, which no `catch` can handle.",
+      "wrong": [
+        "",
+        "It's a `LimitException`, and it can't be caught.",
+        "There's no way to reset limits in a transaction.",
+        "It's a hard stop, not a warning."
+      ],
+      "source": "Apex Developer Guide: Execution Governors and Limits"
+    },
+    {
+      "id": "auto-q56",
+      "lesson": "auto-9",
+      "difficulty": 1,
+      "q": "A Queueable job runs SOQL queries. How many can it run in one transaction?",
+      "options": [
+        "100",
+        "150",
+        "200",
+        "50,000"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "Async Apex gets higher limits. Queueable, Batch and future jobs can run 200 SOQL queries.",
+      "wrong": [
+        "100 is the synchronous limit.",
+        "150 is the DML statement limit.",
+        "",
+        "50,000 is the row limit, not the query limit."
+      ],
+      "source": "Apex Developer Guide: Execution Governors and Limits"
+    },
+    {
+      "id": "auto-x33",
+      "lesson": "auto-9",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A trigger loops over 200 records. For each one, it loops over 5,000 rows from one earlier query to find matches. No query or DML is inside a loop. Which limit is most at risk?",
+      "options": [
+        "CPU time: 10,000 ms in a synchronous transaction",
+        "SOQL queries: 100 per synchronous transaction, 200 async",
+        "DML rows: 10,000 in a transaction",
+        "SOQL rows: 50,000 in a transaction"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "Nested loops of 200 by 5,000 make a million passes, which burns CPU time. Use a Map keyed by the match value instead.",
+      "wrong": [
+        "",
+        "It runs only one query.",
+        "It doesn't do any DML.",
+        "One query of 5,000 rows is well under 50,000."
+      ],
+      "source": "Apex Developer Guide: Execution Governors and Limits"
+    },
+    {
+      "id": "auto-q57",
+      "lesson": "auto-9",
+      "difficulty": 2,
+      "q": "A Contact trigger needs each Contact's parent Account Industry. What is the best way to read it?",
+      "options": [
+        "Read `c.Account.Industry` straight from `Trigger.new`",
+        "Call a `@future` method once per Contact to load its Account",
+        "Query the Accounts once into a `Map`, then look up each one",
+        "Query `[SELECT Industry FROM Account]` with no filter"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "Collect the Account Ids, run one query into a Map, then look each one up. Parent fields aren't loaded in `Trigger.new`.",
+      "wrong": [
+        "Parent fields are `null` in `Trigger.new`.",
+        "That's one async call per record, and too many of them.",
+        "",
+        "It reads every Account in the org and wastes query rows."
+      ],
+      "source": "Apex Developer Guide: Trigger and Bulk Request Best Practices"
+    },
+    {
+      "id": "auto-q58",
+      "lesson": "auto-10",
+      "difficulty": 1,
+      "q": "Which declaration is a valid custom exception?",
+      "options": [
+        "`public class PaymentFailed extends Exception {}`",
+        "`public class PaymentFailedException extends Exception {}`",
+        "`global class PaymentErrorException implements Exception {}`",
+        "`public class ExceptionPayment extends Exception {}`"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "A custom exception extends `Exception`, and its name must end in \"Exception\".",
+      "wrong": [
+        "The name must end in \"Exception\".",
+        "",
+        "Exceptions are extended, not implemented.",
+        "The name must end in \"Exception\", not start with it."
+      ],
+      "source": "Apex Developer Guide: Create Custom Exceptions"
+    },
+    {
+      "id": "auto-q59",
+      "lesson": "auto-10",
+      "difficulty": 2,
+      "q": "What does this code print?",
+      "code": "try {\n    List<Integer> nums = new List<Integer>{1, 2};\n    Integer x = nums[5];\n    System.debug('A');\n} catch (ListException e) {\n    System.debug('B');\n} catch (Exception e) {\n    System.debug('C');\n} finally {\n    System.debug('D');\n}",
+      "lang": "apex",
+      "options": [
+        "`A`, then `D`",
+        "`C`, then `D`",
+        "`B`, `C`, then `D`",
+        "`B`, then `D`"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "Index 5 is out of bounds, so a `ListException` jumps to its matching `catch`. `finally` always runs after.",
+      "wrong": [
+        "The error happens before `A` is printed.",
+        "The more specific `ListException` block matches first.",
+        "Only one `catch` block runs.",
+        ""
+      ],
+      "source": "Apex Developer Guide: Built-In Exceptions and Common Methods"
+    },
+    {
+      "id": "auto-q60",
+      "lesson": "auto-10",
+      "difficulty": 2,
+      "q": "What does this code print?",
+      "code": "String note;\ntry {\n    Integer len = note.length();\n} catch (NullPointerException e) {\n    note = 'empty';\n}\nSystem.debug(note);",
+      "lang": "apex",
+      "options": [
+        "`null`",
+        "Nothing; it throws an unhandled `NullPointerException`",
+        "`empty`",
+        "`0`"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "Calling a method on a `null` String throws a `NullPointerException`. The `catch` handles it and sets `note`.",
+      "wrong": [
+        "The `catch` sets `note` to `'empty'`.",
+        "The `catch` matches, so the error is handled.",
+        "",
+        "`len` is never set, and `note` is printed, not `len`."
+      ],
+      "source": "Apex Developer Guide: Built-In Exceptions and Common Methods"
+    },
+    {
+      "id": "auto-q61",
+      "lesson": "auto-10",
+      "difficulty": 2,
+      "q": "Which two statements about custom exceptions in Apex are true? (Choose 2)",
+      "options": [
+        "You create one by extending the `Exception` class",
+        "Their names can be anything, such as `BadInput`",
+        "They must implement an interface named `Throwable`",
+        "They can catch `LimitException` errors",
+        "You can throw one with a message, as in `throw new MyException('text')`"
+      ],
+      "answer": [
+        0,
+        4
+      ],
+      "explain": "Custom exceptions extend `Exception`, so they get message constructors for free. Their names must end in \"Exception\".",
+      "wrong": [
+        "",
+        "The name must end in \"Exception\".",
+        "Apex has no `Throwable` interface to implement.",
+        "Nothing can catch a `LimitException`.",
+        ""
+      ],
+      "source": "Apex Developer Guide: Create Custom Exceptions"
+    },
+    {
+      "id": "auto-x34",
+      "lesson": "auto-10",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A Lightning component calls this method. An order line fails a validation rule. What is saved?",
+      "code": "@AuraEnabled\npublic static void placeOrder(Order__c o, List<Line__c> lines) {\n    insert o;\n    try {\n        insert lines;\n    } catch (DmlException e) {\n        System.debug('Lines failed: ' + e.getMessage());\n    }\n}",
+      "lang": "apex",
+      "options": [
+        "The order only, because the error was caught",
+        "Nothing, because any `DmlException` rolls back the transaction",
+        "The order and the lines that passed validation",
+        "Nothing, because a `DmlException` can't be caught"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "A handled exception doesn't roll back earlier work. `insert lines` is all or nothing, so no lines save, but the order stays.",
+      "wrong": [
+        "",
+        "Only an unhandled exception rolls back the transaction.",
+        "A DML statement saves none of the list when one record fails.",
+        "`DmlException` can be caught like most exceptions."
+      ],
+      "source": "Apex Developer Guide: DML Statements vs. Database Class Methods"
+    },
+    {
+      "id": "auto-x35",
+      "lesson": "auto-10",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "What does this code print?",
+      "code": "public virtual class AppException extends Exception {}\npublic class PricingException extends AppException {}\n\ntry {\n    throw new PricingException('Price below floor');\n} catch (AppException e) {\n    System.debug('App: ' + e.getMessage());\n} catch (Exception e) {\n    System.debug('Other');\n}",
+      "lang": "apex",
+      "options": [
+        "`Other`",
+        "Nothing; custom exceptions can't be extended, so it won't compile",
+        "`App: null`",
+        "`App: Price below floor`"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "Custom exceptions can form a family tree. A `catch` for the parent type catches the child type too.",
+      "wrong": [
+        "The parent-type `catch` matches first.",
+        "A `virtual` custom exception can be extended.",
+        "The message passed to the constructor is kept.",
+        ""
+      ],
+      "source": "Apex Developer Guide: Create Custom Exceptions"
+    },
+    {
+      "id": "auto-x36",
+      "lesson": "auto-10",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "`Name` is required on Account. What happens when this runs?",
+      "code": "List<Account> accs = new List<Account>{\n    new Account(Name = 'Ok'), new Account(), new Account()\n};\ntry {\n    insert accs;\n} catch (DmlException e) {\n    System.debug(e.getNumDml());\n}",
+      "lang": "apex",
+      "options": [
+        "It prints `2`, and the Account named Ok is saved",
+        "It prints `2`, and no Accounts are saved",
+        "It prints `1`, because DML stops at the first error",
+        "It prints `3`, because the whole list failed"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "`getNumDml()` counts the records that failed, here 2. A DML statement is all or nothing, so even the good Account isn't saved.",
+      "wrong": [
+        "A DML statement saves nothing when any record fails.",
+        "",
+        "The exception reports every failed record, not just the first.",
+        "Only two records had errors."
+      ],
+      "source": "Apex Developer Guide: Built-In Exceptions and Common Methods"
+    },
+    {
+      "id": "auto-q62",
+      "lesson": "auto-10",
+      "difficulty": 1,
+      "q": "Code reads a field that wasn't in its SOQL query. Which exception is thrown?",
+      "options": [
+        "`QueryException`",
+        "`SObjectException`",
+        "`NullPointerException`",
+        "`DmlException`"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "Reading a field you didn't select throws an `SObjectException`. Add the field to the query to fix it.",
+      "wrong": [
+        "The query itself worked fine.",
+        "",
+        "The record exists; the field just wasn't loaded.",
+        "No records were saved or changed."
+      ],
+      "source": "Apex Developer Guide: Built-In Exceptions and Common Methods"
+    },
+    {
+      "id": "auto-q63",
+      "lesson": "auto-10",
+      "difficulty": 2,
+      "q": "An `@AuraEnabled` method is called by a Lightning web component. Which exception should it throw so the component gets a clear, custom message?",
+      "options": [
+        "`LimitException`",
+        "`QueryException`",
+        "`DmlException`",
+        "`AuraHandledException`"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "`AuraHandledException` is made to send your own message back to a Lightning component.",
+      "wrong": [
+        "You can't throw a limit error on purpose.",
+        "It describes a query problem, not a user message.",
+        "It describes a save problem, not a user message.",
+        ""
+      ],
+      "source": "Apex Reference Guide: AuraHandledException Class"
+    },
+    {
+      "id": "auto-q64",
+      "lesson": "auto-10",
+      "difficulty": 1,
+      "q": "When does a `finally` block run?",
+      "options": [
+        "Every time, error or not",
+        "Only when an error was caught by a catch block",
+        "Only when the try block ran without any error",
+        "Only when an error was thrown and nothing caught it"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "`finally` always runs after try and catch. Use it for clean-up that must happen either way.",
+      "wrong": [
+        "",
+        "It also runs when there's no error.",
+        "It also runs when there is an error.",
+        "It runs in every case, not just this one."
+      ],
+      "source": "Apex Developer Guide: Exception Statements"
+    },
+    {
+      "id": "auto-x37",
+      "lesson": "auto-10",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "Which two statements about catching exceptions in Apex are true? (Choose 2)",
+      "options": [
+        "A `catch (Exception e)` block also catches a `LimitException`",
+        "A `catch (Exception e)` block catches a `NullPointerException`",
+        "Catch blocks are checked in order, so specific types go first",
+        "Only one `catch` block is allowed after each `try`",
+        "A `finally` block runs only when no `catch` block matched"
+      ],
+      "answer": [
+        1,
+        2
+      ],
+      "explain": "Every built-in exception extends `Exception`, so the general catch grabs them, except `LimitException`. The first matching catch wins, so specific types go first.",
+      "wrong": [
+        "`LimitException` can't be caught.",
+        "",
+        "",
+        "A `try` can have several `catch` blocks.",
+        "`finally` runs every time."
+      ],
+      "source": "Apex Developer Guide: Built-In Exceptions and Common Methods"
+    },
+    {
+      "id": "auto-q65",
+      "lesson": "auto-11",
+      "difficulty": 1,
+      "q": "Which annotation lets a flow call an Apex method as an action?",
+      "options": [
+        "`@AuraEnabled`",
+        "`@future`",
+        "`@InvocableMethod`",
+        "`@InvocableVariable`"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "`@InvocableMethod` turns a static method into an action that Flow Builder can use.",
+      "wrong": [
+        "It exposes methods to Lightning components, not flows.",
+        "It runs a method later in the background.",
+        "",
+        "It marks fields of a wrapper class, not methods."
+      ],
+      "source": "Apex Developer Guide: InvocableMethod Annotation"
+    },
+    {
+      "id": "auto-q66",
+      "lesson": "auto-11",
+      "difficulty": 2,
+      "q": "A developer tries to save this class. Why does it fail?",
+      "code": "public class ScoreAction {\n    @InvocableMethod(label='Score Lead')\n    public static Integer score(Id leadId) {\n        return 5;\n    }\n}",
+      "lang": "apex",
+      "options": [
+        "The input and output must be lists",
+        "The method must be `global`, because `public` isn't allowed",
+        "The class must be `global` so Flow Builder can see it",
+        "The `label` value can't contain spaces"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "An invocable method takes at most one input, and it must be a list. Any return value must be a list too.",
+      "wrong": [
+        "",
+        "`public` or `global` are both allowed.",
+        "A `public` class works for Flow.",
+        "Labels can have spaces."
+      ],
+      "source": "Apex Developer Guide: InvocableMethod Annotation"
+    },
+    {
+      "id": "auto-q67",
+      "lesson": "auto-11",
+      "difficulty": 2,
+      "q": "Which two are rules for `@InvocableMethod`? (Choose 2)",
+      "options": [
+        "The method must return `void`",
+        "The class must be an inner class",
+        "Only one method in a class can have it",
+        "The method must be `static`",
+        "The method can take up to five parameters"
+      ],
+      "answer": [
+        2,
+        3
+      ],
+      "explain": "An invocable method is `static`, `public` or `global`, in an outer class. Only one per class is allowed.",
+      "wrong": [
+        "It can return a list of results.",
+        "It must be in an outer class.",
+        "",
+        "",
+        "It takes at most one parameter."
+      ],
+      "source": "Apex Developer Guide: InvocableMethod Annotation"
+    },
+    {
+      "id": "auto-x38",
+      "lesson": "auto-11",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A screen flow needs a shipping quote from complex rate tables, and it must get back both a price and a carrier name. What is the best design?",
+      "options": [
+        "Two invocable methods in one class: one for the price and one for the carrier",
+        "A trigger on the quote object that runs when the flow updates a record",
+        "One invocable method using wrapper classes with `@InvocableVariable` fields",
+        "An `@AuraEnabled` method that the flow calls directly"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "A wrapper class with `@InvocableVariable` fields carries several values in and out. One invocable method can return both the price and the carrier.",
+      "wrong": [
+        "Only one invocable method is allowed per class.",
+        "It's roundabout and harder to keep in step with the flow.",
+        "",
+        "Flows call invocable methods, not `@AuraEnabled` ones."
+      ],
+      "source": "Apex Developer Guide: InvocableVariable Annotation"
+    },
+    {
+      "id": "auto-x39",
+      "lesson": "auto-11",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A record-triggered flow on Case calls this action. During a bulk update, what is the risk?",
+      "code": "@InvocableMethod(label='Find Owners')\npublic static List<Id> findOwners(List<Id> caseIds) {\n    List<Id> owners = new List<Id>();\n    for (Case c : [SELECT OwnerId FROM Case WHERE Id IN :caseIds]) {\n        owners.add(c.OwnerId);\n    }\n    return owners;\n}",
+      "lang": "apex",
+      "options": [
+        "It runs one query per flow interview, so it soon hits the SOQL limit",
+        "Results come back in query order, not in `caseIds` order",
+        "Flows can't pass a `List<Id>` into an invocable method",
+        "It fails, because invocable methods can't run SOQL"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "Outputs must line up with inputs: the i-th result is for the i-th input. This code returns owners in query order, which may differ.",
+      "wrong": [
+        "Flow bulks interviews into one call, so the one query runs once.",
+        "",
+        "`List<Id>` is a valid input type.",
+        "Invocable methods can run queries."
+      ],
+      "source": "Apex Developer Guide: InvocableMethod Annotation"
+    },
+    {
+      "id": "auto-x40",
+      "lesson": "auto-11",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A team wants an Agentforce agent to look up an order's delivery date using existing Apex logic. Which approach fits?",
+      "options": [
+        "Mark the method `@AuraEnabled(cacheable=true)` so the agent can call it",
+        "Wrap the logic in a schedule-triggered flow that runs every hour",
+        "Make the class `global` and the method `webservice` so agents can find it",
+        "Expose it with `@InvocableMethod` and add it as an agent action"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "Invocable methods can be called from Flow, REST, Apex and Agentforce agents. So the agent can use it as an action.",
+      "wrong": [
+        "That exposes the method to Lightning components, not agents.",
+        "A schedule doesn't answer a question when the agent asks it.",
+        "`webservice` exposes SOAP, not an agent action.",
+        ""
+      ],
+      "source": "Apex Developer Guide: InvocableMethod Annotation"
+    },
+    {
+      "id": "auto-q68",
+      "lesson": "auto-11",
+      "difficulty": 2,
+      "q": "Users who run a screen flow get an error when it reaches an Apex action. Admins can run it fine. What is the most likely fix?",
+      "options": [
+        "Mark the invocable method `global` instead of `public`",
+        "Add `with sharing` to the class that holds the action",
+        "Give the users access to the Apex class",
+        "Change the screen flow to a record-triggered flow"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "When a flow calls Apex, the running user needs access to that Apex class. Grant it in a profile or permission set.",
+      "wrong": [
+        "Access level isn't the problem; class access is.",
+        "Sharing controls record access, not access to the class.",
+        "",
+        "It's still a screen flow job; fix the access instead."
+      ],
+      "source": "Apex Developer Guide: InvocableMethod Annotation"
+    },
+    {
+      "id": "auto-q69",
+      "lesson": "auto-11",
+      "difficulty": 2,
+      "q": "This code should start the autolaunched flow `Send_Welcome`, but the flow never runs. What is missing?",
+      "code": "Map<String, Object> params = new Map<String, Object>();\nparams.put('contactId', con.Id);\nFlow.Interview f = Flow.Interview.createInterview('Send_Welcome', params);",
+      "lang": "apex",
+      "options": [
+        "A call to `f.start()`",
+        "A call to `Database.insert(f)`",
+        "The `@InvocableMethod` annotation on the flow",
+        "A call to `System.enqueueJob(f)`"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "`createInterview()` only builds the interview. Calling `start()` actually runs the flow.",
+      "wrong": [
+        "",
+        "A flow interview isn't a record to insert.",
+        "Annotations are for Apex methods, not flows.",
+        "A flow interview isn't a Queueable job."
+      ],
+      "source": "Apex Reference Guide: Interview Class"
+    },
+    {
+      "id": "auto-q70",
+      "lesson": "auto-11",
+      "difficulty": 1,
+      "q": "When should a developer pick an Apex trigger over a record-triggered flow?",
+      "options": [
+        "Whenever a field on the same record must be set on save",
+        "Whenever an email alert must go out on save",
+        "Whenever the admin team wants to maintain it without code",
+        "When the logic is too complex for Flow"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "Try Flow first. Choose a trigger when the logic is complex or needs control Flow can't offer.",
+      "wrong": [
+        "A before-save flow does this well.",
+        "An after-save flow can send email alerts.",
+        "That's a reason to choose Flow, not code.",
+        ""
+      ],
+      "source": "Trailhead: Cert Prep: Platform Developer: Process Automation and Logic"
+    },
+    {
+      "id": "auto-x41",
+      "lesson": "auto-11",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A record-triggered flow on Order must set a default Region on save, and also run a complex tax engine written in Apex. Which two choices describe a good design? (Choose 2)",
+      "options": [
+        "Set Region in a before-save flow (Fast Field Updates)",
+        "Call the tax logic from the flow as an invocable Apex action",
+        "Rebuild the whole thing as a screen flow",
+        "Call the tax logic from a before-save flow with `@future`",
+        "Put two `@InvocableMethod` methods in one tax class"
+      ],
+      "answer": [
+        0,
+        1
+      ],
+      "explain": "Use a before-save flow for the quick field default. Let an after-save flow call the Apex as an invocable action for the hard part.",
+      "wrong": [
+        "",
+        "",
+        "A screen flow needs a user; this runs on save.",
+        "Before-save flows can't call Apex actions.",
+        "Only one invocable method is allowed per class."
+      ],
+      "source": "Apex Developer Guide: InvocableMethod Annotation"
+    }
+  ]
+}
