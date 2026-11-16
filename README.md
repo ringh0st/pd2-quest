@@ -19,7 +19,7 @@ A phone-first study app for **Salesforce certification exams**, designed for peo
 | Exam sections (weights from the official guide) | Developer Fundamentals 27%, Process Automation and Logic 28%, User Interface 25%, Testing, Debugging, and Deployment 20% | Advanced Developer Fundamentals 15%, Process Automation, Logic & Integration 27%, User Interface 20%, Testing, Debugging & Deployment 20%, Performance 18% | Salesforce Fundamentals 18%, Data Modeling and Management 20%, Business Logic and Process Automation 32%, User Interface 17%, App Deployment 13% |
 | Lessons (2–4 min, one idea per card) | 38 | 49 | 43 |
 | Key terms (tap to see a very simple meaning) | 368 | 482 | 399 |
-| Practice questions (exam-hard / with code, formulas or setups to read) | 398 (140 / 148) | 602 (386 / 232) | 432 (149 / 110) |
+| Practice questions (exam-hard / with code, formulas or setups to read) | 598 (222 / 224) | 602 (386 / 232) | 602 (218 / 153) |
 | Flashcards | 141 | 172 | 149 |
 | Real exam | 60 questions, 105 min, 68% to pass | 60 questions, 120 min, 70% to pass | 60 questions, 105 min, 73% to pass |
 
