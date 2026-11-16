@@ -2874,6 +2874,717 @@
         ""
       ],
       "source": "Tips for Optimizing Page Layouts for the Salesforce Mobile App"
+    },
+    {
+      "id": "ui-q52",
+      "lesson": "ui-1",
+      "difficulty": 1,
+      "q": "Maple & Moss built a custom object for garden plans. Users must open its records from the app's navigation bar. What should the app builder create first?",
+      "options": [
+        "A web tab that points to the object's records",
+        "A Lightning page tab for the garden plan record page",
+        "A custom object tab for the garden plan object",
+        "A utility bar item that lists garden plans"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "A custom object tab shows a custom object's records, just like a standard tab. Once it exists, you can add it to the app's navigation items.",
+      "wrong": [
+        "A web tab shows an outside web page, not a custom object's records.",
+        "Lightning page tabs work only for App pages, not record pages.",
+        "",
+        "The utility bar holds tools in the footer. It doesn't add an object to the navigation bar."
+      ],
+      "source": "Custom Tabs"
+    },
+    {
+      "id": "ui-q53",
+      "lesson": "ui-1",
+      "difficulty": 2,
+      "q": "Which two statements about Lightning page tabs are true? (Choose 2)",
+      "options": [
+        "They can point to any record page in the org",
+        "They can be created only for App pages",
+        "They show on desktop only, never in the mobile app",
+        "A tab is created for an App page when you first activate it",
+        "They must be created in Setup before the page can be activated"
+      ],
+      "answer": [
+        1,
+        3
+      ],
+      "explain": "Lightning page tabs exist only for App pages. Activating an App page for the first time creates its tab, or you can create the tab in Setup first.",
+      "wrong": [
+        "Record pages can't get a Lightning page tab.",
+        "",
+        "Lightning page tabs add App pages to both desktop and mobile navigation.",
+        "",
+        "Creating the tab first is optional. Activation makes one for you."
+      ],
+      "source": "Create Lightning Page Tabs"
+    },
+    {
+      "id": "ui-x26",
+      "lesson": "ui-1",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A user at Thornbury Mills gets both of these settings for the Projects tab. Where can the user find the tab?",
+      "code": "Projects tab settings for one user\n  Profile (Field Staff):       Tab Hidden\n  Permission set (PM Tools):   Available",
+      "lang": "text",
+      "options": [
+        "Nowhere, because Tab Hidden on the profile beats the permission set",
+        "In the navigation bar of every app the user opens",
+        "In the App Launcher, but not in the navigation bar by default",
+        "Only in apps assigned to the PM Tools permission set"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "When tab settings differ, the most permissive one applies. Available, like Default Off, keeps the tab out of the navigation bar but lists it in the App Launcher.",
+      "wrong": [
+        "Tab settings combine, and the most permissive setting applies.",
+        "Only Available and Visible (Default On) puts the tab in the navigation bar.",
+        "",
+        "Apps aren't assigned to permission sets that way. Tab settings follow the user."
+      ],
+      "source": "Tab Settings"
+    },
+    {
+      "id": "ui-q54",
+      "lesson": "ui-1",
+      "difficulty": 2,
+      "q": "Agents at Kettle Creek Insurance use a Lightning app with standard navigation. The app builder adds the History utility to its utility bar, but it doesn't work. What is the best fix?",
+      "options": [
+        "Switch the app to console navigation",
+        "Add the Recent Items utility next to History",
+        "Mark History as a background utility item",
+        "Rebuild History as a Visualforce page utility"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "The History utility works in Lightning console apps only. Switching the app to console navigation makes it work.",
+      "wrong": [
+        "",
+        "Recent Items is a different tool. It doesn't make History work.",
+        "A background utility doesn't show in the bar at all.",
+        "The utility bar doesn't support Visualforce pages."
+      ],
+      "source": "Add a Utility Bar to Lightning Apps"
+    },
+    {
+      "id": "ui-q55",
+      "lesson": "ui-2",
+      "difficulty": 2,
+      "q": "A support agent edits a case. How does the Root Cause field behave for this agent?",
+      "code": "Field: Root Cause (Case)\n  Page layout (Support Layout):       Required\n  Field-level security (Support Agent): Read-Only",
+      "lang": "text",
+      "options": [
+        "Required, because the page layout setting is applied last",
+        "Editable but optional, because the two settings cancel each other out",
+        "Hidden, because the two settings conflict",
+        "Read-only, because the most restrictive setting applies"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "Page layouts and field-level security work together, and the most restrictive setting wins. Field-level security makes Root Cause read-only, even though the layout says Required.",
+      "wrong": [
+        "Order doesn't matter. The most restrictive setting applies.",
+        "Settings don't cancel out. The stricter one wins.",
+        "Read-only still shows the field. Nothing here hides it.",
+        ""
+      ],
+      "source": "Field-Level Security"
+    },
+    {
+      "id": "ui-q56",
+      "lesson": "ui-2",
+      "difficulty": 2,
+      "q": "On account pages at Pebblebrook Dental, a related list is labeled Visits. The team wants it to read Patient Visits. The related list's settings window has no label box. Where should the app builder change it?",
+      "options": [
+        "On the visit object's relationship field that points to accounts",
+        "In the account compact layout",
+        "In Rename Tabs and Labels for the Account object",
+        "In the section properties of the account page layout"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "A related list's label comes from the relationship field on the related object. Edit the related list label on the visit object's lookup or master-detail field.",
+      "wrong": [
+        "",
+        "The compact layout picks highlight fields. It doesn't name related lists.",
+        "Renaming Account labels changes Account's own names, not this list.",
+        "Section properties name page sections, not related lists."
+      ],
+      "source": "Customize Related Lists"
+    },
+    {
+      "id": "ui-q57",
+      "lesson": "ui-2",
+      "difficulty": 2,
+      "q": "Which two statements about compact layouts are true? (Choose 2)",
+      "options": [
+        "Each profile can have its own compact layout for an object",
+        "One compact layout can be assigned to several record types",
+        "Removing a field from the page layout also removes it from the compact layout",
+        "Compact layouts are assigned by record type, not by profile or user",
+        "A compact layout can show fields from any object, even unrelated ones"
+      ],
+      "answer": [
+        1,
+        3
+      ],
+      "explain": "Compact layouts are assigned to record types, never to profiles or users. Each record type gets one compact layout, but the same layout can serve several record types.",
+      "wrong": [
+        "Compact layouts aren't assigned to profiles.",
+        "",
+        "The two layouts are independent. The field stays on the compact layout.",
+        "",
+        "A compact layout holds fields from its own object, including cross-object formula fields."
+      ],
+      "source": "Compact Layout Limitations and Considerations"
+    },
+    {
+      "id": "ui-q58",
+      "lesson": "ui-2",
+      "difficulty": 2,
+      "q": "The opportunity compact layout lists Amount, Margin and Region, in that order. Sales interns have no field-level access to Margin. What do interns see in the highlights?",
+      "options": [
+        "Amount, a blank Margin slot, then Region",
+        "Amount, then Region in Margin's place",
+        "Amount, Margin and Region, since compact layouts skip field security",
+        "Only the system default compact layout's fields"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "If a user can't access a field on the compact layout, the next field is used. Field-level security still applies to the highlights.",
+      "wrong": [
+        "No gap is left. The next field fills the place.",
+        "",
+        "Compact layouts respect field-level security.",
+        "Losing access to one field doesn't switch the whole layout."
+      ],
+      "source": "Compact Layout Limitations and Considerations"
+    },
+    {
+      "id": "ui-q59",
+      "lesson": "ui-3",
+      "difficulty": 1,
+      "q": "Teachers at Cinderpath Academy want a guided screen flow to run right on the student record page. What should the app builder add in Lightning App Builder?",
+      "options": [
+        "The Rich Text component",
+        "The Related List – Single component",
+        "The Report Chart component",
+        "The Flow component"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "The standard Flow component runs a screen flow inside a Lightning page. The flow starts when the page loads.",
+      "wrong": [
+        "Rich Text shows fixed text and images. It can't run a flow.",
+        "This component lists related records. It doesn't run a flow.",
+        "Report Chart shows a chart from a report. It doesn't run a flow.",
+        ""
+      ],
+      "source": "Considerations and Limitations for Flows in Lightning Pages"
+    },
+    {
+      "id": "ui-x27",
+      "lesson": "ui-3",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "Hearthstone Clinics' case record page uses the Header and Right Sidebar template, which supports desktop and phone. Desktop users want a pinned-region template, which is desktop only. What should the app builder do?",
+      "options": [
+        "Use Change Template on the page and pick the pinned template",
+        "Deactivate the page for phones, then switch the template",
+        "Build a new record page from the pinned template",
+        "Clone the page and change its type to an App page"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "You can't switch a page from a non-pinned template to a pinned one. You also can't switch to a template that supports fewer devices. Build a new page from the pinned template instead.",
+      "wrong": [
+        "Change Template won't offer a pinned template for this page.",
+        "The rule depends on the template's devices, not on where the page is active.",
+        "",
+        "A page's type can't change, and an App page isn't a record page."
+      ],
+      "source": "Lightning Page Templates"
+    },
+    {
+      "id": "ui-x28",
+      "lesson": "ui-3",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A case record page has a Tabs component. Its Billing tab holds one component, which has a visibility rule. The other tabs hold components with no rules. What do users who don't meet the rule see?",
+      "options": [
+        "The Billing tab with an empty panel",
+        "The other tabs, with no Billing tab",
+        "No Tabs component at all",
+        "The component anyway, since rules don't apply inside tabs"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "If every component in a tab is hidden by visibility rules, Salesforce hides that tab. The whole Tabs component hides only when all its tabs are hidden.",
+      "wrong": [
+        "Salesforce hides a tab whose components are all hidden, so no empty panel shows.",
+        "",
+        "The other tabs still have components, so the Tabs component stays.",
+        "Visibility rules work on components inside tabs too."
+      ],
+      "source": "Lightning Page Visibility Rule Considerations and Limitations"
+    },
+    {
+      "id": "ui-q60",
+      "lesson": "ui-3",
+      "difficulty": 2,
+      "q": "An app builder sets this visibility filter on a component. Users in Canada and Mexico never see it. What is the best fix?",
+      "code": "Component: Partner Tools (Account record page)\nFilter: Record > Billing Country  equals  Canada, Mexico",
+      "lang": "text",
+      "options": [
+        "Put each value in quotes inside the same filter",
+        "Change the operator from equals to contains",
+        "Use two filters, one per value, with OR logic",
+        "Move the filter to the account page layout"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "Visibility filters take one value at a time, not a comma-separated list. Add a filter for each value and set the logic so either one passes.",
+      "wrong": [
+        "Quotes don't help. A filter still takes only one value.",
+        "No single country contains the text \"Canada, Mexico\".",
+        "",
+        "Page layouts don't have component visibility filters."
+      ],
+      "source": "Lightning Page Visibility Rule Considerations and Limitations"
+    },
+    {
+      "id": "ui-q61",
+      "lesson": "ui-4",
+      "difficulty": 2,
+      "q": "Account pages at Redfern Supply show a Cases related list. The app builder upgrades it to Dynamic Related List – Single. Which two can the app builder now do in Lightning App Builder? (Choose 2)",
+      "options": [
+        "Filter the list to open cases so users can't remove the filter",
+        "Show cases from accounts that have no relationship to this one",
+        "Pick and order the columns and set the sort order",
+        "Let each user save a personal filter on the list",
+        "Edit the case page layout from the list's properties"
+      ],
+      "answer": [
+        0,
+        2
+      ],
+      "explain": "Dynamic Related List – Single lets you set the list's columns, sort order and filters in App Builder. Users can't remove the filters you set.",
+      "wrong": [
+        "",
+        "The list shows records through a relationship, not unrelated ones.",
+        "",
+        "The app builder sets the filters. Users don't save their own.",
+        "The component sets the list, not the case page layout."
+      ],
+      "source": "Create Dynamic Related Lists in Lightning App Builder"
+    },
+    {
+      "id": "ui-x29",
+      "lesson": "ui-4",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "On an account record page, a Credit Alert component and a dynamic action in the Highlights Panel both use the filter Record > `Credit_Score__c` less than 600. Interns have no field-level access to `Credit_Score__c`. What do interns see on a low-score account?",
+      "options": [
+        "Both the alert and the action",
+        "Neither the alert nor the action",
+        "The alert, but not the action",
+        "The action, but not the alert"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "For a component, a filter on a field the user can't access evaluates to false, so the alert hides. For dynamic actions in the Highlights Panel, that filter doesn't apply and evaluates to true, so the action shows.",
+      "wrong": [
+        "The component filter is false for interns, so the alert hides.",
+        "The action filter is skipped for interns, so the action still shows.",
+        "It's the other way round. The component hides and the action shows.",
+        ""
+      ],
+      "source": "Lightning Page Visibility Rule Considerations and Limitations"
+    },
+    {
+      "id": "ui-x30",
+      "lesson": "ui-4",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "Ember Lane's opportunity record page uses Dynamic Forms. The app builder adds a new Renewal Date field to the opportunity page layout. Users have edit access to it but don't see it when they view or edit. What should the app builder do?",
+      "options": [
+        "Add Renewal Date to the opportunity compact layout",
+        "Reassign the page layout to the users' profiles and record types",
+        "Grant field-level security on Renewal Date again",
+        "Drag Renewal Date onto the record page in Lightning App Builder"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "On a Dynamic Forms page, the fields for view, create, edit and clone come from the page, not the page layout. Add the field as a Field component in Lightning App Builder.",
+      "wrong": [
+        "The compact layout drives the highlights, not the page's form fields.",
+        "The page layout doesn't drive fields on a Dynamic Forms page.",
+        "Users already have access. The page just doesn't include the field.",
+        ""
+      ],
+      "source": "Dynamic Forms"
+    },
+    {
+      "id": "ui-q62",
+      "lesson": "ui-5",
+      "difficulty": 2,
+      "q": "Partner users at Foxglove Homes should see a custom Request Change button where the standard Edit button was. Internal users keep Edit. The two groups use different page layouts. What should the app builder do?",
+      "options": [
+        "Add the button to the partner layout and hide Edit there",
+        "Override the standard Edit action with the Request Change page",
+        "Remove the Edit permission from internal users' profiles",
+        "Add the button to the partner compact layout"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "To replace a standard button, define the custom button, then use the page layout to hide the standard one and show yours. Layouts are assigned by profile, so only partners change.",
+      "wrong": [
+        "",
+        "An override replaces Edit for every user, not just partners.",
+        "That takes editing away from the wrong group.",
+        "Compact layouts hold fields, not buttons."
+      ],
+      "source": "Custom Button and Link Considerations"
+    },
+    {
+      "id": "ui-x31",
+      "lesson": "ui-5",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "The app builder wants this button on the Contacts related list of account pages. It isn't among the related list's button options. Why?",
+      "code": "Custom button: Send Welcome Pack\n  Object: Account\n  Display type: List Button\n  Content source: URL",
+      "lang": "text",
+      "options": [
+        "List buttons can't be added to related lists in Lightning Experience",
+        "It must be a Detail Page Button to show on a related list",
+        "URL buttons work only on list views, not on related lists",
+        "It must be defined on Contact, the related list's object"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "Buttons for a related list come from the related object. To show on the Contacts list, define a List Button on Contact.",
+      "wrong": [
+        "List buttons do show on related lists in Lightning Experience.",
+        "Related lists take List Buttons, not Detail Page Buttons.",
+        "URL list buttons can go on related lists too.",
+        ""
+      ],
+      "source": "Customize Related Lists"
+    },
+    {
+      "id": "ui-x32",
+      "lesson": "ui-5",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A Contact list button has Display Checkboxes (for Multi-Record Selection) turned on. In Lightning Experience it's on the Contacts related list of accounts, but users get no checkboxes. What should the app builder do?",
+      "options": [
+        "Change the button's display type to Detail Page Button",
+        "Set the related list type to Enhanced List",
+        "Add a mass quick action to the Contact list view",
+        "Change the content source from URL to OnClick JavaScript"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "In Lightning Experience, list buttons with Display Checkboxes need the related list type set to Enhanced List. Set it on the related list component in Lightning App Builder.",
+      "wrong": [
+        "A detail page button works on one record, with no checkboxes.",
+        "",
+        "A list view action doesn't change this related list.",
+        "OnClick JavaScript buttons don't work in Lightning Experience."
+      ],
+      "source": "Custom Button and Link Considerations"
+    },
+    {
+      "id": "ui-q63",
+      "lesson": "ui-5",
+      "difficulty": 2,
+      "q": "A developer builds Visualforce pages for custom buttons on the invoice object. Which two statements are true? (Choose 2)",
+      "options": [
+        "A list button's page must use the invoice standard list controller",
+        "Any Visualforce page in the org can be picked for either button type",
+        "A detail page button's page must use the invoice standard controller",
+        "The page must use a custom controller, not a standard one",
+        "List buttons can open URLs, but never Visualforce pages"
+      ],
+      "answer": [
+        0,
+        2
+      ],
+      "explain": "Visualforce pages used as detail page buttons must use the standard controller of the same object. Pages used as list buttons must use that object's standard list controller.",
+      "wrong": [
+        "",
+        "Only pages with the right controller for that object qualify.",
+        "",
+        "A standard controller of the same object is required here.",
+        "List buttons can open Visualforce pages that use the standard list controller."
+      ],
+      "source": "Custom Button and Link Considerations"
+    },
+    {
+      "id": "ui-q64",
+      "lesson": "ui-6",
+      "difficulty": 2,
+      "q": "Service leads at Lumen Dairy want to select 50 cases in a list view and change them in one step. Which two quick action types can be used as mass quick actions? (Choose 2)",
+      "options": [
+        "Log a Call",
+        "Update a Record",
+        "Send Email",
+        "Lightning Web Component",
+        "Create a Record"
+      ],
+      "answer": [
+        1,
+        4
+      ],
+      "explain": "Mass quick actions support only Create a Record and Update a Record actions. Users can act on up to 100 records from a list view or related list.",
+      "wrong": [
+        "Log a Call isn't a mass quick action type.",
+        "",
+        "Send Email isn't a mass quick action type.",
+        "Component actions can't be mass quick actions.",
+        ""
+      ],
+      "source": "Mass Quick Actions"
+    },
+    {
+      "id": "ui-x33",
+      "lesson": "ui-6",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "Silverbirch's account page layout has two Create a Record actions for opportunities: New Deal and New Renewal. New Renewal is set to the Renewal record type. Sales reps have no access to that record type. What do reps see?",
+      "options": [
+        "Only New Deal",
+        "Both actions; New Renewal saves with their default record type",
+        "Both actions; New Renewal fails when they save",
+        "Neither action until the record type access is fixed"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "Actions assigned to a record type are hidden from users who can't access that record type. Reps see only New Deal.",
+      "wrong": [
+        "",
+        "The action doesn't switch record types. It's hidden instead.",
+        "Reps never get the action, so they never reach an error.",
+        "Only the action tied to the missing record type is hidden."
+      ],
+      "source": "Quick Actions and Record Types"
+    },
+    {
+      "id": "ui-x34",
+      "lesson": "ui-6",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A user clicks this action on a case. What does the Priority field show, and can the user change it?",
+      "code": "Action: Escalate (on Case, Create a Record: Escalation__c)\n  Action layout: Reason, Priority\n  Priority field default value: Medium\n  Predefined field value on the action: Priority = High",
+      "lang": "text",
+      "options": [
+        "High, and the user can change it",
+        "Medium, because the field's default value wins",
+        "High, locked so the user can't change it",
+        "Blank, because the two values clash"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "When a field has both a predefined value and a default value, the action uses the predefined value. If the field stays on the action layout, that value shows as a default the user can change.",
+      "wrong": [
+        "",
+        "The predefined value beats the field's default value.",
+        "A predefined value on a field that's on the layout can still be changed.",
+        "Nothing is blanked. The predefined value wins."
+      ],
+      "source": "Notes on Predefined Field Values for Quick Actions"
+    },
+    {
+      "id": "ui-q65",
+      "lesson": "ui-7",
+      "difficulty": 2,
+      "q": "A developer's Lightning web component must work in two places: on a screen in a screen flow, and as a tool in an app's utility bar. Which two targets go in its configuration file? (Choose 2)",
+      "options": [
+        "`lightning__AppPage`",
+        "`lightning__FlowScreen`",
+        "`lightning__RecordAction`",
+        "`lightning__HomePage`",
+        "`lightning__UtilityBar`"
+      ],
+      "answer": [
+        1,
+        4
+      ],
+      "explain": "`lightning__FlowScreen` makes a component usable on flow screens. `lightning__UtilityBar` makes it usable as a utility item in App Manager.",
+      "wrong": [
+        "`lightning__AppPage` is for App pages in Lightning App Builder.",
+        "",
+        "`lightning__RecordAction` is for quick actions on record pages.",
+        "`lightning__HomePage` is for Home pages.",
+        ""
+      ],
+      "source": "Lightning Web Components Developer Guide: XML Configuration File Elements"
+    },
+    {
+      "id": "ui-q66",
+      "lesson": "ui-7",
+      "difficulty": 1,
+      "q": "A Lightning web component should open from its own item in the navigation bar, as a Lightning component tab. Which target must its configuration file include?",
+      "options": [
+        "`lightning__RecordPage`",
+        "`lightning__UtilityBar`",
+        "`lightning__Tab`",
+        "`lightning__AppPage`"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "`lightning__Tab` lets a component be used in a custom tab in Lightning Experience and the mobile app. Then you create a Lightning component tab for it.",
+      "wrong": [
+        "`lightning__RecordPage` is for record pages in Lightning App Builder.",
+        "`lightning__UtilityBar` puts it in the utility bar, not a tab.",
+        "",
+        "`lightning__AppPage` puts it on an App page, not in its own component tab."
+      ],
+      "source": "Lightning Web Components Developer Guide: XML Configuration File Elements"
+    },
+    {
+      "id": "ui-x35",
+      "lesson": "ui-7",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "The app builder can drag this component onto account and opportunity record pages, but it's missing for case record pages. What should the developer change?",
+      "code": "<isExposed>true</isExposed>\n<targets>\n  <target>lightning__RecordPage</target>\n</targets>\n<targetConfigs>\n  <targetConfig targets=\"lightning__RecordPage\">\n    <objects>\n      <object>Account</object>\n      <object>Opportunity</object>\n    </objects>\n  </targetConfig>\n</targetConfigs>",
+      "lang": "xml",
+      "options": [
+        "Add a second `objects` tag that lists Case",
+        "Add `<object>Case</object>` inside the `objects` tag",
+        "Add a `lightning__CasePage` target",
+        "Add Case as a `supportedFormFactor` type"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "The `objects` tag limits a record page component to the objects it lists. Add Case as another `object` inside the same `objects` tag.",
+      "wrong": [
+        "The `objects` tag can appear only once in a `targetConfig`.",
+        "",
+        "There's no such target. Every object's record page uses `lightning__RecordPage`.",
+        "`supportedFormFactor` sets devices, not objects."
+      ],
+      "source": "Lightning Web Components Developer Guide: lightning__RecordPage Target"
+    },
+    {
+      "id": "ui-x36",
+      "lesson": "ui-7",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "Before deploying, a developer reviews this record quick action's configuration. The action must run its code right away, with no modal window. What should change?",
+      "code": "<targets>\n  <target>lightning__RecordAction</target>\n</targets>\n<targetConfigs>\n  <targetConfig targets=\"lightning__RecordAction\">\n    <actionType>ScreenAction</actionType>\n  </targetConfig>\n</targetConfigs>",
+      "lang": "xml",
+      "options": [
+        "Remove `actionType`, since the default opens no modal",
+        "Change the target to `lightning__GlobalAction`",
+        "Add `<supportedFormFactor type=\"Small\"/>`",
+        "Change `actionType` to `Action`"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "`ScreenAction`, the default, runs the code in a modal window. `Action` runs it without a modal, as a headless quick action.",
+      "wrong": [
+        "Without `actionType`, the default is `ScreenAction`, which opens a modal.",
+        "A global action target doesn't remove the modal.",
+        "Form factors set devices. `Small` isn't even supported for record actions.",
+        ""
+      ],
+      "source": "Lightning Web Components Developer Guide: lightning__RecordAction Target"
+    },
+    {
+      "id": "ui-q67",
+      "lesson": "ui-8",
+      "difficulty": 1,
+      "q": "An app builder at Nettlefield plans to rebuild the two-column account layout as one column, just for phone users. What is the best advice?",
+      "options": [
+        "Build a separate one-column layout for a phone profile",
+        "Move every field into the compact layout instead",
+        "Skip it; the mobile app shows fields in one column anyway",
+        "Turn off the second column in Salesforce Mobile App Setup"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "Page layouts render dynamically. The Salesforce mobile app reorders fields into a single column, while web browsers can show two.",
+      "wrong": [
+        "Layouts follow profiles, not devices, and the app already shows one column.",
+        "The compact layout is for a few key fields, not every field.",
+        "",
+        "There's no such setting. The app arranges the columns itself."
+      ],
+      "source": "Tips for Optimizing Page Layouts for the Salesforce Mobile App"
+    },
+    {
+      "id": "ui-x37",
+      "lesson": "ui-8",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "On a record page, a Quick Scan component has the visibility filter Device equals Phone. A rep opens the record in the Salesforce mobile app on a tablet, then in a web browser on the same tablet. Where does the component appear?",
+      "options": [
+        "In the mobile app only",
+        "In the browser only",
+        "In both views",
+        "In neither, because a tablet isn't a phone"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "The Salesforce mobile app on a tablet uses the phone form factor. A browser on a tablet uses the desktop form factor, so the component shows only in the app.",
+      "wrong": [
+        "",
+        "A browser on a tablet counts as desktop, so the phone filter hides it there.",
+        "The browser view uses the desktop form factor.",
+        "The mobile app on a tablet uses the phone form factor."
+      ],
+      "source": "Lightning Page Visibility Rule Considerations and Limitations"
+    },
+    {
+      "id": "ui-q68",
+      "lesson": "ui-8",
+      "difficulty": 2,
+      "q": "Technicians at Vale Freight can't find the custom Dispatch app in the Salesforce mobile app, though they use it daily on desktop. Their profile is assigned to the app. What should the app builder check first?",
+      "options": [
+        "The utility bar items set up for the app",
+        "The app's form factor setting in App Manager",
+        "The organization-wide default for the Dispatch object",
+        "The app's primary color and logo settings"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "In App Manager, each Lightning app sets which form factors it's available for. If the app is desktop only, it won't show in the mobile app.",
+      "wrong": [
+        "Utility bar items don't decide which devices get the app.",
+        "",
+        "Org-wide defaults control record access, not app availability.",
+        "Branding doesn't affect where the app appears."
+      ],
+      "source": "Create Lightning Apps"
     }
   ]
 }
