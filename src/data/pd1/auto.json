@@ -242,7 +242,7 @@
           "title": "The four access modifiers",
           "items": [
             "`private`: only inside this class. It's **the default** when you write nothing.",
-            "`protected`: this class, its inner classes and classes that extend it. Instance members only.",
+            "`protected`: this class, its inner classes and classes that extend it. Only for instance methods and member variables.",
             "`public`: any Apex in the same app or namespace.",
             "`global`: any Apex anywhere, plus SOAP API. The class must be `global` too."
           ]
@@ -1598,9 +1598,9 @@
       "pack": "hard",
       "q": "A company wants these automations with no code. Which two are a good fit for a record-triggered flow? (Choose 2)",
       "options": [
-        "Let a rep step through a guided return form with input fields",
+        "Run each time a user opens an Account record page to view it",
         "Set a Lead's Rating as soon as a web-to-lead form creates it",
-        "Recalculate a score on every Account each Sunday night",
+        "Update every open Case each night, even ones nobody edited",
         "React to a platform event message sent by an ERP system",
         "Create a renewal Opportunity when an Opportunity is Closed Won"
       ],
@@ -1610,9 +1610,9 @@
       ],
       "explain": "Record-triggered flows run when a record is created, updated or deleted. Setting a field on create and creating a record on a stage change both start from a record save.",
       "wrong": [
-        "A guided form needs a screen flow.",
+        "Viewing a record doesn't save it, so nothing triggers.",
         "",
-        "A weekly run over many records is a schedule-triggered flow.",
+        "A nightly run over many records is a schedule-triggered flow.",
         "Event messages start a platform event-triggered flow.",
         ""
       ],
@@ -1967,19 +1967,19 @@
         "Classes that extend the defining class can use the member",
         "It's the default when no modifier is written",
         "Inner classes of the defining class can use the member",
-        "It can be used on `static` methods and variables",
+        "Any class in the same namespace can use the member",
         "It makes the member visible to the SOAP API"
       ],
       "answer": [
         0,
         2
       ],
-      "explain": "`protected` opens a member to inner classes and to subclasses. It works on instance members only.",
+      "explain": "`protected` opens a member to inner classes and to subclasses. Other classes in the namespace need `public`.",
       "wrong": [
         "",
         "The default is `private`.",
         "",
-        "`protected` is for instance methods and member variables only.",
+        "That describes `public`, not `protected`.",
         "SOAP API access needs `global`."
       ],
       "source": "Apex Developer Guide: Access Modifiers"
@@ -2769,7 +2769,7 @@
       "answer": [
         0
       ],
-      "explain": "Upsert inserts on no match and updates on one match. Two or more matches is an error, and that record isn't saved.",
+      "explain": "Upsert inserts on no match and updates on one match. Two or more matches is an error. The `upsert` statement is all or nothing, so no order in the list is saved.",
       "wrong": [
         "",
         "Upsert never updates several records for one key.",
@@ -3498,7 +3498,7 @@
       "pack": "hard",
       "q": "A developer calls `Database.update(accts, false)`. Some records fail, so Salesforce retries the save with the rest. Which two statements are true? (Choose 2)",
       "options": [
-        "Each attempt is a new transaction with fresh limits",
+        "Each attempt runs as its own separate transaction",
         "Static variables are reset before the retry",
         "Triggers fire only once, after all retries finish",
         "Triggers can fire again for the records being retried",
@@ -3510,7 +3510,7 @@
       ],
       "explain": "With partial success, triggers fire on the first attempt and again on retries. It's one transaction, so static variables aren't reset.",
       "wrong": [
-        "The retries happen in the same transaction.",
+        "The retries are part of the same transaction.",
         "Static variables aren't reset between attempts.",
         "Triggers fire on each attempt.",
         "",
