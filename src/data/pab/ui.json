@@ -371,7 +371,7 @@
             "Fewer page layouts and record types to manage",
             "Create, edit and clone use the fields on the page, not the page layout",
             "Make a field required or read-only on this page only",
-            "Works on most **LWC-enabled** objects (not Events or Tasks)"
+            "Works on most **LWC-enabled** objects. Events and Tasks aren't, so they keep page layouts"
           ]
         },
         {
@@ -1015,7 +1015,7 @@
     {
       "id": "ui-f28",
       "front": "How can phone users get a lighter record page?",
-      "back": "Assign the Lightning record page by form factor, phone, or hide components with a device visibility rule."
+      "back": "Assign a lighter Lightning record page to the phone form factor. Or hide some components on phones with a device visibility rule."
     }
   ],
   "questions": [
@@ -1518,7 +1518,7 @@
       "explain": "Only Lightning pages can be assigned by form factor. Activate one page for desktop and another for phone.",
       "wrong": [
         "",
-        "Page layouts can't be assigned by device, and the users have one profile.",
+        "Page layouts are assigned by profile and record type, never by device.",
         "A compact layout changes the highlights, not the whole page.",
         "Record types sort records, not devices."
       ],
@@ -2284,7 +2284,7 @@
       "id": "ui-q35",
       "lesson": "ui-6",
       "difficulty": 2,
-      "q": "Users at Tallgrass want a Log a Call action available on the Home page and the Chatter tab, not tied to a specific record. Where should the app builder add it?",
+      "q": "Users at Tallgrass want to log calls from the Global Actions menu in the Lightning Experience header, without opening a record first. Where should the app builder add the Log a Call action?",
       "options": [
         "To the Account page layout as an object-specific action",
         "To the Contact page layout as an object-specific action",
@@ -2294,10 +2294,10 @@
       "answer": [
         3
       ],
-      "explain": "Global Log a Call actions go on the global publisher layout. They appear on global pages, like Home and Chatter.",
+      "explain": "Global actions live on the global publisher layout. In Lightning Experience, they fill the Global Actions menu in the header.",
       "wrong": [
-        "That action only shows on account record pages.",
-        "That action only shows on contact record pages.",
+        "That action only shows on account record pages, not in the header menu.",
+        "That action only shows on contact record pages, not in the header menu.",
         "Compact layouts hold fields, not actions.",
         ""
       ],
@@ -2588,7 +2588,7 @@
       ],
       "explain": "Visibility rules can use the Device context to show a component only on desktop or only on phone.",
       "wrong": [
-        "Report charts aren't on page layouts, and layouts don't filter by device.",
+        "Page layouts can't be assigned or filtered by device.",
         "Record types sort records, not devices.",
         "",
         "Compact layouts hold fields, not components."
