@@ -24,7 +24,7 @@
           "type": "list",
           "title": "Three sizes of test",
           "items": [
-            "**Unit test**: one function on its own, with its helpers swapped for fakes.",
+            "**Unit test**: one function on its own. Its helpers are often swapped for fakes.",
             "**Integration test**: several real parts working together, like a service and its database.",
             "**End-to-end test**: the whole app, driven like a user in a real browser.",
             "**Black-box** tests use only inputs and outputs. **White-box** tests are built from the code's inner paths."
@@ -71,7 +71,7 @@
       "terms": [
         {
           "term": "unit test",
-          "say": "A small test for one piece of code, like one function. Its helpers are swapped for fakes, so only that piece is checked."
+          "say": "A small test for one piece of code, like one function. Its helpers are often swapped for fakes, so only that piece is checked."
         },
         {
           "term": "integration test",
@@ -526,7 +526,7 @@
       "lesson": "testing-1",
       "difficulty": 3,
       "pack": "hard",
-      "q": "A developer renames an internal helper. The app still works for users, but a test that called that helper by name now fails. In the Cert Prep reading's terms, where a pass means \"the code works\", what is this result?",
+      "q": "A developer renames an internal helper. The app still works for users, but a test that called that helper by name now fails. In Kent C. Dodds' terms (the reading the Cert Prep unit links), what is this result?",
       "options": [
         "A false positive",
         "A false negative",
@@ -543,7 +543,7 @@
         "A true negative would mean the code really is broken.",
         "A flaky test passes and fails at random; this one fails every time."
       ],
-      "source": "Trailhead: Cert Prep: JavaScript Dev: Debugging, Error Handling, and Testing"
+      "source": "Kent C. Dodds: Testing Implementation Details"
     },
     {
       "id": "testing-x2",
@@ -700,7 +700,7 @@
       "lesson": "testing-1",
       "difficulty": 3,
       "pack": "hard",
-      "q": "The team plans to rename `_n` to `_count` without changing how `counter` behaves. Which change keeps this test useful after the rename?",
+      "q": "The team plans to rename `_n` to `_count` without changing how `counter` behaves. Which change lets the test survive this rename and any later change to private names?",
       "code": "const counter = {\n  _n: 0,\n  add() { this._n += 1; },\n  get value() { return this._n; },\n};\n\ntest('add counts up', () => {\n  counter.add();\n  expect(counter._n).toBe(1);\n});",
       "lang": "js",
       "options": [
@@ -726,27 +726,29 @@
       "lesson": "testing-1",
       "difficulty": 3,
       "pack": "hard",
-      "q": "`canVote(age)` returns `age >= 18`. Which two inputs best test the boundary of this rule? (Choose 2)",
+      "q": "The spec says `isTeen(age)` is `true` for ages 13 to 19, both included. The current test passes. Which two new checks would fail and expose a bug? (Choose 2)",
       "options": [
-        "`5`",
-        "`17`",
-        "`18`",
-        "`30`",
-        "`100`"
+        "`expect(isTeen(13)).toBe(true)`",
+        "`expect(isTeen(12)).toBe(false)`",
+        "`expect(isTeen(19)).toBe(true)`",
+        "`expect(isTeen(20)).toBe(false)`",
+        "`expect(isTeen(15)).toBe(true)`"
       ],
       "answer": [
-        1,
+        0,
         2
       ],
-      "explain": "Boundary tests use the values right at the limit. 17 must be `false` and 18 must be `true`; a mistake like `>` instead of `>=` shows up there.",
+      "explain": "Test both edges of the rule. With `>` and `<`, the code returns `false` for 13 and 19, so those two checks fail. Values just outside the range pass either way.",
       "wrong": [
-        "5 is far from the limit, so it misses an off-by-one bug.",
         "",
+        "12 is outside the range, and the buggy code returns `false` too.",
         "",
-        "30 is far from the limit, so it misses an off-by-one bug.",
-        "100 is far from the limit, so it misses an off-by-one bug."
+        "20 is outside the range, and the buggy code returns `false` too.",
+        "15 is in the middle, and the buggy code returns `true` too."
       ],
-      "source": "Trailhead: Cert Prep: JavaScript Dev: Debugging, Error Handling, and Testing"
+      "source": "Trailhead: Cert Prep: JavaScript Dev: Debugging, Error Handling, and Testing",
+      "code": "function isTeen(age) {\n  return age > 13 && age < 19;\n}\n\ntest('finds teens', () => {\n  expect(isTeen(16)).toBe(true);\n  expect(isTeen(40)).toBe(false);\n});",
+      "lang": "js"
     },
     {
       "id": "testing-q9",
@@ -1374,7 +1376,7 @@
       "lesson": "testing-3",
       "difficulty": 3,
       "pack": "hard",
-      "q": "A mock `log` was called once, with `'a'`. Which two assertions pass? (Choose 2)",
+      "q": "`const log = jest.fn();` was then called once, with `'a'`. Which two assertions pass? (Choose 2)",
       "options": [
         "`expect(log).toHaveBeenCalledWith('a')`",
         "`expect(log).toHaveReturnedWith('a')`",
@@ -1471,7 +1473,7 @@
         "A mock is set up with expected calls and is checked against them.",
         "A fake timer controls time, not answers."
       ],
-      "source": "Trailhead: Cert Prep: JavaScript Dev: Debugging, Error Handling, and Testing"
+      "source": "Martin Fowler: Mocks Aren't Stubs"
     },
     {
       "id": "testing-x16",
