@@ -79,7 +79,8 @@ function encode(samples, target) {
     const tmp = `${target}.part.m4a`;
     const ff = spawn('ffmpeg', ['-v', 'error', '-y', '-f', 'f32le', '-ar', String(RATE), '-ac', '1', '-i', 'pipe:0',
       '-c:a', 'aac', '-b:a', '32k', '-movflags', '+faststart', tmp]);
-    ff.on('error', reject);
+    ff.on('error', reject); // e.g. ffmpeg isn't installed
+    ff.stdin.on('error', reject);
     ff.on('close', (code) => {
       if (code !== 0) { reject(new Error(`ffmpeg exited with ${code}`)); return; }
       renameSync(tmp, target);

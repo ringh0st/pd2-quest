@@ -38,6 +38,7 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      - run: sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg
       - run: mkdir -p voice-audio new-clips
       - run: node scripts/make-voice-audio.mjs voice-audio --shard=${{ matrix.shard }}/8 --minutes=300
       - name: Keep only the new clips
