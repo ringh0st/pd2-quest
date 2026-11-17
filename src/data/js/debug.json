@@ -128,7 +128,7 @@
             "`ReferenceError`: a name that doesn't exist, or a `let`/`const` used before its line (the TDZ).",
             "`TypeError`: the wrong kind of value, like calling `undefined` or reading a property of `null`. Assigning to a `const` too.",
             "`SyntaxError`: code or text that can't be parsed, including bad input to `JSON.parse`.",
-            "`RangeError`: a number out of range, like `new Array(-1)`."
+            "`RangeError`: a value outside the allowed range, like `new Array(-1)`."
           ]
         },
         {
@@ -161,12 +161,12 @@
         },
         {
           "type": "trap",
-          "body": "Checking `e instanceof Error` first catches everything, because every built-in error extends `Error`. Put specific checks like `TypeError` first. And there's no `catch (TypeError e)` in JavaScript. That's Java. Use one `catch`, then `if` checks."
+          "body": "Checking `e instanceof Error` first matches every built-in error, because every built-in error extends `Error`. Put specific checks like `TypeError` first. And there's no `catch (TypeError e)` in JavaScript. That's Java. Use one `catch`, then `if` checks."
         },
         {
           "type": "tip",
           "title": "Remember it",
-          "body": "**Reference: no such name. Type: wrong kind of thing. Range: number out of bounds. Syntax: can't read it.** Check specific types first, and rethrow the rest."
+          "body": "**Reference: no such name. Type: wrong kind of thing. Range: value out of bounds. Syntax: can't read it.** Check specific types first, and rethrow the rest."
         }
       ],
       "check": [
@@ -189,7 +189,7 @@
         },
         {
           "term": "RangeError",
-          "say": "The error for a number outside the allowed range, like asking for an array with a length of -1."
+          "say": "The error for a value outside the allowed range, like asking for an array with a length of -1."
         },
         {
           "term": "AggregateError",
@@ -234,13 +234,13 @@
         {
           "type": "tip",
           "title": "Think of it like…",
-          "body": "The console is a trail of sticky notes your code leaves as it runs. A breakpoint is the pause button on a movie, so you can study one frame. Where it stops: a paused page is frozen for real. Its clicks and timers wait until you resume."
+          "body": "The console is a trail of sticky notes your code leaves as it runs. A breakpoint is the pause button on a movie, so you can study one frame. Where it stops: a paused page is frozen for real. Timers wait until you resume, and clicks do nothing."
         },
         {
           "type": "list",
           "title": "Console methods",
           "items": [
-            "`log`, `info`, `debug`, `warn`, `error`: print at different **log levels** you can filter.",
+            "`log`, `info`, `debug`, `warn`, `error`: print at **log levels** (like info, warning, error) you can filter.",
             "`console.table(rows)`: an array or object as a table.",
             "`console.time('x')` then `console.timeEnd('x')`: how long it took. Same label!",
             "`console.count('x')`: how many times this ran.",
@@ -253,7 +253,7 @@
           "title": "console.assert only logs",
           "lang": "js",
           "code": "console.assert(qty >= 0, 'qty is negative');\nconsole.log('still running');",
-          "body": "**`console.assert`** prints an error only when the condition is false. It never throws and never stops the code, so it isn't a real check."
+          "body": "**`console.assert`** prints an error only when the condition is false. It never throws, so the code keeps running. That's why it isn't a real check."
         },
         {
           "type": "text",
@@ -324,7 +324,7 @@
         },
         {
           "term": "console.assert",
-          "say": "Checks a condition. If it's false, it prints an error message. It never throws and never stops your code."
+          "say": "Checks a condition. If it's false, it prints an error message. It never throws, so your code keeps running."
         },
         {
           "term": "call stack",
@@ -389,7 +389,7 @@
     {
       "id": "debug-f9",
       "front": "What does `console.assert(cond, msg)` do when `cond` is false?",
-      "back": "It prints an error message to the console. It doesn't throw and doesn't stop the code, so it isn't a real test."
+      "back": "It prints an error message to the console. It doesn't throw, so the code keeps running. It isn't a real test."
     },
     {
       "id": "debug-f10",
@@ -1126,7 +1126,7 @@
       ],
       "explain": "The `cause` option (ES2022) keeps the original error on the new one. Before that, code stored it on a property of its own, which still works.",
       "wrong": [
-        "The second argument must be an options object. A string is ignored.",
+        "A string isn't an options object, so no `cause` is kept.",
         "",
         "This keeps only the text. The original error object and its stack are gone.",
         "The second `throw` never runs; the first one already left.",
@@ -1441,7 +1441,7 @@
         1,
         2
       ],
-      "explain": "`console.assert` writes an error to the console when its condition is false, and does nothing when true. It never throws, so it can't stop the code.",
+      "explain": "`console.assert` writes an error to the console when its condition is false, and does nothing when true. It never throws, so the code keeps running.",
       "wrong": [
         "It only prints; it never throws.",
         "",
@@ -1479,7 +1479,7 @@
       "lesson": "debug-3",
       "difficulty": 3,
       "pack": "hard",
-      "q": "A third-party library catches an error inside its own `try...catch` and returns `null`. The developer wants to pause on the exact line that throws. What should they turn on?",
+      "q": "A helper in the app's own code catches an error inside its own `try...catch` and returns `null`. The developer wants to pause on the exact line that throws. What should they turn on?",
       "options": [
         "Pause on caught exceptions",
         "Pause on uncaught exceptions",
@@ -1527,7 +1527,7 @@
       "lesson": "debug-3",
       "difficulty": 3,
       "pack": "hard",
-      "q": "Clicking Save does something odd, and the developer doesn't know which handler runs. Which two dev tools features help find the handler code? (Choose 2)",
+      "q": "Clicking Save does something odd. No error shows in the console, and the developer doesn't know which handler runs. Which two dev tools features help find the handler code? (Choose 2)",
       "options": [
         "Pause on uncaught exceptions in the Sources panel",
         "Network throttling in the Network panel",
@@ -1541,7 +1541,7 @@
       ],
       "explain": "An event listener breakpoint pauses inside the handler when the event fires. The Elements panel's Event Listeners pane lists the handlers attached to a node.",
       "wrong": [
-        "Nothing is throwing, so it never pauses.",
+        "No error is thrown, so it never pauses.",
         "That slows requests; it doesn't point to code.",
         "",
         "",
@@ -1583,7 +1583,7 @@
       "q": "With dev tools open, a developer wants the code to pause on a line only when `qty < 0`. Which two work? (Choose 2)",
       "options": [
         "A logpoint on the line that logs `qty < 0`",
-        "`console.assert(qty >= 0, 'negative');` just above the line",
+        "`console.trace('qty < 0');` just above the line",
         "A watch expression `qty < 0`",
         "A conditional breakpoint on the line, with `qty < 0`",
         "`if (qty < 0) debugger;` just above the line"
@@ -1595,7 +1595,7 @@
       "explain": "A conditional breakpoint pauses only when its expression is true. A `debugger` statement inside an `if` does the same in code, as long as dev tools are open.",
       "wrong": [
         "A logpoint logs; it never pauses.",
-        "A failed assertion only prints a message.",
+        "`console.trace` prints the call stack; it never pauses.",
         "Watch shows a value while paused; it doesn't cause a pause.",
         "",
         ""
