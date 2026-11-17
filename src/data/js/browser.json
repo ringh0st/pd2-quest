@@ -944,7 +944,7 @@
         "3 3",
         "2 3",
         "2 2",
-        "3 2"
+        "It throws a TypeError"
       ],
       "answer": [
         1
@@ -954,7 +954,7 @@
         "The `NodeList` from `querySelectorAll` doesn't update after it is created.",
         "",
         "The `HTMLCollection` is live, so it sees the new element.",
-        "It is the other way round: the live one grows, the snapshot doesn't."
+        "Appending a new element is allowed, so nothing throws."
       ],
       "source": "MDN: Document: querySelectorAll() method"
     },
@@ -968,7 +968,7 @@
       "options": [
         "The listener is added to the form",
         "A `TypeError`, because `form` is `null`",
-        "A `SyntaxError` about the selector",
+        "A `SyntaxError` about the `#signup` selector",
         "`form` is an empty `HTMLCollection`"
       ],
       "answer": [
@@ -989,9 +989,9 @@
       "difficulty": 2,
       "q": "A script must start as soon as the HTML is parsed. It must not wait for the large hero images to finish loading. Which event should it listen for?",
       "options": [
-        "`load` on `window`",
-        "`pageshow` on `window`",
-        "`beforeunload` on `window`",
+        "`load` on the `window` object",
+        "`pageshow` on the `window` object",
+        "`beforeunload` on the `window` object",
         "`DOMContentLoaded` on `document`"
       ],
       "answer": [
@@ -1017,7 +1017,7 @@
         "A `TypeError`: `forEach` is not a function",
         "Every card gets the `ready` class",
         "Only the first card gets the class",
-        "Nothing, because the loop runs zero times"
+        "Nothing; the loop runs zero times"
       ],
       "answer": [
         0
@@ -1176,7 +1176,7 @@
         "0",
         "2",
         "4",
-        "1"
+        "The loop never ends"
       ],
       "answer": [
         1
@@ -1186,7 +1186,7 @@
         "That would need every item visited, but the shrinking list makes the loop skip every other one.",
         "",
         "The live list does shrink as classes are removed.",
-        "The loop stops when `i` reaches the new length of 2, leaving 2."
+        "The list shrinks while `i` grows, so the loop ends quickly."
       ],
       "source": "MDN: HTMLCollection"
     },
@@ -1199,7 +1199,7 @@
       "options": [
         "Read `rows.length` inside a `DOMContentLoaded` listener",
         "Use `Array.from(rows).length` instead",
-        "Call `querySelectorAll('.row')` again when the count is needed",
+        "Run `querySelectorAll('.row')` again when you need the count",
         "Store the list with `const` inside a block"
       ],
       "answer": [
@@ -1469,7 +1469,7 @@
       "lang": "js",
       "options": [
         "Nothing runs: `innerHTML` never runs code",
-        "The text shows on the page exactly as typed",
+        "The text shows exactly as typed",
         "The browser throws a security error",
         "`steal()` runs when the image fails to load"
       ],
@@ -1494,8 +1494,8 @@
       "code": "const btn = document.createElement('button');\nbtn.textContent = 'Save';\nbtn.addEventListener('click', save);\npanel.append(btn);\npanel.innerHTML += '<p>Saved drafts: 2</p>';",
       "lang": "js",
       "options": [
-        "The new paragraph covers the button",
-        "`innerHTML +=` rebuilds every child, so the button is a new one with no listener",
+        "The new paragraph is drawn on top of the button and takes clicks",
+        "`innerHTML +=` recreates all children, so this button has no listener",
         "`append` doesn't keep listeners on the elements it adds",
         "Listeners are dropped when `textContent` is set"
       ],
@@ -1550,7 +1550,7 @@
         "4",
         "2",
         "3",
-        "1"
+        "It throws a `DOMException`"
       ],
       "answer": [
         2
@@ -1560,7 +1560,7 @@
         "The `h2` goes before the `ul`, not inside it.",
         "Both `afterbegin` and `beforeend` add an item inside.",
         "",
-        "Two items were added to the one already there."
+        "The list has a parent, so inserting before it is allowed."
       ],
       "source": "MDN: Element: insertAdjacentHTML() method"
     },
@@ -1574,7 +1574,7 @@
       "lang": "js",
       "options": [
         "`data-customer-id` and `data-status`",
-        "`data-customerId` and `data-Status`",
+        "`data-customerId` and `data-Status`, as written",
         "`data-customer-id` and `data-Status`",
         "`data-customerid` and `data-status`"
       ],
@@ -1642,9 +1642,9 @@
       "difficulty": 1,
       "q": "A listener is written as a regular `function` and added with `addEventListener`. What is `this` inside it?",
       "options": [
-        "Always the global `window`",
-        "The event object",
-        "Always `undefined`",
+        "Always the global `window` object",
+        "The event object the browser passes in as an argument",
+        "Always `undefined`, as in strict mode",
         "The element the listener is attached to"
       ],
       "answer": [
@@ -1670,7 +1670,7 @@
         "1",
         "2",
         "3",
-        "0"
+        "It throws a TypeError"
       ],
       "answer": [
         1
@@ -1680,7 +1680,7 @@
         "The second, separate arrow function is a listener too.",
         "",
         "The second `add` is a duplicate and is ignored.",
-        "`btn.click()` fires the listeners right away."
+        "Adding a duplicate is allowed; it is just ignored."
       ],
       "source": "MDN: EventTarget: addEventListener() method"
     },
@@ -1692,8 +1692,8 @@
       "code": "btn.addEventListener('click', () => save());\n// later, when the form closes:\nbtn.removeEventListener('click', () => save());",
       "lang": "js",
       "options": [
-        "`save()` doesn't run: the listener was removed",
-        "`save()` still runs: the removal names a different function",
+        "`save()` doesn't run, because the listener was removed",
+        "`save()` still runs: that removal matched nothing",
         "A `TypeError` is thrown by `removeEventListener`",
         "`save()` runs twice: the removal added another one"
       ],
@@ -1798,7 +1798,7 @@
       "options": [
         "\"saved\" logs once right away; the clicks log nothing",
         "\"saved\" logs once on each click",
-        "\"saved\" logs once right away and once per click",
+        "\"saved\" logs once right away, then on every click",
         "A `TypeError` is thrown, and nothing logs"
       ],
       "answer": [
@@ -1824,7 +1824,7 @@
         "3",
         "0",
         "1",
-        "2"
+        "It throws a TypeError on the second click"
       ],
       "answer": [
         2
@@ -1834,7 +1834,7 @@
         "`once` stops it after the first click.",
         "The first click does run it.",
         "",
-        "It is removed straight after the first run."
+        "A click with no listener does nothing; nothing throws."
       ],
       "source": "MDN: EventTarget: addEventListener() method"
     },
@@ -1952,8 +1952,8 @@
       "code": "class Tracker {\n  start(el) {\n    el.addEventListener('scroll', this.onScroll.bind(this));\n  }\n  stop(el) {\n    el.removeEventListener('scroll', this.onScroll.bind(this));\n  }\n  onScroll() { /* ... */ }\n}",
       "lang": "js",
       "options": [
-        "Each `bind()` call makes a new function, so the removal names a different one",
-        "Scroll listeners can't be removed once they are added",
+        "Each `bind()` call returns a new function, so nothing matches",
+        "Scroll listeners can't be removed after the page scrolls",
         "The removal also needs the `{ passive: true }` option",
         "Class methods can't be used as event listeners"
       ],
@@ -1978,7 +1978,7 @@
         "Bubble phase, target phase, then capture phase",
         "Target phase, capture phase, then bubble phase",
         "Capture phase, target phase, then bubble phase",
-        "Target phase, then bubble phase only"
+        "Only the bubble phase, starting at the target element"
       ],
       "answer": [
         2
@@ -2121,7 +2121,7 @@
       "options": [
         "Call `event.stopPropagation()`",
         "Call `event.preventDefault()`",
-        "Call both methods",
+        "Call both `stopPropagation()` and `preventDefault()`",
         "Return `false`"
       ],
       "answer": [
@@ -2196,7 +2196,7 @@
       "code": "form.addEventListener('submit', (e) => {\n  if (!isValid()) {\n    e.stopPropagation();\n  }\n});",
       "lang": "js",
       "options": [
-        "The listener must be added with `capture: true`",
+        "The listener needs `capture: true` to work",
         "`submit` events can't be canceled",
         "`stopPropagation()` doesn't cancel the default action",
         "The check must run in a `click` listener"
@@ -2277,7 +2277,7 @@
       "options": [
         "\"link\" only; the page stays",
         "\"link\" then \"menu\"; the page stays",
-        "\"link\" then \"menu\"; it goes to /home",
+        "\"link\", \"menu\"; it goes to /home",
         "\"menu\" then \"link\"; the page stays"
       ],
       "answer": [
@@ -2350,10 +2350,10 @@
       "difficulty": 1,
       "q": "What is event delegation?",
       "options": [
-        "Handing an event to a Web Worker to process",
-        "Copying a listener onto every child element",
-        "One listener on a parent that handles events from its children",
-        "Sending an event from a child to a sibling"
+        "Handing an event off to a Web Worker to process it later",
+        "Copying the parent's listener onto every child element",
+        "One listener on a parent handles its children's events",
+        "Sending an event from a child element to its sibling"
       ],
       "answer": [
         2
@@ -2376,7 +2376,7 @@
         "`event.currentTarget`",
         "`event.target`",
         "`event.relatedTarget`",
-        "`event.srcElement`"
+        "`event.target.parentNode`"
       ],
       "answer": [
         0
@@ -2386,7 +2386,7 @@
         "",
         "`target` is the element that was actually clicked, which can be a child.",
         "`relatedTarget` is a second element for some events, like where the mouse came from.",
-        "`srcElement` is an old name for `target`."
+        "That is the clicked element's parent, which may not be the listening element."
       ],
       "source": "MDN: Event: currentTarget property"
     },
@@ -2398,7 +2398,7 @@
       "options": [
         "Yes, all custom events bubble",
         "Only when it carries a `detail`",
-        "Only when it crosses a shadow DOM",
+        "Only inside a shadow DOM",
         "No, not unless `bubbles: true` is set"
       ],
       "answer": [
@@ -2446,7 +2446,7 @@
       "code": "el.addEventListener('saved', () => console.log('B'));\nconsole.log('A');\nel.dispatchEvent(new CustomEvent('saved'));\nconsole.log('C');",
       "lang": "js",
       "options": [
-        "A, C, B",
+        "A, C, then B a moment later",
         "A, B, C",
         "B, A, C",
         "A, C"
@@ -2497,7 +2497,7 @@
         "`event.detail.id`",
         "`event.id`",
         "`event.data.id`",
-        "`event.target.id`"
+        "`event.target.dataset.id`"
       ],
       "answer": [
         0
@@ -2507,7 +2507,7 @@
         "",
         "Your data isn't copied onto the event itself.",
         "Custom events use `detail`, not `data`.",
-        "That reads the HTML `id` of the element that fired it."
+        "That reads a `data-id` attribute on the element that fired it."
       ],
       "source": "MDN: CustomEvent: CustomEvent() constructor"
     },
@@ -2517,7 +2517,7 @@
       "difficulty": 2,
       "q": "Which line creates an event named `pick` that bubbles and carries `{ id: 7 }`?",
       "options": [
-        "`new CustomEvent('pick', { id: 7, bubbles: true })`",
+        "`new CustomEvent('pick', { data: { id: 7 }, bubbles: true })`",
         "`new CustomEvent({ type: 'pick', detail: { id: 7 } })`",
         "`new CustomEvent('pick', { detail: { id: 7 }, bubbles: true })`",
         "`new Event('pick', { detail: { id: 7 }, bubbles: true })`"
@@ -2590,10 +2590,10 @@
       "pack": "hard",
       "q": "A Lightning web component fires an event from a button inside its shadow DOM. A listener on a `div` that wraps the component must hear it. Which options should the event use?",
       "options": [
-        "`{ composed: true }`",
+        "`{ composed: true, cancelable: true }`",
         "`{ bubbles: true, composed: true }`",
-        "`{ bubbles: true }`",
-        "`{ cancelable: true }`"
+        "`{ bubbles: true, cancelable: true }`",
+        "`{ bubbles: true }`"
       ],
       "answer": [
         1
@@ -2603,7 +2603,7 @@
         "Without `bubbles`, the host hears it but the wrapping `div` doesn't.",
         "",
         "Without `composed`, the event stops at the shadow root.",
-        "`cancelable` only allows `preventDefault()`; the event stays where it is."
+        "Without `composed`, the event can't leave the shadow DOM."
       ],
       "source": "MDN: Event: composed property"
     },
@@ -2764,7 +2764,7 @@
       "difficulty": 1,
       "q": "What does `response.ok` tell you after `fetch()`?",
       "options": [
-        "Whether the network request reached the server",
+        "Whether the request reached the server",
         "Whether the status is in the range 200-299",
         "Whether the body is valid JSON",
         "Whether the status is exactly 200"
@@ -2816,7 +2816,7 @@
       "options": [
         "{\"items\":3}",
         "{ items: 3 }",
-        "null",
+        "It throws a TypeError",
         "[object Object]"
       ],
       "answer": [
@@ -2826,7 +2826,7 @@
       "wrong": [
         "That needs `JSON.stringify`; `setItem` doesn't call it.",
         "Storage can't keep objects, only strings.",
-        "Something was stored under the key, so it isn't `null`.",
+        "Any value is accepted; it is turned into a string first.",
         ""
       ],
       "source": "MDN: Storage: setItem() method"
@@ -2960,9 +2960,9 @@
       "code": "async function load() {\n  const res = await fetch('/api/orders');\n  return res.json();\n}\nload().catch(() => showError());",
       "lang": "js",
       "options": [
-        "`showError()` runs, because `fetch` rejects on a 500",
-        "`load()` resolves with the HTML as a string",
-        "`showError()` runs, because `res.json()` can't parse the HTML",
+        "`showError()` runs, because `fetch` rejects on a 500 status",
+        "`load()` resolves with the HTML page as one long string",
+        "`showError()` runs, because `res.json()` fails on HTML",
         "`load()` resolves with `undefined`"
       ],
       "answer": [
@@ -3042,7 +3042,7 @@
         "done",
         "TypeError",
         "AbortError",
-        "Nothing"
+        "Nothing is logged"
       ],
       "answer": [
         2
@@ -3161,7 +3161,7 @@
       "difficulty": 2,
       "q": "A button seems to run its click code twice. The button is selected in Elements. Which Console call lists the listeners registered on it?",
       "options": [
-        "`monitorEvents($0)`",
+        "`monitorEvents($0, 'click')`",
         "`getEventListeners($0)`",
         "`console.dir($0)`",
         "`$$('button')`"
@@ -3210,10 +3210,10 @@
       "difficulty": 2,
       "q": "Something keeps changing an element's `class` attribute, and nobody knows which script does it. What is the quickest way to find the code?",
       "options": [
-        "Add a logpoint to every line that uses `classList`",
-        "Filter the Network panel by the class name",
-        "Record a trace in the Performance panel",
-        "In Elements, set \"Break on\" attribute modifications for that element"
+        "Add a logpoint on every line that calls `classList`",
+        "Filter the Network panel by the name of the class",
+        "Record a full page trace in the Performance panel",
+        "Elements: Break on > Attribute modifications"
       ],
       "answer": [
         3
@@ -3261,7 +3261,7 @@
       "q": "A loop runs 1,000 times. It fails only when `order.total` is negative. What is the quickest way to pause only at that moment?",
       "options": [
         "A conditional breakpoint with `order.total < 0`",
-        "A `debugger` statement as the loop's first line",
+        "A `debugger` statement at the top of the loop",
         "A logpoint that prints `order.total`",
         "Turn on \"Pause on caught exceptions\""
       ],
@@ -3335,7 +3335,7 @@
       "lang": "js",
       "options": [
         "Each key event on the box is logged to the Console",
-        "A `ReferenceError`: `monitorEvents` exists only in the Console",
+        "A `ReferenceError`, because it exists only in the Console",
         "Only `keydown` events are logged",
         "Nothing, because it is ignored outside Dev Tools"
       ],
