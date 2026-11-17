@@ -291,7 +291,7 @@
             "**Koa**: small, built on `async` middleware",
             "**Fastify**: minimal and fast, with JSON schemas",
             "**NestJS**: structured, TypeScript, for big teams",
-            "**Next.js**: React pages rendered on the server"
+            "**Next.js**: a React framework that can render pages on the server"
           ]
         },
         {
@@ -533,7 +533,7 @@
     {
       "id": "server-f12",
       "front": "Which framework fits which need?",
-      "back": "Express or Koa: minimal, with middleware. Fastify: minimal and fast. NestJS: structured and TypeScript-first. Next.js: React pages rendered on the server."
+      "back": "Express or Koa: minimal, with middleware. Fastify: minimal and fast. NestJS: structured and TypeScript-first. Next.js: a React framework that can render pages on the server."
     },
     {
       "id": "server-f13",
@@ -731,7 +731,7 @@
       "id": "server-q8",
       "lesson": "server-1",
       "difficulty": 2,
-      "q": "In an ES module, which line loads the local file `utils.js` from the same folder?",
+      "q": "In a Node.js ES module, which line loads the local file `utils.js` from the same folder?",
       "options": [
         "`import { sum } from './utils.js';`",
         "`import { sum } from './utils';`",
@@ -954,7 +954,7 @@
       "difficulty": 2,
       "q": "A package.json has these scripts. Which two commands run one of them? (Choose 2)",
       "code": "\"scripts\": {\n  \"start\": \"node server.js\",\n  \"lint\": \"eslint .\"\n}",
-      "lang": "js",
+      "lang": "json",
       "options": [
         "`npm lint`",
         "`node lint`",
@@ -1168,7 +1168,7 @@
       "wrong": [
         "",
         "Flags after the file name go to the script in `process.argv`, not to Node.",
-        "`-e` runs its text as code, and this text is not valid code.",
+        "`-e` runs its text as code, so `dotenv/config` throws a `ReferenceError`.",
         "`--inspect` sets a debugger host, not a module to load."
       ],
       "source": "Node.js docs: Command-line API"
@@ -1178,21 +1178,21 @@
       "lesson": "server-2",
       "difficulty": 3,
       "pack": "hard",
-      "q": "A project uses Jest 28 from its `devDependencies`. A new developer also has Jest 29 installed globally. They want to run the project's own Jest 28 without a script. Which command does that?",
+      "q": "Jest 28 is in a project's `devDependencies`, and `npm install` has run. Nothing is installed globally. In the project folder, typing `jest` gives \"command not found\". Why, and what runs the project's Jest without adding a script?",
       "options": [
-        "`jest`",
-        "`npm jest`",
-        "`node jest`",
-        "`npx jest`"
+        "npm skipped Jest because it is a devDependency; run `npm install` again",
+        "Dev tools cannot run as commands; move Jest to `dependencies`",
+        "`jest` must go through npm here; type `npm jest` instead",
+        "The shell does not look in `node_modules/.bin`; use `npx jest`"
       ],
       "answer": [
         3
       ],
-      "explain": "`npx` looks in the project's `node_modules/.bin` first, so it runs the local Jest 28. Typing `jest` alone finds the global one on the PATH.",
+      "explain": "npm puts each package's commands in `node_modules/.bin`, and the shell does not search that folder. `npx` looks there first, so `npx jest` runs the project's Jest 28.",
       "wrong": [
-        "The shell finds the global Jest 29 first.",
-        "`jest` is not an npm command.",
-        "`node` looks for a file named `jest` in this folder.",
+        "A plain `npm install` already installs `devDependencies`.",
+        "Both kinds put their commands in the same `node_modules/.bin` folder.",
+        "`jest` is not an npm command, so npm stops with an error.",
         ""
       ],
       "source": "npm Docs: npx"
@@ -1363,7 +1363,7 @@
       "wrong": [
         "",
         "NestJS gives a strict structure with modules and dependency injection.",
-        "Next.js is for React apps rendered on the server.",
+        "Next.js is a React framework for full web apps, not a small API core.",
         "Angular is a front-end framework that runs in the browser.",
         ""
       ],
@@ -1646,7 +1646,7 @@
       "difficulty": 2,
       "q": "package.json has this line, and there is no lock file. Which version can a fresh `npm install` choose?",
       "code": "\"express\": \"^4.17.1\"",
-      "lang": "js",
+      "lang": "json",
       "options": [
         "3.9.9",
         "4.17.0",
@@ -1671,7 +1671,7 @@
       "difficulty": 2,
       "q": "package.json lists this range. Which two versions satisfy it? (Choose 2)",
       "code": "\"chalk\": \"~2.4.1\"",
-      "lang": "js",
+      "lang": "json",
       "options": [
         "2.4.0",
         "2.4.1",
@@ -1745,7 +1745,7 @@
       "difficulty": 2,
       "q": "A package.json has these scripts. A developer runs `npm test`. What runs, in order?",
       "code": "\"scripts\": {\n  \"pretest\": \"npm run lint\",\n  \"test\": \"jest\",\n  \"posttest\": \"echo done\",\n  \"lint\": \"eslint .\"\n}",
-      "lang": "js",
+      "lang": "json",
       "options": [
         "Only `jest`",
         "lint, then `jest`, then `echo done`",
