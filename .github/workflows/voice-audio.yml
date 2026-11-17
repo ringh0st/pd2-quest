@@ -1,0 +1,110 @@
+name: Record natural voice
+
+# Records every read-aloud text with the natural voice (scripts/make-voice-audio.mjs) and keeps the clips on the
+# `voice-audio` branch; the deploy workflow publishes them under audio/. Only new or changed texts are recorded, so
+# a run after a content change is short. A run that hits the time limit starts the next one to finish the rest.
+
+on:
+  push:
+    branches: [main]
+    paths: ['src/data/**', 'src/lib/speechText.js', 'scripts/make-voice-audio.mjs']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: write
+
+concurrency:
+  group: voice-audio
+  cancel-in-progress: false
+
+jobs:
+  record:
+    runs-on: ubuntu-latest
+    timeout-minutes: 330
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0, 1, 2, 3, 4, 5, 6, 7]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        continue-on-error: true # the branch doesn't exist before the first run
+        with:
+          ref: voice-audio
+          path: voice-audio
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: mkdir -p voice-audio new-clips
+      - run: node scripts/make-voice-audio.mjs voice-audio --shard=${{ matrix.shard }}/8 --minutes=300
+      - name: Keep only the new clips
+        run: |
+          cd voice-audio
+          for f in *.m4a; do
+            [ -e "$f" ] || continue
+            git ls-files --error-unmatch "$f" >/dev/null 2>&1 || mv "$f" ../new-clips/
+          done
+          ls ../new-clips | wc -l
+      - uses: actions/upload-artifact@v4
+        with:
+          name: clips-${{ matrix.shard }}
+          path: new-clips
+          if-no-files-found: ignore
+          retention-days: 3
+
+  publish:
+    needs: record
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        continue-on-error: true
+        with:
+          ref: voice-audio
+          path: voice-audio
+      - name: Start the branch on the first run
+        run: |
+          if [ ! -d voice-audio/.git ]; then
+            rm -rf voice-audio && mkdir voice-audio && cd voice-audio
+            git init -q -b voice-audio
+            git remote add origin "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git"
+          fi
+      - uses: actions/download-artifact@v4
+        continue-on-error: true # no new clips
+        with:
+          pattern: clips-*
+          merge-multiple: true
+          path: voice-audio
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: node scripts/make-voice-audio.mjs voice-audio --prune --index | tee index.txt
+      - name: Commit the clips
+        id: commit
+        run: |
+          cd voice-audio
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then echo "changed=false" >> "$GITHUB_OUTPUT"; exit 0; fi
+          git commit -qm "Natural voice clips"
+          git push -q origin HEAD:voice-audio
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+      - name: Publish the app with the new clips
+        if: steps.commit.outputs.changed == 'true'
+        run: gh workflow run deploy.yml --ref main
+        env:
+          GH_TOKEN: ${{ github.token }}
+      - name: Record the rest if this run ran out of time
+        # Only after a run that added clips, so a text that can't be recorded never loops.
+        if: steps.commit.outputs.changed == 'true'
+        run: |
+          if grep -q "not recorded yet" index.txt; then gh workflow run voice-audio.yml --ref main; fi
+        env:
+          GH_TOKEN: ${{ github.token }}

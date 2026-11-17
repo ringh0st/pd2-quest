@@ -20,6 +20,7 @@ import { lessonById } from '../data/index.js';
 import { zapSays } from '../game/mascot.js';
 import { Icon } from './icons/Icon.jsx';
 import { SpeakButton } from './SpeakButton.jsx';
+import { explanationSpeech } from '../lib/speechText.js';
 import { scrollToTop } from '../lib/scroller.js';
 
 const PRAISE = ['Nailed it!', 'Yes!', 'Boom!', 'Correct!', 'Sharp!', 'You got it!', 'Brain on fire!', 'Clean!'];
@@ -234,7 +235,7 @@ export function PracticeRunner({ questions, onDone, onExit, topRight, requeue = 
               <span className="grow"><span className="verdict-mark"><Icon name={lastRight ? 'ok' : 'wrong'} /></span> {verdict}<br /><span className="small muted" style={{ fontWeight: 400 }}>{zapLine}</span></span>
               <SpeakButton
                 label="Read the explanation aloud"
-                text={`${lastRight ? 'Correct.' : `Not quite. The answer is ${q.answer.map((i) => `${'ABCDEF'[i]}, ${q.options[i]}`).join(' and ')}.`} ${q.explain}`}
+                text={explanationSpeech(q)}
               />
             </div>
             {!lastRight && (

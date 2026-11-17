@@ -8,15 +8,11 @@ import { haptic } from '../audio/haptics.js';
 import { useReducedMotion } from '../hooks/useMotionPrefs.js';
 import { Icon } from './icons/Icon.jsx';
 import { SpeakButton } from './SpeakButton.jsx';
+import { cleanQuestion, questionSpeech } from '../lib/speechText.js';
 import { useEffect, useRef } from 'react';
 import { useCalm } from '../hooks/useMotionPrefs.js';
 
 const LETTERS = 'ABCDEF';
-
-export function cleanQuestion(text) {
-  // The UI already shows "Choose N answers", so drop "(Choose 2)" / "Choose 2." / "Select two." from the stem.
-  return String(text).replace(/\s*\(?(choose|select) (\d|two|three)(\s+answers)?[.)]?\s*$/i, '').trim();
-}
 
 // Arrow keys move between options like a native radio/checkbox group (Tab still works too).
 function arrowNav(e) {
@@ -58,7 +54,7 @@ export function QuestionView({ question, chosen, onToggle, revealed, shake = 0, 
         <h2 className="question" id={`q-${question.id}`}><Rich text={cleanQuestion(question.q)} autoCode /></h2>
         <SpeakButton
           label="Read the question and answers aloud"
-          text={[cleanQuestion(question.q), question.code ? 'There is a code example.' : '', ...question.options.map((o, i) => `${LETTERS[i]}. ${o}.`)].join(' ')}
+          text={questionSpeech(question)}
         />
       </div>
       {question.code && <CodeBlock code={question.code} lang={question.lang} />}

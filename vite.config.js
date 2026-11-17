@@ -10,7 +10,6 @@ export default defineConfig({
   base: './',
   // es2022: the content loader waits for the chosen exam's files at the top level (src/data/index.js)
   build: { chunkSizeWarningLimit: 1000, target: 'es2022' },
-  worker: { format: 'es' }, // the natural-voice worker (lib/tts/kokoroWorker.js) is a module worker
   define: { 'import.meta.env.VITE_APP_VERSION': JSON.stringify(version) },
   plugins: [
     react(),
@@ -36,12 +35,12 @@ export default defineConfig({
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,svg,png,woff2}'],
-        // The natural voice's engine is big and optional: not installed with the app, but kept once it's used.
-        globIgnores: ['**/kokoroWorker-*.js', '**/*.wasm'],
+        // The natural voice's clips (audio/, recorded ahead by scripts/make-voice-audio.mjs) aren't installed
+        // with the app: each streams when its button is tapped. Its list of clips is kept up to date.
         runtimeCaching: [{
-          urlPattern: /\/assets\/(kokoroWorker-.*\.js|ort-wasm.*\.(mjs|wasm))$/,
-          handler: 'CacheFirst',
-          options: { cacheName: 'natural-voice-engine', expiration: { maxEntries: 6 } },
+          urlPattern: /\/audio\/index\.json$/,
+          handler: 'StaleWhileRevalidate',
+          options: { cacheName: 'natural-voice-list' },
         }],
         navigateFallback: 'index.html',
       },

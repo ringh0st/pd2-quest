@@ -21,6 +21,7 @@ import { Icon } from '../components/icons/Icon.jsx';
 import { saveRun, loadRun, clearRun, questionsFor } from '../state/runSession.js';
 import { useStudyScreen } from '../hooks/useStudyScreen.js';
 import { SpeakButton } from '../components/SpeakButton.jsx';
+import { cardSpeech, termSpeech } from '../lib/speechText.js';
 
 const KIND_LABEL = {
   text: '', code: 'Code', list: '',
@@ -162,7 +163,7 @@ export function Lesson({ id }) {
             <div className="lesson-card-tools">
               <SpeakButton
                 label="Read this card aloud"
-                text={[card.title, card.body, ...(card.items ?? []), card.type === 'code' ? 'There is a code example on this card.' : ''].filter(Boolean).join('. ')}
+                text={cardSpeech(card)}
               />
             </div>
             {cardLabel(card).title && <h2><Rich text={cardLabel(card).title} /></h2>}
@@ -180,7 +181,7 @@ export function Lesson({ id }) {
               <div className="term-head">
                 <Icon name="idea" className="ic-gold" />
                 <strong className="grow">{shownTerm.term}</strong>
-                <SpeakButton label={`Read “${shownTerm.term}” aloud`} text={`${shownTerm.term}. ${shownTerm.say}`} />
+                <SpeakButton label={`Read “${shownTerm.term}” aloud`} text={termSpeech(shownTerm)} />
                 <button type="button" className="icon-btn" onClick={() => setTerm(null)} aria-label="Close the meaning"><Icon name="close" /></button>
               </div>
               <p>{shownTerm.say}</p>

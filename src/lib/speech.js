@@ -1,7 +1,8 @@
-// Read aloud: the on-device natural voice when it's chosen and downloaded (lib/tts/naturalVoice.js), otherwise the
-// device's own voices (Web Speech API), picking its most natural one. One utterance at a time; tapping the
+// Read aloud: the natural voice (clips recorded ahead of time, lib/naturalVoice.js) when it's chosen and the text has
+// a clip, otherwise the device's own voices (Web Speech API), picking its most natural one. One at a time; tapping the
 // same button again stops it. Markup like **bold** and `code` marks is removed before speaking.
-import { isNaturalVoice, loadNaturalVoice, naturalVoiceState, speakNatural, stopNatural } from './tts/naturalVoice.js';
+import { hasClip, isNaturalVoice, loadClipList, playClip, stopClip } from './naturalVoice.js';
+import { speakable } from './speechText.js';
 
 const synth = typeof window !== 'undefined' ? window.speechSynthesis : null;
 let current = null;
@@ -10,15 +11,6 @@ const emit = () => subs.forEach((f) => f());
 
 const hasDeviceVoice = () => !!synth && typeof window.SpeechSynthesisUtterance === 'function';
 export const canSpeak = () => hasDeviceVoice() || isNaturalVoice(preferred);
-
-/** Text as it should be heard: no markdown marks, code dots read naturally. */
-export function speakable(text = '') {
-  return String(text)
-    .replace(/\*\*/g, '')
-    .replace(/`([^`]+)`/g, (_, c) => c.replace(/__c\b/g, ' underscore underscore c').replace(/\./g, ' dot '))
-    .replace(/\s+/g, ' ')
-    .trim();
-}
 
 // Devices ship plain voices and much more natural ones (iPhone/Mac "Premium" and "Enhanced" voices,
 // Edge's "Natural" voices, Chrome's Google voices). Score them so the most natural English voice wins.
@@ -53,7 +45,7 @@ export function onVoicesChanged(fn) {
 let preferred = ''; // chosen in Settings: a natural voice id, a device voiceURI, or '' (automatic)
 export function setPreferredVoice(uri) {
   preferred = uri || '';
-  if (isNaturalVoice(preferred) && naturalVoiceState().status === 'idle') loadNaturalVoice(); // from the browser cache after the first time
+  if (isNaturalVoice(preferred)) loadClipList();
 }
 
 function pickVoice() {
@@ -65,10 +57,11 @@ export function speak(id, text) {
   if (current === id) { stopSpeaking(); return; } // tap again = stop
   stopSpeaking();
   const finished = () => { if (current === id) { current = null; emit(); } };
-  if (isNaturalVoice(preferred) && naturalVoiceState().status === 'ready') {
+  // Decided inside the tap (the clip list is already loaded), so the phone allows the sound to start.
+  if (isNaturalVoice(preferred) && hasClip(text)) {
     current = id;
     emit();
-    speakNatural(speakable(text), preferred, finished, () => { if (current === id) speakWithDevice(id, text, finished); });
+    playClip(text, finished);
     return;
   }
   speakWithDevice(id, text, finished);
@@ -87,7 +80,7 @@ function speakWithDevice(id, text, finished) {
 }
 
 export function stopSpeaking() {
-  stopNatural();
+  stopClip();
   synth?.cancel();
   current = null;
   emit();
