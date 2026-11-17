@@ -16,6 +16,7 @@ import { useFocusMode } from '../hooks/useFocusMode.js';
 import { ParkIt } from '../components/ParkIt.jsx';
 import { Icon } from '../components/icons/Icon.jsx';
 import { useStudyScreen } from '../hooks/useStudyScreen.js';
+import { Dropdown } from '../components/Dropdown.jsx';
 
 const NEW_PER_DECK = 10;
 
@@ -50,11 +51,11 @@ export function Cards({ query }) {
         <h1 className="ic-label"><span className="ic-tile" aria-hidden="true"><Icon name="cards" /></span>Flashcards</h1>
         <p className="muted">Quick recall. Flip, then be honest: “Again” brings it back sooner, which is how it sticks.</p>
         <div className="field">
-          <label htmlFor="deck-sec">Deck</label>
-          <select id="deck-sec" className="input" value={sectionId} onChange={(e) => setSectionId(e.target.value)}>
-            <option value="">All sections (mixed)</option>
-            {sections.map((s) => <option key={s.id} value={s.id}>{s.title}</option>)}
-          </select>
+          <label htmlFor="deck-sec" id="deck-sec-label">Deck</label>
+          <Dropdown
+            id="deck-sec" labelId="deck-sec-label" value={sectionId} onChange={setSectionId}
+            options={[{ value: '', label: 'All sections (mixed)' }, ...sections.map((s) => ({ value: s.id, label: s.title }))]}
+          />
         </div>
         <div className="stat-row">
           <div className="stat"><span className="num">{counts.due}</span><span className="lbl">Due now</span></div>
