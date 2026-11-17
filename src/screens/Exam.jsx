@@ -17,6 +17,7 @@ import { sfx } from '../audio/sfx.js';
 import { haptic } from '../audio/haptics.js';
 import { useFocusMode, useHoldCelebrations } from '../hooks/useFocusMode.js';
 import { ParkIt } from '../components/ParkIt.jsx';
+import { QuickSettings } from '../components/settings/QuickSettings.jsx';
 import { Sheet } from '../components/Sheet.jsx';
 import { Segmented } from '../components/Controls.jsx';
 import { Icon } from '../components/icons/Icon.jsx';
@@ -294,6 +295,7 @@ function ExamRun({ run, onSubmit, onLeave, onDiscard }) {
             </span>
           )
           : <span className="timer-pill"><Icon name="infinity" /> untimed</span>}
+        <QuickSettings />
         <ParkIt />
       </div>
       <div className="spread">

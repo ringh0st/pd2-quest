@@ -14,6 +14,7 @@ import { sfx } from '../audio/sfx.js';
 import { haptic } from '../audio/haptics.js';
 import { useFocusMode } from '../hooks/useFocusMode.js';
 import { ParkIt } from '../components/ParkIt.jsx';
+import { QuickSettings } from '../components/settings/QuickSettings.jsx';
 import { Icon } from '../components/icons/Icon.jsx';
 import { useStudyScreen } from '../hooks/useStudyScreen.js';
 import { Dropdown } from '../components/Dropdown.jsx';
@@ -111,6 +112,7 @@ export function Cards({ query }) {
           <span style={{ width: `${Math.max(3, (i / deck.length) * 100)}%` }} />
         </div>
         <span className="chip">{i + 1}/{deck.length}</span>
+        <QuickSettings />
         <ParkIt />
       </div>
       <span className="chip ic-label" style={{ justifySelf: 'start', gap: 6 }}>

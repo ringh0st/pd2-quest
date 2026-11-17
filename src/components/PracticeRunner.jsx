@@ -13,6 +13,7 @@ import { useFeedback } from './Feedback.jsx';
 import { useReducedMotion } from '../hooks/useMotionPrefs.js';
 import { sectionById, iconOf, exam } from '../data/index.js';
 import { ParkIt } from './ParkIt.jsx';
+import { QuickSettings } from './settings/QuickSettings.jsx';
 import { useHoldCelebrations } from '../hooks/useFocusMode.js';
 import { Zap } from './game/Zap.jsx';
 import { useStore, useHelper } from '../state/store.js';
@@ -185,6 +186,7 @@ export function PracticeRunner({ questions, onDone, onExit, topRight, requeue = 
           <span style={{ width: `${Math.max(4, progress * 100)}%` }} />
         </div>
         {topRight ?? (heartsLeft != null ? <HeartsChip hearts={heartsLeft} max={hearts} reduced={reduced} /> : <ComboChip combo={combo} reduced={reduced} />)}
+        <QuickSettings />
         <ParkIt />
       </div>
       {header?.({ combo, heartsLeft, lastRight, revealed, stats: stats.current })}

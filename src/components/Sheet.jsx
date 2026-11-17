@@ -26,6 +26,8 @@ export function Sheet({ open, onClose, labelledBy, children }) {
     };
     const t = setTimeout(first, 30);
     const onKey = (e) => {
+      // An open dropdown inside the sheet closes first (it handles its own Escape)
+      if (e.key === 'Escape' && e.target instanceof Element && e.target.closest('[role="listbox"]')) return;
       if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); onClose(); return; }
       if (e.key !== 'Tab' || !ref.current) return;
       const items = [...ref.current.querySelectorAll(FOCUSABLE)];

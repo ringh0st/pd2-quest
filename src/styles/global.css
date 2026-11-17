@@ -286,7 +286,7 @@ a.card:not(.section-card):not(.stat):not(.row):not(.stack-s) { display: block; }
 .inline-code { font-family: var(--font-code); font-size: 0.88em; overflow-wrap: break-word; padding: 1px 6px; border-radius: 6px; background: var(--surface-2); }
 
 /* ---------- quiz ---------- */
-.quiz-top { display: grid; grid-template-columns: 44px minmax(0, 1fr) auto auto; gap: 8px; align-items: center; }
+.quiz-top { display: grid; grid-template-columns: 44px minmax(0, 1fr); grid-auto-flow: column; grid-auto-columns: auto; gap: 8px; align-items: center; }
 .question { font-size: var(--fs-q); line-height: 1.45; font-weight: 400; max-width: 62ch; overflow-wrap: anywhere; }
 .choose-n { font-size: var(--fs-small); font-weight: 700; color: var(--primary); }
 .options { display: grid; gap: 10px; margin: 0; padding: 0; border: 0; }
@@ -1389,3 +1389,11 @@ input, textarea, select { font-family: inherit; }
 .dropdown-option[aria-selected='true'] { color: var(--primary); font-weight: 700; }
 .dropdown-check { flex: none; color: var(--primary); }
 .voice-row .dropdown { flex: 1 1 14em; min-width: 0; }
+/* Small phones: the progress bar gets its own full-width row under the buttons, so the close button, timer,
+   settings and Park it always fit on one line (they used to squeeze the bar to nothing or push a button off). */
+@media (max-width: 380px) {
+  .quiz-top { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; row-gap: 10px; }
+  .quiz-top > :first-child { margin-right: auto; }
+  .quiz-top > .bar { order: 1; flex: 1 0 100%; }
+  .quiz-top > .timer-pill { min-width: 0; padding-inline: 10px; }
+}

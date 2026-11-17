@@ -12,7 +12,7 @@ import { sfx } from '../audio/sfx.js';
 import { haptic } from '../audio/haptics.js';
 import { Icon } from '../components/icons/Icon.jsx';
 import { HeroArt } from '../components/art/HeroArt.jsx';
-import { iconOption } from './Settings.jsx';
+import { iconOption } from '../components/settings/SettingsGroups.jsx';
 import { APP_NAME } from '../lib/appInfo.js';
 import { TRACKS, TRACK_IDS, switchTrack, track } from '../lib/track.js';
 

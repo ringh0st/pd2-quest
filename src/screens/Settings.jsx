@@ -8,13 +8,9 @@ import { Switch, Segmented } from '../components/Controls.jsx';
 import { go } from '../hooks/useRoute.js';
 import { useFeedback } from '../components/Feedback.jsx';
 import { ReminderSettings } from '../components/ReminderSettings.jsx';
-import { VoicePicker } from '../components/VoicePicker.jsx';
+import { iconOption, LookSettings, ReadingSettings, SoundSettings } from '../components/settings/SettingsGroups.jsx';
 import { Icon } from '../components/icons/Icon.jsx';
-import { sfx, setSoundEnabled } from '../audio/sfx.js';
-import { haptic, setHapticsEnabled } from '../audio/haptics.js';
 
-/** Segmented option with its icon over the word. */
-export const iconOption = (value, icon, text) => [value, <span className="pq-seg"><Icon name={icon} />{text}</span>];
 
 export function Settings() {
   const s = useStore();
@@ -84,33 +80,17 @@ export function Settings() {
           options={Object.entries(FEEL_PRESETS).map(([k, p]) => iconOption(k, p.icon, p.label))}
         />
         {!preset && <p className="small muted">Custom mix. Tap a preset to reset all of these at once.</p>}
-        <Segmented label="Theme" value={st.theme} onChange={(v) => updateSettings({ theme: v })} options={[iconOption('system', 'phone', 'Auto'), iconOption('light', 'sun', 'Light'), iconOption('dark', 'moon', 'Dark')]} />
-        <Switch label="Calm mode" hint="Quieter colors, no confetti, no idle animations" checked={st.calm} onChange={(v) => updateSettings({ calm: v })} />
-        <Segmented label="Motion" value={st.motion} onChange={(v) => updateSettings({ motion: v })} options={[['system', 'Auto'], ['full', 'Full'], ['reduced', 'Reduced']]} />
-        <Switch label="Confetti" hint={st.calm ? 'Off while Calm mode is on' : undefined} disabled={st.calm} checked={!st.calm && st.confetti !== false} onChange={(v) => updateSettings({ confetti: v })} />
+        <LookSettings />
       </section>
 
       <section className="card stack" aria-labelledby="sound-title">
         <h2 className="pq-head" id="sound-title"><span className="pq-tile" data-tone="flame"><Icon name="bell" /></span><span>Sound &amp; feel</span></h2>
-        <Switch
-          label="Sound effects" hint="Taps, right and wrong answers, stars, Boss hits"
-          checked={st.sound} onChange={(v) => { updateSettings({ sound: v }); if (v) { setSoundEnabled(true); sfx.toggleOn(); } }}
-        />
-        <Switch
-          label="Music" hint={st.sound ? 'Soft background music in lessons and practice (never in mock exams)' : 'Turn on sound effects to hear music'}
-          disabled={!st.sound} checked={st.sound && st.music !== false} onChange={(v) => updateSettings({ music: v })}
-        />
-        <Switch
-          label="Vibration" hint="Buzzes on Android; light taps on iPhone"
-          checked={st.haptics} onChange={(v) => { updateSettings({ haptics: v }); if (v) { setHapticsEnabled(true); haptic('success'); } }}
-        />
-        <VoicePicker value={st.voice ?? ''} />
+        <SoundSettings />
       </section>
 
       <section className="card stack">
         <h2 className="pq-head"><span className="pq-tile" data-tone="teal"><Icon name="book" /></span><span>Reading</span></h2>
-        <Segmented label="Font" value={st.font} onChange={(v) => updateSettings({ font: v })} options={[['atkinson', 'Atkinson'], ['lexend', 'Lexend']]} />
-        <Segmented label="Text size" value={st.textScale} onChange={(v) => updateSettings({ textScale: v })} options={[[0.9, 'A−'], [1, 'A'], [1.15, 'A+'], [1.3, 'A++']]} />
+        <ReadingSettings />
       </section>
 
       <section className="card stack">

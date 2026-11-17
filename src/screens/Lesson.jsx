@@ -17,6 +17,7 @@ import { starsFor } from '../game/worlds.js';
 import { nextLevelAfter } from '../state/gameSelectors.js';
 import { WinScreen } from '../components/game/WinScreen.jsx';
 import { ParkIt } from '../components/ParkIt.jsx';
+import { QuickSettings } from '../components/settings/QuickSettings.jsx';
 import { Icon } from '../components/icons/Icon.jsx';
 import { saveRun, loadRun, clearRun, questionsFor } from '../state/runSession.js';
 import { useStudyScreen } from '../hooks/useStudyScreen.js';
@@ -181,6 +182,7 @@ export function Lesson({ id }) {
           <span style={{ width: `${((i + 1) / (cards.length + 1)) * 100}%` }} />
         </div>
         <span className="chip"><span className="sr-only">Card </span>{i + 1}/{cards.length}</span>
+        <QuickSettings />
         <ParkIt />
       </div>
       <div>
