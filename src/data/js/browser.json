@@ -502,7 +502,7 @@
           "match": [
             "composed"
           ],
-          "say": "An option that lets an event leave a component's private shadow DOM, so the page outside can hear it."
+          "say": "An option that lets an event leave a component's private shadow DOM. Add bubbles: true too, so the page outside can hear it."
         },
         {
           "term": "shadow DOM",
@@ -548,7 +548,7 @@
           "title": "Fetch: check ok",
           "lang": "js",
           "code": "const res = await fetch('/api/items');\nif (!res.ok) {                  // status 200-299?\n  throw new Error(`HTTP ${res.status}`);\n}\nconst items = await res.json();",
-          "body": "`fetch()` returns a promise for a response. It rejects only on a network failure. A 404 or 500 still **fulfills**, so check `res.ok`. Cancel a request with an `AbortController` signal."
+          "body": "`fetch()` returns a promise for a response. It rejects only when the request fails, like a network error or an abort. A 404 or 500 still **fulfills**, so check `res.ok`. Cancel a request with an `AbortController` signal."
         },
         {
           "type": "list",
@@ -2068,7 +2068,7 @@
       "lesson": "browser-4",
       "difficulty": 2,
       "q": "What is logged when the button is clicked?",
-      "code": "inner.addEventListener('click', (e) => {\n  e.stopPropagation();\n  console.log('inner 1');\n});\ninner.addEventListener('click', () => console.log('inner 2'));\nouter.addEventListener('click', () => console.log('outer'));",
+      "code": "// <div id=\"outer\"><button id=\"inner\">Go</button></div>\ninner.addEventListener('click', (e) => {\n  e.stopPropagation();\n  console.log('inner 1');\n});\ninner.addEventListener('click', () => console.log('inner 2'));\nouter.addEventListener('click', () => console.log('outer'));",
       "lang": "js",
       "options": [
         "inner 1",
@@ -2093,7 +2093,7 @@
       "lesson": "browser-4",
       "difficulty": 2,
       "q": "What is logged when the button is clicked?",
-      "code": "inner.addEventListener('click', (e) => {\n  e.stopImmediatePropagation();\n  console.log('inner 1');\n});\ninner.addEventListener('click', () => console.log('inner 2'));\nouter.addEventListener('click', () => console.log('outer'));",
+      "code": "// <div id=\"outer\"><button id=\"inner\">Go</button></div>\ninner.addEventListener('click', (e) => {\n  e.stopImmediatePropagation();\n  console.log('inner 1');\n});\ninner.addEventListener('click', () => console.log('inner 2'));\nouter.addEventListener('click', () => console.log('outer'));",
       "lang": "js",
       "options": [
         "inner 1, inner 2",
@@ -2298,7 +2298,7 @@
       "difficulty": 3,
       "pack": "hard",
       "q": "What is logged when the inner button is clicked?",
-      "code": "outer.addEventListener('click', () => console.log('outer capture'), true);\nouter.addEventListener('click', () => console.log('outer bubble'));\ninner.addEventListener('click', (e) => {\n  e.stopPropagation();\n  console.log('inner');\n});",
+      "code": "// <div id=\"outer\"><button id=\"inner\">Go</button></div>\nouter.addEventListener('click', () => console.log('outer capture'), true);\nouter.addEventListener('click', () => console.log('outer bubble'));\ninner.addEventListener('click', (e) => {\n  e.stopPropagation();\n  console.log('inner');\n});",
       "lang": "js",
       "options": [
         "inner",
@@ -2324,7 +2324,7 @@
       "difficulty": 3,
       "pack": "hard",
       "q": "What is logged?",
-      "code": "outer.addEventListener('ping', () => console.log('capture'), true);\nouter.addEventListener('ping', () => console.log('bubble'));\ninner.dispatchEvent(new Event('ping'));",
+      "code": "// <div id=\"outer\"><button id=\"inner\">Go</button></div>\nouter.addEventListener('ping', () => console.log('capture'), true);\nouter.addEventListener('ping', () => console.log('bubble'));\ninner.dispatchEvent(new Event('ping'));",
       "lang": "js",
       "options": [
         "capture",
@@ -2408,7 +2408,7 @@
       "wrong": [
         "The default for created events is not to bubble.",
         "`detail` holds data; it doesn't change bubbling.",
-        "`composed` handles shadow DOM, and it needs `bubbles` too.",
+        "A shadow DOM doesn't change the default; `bubbles` is still `false`.",
         ""
       ],
       "source": "MDN: CustomEvent: CustomEvent() constructor"
@@ -2528,7 +2528,7 @@
       "explain": "The type is the first argument. Data goes in `detail`, and `bubbles: true` makes it travel up.",
       "wrong": [
         "Keys other than `detail` are ignored, so the data is lost.",
-        "The type must be a string as the first argument.",
+        "The type must be the first argument, as a string; this object just becomes the type `[object Object]`.",
         "",
         "A plain `Event` has no `detail`, so the data is lost."
       ],
@@ -2847,7 +2847,7 @@
       "answer": [
         0
       ],
-      "explain": "A `fetch` promise rejects only on a network failure. A 404 is still a response, so the promise fulfills and `res.status` is 404.",
+      "explain": "A `fetch` promise rejects only when the request itself fails, like a network error or an abort. A 404 is still a response, so the promise fulfills and `res.status` is 404.",
       "wrong": [
         "",
         "HTTP error codes don't reject the promise.",
