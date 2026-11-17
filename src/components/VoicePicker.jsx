@@ -56,13 +56,20 @@ function NaturalStatus({ state }) {
         <div className="bar" role="progressbar" aria-label="Downloading the natural voice" aria-valuemin={0} aria-valuemax={100} aria-valuenow={pct}>
           <span style={{ width: `${Math.max(4, pct)}%` }} />
         </div>
-        <p className="small muted">Getting the natural voice ready… {pct ? `${pct}%` : ''} (about 90 MB, only once; Wi-Fi is best)</p>
+        <p className="small muted">
+          {pct >= 100 ? 'Setting up the natural voice on this phone…' : `Downloading the natural voice… ${pct ? `${pct}%` : ''} (about 90 MB, only once; Wi-Fi is best)`}
+        </p>
       </div>
     );
   }
   return (
     <div className="stack-s">
-      {state.status === 'error' && <p className="small" role="alert">The natural voice couldn’t load. Check the connection and try again.</p>}
+      {state.status === 'error' && (
+        <p className="small" role="alert">
+          The natural voice didn’t work this time. Your phone’s voice reads aloud instead. Check the connection and try again.
+          {state.error && <span className="muted"> ({state.error})</span>}
+        </p>
+      )}
       <button type="button" className="btn small" onClick={loadNaturalVoice}><Icon name="download" /> Get the natural voice (about 90 MB, once)</button>
       <p className="small muted">Until it’s ready, your phone’s own voice reads aloud.</p>
     </div>

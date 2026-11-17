@@ -68,10 +68,14 @@ export function speak(id, text) {
   if (isNaturalVoice(preferred) && naturalVoiceState().status === 'ready') {
     current = id;
     emit();
-    speakNatural(speakable(text), preferred, finished);
+    speakNatural(speakable(text), preferred, finished, () => { if (current === id) speakWithDevice(id, text, finished); });
     return;
   }
-  if (!hasDeviceVoice()) return;
+  speakWithDevice(id, text, finished);
+}
+
+function speakWithDevice(id, text, finished) {
+  if (!hasDeviceVoice()) { finished(); return; }
   const u = new SpeechSynthesisUtterance(speakable(text));
   const v = pickVoice();
   if (v) { u.voice = v; u.lang = v.lang; } else u.lang = 'en-US';

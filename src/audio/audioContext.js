@@ -13,7 +13,8 @@ export function audio() {
     master.gain.value = 1;
     master.connect(ctx.destination);
   }
-  if (ctx.state === 'suspended') ctx.resume().catch(() => {});
+  // 'interrupted' is iPhone's state after a call or switching apps; it needs a resume too.
+  if (ctx.state !== 'running' && ctx.state !== 'closed') ctx.resume().catch(() => {});
   return { ctx, master };
 }
 

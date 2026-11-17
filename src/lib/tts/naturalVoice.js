@@ -1,5 +1,7 @@
 // The on-device natural voice (see kokoroWorker.js): downloads on request, then speaks text through Web Audio.
-// Read-aloud plays straight to the speakers, so it works with sound effects switched off.
+// Read-aloud plays straight to the speakers, so it works with sound effects switched off. While it speaks, the
+// audio session is set to "playback" so iPhones play it even with the silent switch on (like the device voice).
+// Watchdogs catch an engine that stalls without an error (a phone can stop a worker that runs out of memory).
 import { audio } from '../../audio/audioContext.js';
 
 export const NATURAL_VOICES = [
@@ -15,25 +17,70 @@ const listeners = new Set();
 const set = (patch) => { state = { ...state, ...patch }; listeners.forEach((fn) => fn()); };
 
 let jobSeq = 0;
-let playing = null; // { job, sources, nextTime, done, onEnd }
+let playing = null; // { job, sources, nextTime, done, started, onEnd, onFail }
+
+const LOAD_STALL_MS = 90_000; // no download progress and no "ready" for this long: the engine stopped
+const FIRST_SOUND_MS = 30_000; // the first sentence takes a few seconds on a phone; far longer means it's stuck
+let loadTimer = 0;
+let speakTimer = 0;
+
+function watchLoad() {
+  clearTimeout(loadTimer);
+  if (state.status === 'loading') loadTimer = setTimeout(() => fail('The natural voice stopped while getting ready on this device.'), LOAD_STALL_MS);
+}
+
+/** The engine is unusable: reset it, report why, and hand any waiting text to the device voice. */
+function fail(message) {
+  clearTimeout(loadTimer);
+  clearTimeout(speakTimer);
+  worker?.terminate();
+  worker = null;
+  set({ status: 'error', error: message });
+  failPlaying();
+}
+
+function failPlaying() {
+  clearTimeout(speakTimer);
+  if (!playing) return;
+  const p = playing;
+  playing = null;
+  p.sources.forEach((s) => { try { s.stop(); } catch { /* already stopped */ } });
+  endSession();
+  (p.started ? p.onEnd : p.onFail || p.onEnd)?.();
+}
 
 function onMessage({ data }) {
-  if (data.type === 'progress') set({ progress: data.total ? data.loaded / data.total : 0 });
-  else if (data.type === 'ready') set({ status: 'ready', progress: 1, error: '' });
-  else if (data.type === 'error') set({ status: 'error', error: data.message });
+  if (data.type === 'progress') { set({ progress: data.total ? data.loaded / data.total : 0 }); watchLoad(); }
+  else if (data.type === 'ready') { clearTimeout(loadTimer); set({ status: 'ready', progress: 1, error: '' }); }
+  else if (data.type === 'error') fail(data.message);
   else if (data.job !== playing?.job) return;
   else if (data.type === 'chunk') schedule(data.samples, data.rate);
   else if (data.type === 'done') { playing.done = true; finishIfIdle(); }
-  else if (data.type === 'failed') { const p = playing; playing = null; p.onEnd?.(); }
+  else if (data.type === 'failed') failPlaying();
 }
 
 function getWorker() {
   if (!worker) {
     worker = new Worker(new URL('./kokoroWorker.js', import.meta.url), { type: 'module' });
     worker.onmessage = onMessage;
-    worker.onerror = (e) => set({ status: 'error', error: e.message || 'The voice could not start on this device.' });
+    worker.onerror = (e) => fail(e.message || 'The natural voice could not start on this device.');
   }
   return worker;
+}
+
+// iPhone: Web Audio is muted by the silent switch unless the page's audio session is "playback".
+let sessionBefore = null;
+function startSession() {
+  const session = typeof navigator !== 'undefined' ? navigator.audioSession : null;
+  if (!session || sessionBefore !== null) return;
+  sessionBefore = session.type;
+  try { session.type = 'playback'; } catch { sessionBefore = null; }
+}
+function endSession() {
+  const session = typeof navigator !== 'undefined' ? navigator.audioSession : null;
+  if (!session || sessionBefore === null) return;
+  try { session.type = sessionBefore; } catch { /* keep playback */ }
+  sessionBefore = null;
 }
 
 /** Starts the one-time download (or loads it from the cache). */
@@ -41,6 +88,7 @@ export function loadNaturalVoice() {
   if (state.status === 'loading' || state.status === 'ready') return;
   set({ status: 'loading', progress: 0, error: '' });
   getWorker().postMessage({ type: 'load' });
+  watchLoad();
 }
 
 export const naturalVoiceState = () => state;
@@ -59,27 +107,36 @@ function schedule(samples, rate) {
   source.start(at);
   playing.nextTime = at + buffer.duration + 0.12; // a small breath between sentences
   playing.sources.add(source);
+  playing.started = true;
+  clearTimeout(speakTimer);
   const p = playing;
   source.onended = () => { p.sources.delete(source); if (p === playing) finishIfIdle(); };
 }
 
 function finishIfIdle() {
-  if (playing?.done && playing.sources.size === 0) { const p = playing; playing = null; p.onEnd?.(); }
+  if (playing?.done && playing.sources.size === 0) { const p = playing; playing = null; endSession(); p.onEnd?.(); }
 }
 
-/** Speaks `text` with a natural voice id (from NATURAL_VOICES). `onEnd` runs when it finishes or fails. */
-export function speakNatural(text, voiceId, onEnd) {
+/**
+ * Speaks `text` with a natural voice id (from NATURAL_VOICES). `onEnd` runs when it finishes; `onFail` runs instead
+ * when no sound could be made (so the caller can use the device voice).
+ */
+export function speakNatural(text, voiceId, onEnd, onFail) {
   stopNatural();
+  startSession();
   audio(); // resume the audio context inside the tap
   const job = ++jobSeq;
-  playing = { job, sources: new Set(), nextTime: 0, done: false, onEnd };
+  playing = { job, sources: new Set(), nextTime: 0, done: false, started: false, onEnd, onFail };
+  speakTimer = setTimeout(() => fail('The natural voice is too slow or stopped on this device.'), FIRST_SOUND_MS);
   getWorker().postMessage({ type: 'speak', job, text, voice: voiceId.replace('kokoro:', '') });
 }
 
 export function stopNatural() {
+  clearTimeout(speakTimer);
   if (!playing) return;
   const p = playing;
   playing = null;
+  endSession();
   worker?.postMessage({ type: 'cancel', job: p.job });
   p.sources.forEach((s) => { try { s.stop(); } catch { /* already stopped */ } });
 }
