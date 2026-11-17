@@ -16,8 +16,9 @@ function load() {
   ready ??= KokoroTTS.from_pretrained(MODEL, {
     dtype: 'q8',
     device: 'wasm',
+    // Every file's bytes so far (some servers send no total size, so the page counts bytes, not percent).
     progress_callback: (p) => {
-      if (p.status === 'progress' && p.total > 1_000_000) postMessage({ type: 'progress', loaded: p.loaded, total: p.total });
+      if (p.status === 'progress') postMessage({ type: 'progress', file: p.file, loaded: p.loaded });
     },
   }).catch((error) => { ready = null; throw error; });
   return ready;
@@ -31,6 +32,8 @@ function sentences(text) {
     .map((s) => s.trim())
     .filter(Boolean);
 }
+
+postMessage({ type: 'started' }); // the page knows this browser can run the engine
 
 self.onmessage = async ({ data }) => {
   if (data.type === 'cancel') { cancelled.add(data.job); return; }

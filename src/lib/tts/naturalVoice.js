@@ -13,8 +13,11 @@ export const NATURAL_VOICES = [
 export const isNaturalVoice = (id) => typeof id === 'string' && id.startsWith('kokoro:');
 
 let worker = null;
-// idle | loading | ready | error; `last` describes the last time it spoke (shown in Settings to explain problems)
-let state = { status: 'idle', progress: 0, error: '', last: '' };
+// idle | loading | ready | error. `mb`: megabytes downloaded so far. `started`: the engine runs in this browser.
+// `last` describes the last time it spoke (shown in Settings to explain problems).
+let state = { status: 'idle', progress: 0, mb: 0, started: false, error: '', last: '' };
+export const NATURAL_VOICE_MB = 92; // the model (about 88 MB) plus its voice file and the engine
+const loadedByFile = new Map();
 const listeners = new Set();
 const set = (patch) => { state = { ...state, ...patch }; listeners.forEach((fn) => fn()); };
 
@@ -22,6 +25,7 @@ let jobSeq = 0;
 let playing = null; // { job, queue, done, started, startedAt, onEnd, onFail }
 
 const LOAD_STALL_MS = 90_000; // no download progress and no "ready" for this long: the engine stopped
+const START_MS = 20_000; // the engine says hello as soon as it runs; silence means this browser can't run it
 const FIRST_SOUND_MS = 30_000; // the first sentence takes a few seconds on a phone; far longer means it's stuck
 const PAUSE_S = 0.15; // a small breath after each sentence
 let loadTimer = 0;
@@ -41,6 +45,7 @@ function getPlayer() {
 }
 
 function watchLoad() {
+  if (!state.started) return; // the start check is still waiting
   clearTimeout(loadTimer);
   if (state.status === 'loading') loadTimer = setTimeout(() => fail('The natural voice stopped while getting ready on this device.'), LOAD_STALL_MS);
 }
@@ -50,7 +55,7 @@ function fail(message) {
   clearTimeout(loadTimer);
   worker?.terminate();
   worker = null;
-  set({ status: 'error', error: message });
+  set({ status: 'error', started: false, error: message });
   failPlaying(message);
 }
 
@@ -71,7 +76,13 @@ function failPlaying(reason) {
 }
 
 function onMessage({ data }) {
-  if (data.type === 'progress') { set({ progress: data.total ? data.loaded / data.total : 0 }); watchLoad(); }
+  if (data.type === 'started') { set({ started: true }); watchLoad(); }
+  else if (data.type === 'progress') {
+    loadedByFile.set(data.file, data.loaded);
+    const mb = [...loadedByFile.values()].reduce((sum, n) => sum + n, 0) / 1e6;
+    set({ mb, progress: Math.min(0.99, mb / NATURAL_VOICE_MB) });
+    watchLoad();
+  }
   else if (data.type === 'ready') { clearTimeout(loadTimer); set({ status: 'ready', progress: 1, error: '' }); }
   else if (data.type === 'error') fail(data.message);
   else if (data.job !== playing?.job) return;
@@ -112,9 +123,14 @@ function getWorker() {
 /** Starts the one-time download (or loads it from the cache). */
 export function loadNaturalVoice() {
   if (state.status === 'loading' || state.status === 'ready') return;
-  set({ status: 'loading', progress: 0, error: '' });
+  loadedByFile.clear();
+  set({ status: 'loading', progress: 0, mb: 0, error: '' });
   getWorker().postMessage({ type: 'load' });
-  watchLoad();
+  clearTimeout(loadTimer);
+  loadTimer = setTimeout(() => {
+    if (!state.started) fail('The voice engine could not start in this browser.');
+    else watchLoad();
+  }, START_MS);
 }
 
 export const naturalVoiceState = () => state;

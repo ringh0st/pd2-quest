@@ -2,7 +2,7 @@
 // device voices are the phone's own. "Try it" plays a sample. Device voices fill in once the browser has loaded them.
 import { useEffect, useId, useState, useSyncExternalStore } from 'react';
 import { canSpeak, englishVoices, onVoicesChanged, setPreferredVoice, speak } from '../lib/speech.js';
-import { NATURAL_VOICES, isNaturalVoice, loadNaturalVoice, naturalVoiceState, subscribeNaturalVoice } from '../lib/tts/naturalVoice.js';
+import { NATURAL_VOICE_MB, NATURAL_VOICES, isNaturalVoice, loadNaturalVoice, naturalVoiceState, subscribeNaturalVoice } from '../lib/tts/naturalVoice.js';
 import { updateSettings } from '../state/store.js';
 import { Icon } from './icons/Icon.jsx';
 
@@ -64,7 +64,10 @@ function NaturalStatus({ state }) {
           <span style={{ width: `${Math.max(4, pct)}%` }} />
         </div>
         <p className="small muted">
-          {pct >= 100 ? 'Setting up the natural voice on this phone…' : `Downloading the natural voice… ${pct ? `${pct}%` : ''} (about 90 MB, only once; Wi-Fi is best)`}
+          {!state.started && 'Starting the voice engine…'}
+          {state.started && (state.mb >= NATURAL_VOICE_MB - 2
+            ? 'Setting up the natural voice on this phone…'
+            : `Downloading the natural voice: ${Math.round(state.mb)} of about ${NATURAL_VOICE_MB} MB (only once; Wi-Fi is best)`)}
         </p>
       </div>
     );
