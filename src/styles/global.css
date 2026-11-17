@@ -79,7 +79,7 @@ strong { font-weight: 700; }
   height: calc(var(--nav-h) + var(--safe-b));
   padding: 6px 8px var(--safe-b);
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   background: var(--surface);
   border-top: 1px solid var(--hairline);
   z-index: 20;
@@ -93,7 +93,8 @@ strong { font-weight: 700; }
   border: 0;
   background: none;
   color: var(--text-muted);
-  font-size: calc(13px * var(--text-scale));
+  /* Tab labels grow with the text size, but only so far: five tabs must fit a 320px phone. */
+  font-size: min(calc(13px * var(--text-scale)), 14.5px);
   font-weight: 700;
   text-decoration: none;
   border-radius: 14px;
@@ -432,7 +433,9 @@ a.card:not(.section-card):not(.stat):not(.row):not(.stack-s) { display: block; }
 /* iPhone Safari gives date inputs a fixed intrinsic width, so they poke out of cards */
 .input[type='date'] { -webkit-appearance: none; appearance: none; text-align: left; line-height: 1.4; }
 .input[type='date']::-webkit-date-and-time-value { text-align: left; }
-.segmented { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 6px; padding: 4px; border-radius: 16px; background: var(--surface-2); }
+/* Options share the row equally, and wrap onto a second row when a word wouldn't fit (big text, narrow phones). */
+.segmented { display: flex; flex-wrap: wrap; gap: 6px; padding: 4px; border-radius: 16px; background: var(--surface-2); }
+.segmented > button { flex: 1 1 0; min-width: max-content; }
 .segmented button {
   min-height: 44px; padding: 6px 4px; line-height: 1.2; overflow-wrap: normal; hyphens: manual; font-size: var(--fs-small); border: 0; border-radius: 12px; background: transparent; font-weight: 700; color: var(--text-muted);
   transition: background var(--dur-quick), color var(--dur-quick);
