@@ -2,7 +2,7 @@
 import { motion } from 'motion/react';
 import { useStore, unlockWorld } from '../state/store.js';
 import { sections, exam, themeOf } from '../data/index.js';
-import { WORLD_UNLOCK_STARS, WORLD_UNLOCK_COINS, isWorldOpen, worldStars, totalStars } from '../game/worlds.js';
+import { worldUnlockStars, WORLD_UNLOCK_COINS, isWorldOpen, worldStars, totalStars } from '../game/worlds.js';
 import { CoinChip } from '../components/game/CoinChip.jsx';
 import { useReducedMotion } from '../hooks/useMotionPrefs.js';
 import { useFeedback } from '../components/Feedback.jsx';
@@ -35,7 +35,7 @@ export function WorldMap() {
           const t = themeOf(sec.id);
           const open = isWorldOpen(sec.id, s.stars, s.unlockedWorlds);
           const ws = worldStars(sec, s.stars);
-          const need = WORLD_UNLOCK_STARS[sec.id] - total;
+          const need = worldUnlockStars(sec.id) - total;
           const style = { '--sky1': t.sky[0], '--sky2': t.sky[1], '--sky1d': t.skyDark[0], '--sky2d': t.skyDark[1], '--accent': sec.accent };
           return (
             <motion.li key={sec.id} initial={reduced ? false : { opacity: 0, y: 30, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} transition={{ delay: i * 0.08, type: 'spring', stiffness: 300, damping: 24 }}>
@@ -62,7 +62,7 @@ export function WorldMap() {
                   </button>
                 ) : (
                   <div className="lock-row">
-                    <span className="small with-icon"><Icon name="lock" /> Opens at <Icon name="star" fill className="ic-gold-fill" />{WORLD_UNLOCK_STARS[sec.id]}<span className="sr-only"> stars</span> ({need} to go)</span>
+                    <span className="small with-icon"><Icon name="lock" /> Opens at <Icon name="star" fill className="ic-gold-fill" />{worldUnlockStars(sec.id)}<span className="sr-only"> stars</span> ({need} to go)</span>
                     <button
                       className="btn gold small" disabled={s.coins < WORLD_UNLOCK_COINS}
                       onClick={() => { unlockWorld(sec.id, WORLD_UNLOCK_COINS); sfx.unlock(); haptic('success'); celebrate(30); showToast(`${t.name} unlocked!`); }}

@@ -1,4 +1,5 @@
 // The adventure: each exam section is a themed world with lessons, Hard challenges and a Boss.
+import { track } from '../lib/track.js';
 
 // How each world looks, by section id (its emblem and Boss art are keyed the same way). Names and Bosses are
 // content: each exam names its worlds in src/data/<exam>/exam.json (`worlds`), so the same look can carry
@@ -44,7 +45,12 @@ export function isLevelOpen(levels, index, stars) {
   return index === 0 || (stars[levels[index - 1].id] ?? 0) > 0 || (stars[levels[index].id] ?? 0) > 0;
 }
 
-export const WORLD_UNLOCK_STARS = { fund: 0, auto: 6, ui: 15, test: 25, perf: 35 };
+// A world opens by its place on the map (the exam's section order), so every exam's worlds open one by one.
+const UNLOCK_STARS_BY_PLACE = [0, 6, 15, 25, 35, 45, 55];
+export function worldUnlockStars(worldId, order = track.sections) {
+  const place = order.indexOf(worldId);
+  return place < 0 ? 0 : UNLOCK_STARS_BY_PLACE[Math.min(place, UNLOCK_STARS_BY_PLACE.length - 1)];
+}
 export const WORLD_UNLOCK_COINS = 60; // or skip ahead with coins
 
 export function totalStars(stars) {
@@ -52,7 +58,7 @@ export function totalStars(stars) {
 }
 
 export function isWorldOpen(worldId, stars, unlocked = []) {
-  return unlocked.includes(worldId) || totalStars(stars) >= (WORLD_UNLOCK_STARS[worldId] ?? 0);
+  return unlocked.includes(worldId) || totalStars(stars) >= worldUnlockStars(worldId);
 }
 
 export function worldStars(section, stars) {
