@@ -23,7 +23,7 @@
         {
           "type": "text",
           "title": "Sync and async",
-          "body": "**Synchronous** code runs line by line. Each line waits for the one before. **Asynchronous** code starts now and finishes later. `setTimeout`, `fetch`, browser events and Node's `fs.readFile` are asynchronous. The lines after them run first, before their callbacks."
+          "body": "**Synchronous** code runs line by line. Each line waits for the one before. **Asynchronous** code starts now and finishes later. `setTimeout`, `fetch`, real user clicks and Node's `fs.readFile` are asynchronous. The lines after them run first, before their callbacks."
         },
         {
           "type": "code",
@@ -147,7 +147,7 @@
           "title": "finally",
           "lang": "js",
           "code": "getUser()\n  .then((user) => show(user))\n  .catch((err) => showError(err))\n  .finally(() => hideSpinner());",
-          "body": "`finally` runs either way, and its callback gets no argument. It passes the earlier value or error along unchanged, unless it throws."
+          "body": "`finally` runs either way, and its callback gets no argument. It passes the earlier value or error along unchanged, unless it throws or returns a rejected promise."
         },
         {
           "type": "trap",
@@ -228,7 +228,7 @@
           "items": [
             "`Promise.all`: fulfills with an array of values in **input order**. It rejects as soon as one rejects.",
             "`Promise.allSettled`: always fulfills, with one `{ status, value }` or `{ status, reason }` object per input.",
-            "`Promise.any`: fulfills with the first value. It rejects with an `AggregateError` only if all of them reject.",
+            "`Promise.any`: fulfills with the first success. It rejects with an `AggregateError` only if all of them reject.",
             "`Promise.race`: settles the same way as the first one to settle."
           ]
         },
@@ -445,7 +445,7 @@
         {
           "type": "text",
           "title": "Watch events live",
-          "body": "In the Chrome DevTools console, `monitorEvents(object, events)` logs each matching event as it happens. Try `monitorEvents($0, 'click')`, where `$0` is the element you selected. `unmonitorEvents(object)` stops it. It is a quick **event monitor** that needs no code changes."
+          "body": "The exam guide says **event monitor** but never explains it. The closest real tool is Chrome DevTools. In its console, `monitorEvents(object, events)` logs each matching event as it happens. Try `monitorEvents($0, 'click')`, where `$0` is the element you selected. `unmonitorEvents(object)` stops it. No code changes needed."
         },
         {
           "type": "trap",
@@ -503,7 +503,7 @@
           "match": [
             "monitorEvents(object, events)"
           ],
-          "say": "A Chrome DevTools console helper. It prints each event of the kinds you name on an element, until you stop it."
+          "say": "A Chrome DevTools console helper. It prints each event of the kinds you name on an element, until you stop it. It works only in the console, not in page code."
         },
         {
           "term": "starve",
@@ -554,7 +554,7 @@
         {
           "type": "text",
           "title": "Node.js extras",
-          "body": "In Node, `process.nextTick` callbacks run before promise handlers in a **CommonJS** script, and before the loop moves on. `setImmediate` runs in the **check phase**, after I/O. In the main script, `setTimeout(0)` vs `setImmediate` has no fixed order. Inside an I/O callback, `setImmediate` always goes first."
+          "body": "In a **CommonJS** Node script, `process.nextTick` callbacks run before promise handlers. In an ES module, promise handlers go first. `setImmediate` runs in the **check phase**, after I/O. From the main script, `setTimeout(0)` vs `setImmediate` has no fixed order. Inside an I/O callback, `setImmediate` always goes first."
         },
         {
           "type": "trap",
@@ -700,7 +700,7 @@
     {
       "id": "async-f18",
       "front": "In a CommonJS Node script, which runs first: `process.nextTick` or a promise `then`?",
-      "back": "The `process.nextTick` callback. Node empties the next-tick queue before the promise microtask queue."
+      "back": "The `process.nextTick` callback. Node empties the next-tick queue before the promise microtask queue. In an ES module, the promise goes first."
     },
     {
       "id": "async-f19",
@@ -1854,7 +1854,7 @@
         2,
         3
       ],
-      "explain": "Start every request first, then wait for them together. `Promise.all` and `Promise.allSettled` both take promises that are already running.",
+      "explain": "Start every request first, then wait for them together. `Promise.all` and `Promise.allSettled` both take promises that are already running. `allSettled` gives status objects, so read each `.value`.",
       "wrong": [
         "It starts `getPosts` only after `getUser`, and loses the user.",
         "The calls are still awaited one after another.",
@@ -2589,7 +2589,7 @@
       "answer": [
         1
       ],
-      "explain": "In a CommonJS script, `process.nextTick` callbacks run right after the current code, before promise handlers. Timers come last.",
+      "explain": "In a CommonJS script, `process.nextTick` callbacks run right after the current code, before promise handlers. Timers come last. In an ES module, `promise` would log before `nextTick`.",
       "wrong": [
         "In a CommonJS script, Node empties the next-tick queue before promise microtasks.",
         "",
