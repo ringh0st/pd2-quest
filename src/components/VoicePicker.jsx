@@ -48,7 +48,14 @@ export function VoicePicker({ value }) {
 }
 
 function NaturalStatus({ state }) {
-  if (state.status === 'ready') return <p className="small muted"><Icon name="ok" className="ic-ok" /> Natural voice ready. It works offline now.</p>;
+  if (state.status === 'ready') {
+    return (
+      <p className="small muted">
+        <Icon name="ok" className="ic-ok" /> Natural voice ready. It works offline now.
+        {state.last && <span> {state.last}</span>}
+      </p>
+    );
+  }
   if (state.status === 'loading') {
     const pct = Math.round(state.progress * 100);
     return (
@@ -68,6 +75,7 @@ function NaturalStatus({ state }) {
         <p className="small" role="alert">
           The natural voice didn’t work this time. Your phone’s voice reads aloud instead. Check the connection and try again.
           {state.error && <span className="muted"> ({state.error})</span>}
+          {state.last && <span className="muted"> {state.last}</span>}
         </p>
       )}
       <button type="button" className="btn small" onClick={loadNaturalVoice}><Icon name="download" /> Get the natural voice (about 90 MB, once)</button>
