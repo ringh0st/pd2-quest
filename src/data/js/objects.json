@@ -591,8 +591,8 @@
           "type": "list",
           "title": "Deep copy options",
           "items": [
-            "`structuredClone(obj)`: a real **deep copy** that keeps Dates, Maps and Sets. It throws `DataCloneError` on functions and DOM nodes.",
-            "`JSON.parse(JSON.stringify(obj))`: drops functions and `undefined`, and turns Dates into strings."
+            "`JSON.parse(JSON.stringify(obj))`: the classic deep copy for plain data. It drops functions and `undefined`, and turns Dates into strings.",
+            "`structuredClone(obj)` (new in 2022): a real **deep copy** that keeps Dates, Maps and Sets. It throws `DataCloneError` on functions and DOM nodes."
           ]
         },
         {
@@ -645,7 +645,7 @@
           "match": [
             "structuredClone(obj)"
           ],
-          "say": "A built-in function that makes a deep copy. It can copy Dates, Maps and Sets, but not functions."
+          "say": "A newer built-in function (2022) that makes a deep copy. It can copy Dates, Maps and Sets, but not functions."
         },
         {
           "term": "DataCloneError",
@@ -1203,7 +1203,7 @@
     {
       "id": "objects-f16",
       "front": "Does `{ ...obj }` make a deep copy?",
-      "back": "No, a shallow one. Top-level values are copied, but nested objects are shared. For a deep copy use `structuredClone(obj)`."
+      "back": "No, a shallow one. Top-level values are copied, but nested objects are shared. For a deep copy of plain data use `JSON.parse(JSON.stringify(obj))`; newer code can use `structuredClone(obj)`."
     },
     {
       "id": "objects-f17",
@@ -2150,7 +2150,7 @@
       "wrong": [
         "",
         "`save()` runs now and passes its return value.",
-        "A string is not a function, so nothing useful runs.",
+        "A string is not a function, so the browser throws `TypeError`.",
         "This arrow returns `save` without calling it."
       ],
       "source": "MDN: Callback function"
@@ -3051,7 +3051,7 @@
       "explain": "`Object.entries` returns `[key, value]` pairs, and `for...of` can destructure each pair.",
       "wrong": [
         "A plain object isn't iterable, so it throws `TypeError`.",
-        "`for...in` gives key strings, so `[k, v]` takes their first letters.",
+        "`for...in` gives key strings, so `[k, v]` takes the first two letters of each key.",
         "`Object.keys` gives key strings only, with no values.",
         ""
       ],
@@ -3263,7 +3263,7 @@
       "id": "objects-q54",
       "lesson": "objects-5",
       "difficulty": 2,
-      "q": "Which two expressions read the price correctly?",
+      "q": "Which two lines read the price correctly?",
       "code": "const product = { id: 9, 'list-price': 20 };",
       "lang": "js",
       "options": [
@@ -3341,24 +3341,29 @@
       "id": "objects-q57",
       "lesson": "objects-6",
       "difficulty": 2,
-      "q": "A developer needs an independent deep copy of an object with nested arrays and a `Date`. Which option keeps the `Date` as a `Date`?",
+      "q": "A developer needs a copy of `order` where pushing to `copy.items` leaves `order.items` unchanged. Which two options work?",
+      "code": "const order = { id: 7, items: ['pen', 'ink'] };",
+      "lang": "js",
       "options": [
-        "`JSON.parse(JSON.stringify(obj))`",
-        "`{ ...obj }`",
-        "`Object.assign({}, obj)`",
-        "`structuredClone(obj)`"
+        "`{ ...order }`",
+        "`{ ...order, items: [...order.items] }`",
+        "`Object.assign({}, order)`",
+        "`JSON.parse(JSON.stringify(order))`",
+        "`Object.assign({ items: [] }, order)`"
       ],
       "answer": [
+        1,
         3
       ],
-      "explain": "`structuredClone` makes a deep copy and keeps types like `Date`, `Map` and `Set`.",
+      "explain": "Spread and `Object.assign` copy only the top level, so `items` stays shared. Copy the nested array too, or round-trip plain data like this through JSON.",
       "wrong": [
-        "JSON turns the `Date` into a string.",
-        "Spread is shallow, so nested arrays stay shared.",
-        "`Object.assign` is shallow too.",
-        ""
+        "`items` still points at the same array.",
+        "",
+        "`Object.assign` is shallow, so `items` is shared.",
+        "",
+        "`order.items` replaces the empty array with the shared one."
       ],
-      "source": "MDN: Window: structuredClone() method"
+      "source": "MDN: Spread syntax (...)"
     },
     {
       "id": "objects-x27",
@@ -3439,7 +3444,7 @@
       "lesson": "objects-6",
       "difficulty": 3,
       "pack": "hard",
-      "q": "What does this code log?",
+      "q": "This code runs in a non-strict script. What does it log?",
       "code": "const user = { name: 'Lia' };\nObject.defineProperty(user, 'id', { value: 42 });\nuser.id = 7;\nconsole.log(user.id, Object.keys(user));",
       "lang": "js",
       "options": [
@@ -3517,25 +3522,25 @@
       "difficulty": 3,
       "pack": "hard",
       "q": "What does this code log?",
-      "code": "const task = { title: 'Ship', run() { return 1; } };\ntry {\n  const copy = structuredClone(task);\n  console.log(typeof copy.run);\n} catch (e) {\n  console.log(e.name);\n}",
+      "code": "const a = { list: [1], meta: { n: 1 } };\nconst b = { ...a, meta: { ...a.meta } };\nb.list.push(2);\nb.meta.n = 5;\nconsole.log(a.list.length, a.meta.n);",
       "lang": "js",
       "options": [
-        "DataCloneError",
-        "function",
-        "undefined",
-        "TypeError"
+        "2 1",
+        "1 1",
+        "2 5",
+        "1 5"
       ],
       "answer": [
         0
       ],
-      "explain": "`structuredClone` can't copy functions. It throws a `DOMException` named `DataCloneError`.",
+      "explain": "Spread copies only one level. `meta` was spread again, so it is a separate object. `list` was not, so both objects share one array.",
       "wrong": [
         "",
-        "Functions are not copied.",
-        "It throws instead of skipping the function.",
-        "The error's name is `DataCloneError`."
+        "`list` is shared, so the push also shows in `a`.",
+        "`meta` got its own copy, so `a.meta.n` stays 1.",
+        "`list` is shared and `meta` is separate, the other way round."
       ],
-      "source": "MDN: Window: structuredClone() method"
+      "source": "MDN: Spread syntax (...)"
     },
     {
       "id": "objects-x30",
@@ -3893,7 +3898,7 @@
       "lesson": "objects-7",
       "difficulty": 2,
       "q": "What does this code log?",
-      "code": "const defaults = { color: 'red' };\nconst item = Object.create(defaults);\nitem.color = 'blue';\nconsole.log(defaults.color, Object.hasOwn(item, 'color'));",
+      "code": "const defaults = { color: 'red' };\nconst item = Object.create(defaults);\nitem.color = 'blue';\nconsole.log(defaults.color, item.hasOwnProperty('color'));",
       "lang": "js",
       "options": [
         "blue true",
@@ -4003,7 +4008,7 @@
       ],
       "explain": "`Object.getPrototypeOf` reads the hidden prototype link of any object.",
       "wrong": [
-        "Only functions have a `prototype` property, and it isn't their own link.",
+        "`obj.prototype` is a property of constructor functions, not the link of `obj`.",
         "That is the name of the constructor, a string.",
         "`typeof` gives the kind of value, like `'object'`.",
         ""
@@ -4016,7 +4021,7 @@
       "difficulty": 3,
       "pack": "hard",
       "q": "What does this code log?",
-      "code": "function Counter() { this.n = 0; }\nCounter.prototype.add = function () { this.n++; return this; };\nconst c = new Counter();\nc.add().add();\nconst d = new Counter();\nconsole.log(c.n, d.n, Object.hasOwn(c, 'add'));",
+      "code": "function Counter() { this.n = 0; }\nCounter.prototype.add = function () { this.n++; return this; };\nconst c = new Counter();\nc.add().add();\nconst d = new Counter();\nconsole.log(c.n, d.n, c.hasOwnProperty('add'));",
       "lang": "js",
       "options": [
         "2 2 false",
@@ -4787,7 +4792,7 @@
         "Colons rename in destructuring, not in imports.",
         "",
         "That isn't valid import syntax.",
-        "This imports the default export of a different file path."
+        "`#total` doesn't pick an export; this still asks for a default export."
       ],
       "source": "MDN: import"
     },
