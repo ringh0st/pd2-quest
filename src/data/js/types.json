@@ -149,7 +149,7 @@
         {
           "type": "text",
           "title": "undefined vs null",
-          "body": "`undefined` means \"no value yet\". You get it from a declared variable with no value, a missing property, or a function with no `return`. `null` means \"empty on purpose\". JavaScript never sets it for you; your code does."
+          "body": "`undefined` means \"no value yet\". You get it from a declared variable with no value, a missing property, or a function with no `return`. `null` means \"empty on purpose\". Your code sets it, and some built-ins return it, like `match()` when nothing matches."
         },
         {
           "type": "trap",
@@ -196,7 +196,7 @@
         },
         {
           "term": "null",
-          "say": "A value that means \"empty on purpose\". Your code sets it to show there is nothing there."
+          "say": "A value that means \"empty on purpose\". Code uses it to show there is nothing there."
         },
         {
           "term": "undefined",
@@ -360,7 +360,7 @@
         {
           "type": "text",
           "title": "Dates",
-          "body": "`new Date(2022, 0, 31)` is 31 January 2022. Months are **zero-based** (January is 0); days start at 1. `getMonth()` returns 0 to 11. `Date.now()` gives milliseconds since 1 January 1970 UTC. To show a date to people, use `toLocaleDateString()` or `Intl.DateTimeFormat`."
+          "body": "`new Date(2022, 0, 31)` is 31 January 2022. Months are **zero-based** (January is 0); days start at 1. `getMonth()` returns 0 to 11. Parts that are too big roll over: day 32 of January is 1 February. `Date.now()` gives milliseconds since 1 January 1970 UTC. To show a date to people, use `toLocaleDateString()` or `Intl.DateTimeFormat`."
         },
         {
           "type": "trap",
@@ -441,12 +441,12 @@
         {
           "type": "text",
           "title": "+ loves strings",
-          "body": "`+` first turns both sides into **primitives**. If either side is then a string, it joins them: `1 + '2'` is `'12'`. Otherwise it adds numbers: `true + 1` is `2`. It works left to right: `1 + 2 + '3'` is `'33'`."
+          "body": "`+` first turns both sides into **primitives**. If either side is then a string, it joins them: `1 + '2'` is `'12'`, and `[] + {}` is `'[object Object]'`. Otherwise it adds numbers: `true + 1` is `2`. It works left to right: `1 + 2 + '3'` is `'33'`."
         },
         {
           "type": "text",
           "title": "- * / want numbers",
-          "body": "`-`, `*` and `/` always convert to numbers. `'5' - 2` is `3`, and `'5' * '2'` is `10`. Text that isn't a number becomes `NaN`. Objects become strings first: `[] + {}` is `'[object Object]'`, and `[1, 2] + ''` is `'1,2'`."
+          "body": "`-`, `*` and `/` always convert to numbers. `'5' - 2` is `3`, and `'5' * '2'` is `10`. Text that isn't a number becomes `NaN`. Objects become strings first, then numbers: `[] - 1` is `-1`, because `[]` becomes `''`, then `0`."
         },
         {
           "type": "code",
@@ -849,7 +849,7 @@
         },
         {
           "term": "forEach",
-          "say": "Runs your function once for each item. It gives back nothing and can't be stopped early."
+          "say": "Runs your function once for each item. It gives back nothing, and break can't stop it."
         },
         {
           "term": "accumulator",
@@ -1319,7 +1319,7 @@
       "id": "types-q4",
       "lesson": "types-1",
       "difficulty": 2,
-      "q": "The same function now uses `let`. What happens?",
+      "q": "What happens when this code runs?",
       "code": "function test() {\n  console.log(x);\n  let x = 5;\n}\ntest();",
       "lang": "js",
       "options": [
@@ -1664,7 +1664,7 @@
       "wrong": [
         "`typeof` never returns this word.",
         "",
-        "There is no `'null'` type name; this is a known old bug.",
+        "`typeof` never returns `'null'`; an old bug makes it say `'object'`.",
         "That is the result for `undefined`, not `null`."
       ],
       "source": "MDN: typeof"
@@ -1769,7 +1769,7 @@
       "lesson": "types-2",
       "difficulty": 3,
       "pack": "hard",
-      "q": "What does this code log?",
+      "q": "This code runs in sloppy (non-strict) mode. What does it log?",
       "code": "let s = 'cat';\ns.toUpperCase();\ns[0] = 'b';\nconsole.log(s);",
       "lang": "js",
       "options": [
@@ -1781,11 +1781,11 @@
       "answer": [
         0
       ],
-      "explain": "Strings are immutable. `toUpperCase()` returns a new string that is thrown away, and writing to `s[0]` is quietly ignored.",
+      "explain": "Strings are immutable. `toUpperCase()` returns a new string that is thrown away. In sloppy mode, writing to `s[0]` is quietly ignored (strict mode throws a `TypeError`).",
       "wrong": [
         "",
         "`toUpperCase()` returns a new string; nobody kept it.",
-        "Strings are immutable; writing to `s[0]` is ignored.",
+        "Strings are immutable; in sloppy mode, writing to `s[0]` is ignored.",
         "Neither change touches `s`."
       ],
       "source": "MDN: JavaScript data types and data structures"
@@ -1837,7 +1837,7 @@
         "No string is returned at all.",
         "",
         "The function builds `msg` but never returns it.",
-        "JavaScript never returns `null` by itself."
+        "A function with no `return` gives `undefined`, not `null`."
       ],
       "source": "MDN: JavaScript data types and data structures"
     },
@@ -1911,7 +1911,7 @@
       "wrong": [
         "`typeof null` is `'object'`, so this is never true.",
         "This is also true for arrays and plain objects.",
-        "`null == 0` is `false`, and `0` would match.",
+        "This is false for `null`, because `null == 0` is `false`.",
         ""
       ],
       "source": "MDN: typeof"
@@ -1984,7 +1984,7 @@
         0,
         1
       ],
-      "explain": "JavaScript uses `undefined` for \"no value yet\": empty variables, missing properties, missing returns. `null` is only there when code sets it.",
+      "explain": "JavaScript uses `undefined` for \"no value yet\": empty variables, missing properties, missing returns. `null` means \"empty on purpose\".",
       "wrong": [
         "",
         "",
@@ -2855,7 +2855,7 @@
       ],
       "explain": "The comparison operators `>=` and `>` convert `null` to `0`. But `==` uses a special rule where `null` only equals `undefined`.",
       "wrong": [
-        "`null` becomes `0`, and `0 > 0` is false.",
+        "Both are flipped: `null` becomes `0`, so `>=` is true and `>` is false.",
         "",
         "`>=` converts `null` to `0`, and `0 >= 0` is true.",
         "`==` has its own rule: `null` equals only `undefined`."
@@ -3079,7 +3079,7 @@
         "",
         "Loose equality converts types before comparing.",
         "`!=` is the opposite of `==`, so it converts too.",
-        "Comparison operators convert values to numbers."
+        "`>=` can convert: `'2' >= 1` turns `'2'` into a number."
       ],
       "source": "MDN: Strict equality (===)"
     },
