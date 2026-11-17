@@ -51,7 +51,19 @@ const todo = missing.filter((_, i) => i % shards === shard).slice(0, limit);
 console.log(`${texts.size} texts, ${missing.length} not recorded, this run records ${todo.length}`);
 if (!todo.length) process.exit(0);
 
-const tts = await KokoroTTS.from_pretrained('onnx-community/Kokoro-82M-v1.0-ONNX', { dtype: 'fp32', device: 'cpu' });
+/** The model downloads from Hugging Face, which can refuse several CI jobs at once: try a few times. */
+async function loadModel() {
+  for (let attempt = 1; ; attempt += 1) {
+    try {
+      return await KokoroTTS.from_pretrained('onnx-community/Kokoro-82M-v1.0-ONNX', { dtype: 'fp32', device: 'cpu' });
+    } catch (error) {
+      console.log(`loading the voice failed (try ${attempt}): ${error?.message || error}`);
+      if (attempt === 5) throw error;
+      await new Promise((r) => setTimeout(r, attempt * 20_000));
+    }
+  }
+}
+const tts = await loadModel();
 
 /** Sentences short enough for the model (it reads at most ~510 tokens at once). */
 function sentences(text) {
