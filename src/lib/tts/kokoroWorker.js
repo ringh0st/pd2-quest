@@ -9,6 +9,23 @@ import ortWasm from '../../../node_modules/@huggingface/transformers/dist/ort-wa
 env.wasmPaths = { mjs: new URL(ortModule, self.location.href).href, wasm: new URL(ortWasm, self.location.href).href };
 
 const MODEL = 'onnx-community/Kokoro-82M-v1.0-ONNX';
+
+// The model and voices are served by the app itself (scripts/fetch-voice.mjs copies them into the build), because
+// iPhone Safari fails to download them from Hugging Face. The engine still asks for Hugging Face URLs (that also
+// keeps its cache keys), so they're answered from the app's copy, with Hugging Face only as a fallback.
+const HUB = `https://huggingface.co/${MODEL}/resolve/main/`;
+const OWN = new URL('../voice/', self.location.href).href;
+const networkFetch = self.fetch.bind(self);
+self.fetch = async (input, init) => {
+  const url = typeof input === 'string' ? input : input?.url || String(input);
+  if (url.startsWith(HUB)) {
+    try {
+      const own = await networkFetch(OWN + url.slice(HUB.length), init);
+      if (own.ok) return own;
+    } catch { /* fall back to Hugging Face */ }
+  }
+  return networkFetch(input, init);
+};
 const cancelled = new Set();
 let ready = null;
 
