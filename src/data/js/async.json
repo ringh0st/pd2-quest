@@ -318,7 +318,7 @@
         {
           "type": "tip",
           "title": "Think of it like…",
-          "body": "A recipe that says \"wait for the dough to rise.\" You put that recipe down, do other chores, and later pick it up at the same line. Where it stops: only this one function waits. The rest of the program keeps running."
+          "body": "A recipe that tells you to wait for the dough to rise. You put that recipe down, do other chores, and later pick it up at the same line. Where it stops: only this one function waits. The rest of the program keeps running."
         },
         {
           "type": "text",
@@ -500,6 +500,9 @@
         },
         {
           "term": "monitorEvents",
+          "match": [
+            "monitorEvents(object, events)"
+          ],
           "say": "A Chrome DevTools console helper. It prints each event of the kinds you name on an element, until you stop it."
         },
         {
@@ -739,7 +742,7 @@
       "options": [
         "1, 2, 3",
         "1, 3, 2",
-        "2, 1, 3",
+        "Only 1 and 3",
         "3, 1, 2"
       ],
       "answer": [
@@ -749,7 +752,7 @@
       "wrong": [
         "A 0 ms timer still waits until the current code has finished.",
         "",
-        "The timer callback can never run before code that is already running.",
+        "The timer callback still runs, just after the sync code.",
         "Synchronous lines run in order, so 1 comes before 3."
       ],
       "source": "MDN: Window: setTimeout() method"
@@ -785,7 +788,7 @@
       "code": "try {\n  setTimeout(() => {\n    throw new Error('late');\n  }, 0);\n} catch (e) {\n  console.log('caught');\n}\nconsole.log('done');",
       "lang": "js",
       "options": [
-        "`caught` is logged, then `done`",
+        "`caught` is logged first, and then `done` is logged",
         "`done` is logged, then `caught`",
         "`done` is logged, then the error is uncaught",
         "Only `caught` is logged"
@@ -865,7 +868,7 @@
         "start, Ada, end",
         "start, end, Ada",
         "Ada, start, end",
-        "start, end"
+        "start, end (Ada is never logged)"
       ],
       "answer": [
         0
@@ -939,10 +942,10 @@
       "code": "const cache = {};\nfunction load(key, cb) {\n  if (cache[key]) return cb(cache[key]);\n  fs.readFile(key, 'utf8', (err, data) => {\n    cache[key] = data;\n    cb(data);\n  });\n}",
       "lang": "js",
       "options": [
-        "The cache leaks memory; use a `WeakMap` keyed by the file name",
-        "`readFile` runs twice per key; put `await` before `fs.readFile`",
+        "The cache leaks memory; switch to a `WeakMap` keyed by each file name",
+        "`readFile` runs twice for each key; put `await` before `fs.readFile`",
         "`cb` runs twice per call; add a `return` after the line `cb(data)`",
-        "The callback is sometimes sync; defer the cached call with `queueMicrotask`"
+        "`cb` is sometimes called sync; defer that call with `queueMicrotask`"
       ],
       "answer": [
         3
@@ -966,7 +969,7 @@
       "options": [
         "a, b, c",
         "c, b, a",
-        "b, a, c",
+        "b, c (a is never logged)",
         "b, c, a"
       ],
       "answer": [
@@ -976,7 +979,7 @@
       "wrong": [
         "`later` defers its callback with a timer, so `a` waits.",
         "`now` calls its callback at once, before `c` is logged.",
-        "The timer callback waits until all the sync code is done.",
+        "The timer callback still runs, after all the sync code.",
         ""
       ],
       "source": "MDN: Callback function"
@@ -1037,7 +1040,7 @@
       "difficulty": 1,
       "q": "Which list names the three states of a promise?",
       "options": [
-        "waiting, running, finished",
+        "waiting, in progress, finished",
         "open, resolved, closed",
         "pending, fulfilled, rejected",
         "created, settled, done"
@@ -1047,7 +1050,7 @@
       ],
       "explain": "A promise starts pending, then becomes fulfilled with a value or rejected with a reason. Fulfilled or rejected is called settled.",
       "wrong": [
-        "These are not promise states; \"running\" is not a state at all.",
+        "These are not promise states; \"in progress\" is not a state at all.",
         "Open and closed are not promise states.",
         "",
         "Settled means fulfilled or rejected; it is not a third state."
@@ -1088,7 +1091,7 @@
         "`promise.then(handle)`",
         "`promise.then(undefined, handle)`",
         "`promise.finally(handle)`",
-        "`promise.then(handle, handle)`"
+        "`promise.then(handle, () => undefined)`"
       ],
       "answer": [
         1
@@ -1098,7 +1101,7 @@
         "The first `then` argument handles fulfillment, not rejection.",
         "",
         "`finally` runs either way and doesn't receive the error.",
-        "That would also run `handle` with good values."
+        "That runs `handle` with good values and ignores errors."
       ],
       "source": "MDN: Promise.prototype.catch()"
     },
@@ -1113,7 +1116,7 @@
         "undefined",
         "4",
         "2",
-        "NaN"
+        "A TypeError"
       ],
       "answer": [
         0
@@ -1123,7 +1126,7 @@
         "",
         "The first handler works out `n * 2` but never returns it.",
         "The next `then` gets what the handler returned, not the original value.",
-        "No maths is done on `undefined` here; it is just logged."
+        "Nothing reads a property of `undefined`, so no error is thrown."
       ],
       "source": "MDN: Promise.prototype.then()"
     },
@@ -1214,7 +1217,7 @@
         "x, y",
         "y, x",
         "x",
-        "y"
+        "y only"
       ],
       "answer": [
         1
@@ -1517,7 +1520,7 @@
       "code": "Promise.any([\n  Promise.reject(new Error('a')),\n  Promise.reject(new Error('b')),\n]).catch((e) => console.log(e.constructor.name, e.errors.length));",
       "lang": "js",
       "options": [
-        "Error 1",
+        "Nothing; the `catch` is skipped",
         "AggregateError 1",
         "Error 2",
         "AggregateError 2"
@@ -1527,7 +1530,7 @@
       ],
       "explain": "When every input rejects, `Promise.any` rejects with an `AggregateError`. Its `errors` property lists all the reasons in input order.",
       "wrong": [
-        "`any` doesn't pass on just one error when all reject.",
+        "Every input rejects, so the promise rejects and `catch` runs.",
         "The `errors` list holds every rejection reason: two here.",
         "The rejection reason is an `AggregateError`, not a plain `Error`.",
         ""
@@ -1540,8 +1543,6 @@
       "difficulty": 3,
       "pack": "hard",
       "q": "Which two calls return a promise that fulfills with an empty array? (Choose 2)",
-      "code": "// each call gets an empty array\nPromise.all([]);\nPromise.allSettled([]);\nPromise.any([]);\nPromise.race([]);",
-      "lang": "js",
       "options": [
         "`Promise.all([])`",
         "`Promise.any([])`",
@@ -1569,7 +1570,7 @@
       "difficulty": 1,
       "q": "A dashboard loads three widgets at once. Any one may fail. The page must show every widget that loaded and an error box for each one that failed. Which method fits?",
       "options": [
-        "`Promise.all()`",
+        "`Promise.all()` with one `catch()` at the end",
         "`Promise.any()`",
         "`Promise.race()`",
         "`Promise.allSettled()`"
@@ -1618,7 +1619,7 @@
       "code": "const wait = (ms, v) =>\n  new Promise((r) => setTimeout(() => { console.log('done', v); r(v); }, ms));\nPromise.all([wait(100, 'a'), Promise.reject(new Error('x')), wait(50, 'b')])\n  .then(() => console.log('all ok'))\n  .catch((e) => console.log('failed', e.message));",
       "lang": "js",
       "options": [
-        "failed x",
+        "failed x only (the timers are cancelled)",
         "done b, done a, failed x",
         "failed x, done b, done a",
         "done b, failed x, done a"
@@ -1792,8 +1793,8 @@
       "code": "function load() {\n  const res = await fetch('/api/items');\n  return res.json();\n}",
       "lang": "js",
       "options": [
-        "`res` holds a pending promise, so `res.json` fails",
-        "It works, because `await` makes `load` async",
+        "`res` holds a pending promise, so `res.json` is not a function",
+        "It runs, because using `await` makes the `load` function async",
         "A `SyntaxError`, because `load` is not an `async` function",
         "`load()` returns a promise because it uses `await`"
       ],
@@ -1819,7 +1820,7 @@
       "options": [
         "1000",
         "500",
-        "0",
+        "Close to 0",
         "250"
       ],
       "answer": [
@@ -1874,7 +1875,7 @@
       "options": [
         "1, 2, 3, done",
         "done, 1, 2, 3",
-        "done",
+        "done, and nothing more",
         "3, 2, 1, done"
       ],
       "answer": [
@@ -2027,9 +2028,9 @@
       "lang": "js",
       "options": [
         "`caught` is logged, then `after`",
-        "Only `after` is logged, and the rejection is silently ignored",
+        "Only `after` is logged, and Node silently ignores the rejection",
         "`caught` is logged, and the process exits",
-        "`after` is logged, then the process exits with an unhandled rejection"
+        "`after` is logged, then Node exits on an unhandled rejection"
       ],
       "answer": [
         3
@@ -2150,9 +2151,9 @@
       "q": "What is the call stack?",
       "options": [
         "The queue of callbacks waiting for the event loop",
-        "The list of promises that have not settled yet",
+        "The list of promises that have not settled yet, oldest first",
         "The record of every function that has run so far",
-        "The functions that are running right now, newest on top"
+        "The functions running right now, newest on top"
       ],
       "answer": [
         3
@@ -2226,7 +2227,7 @@
       "options": [
         "It stays smooth, with one microtask run per frame",
         "Timers run between the microtasks, so it just slows down",
-        "It freezes: timers, clicks and repaints never get a turn",
+        "It freezes: timers, clicks and repaints get no turn",
         "It throws a `RangeError` because the call stack overflows"
       ],
       "answer": [
@@ -2453,9 +2454,9 @@
       "difficulty": 1,
       "q": "When does the callback in `setTimeout(fn, 0)` run?",
       "options": [
-        "After the current code and all microtasks, at the soonest",
+        "After the current code and the microtasks, at the soonest",
         "Right away, before the next line of code runs",
-        "Exactly 0 ms later, even in the middle of a loop",
+        "Exactly 0 ms later, even if that is in the middle of a running loop",
         "Only once the page has fully loaded"
       ],
       "answer": [
