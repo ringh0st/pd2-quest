@@ -13,7 +13,7 @@
         {
           "type": "text",
           "title": "In plain words",
-          "body": "A **variable** is a name that holds a value. JavaScript gives you three ways to make one: `var`, `let` and `const`. They differ in where the name works (its **scope**), whether you can point it at a new value, and what happens if you read it too early."
+          "body": "A **variable** is a name that holds a value. JavaScript gives you three ways to make one: `var`, `let` and `const`. They differ in where the name works, called its **scope**. They also differ in whether you can reassign them, and in what happens if you read them too early."
         },
         {
           "type": "tip",
@@ -1325,7 +1325,7 @@
       "options": [
         "It logs `null`",
         "It throws a `ReferenceError`",
-        "It logs `undefined`",
+        "It logs `undefined` and finishes",
         "It logs `5`"
       ],
       "answer": [
@@ -1372,20 +1372,20 @@
       "q": "Which two statements about `const` are true? (Choose 2)",
       "options": [
         "It must get a value in the same statement",
-        "Its name can never point to a new value",
         "It makes every property of an object read-only",
+        "Its name can never point to a new value",
         "It is function-scoped, the same as `var`",
         "It is hoisted holding `undefined`, like `var`"
       ],
       "answer": [
         0,
-        1
+        2
       ],
       "explain": "A `const` needs a value at once and can't be reassigned. It is block-scoped and does not freeze objects.",
       "wrong": [
         "",
-        "",
         "Properties can still change; only the name is locked.",
+        "",
         "`const` is block-scoped, like `let`.",
         "It sits in the temporal dead zone; reading it early throws."
       ],
@@ -1452,8 +1452,8 @@
       "options": [
         "`2 2` is logged",
         "`2 1` is logged",
-        "A `SyntaxError` is thrown and nothing is logged",
-        "`2` is logged, then a `SyntaxError`"
+        "A `SyntaxError`, and nothing is logged",
+        "`2` is logged, then a `SyntaxError` is thrown"
       ],
       "answer": [
         2
@@ -1477,7 +1477,7 @@
       "lang": "js",
       "options": [
         "A `TypeError` inside `save()`",
-        "`10` is logged",
+        "`10` is logged, from a new global",
         "`undefined` is logged",
         "A `ReferenceError` inside `save()`"
       ],
@@ -1499,23 +1499,23 @@
       "difficulty": 2,
       "q": "A developer needs a `config` object that no code can point at a different object, and a block-scoped `attempts` counter that the code adds to. Which two declarations fit? (Choose 2)",
       "options": [
-        "`let config = { retries: 3 };`",
-        "`const attempts;`",
+        "`const attempts = 0;`",
         "`const config = { retries: 3 };`",
+        "`let config = { retries: 3 };`",
         "`let attempts = 0;`",
-        "`const attempts = 0;`"
+        "`const attempts;`"
       ],
       "answer": [
-        2,
+        1,
         3
       ],
       "explain": "Use `const` when the name must never be reassigned. Use `let` when the value must change.",
       "wrong": [
+        "A `const` can't be added to; `attempts++` would throw.",
+        "",
         "A `let` can be pointed at a different object.",
-        "A `const` without a value is a `SyntaxError`.",
         "",
-        "",
-        "A `const` can't be added to; `attempts++` would throw."
+        "A `const` without a value is a `SyntaxError`."
       ],
       "source": "MDN: const"
     },
@@ -1531,7 +1531,7 @@
         "`2`",
         "`undefined`",
         "A `ReferenceError`",
-        "`1`"
+        "`1`, read from the outer `x`"
       ],
       "answer": [
         2
@@ -1626,23 +1626,23 @@
       "pack": "hard",
       "q": "A script already starts with `let total = 0;`. Which two lines would cause a `SyntaxError` if added at the same top level? (Choose 2)",
       "options": [
-        "`function f() { let total = 1; }`",
-        "`let total = 1;`",
-        "`var total = 1;`",
         "`total = 1;`",
-        "`{ let total = 1; }`"
+        "`{ let total = 1; }`",
+        "`let total = 1;`",
+        "`function f() { let total = 1; }`",
+        "`var total = 1;`"
       ],
       "answer": [
-        1,
-        2
+        2,
+        4
       ],
       "explain": "A name declared with `let` can't be declared again in the same scope. That is true for a second `let` and for a `var`.",
       "wrong": [
-        "A function has its own scope, so this `total` is separate.",
-        "",
-        "",
         "This just reassigns the existing `let`.",
-        "The braces make a new block, so this `total` is separate."
+        "The braces make a new block, so this `total` is separate.",
+        "",
+        "A function has its own scope, so this `total` is separate.",
+        ""
       ],
       "source": "MDN: let"
     },
@@ -1698,23 +1698,23 @@
       "difficulty": 2,
       "q": "Which two expressions return `'function'`? (Choose 2)",
       "options": [
+        "`typeof class Cart {}`",
         "`typeof []`",
         "`typeof null`",
-        "`typeof new Date()`",
-        "`typeof class Cart {}`",
-        "`typeof function () {}`"
+        "`typeof function () {}`",
+        "`typeof new Date()`"
       ],
       "answer": [
-        3,
-        4
+        0,
+        3
       ],
       "explain": "`typeof` gives `'function'` for anything you can call. A class is a special kind of function, so it counts too.",
       "wrong": [
+        "",
         "Arrays are objects, so this gives `'object'`.",
         "This gives `'object'`, a known old bug.",
-        "A date made with `new` is an object, so this gives `'object'`.",
         "",
-        ""
+        "A date made with `new` is an object, so this gives `'object'`."
       ],
       "source": "MDN: typeof"
     },
@@ -1799,10 +1799,10 @@
       "code": "console.log(typeof ghost);\nconsole.log(typeof later);\nlet later = 1;",
       "lang": "js",
       "options": [
-        "`'undefined'` is logged twice",
-        "A `ReferenceError` on the first line",
+        "`'undefined'`, then `'undefined'` again",
+        "A `ReferenceError` on the very first line",
         "`'undefined'`, then `'number'`",
-        "`'undefined'` is logged, then a `ReferenceError`"
+        "`'undefined'`, then a `ReferenceError`"
       ],
       "answer": [
         3
@@ -1847,23 +1847,23 @@
       "difficulty": 2,
       "q": "Which two values are primitives? (Choose 2)",
       "options": [
+        "`[1, 2]`",
+        "`'hello'`",
         "`{ id: 1 }`",
         "`function () {}`",
-        "`'hello'`",
-        "`42n`",
-        "`[1, 2]`"
+        "`42n`"
       ],
       "answer": [
-        2,
-        3
+        1,
+        4
       ],
       "explain": "A string and a BigInt are primitives. Arrays, plain objects and functions are all objects.",
       "wrong": [
+        "An array is an object.",
+        "",
         "A plain object is not a primitive.",
         "A function is an object you can call.",
-        "",
-        "",
-        "An array is an object."
+        ""
       ],
       "source": "MDN: JavaScript data types and data structures"
     },
@@ -2002,23 +2002,23 @@
       "code": "const total = 15;\nconst a = 'Total: ${total}';\nconst b = \"Total: ${total}\";\nconst c = `Total: ${total}`;\nconst d = 'Total: ' + total;\nconst e = `Total: $total`;",
       "lang": "js",
       "options": [
+        "`a`",
+        "`b`",
         "`c`",
         "`d`",
-        "`e`",
-        "`a`",
-        "`b`"
+        "`e`"
       ],
       "answer": [
-        0,
-        1
+        2,
+        3
       ],
       "explain": "Only backticks fill `${...}` holes. Joining with `+` gives the same text the old way.",
       "wrong": [
-        "",
-        "",
-        "A hole needs braces: `${total}`, not `$total`.",
         "Single quotes print `${total}` as plain characters.",
-        "Double quotes print `${total}` as plain characters too."
+        "Double quotes print `${total}` as plain characters too.",
+        "",
+        "",
+        "A hole needs braces: `${total}`, not `$total`."
       ],
       "source": "MDN: Template literals (Template strings)"
     },
@@ -2109,7 +2109,7 @@
         "A `TypeError` is thrown",
         "`x1x2` is logged",
         "`y1y2` is logged",
-        "`y1x2` is logged"
+        "`y1x2`, as only the first match changes"
       ],
       "answer": [
         0
@@ -2168,7 +2168,7 @@
         "The first number is the final length, so this gives four digits.",
         "",
         "`padEnd` adds the zeros on the right: `'420000'`.",
-        "This always adds six zeros: `0000042`, seven digits."
+        "This always adds six zeros: `00000042`, eight digits."
       ],
       "source": "MDN: String.prototype.padStart()"
     },
@@ -2203,23 +2203,23 @@
       "difficulty": 2,
       "q": "A developer must check whether `email` ends with `@acme.com`. Which two expressions work? (Choose 2)",
       "options": [
-        "`email.includes('@acme.com')`",
+        "`email.startsWith('@acme.com')`",
+        "`email.indexOf('@acme.com') === 0`",
         "`email.endsWith('@acme.com')`",
         "`email.slice(-9) === '@acme.com'`",
-        "`email.startsWith('@acme.com')`",
-        "`email.indexOf('@acme.com') === 0`"
+        "`email.includes('@acme.com')`"
       ],
       "answer": [
-        1,
-        2
+        2,
+        3
       ],
       "explain": "`endsWith` checks the end directly. `slice(-9)` takes the last 9 characters, the exact length of `@acme.com`.",
       "wrong": [
-        "This also matches the text in the middle, like `x@acme.com.evil.io`.",
-        "",
-        "",
         "This checks the start of the string.",
-        "This is true only if the text sits at the very start."
+        "This is true only if the text sits at the very start.",
+        "",
+        "",
+        "This also matches the text in the middle, like `x@acme.com.evil.io`."
       ],
       "source": "MDN: String.prototype.endsWith()"
     },
@@ -2306,21 +2306,21 @@
       "pack": "hard",
       "q": "Which two expressions return `'ABC'`? (Choose 2)",
       "options": [
+        "`'abc'.split('').toUpperCase()`",
         "`'abc'.toUpperCase()`",
         "`['a', 'b', 'c'].join('').toUpperCase()`",
-        "`'abc'.split('').toUpperCase()`",
         "`'abc'.upperCase()`",
         "`'a b c'.replace(' ', '').toUpperCase()`"
       ],
       "answer": [
-        0,
-        1
+        1,
+        2
       ],
       "explain": "`toUpperCase()` works on strings. `join('')` turns the array back into a string first, so it works too.",
       "wrong": [
-        "",
-        "",
         "`split` returns an array, and arrays have no `toUpperCase`, so it throws.",
+        "",
+        "",
         "There is no `upperCase` method; this throws a `TypeError`.",
         "`replace` removes only the first space, giving `'AB C'`."
       ],
@@ -2526,23 +2526,23 @@
       "pack": "hard",
       "q": "Which two lines run without throwing an error? (Choose 2)",
       "options": [
+        "`10n + 5`",
         "`Math.max(10n, 5n)`",
         "`10n * 1.5`",
         "`10n + 5n`",
-        "`10n + BigInt(5)`",
-        "`10n + 5`"
+        "`10n + BigInt(5)`"
       ],
       "answer": [
-        2,
-        3
+        3,
+        4
       ],
       "explain": "BigInt math works only with other BigInts. `BigInt(5)` turns a number into a BigInt first, so that line works too.",
       "wrong": [
+        "This mixes a BigInt with a number, which throws.",
         "`Math` methods don't accept BigInt values.",
         "This mixes types, and BigInts hold only whole numbers anyway.",
         "",
-        "",
-        "This mixes a BigInt with a number, which throws."
+        ""
       ],
       "source": "MDN: BigInt"
     },
@@ -2675,23 +2675,23 @@
       "difficulty": 2,
       "q": "Which two expressions give the current time in milliseconds since 1 January 1970 UTC? (Choose 2)",
       "options": [
-        "`Date.parse()`",
         "`Date.now()`",
-        "`new Date().getTime()`",
         "`new Date().getDate()`",
-        "`new Date().getMilliseconds()`"
+        "`new Date().getMilliseconds()`",
+        "`Date.parse()`",
+        "`new Date().getTime()`"
       ],
       "answer": [
-        1,
-        2
+        0,
+        4
       ],
       "explain": "Both `Date.now()` and `getTime()` give milliseconds since the epoch, 1 January 1970 UTC.",
       "wrong": [
-        "This reads a date string; with no string it gives `NaN`.",
-        "",
         "",
         "`getDate()` gives the day of the month.",
-        "This gives only the 0 to 999 milliseconds part."
+        "This gives only the 0 to 999 milliseconds part.",
+        "This reads a date string; with no string it gives `NaN`.",
+        ""
       ],
       "source": "MDN: Date.now()"
     },
@@ -2726,23 +2726,23 @@
       "difficulty": 2,
       "q": "Which two expressions give the number `42`? (Choose 2)",
       "options": [
-        "`Number('42px')`",
-        "`(42).toFixed(0)`",
-        "`parseInt('px42', 10)`",
         "`parseInt('42px', 10)`",
-        "`Number('42')`"
+        "`Number('42px')`",
+        "`Number('42')`",
+        "`(42).toFixed(0)`",
+        "`parseInt('px42', 10)`"
       ],
       "answer": [
-        3,
-        4
+        0,
+        2
       ],
       "explain": "`parseInt` reads leading digits and ignores the rest. `Number` works when the whole text is a number.",
       "wrong": [
-        "`Number` needs the whole text to be numeric, so this is `NaN`.",
-        "This gives the string `'42'`, not a number.",
-        "`parseInt` stops at the first letter, so it finds no digits: `NaN`.",
         "",
-        ""
+        "`Number` needs the whole text to be numeric, so this is `NaN`.",
+        "",
+        "This gives the string `'42'`, not a number.",
+        "`parseInt` stops at the first letter, so it finds no digits: `NaN`."
       ],
       "source": "MDN: parseInt()"
     },
@@ -2892,23 +2892,23 @@
       "difficulty": 2,
       "q": "Which two comparisons are `true`? (Choose 2)",
       "options": [
-        "`Object.is(0, -0)`",
-        "`'1' === 1`",
+        "`NaN === NaN`",
         "`'1' == 1`",
+        "`Object.is(0, -0)`",
         "`Object.is(NaN, NaN)`",
-        "`NaN === NaN`"
+        "`'1' === 1`"
       ],
       "answer": [
-        2,
+        1,
         3
       ],
       "explain": "`==` converts `'1'` to 1 before comparing. `Object.is` treats `NaN` as equal to itself.",
       "wrong": [
+        "`NaN` is never strictly equal to itself.",
+        "",
         "`Object.is` treats `0` and `-0` as different.",
-        "`===` never converts, and a string is not a number.",
         "",
-        "",
-        "`NaN` is never strictly equal to itself."
+        "`===` never converts, and a string is not a number."
       ],
       "source": "MDN: Object.is()"
     },
@@ -2919,7 +2919,7 @@
       "q": "A form gives the quantity as the string `'3'`. The code `total = qty + 2` sets `'32'`. Which fix gives `5`?",
       "options": [
         "`total = Number(qty) + 2`",
-        "`total = String(qty) + 2`",
+        "`total = String(qty) + Number(2)`",
         "`total = qty + '2'`",
         "`total = qty.concat(2)`"
       ],
@@ -2929,7 +2929,7 @@
       "explain": "Convert the text to a number before adding. `Number('3')` is 3, and `3 + 2` is 5.",
       "wrong": [
         "",
-        "This is still a string, so `+` still joins.",
+        "The left side is still a string, so `+` still joins.",
         "Both sides are strings, so the result is `'32'`.",
         "`concat` joins strings too."
       ],
@@ -3017,23 +3017,23 @@
       "pack": "hard",
       "q": "Which two expressions give `NaN`? (Choose 2)",
       "options": [
-        "`'abc' * 2`",
-        "`undefined + 1`",
         "`null + 1`",
         "`'5' - '2'`",
-        "`[] - 1`"
+        "`'abc' * 2`",
+        "`[] - 1`",
+        "`undefined + 1`"
       ],
       "answer": [
-        0,
-        1
+        2,
+        4
       ],
       "explain": "`undefined` converts to `NaN`, and so does text that isn't a number. Any math with `NaN` gives `NaN`.",
       "wrong": [
-        "",
-        "",
         "`null` converts to `0`, so this is `1`.",
         "Both strings convert cleanly, so this is `3`.",
-        "An empty array becomes `''`, then `0`, so this is `-1`."
+        "",
+        "An empty array becomes `''`, then `0`, so this is `-1`.",
+        ""
       ],
       "source": "MDN: JavaScript data types and data structures"
     },
@@ -3064,12 +3064,12 @@
       "id": "types-q49",
       "lesson": "types-5",
       "difficulty": 1,
-      "q": "Which operator compares two values without converting their types?",
+      "q": "Which comparison never converts the types of `a` and `b`?",
       "options": [
-        "`===`",
-        "`==`",
-        "`=`",
-        "`>=`"
+        "`a === b`",
+        "`a == b`",
+        "`a != b`",
+        "`a >= b`"
       ],
       "answer": [
         0
@@ -3078,7 +3078,7 @@
       "wrong": [
         "",
         "Loose equality converts types before comparing.",
-        "A single `=` assigns a value; it does not compare.",
+        "`!=` is the opposite of `==`, so it converts too.",
         "Comparison operators convert values to numbers."
       ],
       "source": "MDN: Strict equality (===)"
@@ -3114,23 +3114,23 @@
       "pack": "hard",
       "q": "Which two expressions give the string `'12'`? (Choose 2)",
       "options": [
+        "`'1' + 2`",
         "`1 + 2 + ''`",
         "`+'1' + 2`",
-        "`'3' * '4'`",
-        "`'1' + 2`",
-        "`[1] + [2]`"
+        "`[1] + [2]`",
+        "`'3' * '4'`"
       ],
       "answer": [
-        3,
-        4
+        0,
+        3
       ],
       "explain": "`+` joins once either side is a string. Arrays become strings too: `[1]` becomes `'1'` and `[2]` becomes `'2'`.",
       "wrong": [
+        "",
         "The numbers add first, giving `'3'`.",
         "The unary plus makes both sides numbers, giving `3`.",
-        "`*` converts to numbers, giving `12`, a number.",
         "",
-        ""
+        "`*` converts to numbers, giving `12`, a number."
       ],
       "source": "MDN: Addition (+)"
     },
@@ -3140,23 +3140,23 @@
       "difficulty": 1,
       "q": "Which two values are falsy? (Choose 2)",
       "options": [
-        "`'false'`",
-        "`0`",
-        "`''`",
         "`'0'`",
-        "`[]`"
+        "`0`",
+        "`[]`",
+        "`'false'`",
+        "`''`"
       ],
       "answer": [
         1,
-        2
+        4
       ],
       "explain": "Only eight values are falsy, including `0` and the empty string. Non-empty strings and all objects are truthy.",
       "wrong": [
-        "Any non-empty string is truthy.",
-        "",
-        "",
         "A string with a character in it is truthy, even `'0'`.",
-        "Every array is an object, and every object is truthy."
+        "",
+        "Every array is an object, and every object is truthy.",
+        "Any non-empty string is truthy.",
+        ""
       ],
       "source": "MDN: Falsy"
     },
@@ -3239,7 +3239,7 @@
       "q": "What does `console.log(null || undefined || '')` print?",
       "options": [
         "`undefined`",
-        "`false`",
+        "`false`, since no operand is truthy",
         "An empty string",
         "`null`"
       ],
@@ -3464,7 +3464,7 @@
       "q": "What does `a || b` return when `a` is truthy?",
       "options": [
         "`true`",
-        "The value of `b`",
+        "The value of `b`, the last operand",
         "`false`",
         "The value of `a`"
       ],
@@ -3486,11 +3486,11 @@
       "difficulty": 1,
       "q": "Which two methods change the original array? (Choose 2)",
       "options": [
+        "`slice`",
         "`map`",
-        "`concat`",
         "`push`",
         "`sort`",
-        "`slice`"
+        "`concat`"
       ],
       "answer": [
         2,
@@ -3498,11 +3498,11 @@
       ],
       "explain": "`push` adds to the original, and `sort` reorders it in place. `slice`, `map` and `concat` all return new arrays.",
       "wrong": [
+        "`slice` copies a part into a new array.",
         "`map` builds a new array.",
-        "`concat` builds a new, joined array.",
         "",
         "",
-        "`slice` copies a part into a new array."
+        "`concat` builds a new, joined array."
       ],
       "source": "MDN: Array.prototype.sort()"
     },
@@ -3711,11 +3711,11 @@
       "difficulty": 2,
       "q": "A developer needs a new array with `newItem` added at the end, and `cart` must not change. Which two work? (Choose 2)",
       "options": [
-        "`cart.unshift(newItem)`",
+        "`cart.push(newItem)`",
         "`[...cart, newItem]`",
         "`cart.concat(newItem)`",
-        "`cart.push(newItem)`",
-        "`cart.splice(cart.length, 0, newItem)`"
+        "`cart.splice(cart.length, 0, newItem)`",
+        "`cart.unshift(newItem)`"
       ],
       "answer": [
         1,
@@ -3723,11 +3723,11 @@
       ],
       "explain": "Spread and `concat` build new arrays. `push`, `splice` and `unshift` change the original.",
       "wrong": [
-        "`unshift` changes `cart`, and adds to the start.",
-        "",
-        "",
         "`push` changes `cart` and returns a number.",
-        "`splice` changes `cart` in place."
+        "",
+        "",
+        "`splice` changes `cart` in place.",
+        "`unshift` changes `cart`, and adds to the start."
       ],
       "source": "MDN: Array.prototype.concat()"
     },
@@ -3911,10 +3911,10 @@
       "code": "const doubled = [1, 2, 3].map(n => { n * 2; });\nconsole.log(doubled);",
       "lang": "js",
       "options": [
-        "`[1, 2, 3]`",
-        "`[]`",
-        "`[undefined, undefined, undefined]`",
-        "`[2, 4, 6]`"
+        "The original numbers `1, 2, 3`",
+        "An empty array",
+        "An array of three `undefined` values",
+        "An array of the doubled numbers `2, 4, 6`"
       ],
       "answer": [
         2
@@ -3963,7 +3963,7 @@
       "lang": "js",
       "options": [
         "`NaN`",
-        "A `TypeError`",
+        "A `TypeError` is thrown",
         "`[object Object]6`",
         "`10`"
       ],
@@ -3988,7 +3988,7 @@
       "code": "const scores = [40, 30].filter(s => s > 50);\nconsole.log(scores.reduce((a, b) => a + b));",
       "lang": "js",
       "options": [
-        "`NaN` is logged",
+        "`NaN` is logged, since nothing was added",
         "A `TypeError` is thrown",
         "`0` is logged",
         "`undefined` is logged"
@@ -4011,23 +4011,23 @@
       "difficulty": 2,
       "q": "A developer must check whether any order has `status === 'late'`, and stop looking at the first match. Which two work? (Choose 2)",
       "options": [
+        "`orders.some(o => o.status === 'late')`",
+        "`orders.forEach(o => o.status === 'late')`",
         "`orders.every(o => o.status === 'late')`",
         "`orders.filter(o => o.status === 'late')`",
-        "`orders.some(o => o.status === 'late')`",
-        "`orders.find(o => o.status === 'late') !== undefined`",
-        "`orders.forEach(o => o.status === 'late')`"
+        "`orders.find(o => o.status === 'late') !== undefined`"
       ],
       "answer": [
-        2,
-        3
+        0,
+        4
       ],
       "explain": "`some` and `find` stop as soon as one item passes. `some` gives a boolean; comparing `find` to `undefined` gives one too.",
       "wrong": [
+        "",
+        "`forEach` returns `undefined` and visits every item.",
         "`every` checks that all orders are late.",
         "`filter` visits every item and returns an array, which is always truthy.",
-        "",
-        "",
-        "`forEach` returns `undefined` and visits every item."
+        ""
       ],
       "source": "MDN: Array.prototype.some()"
     },
@@ -4137,20 +4137,20 @@
       "q": "Which two compare functions sort numbers from highest to lowest? (Choose 2)",
       "options": [
         "`(a, b) => b - a`",
-        "`(a, b) => (a > b ? -1 : a < b ? 1 : 0)`",
         "`(a, b) => a - b`",
+        "`(a, b) => (a > b ? -1 : a < b ? 1 : 0)`",
         "`(a, b) => a < b`",
         "`(a, b) => b > a`"
       ],
       "answer": [
         0,
-        1
+        2
       ],
       "explain": "A negative result puts `a` first. Both correct functions return a negative number when `a` is bigger.",
       "wrong": [
         "",
-        "",
         "This sorts from lowest to highest.",
+        "",
         "It returns a boolean, never a negative number.",
         "It returns a boolean, so the order is unreliable."
       ],
@@ -4212,22 +4212,22 @@
       "q": "A developer needs the names of products with `price > 10`, in a new array. Which two lines do it? (Choose 2)",
       "options": [
         "`products.map(p => (p.price > 10 ? p.name : undefined))`",
-        "`products.find(p => p.price > 10).name`",
-        "`products.forEach(p => p.price > 10 && p.name)`",
         "`products.filter(p => p.price > 10).map(p => p.name)`",
-        "`products.reduce((acc, p) => (p.price > 10 ? [...acc, p.name] : acc), [])`"
+        "`products.find(p => p.price > 10).name`",
+        "`products.reduce((acc, p) => (p.price > 10 ? [...acc, p.name] : acc), [])`",
+        "`products.forEach(p => p.price > 10 && p.name)`"
       ],
       "answer": [
-        3,
-        4
+        1,
+        3
       ],
       "explain": "`filter` then `map` keeps the matches and picks their names. A `reduce` that adds names to an array does the same.",
       "wrong": [
         "This keeps every item, with `undefined` for the cheap ones.",
-        "`find` gives only the first match.",
-        "`forEach` returns `undefined`.",
         "",
-        ""
+        "`find` gives only the first match.",
+        "",
+        "`forEach` returns `undefined`."
       ],
       "source": "MDN: Array.prototype.reduce()"
     },
@@ -4336,23 +4336,23 @@
       "difficulty": 2,
       "q": "Which two statements about `WeakMap` are true? (Choose 2)",
       "options": [
-        "It keeps insertion order for looping, like `Map`",
-        "An entry can vanish once its key object is unused elsewhere",
-        "You can't loop over its entries",
         "Its `size` property counts the entries",
-        "It accepts strings and numbers as keys"
+        "It accepts strings and numbers as keys",
+        "An entry can vanish once its key object is unused elsewhere",
+        "It keeps insertion order for looping, like `Map`",
+        "You can't loop over its entries"
       ],
       "answer": [
-        1,
-        2
+        2,
+        4
       ],
       "explain": "A WeakMap holds its keys weakly, so the garbage collector can remove entries. That is why it can't be counted or looped over.",
       "wrong": [
-        "It can't be looped over at all.",
-        "",
-        "",
         "A `WeakMap` has no `size`.",
-        "Primitive keys like these throw a `TypeError`."
+        "Primitive keys like these throw a `TypeError`.",
+        "",
+        "It can't be looped over at all.",
+        ""
       ],
       "source": "MDN: WeakMap"
     },
@@ -4439,7 +4439,7 @@
       "code": "const wm = new WeakMap();\nwm.set('id', 1);\nconsole.log(wm.get('id'));",
       "lang": "js",
       "options": [
-        "`1` is logged",
+        "`1` is logged, as with a `Map`",
         "`undefined` is logged",
         "`'id'` is logged",
         "A `TypeError` is thrown"
@@ -4489,21 +4489,21 @@
       "q": "Which two expressions give the number of entries in a `Map` named `m`? (Choose 2)",
       "options": [
         "`m.size`",
-        "`[...m].length`",
         "`m.size()`",
         "`m.length`",
+        "`[...m].length`",
         "`Object.keys(m).length`"
       ],
       "answer": [
         0,
-        1
+        3
       ],
       "explain": "`size` is a property on Map. Spreading a Map gives one array item per entry, so its `length` works too.",
       "wrong": [
         "",
-        "",
         "`size` is a property, so calling it throws.",
         "A Map has no `length`.",
+        "",
         "Map entries are not object properties, so this is 0."
       ],
       "source": "MDN: Map"
@@ -4564,23 +4564,23 @@
       "pack": "hard",
       "q": "Which two lines throw a `TypeError`? (Choose 2)",
       "options": [
+        "`new Map().set(1, 'a')`",
+        "`new WeakMap().set(1, 'a')`",
         "`new Set().add({})`",
         "`new WeakMap().set({}, 1)`",
-        "`new WeakMap().set(1, 'a')`",
-        "`new WeakSet().add('a')`",
-        "`new Map().set(1, 'a')`"
+        "`new WeakSet().add('a')`"
       ],
       "answer": [
-        2,
-        3
+        1,
+        4
       ],
       "explain": "WeakMap keys and WeakSet values must be objects. A number or a string there throws a `TypeError`.",
       "wrong": [
+        "A Map accepts any key, numbers included.",
+        "",
         "A Set accepts any value, objects included.",
         "An object is a valid WeakMap key.",
-        "",
-        "",
-        "A Map accepts any key, numbers included."
+        ""
       ],
       "source": "MDN: WeakSet"
     },
@@ -4791,23 +4791,23 @@
       "difficulty": 2,
       "q": "Which two statements about `JSON.parse` are true? (Choose 2)",
       "options": [
-        "It returns `undefined` when the text is not valid",
         "It throws a `SyntaxError` when the text is not valid JSON",
         "Its optional second argument, a reviver, can change each value",
         "It turns ISO date strings back into `Date` objects",
-        "It accepts keys in single quotes"
+        "It accepts keys in single quotes",
+        "It returns `undefined` when the text is not valid"
       ],
       "answer": [
-        1,
-        2
+        0,
+        1
       ],
       "explain": "`JSON.parse` throws a `SyntaxError` on bad input. A reviver function can transform each value as it is read.",
       "wrong": [
-        "It throws instead of returning.",
         "",
         "",
         "Dates stay strings unless a reviver changes them.",
-        "JSON allows only double quotes."
+        "JSON allows only double quotes.",
+        "It throws instead of returning."
       ],
       "source": "MDN: JSON.parse()"
     },
@@ -4872,7 +4872,7 @@
         "`52`, a string",
         "`7`, a number",
         "`7`, a string",
-        "`NaN`"
+        "`NaN`, a number"
       ],
       "answer": [
         0
@@ -4895,21 +4895,21 @@
       "options": [
         "An array of numbers in `scores`",
         "A `null` in `deletedAt`",
-        "A boolean `true` in `active`",
         "A `Date` in `created`",
-        "A method in `format`"
+        "A method in `format`",
+        "A boolean `true` in `active`"
       ],
       "answer": [
-        3,
-        4
+        2,
+        3
       ],
       "explain": "A date comes back as a string, and a method is dropped. Plain data like numbers, arrays, booleans and `null` round-trips fine.",
       "wrong": [
         "Arrays of numbers fit JSON exactly.",
         "`null` is valid JSON and comes back as `null`.",
-        "Booleans are valid JSON.",
         "",
-        ""
+        "",
+        "Booleans are valid JSON."
       ],
       "source": "MDN: JSON.stringify()"
     },
