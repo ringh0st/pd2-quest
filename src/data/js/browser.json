@@ -1,0 +1,3355 @@
+{
+  "id": "browser",
+  "title": "Browser and Events",
+  "weight": 17,
+  "summary": "Find and change page elements safely, steer events through capture and bubble, use the browser's storage, history, fetch and timers, and investigate it all with Dev Tools.",
+  "lessons": [
+    {
+      "id": "browser-1",
+      "title": "Finding elements in the DOM",
+      "minutes": 3,
+      "objective": "Given a business requirement, evaluate and manipulate the DOM.",
+      "cards": [
+        {
+          "type": "text",
+          "title": "In plain words",
+          "body": "The **DOM** (Document Object Model) is the browser's live tree of your page. Every tag becomes an object that JavaScript can read and change. Before you change something, you have to find it. The `document` object gives you the search tools."
+        },
+        {
+          "type": "tip",
+          "title": "Think of it like…",
+          "body": "A big family tree on a wall. Each person is a box with a parent and children. You can find someone by name tag, by group, or by a description. Where it stops: change a box in the DOM and the page on screen changes too. A wall chart never redraws itself."
+        },
+        {
+          "type": "code",
+          "title": "One, the first, or all",
+          "lang": "js",
+          "code": "const form = document.getElementById('signup'); // one or null\nconst first = document.querySelector('.item');    // first match or null\nconst all = document.querySelectorAll('li.item'); // a list, maybe empty\nconst row = button.closest('tr');                 // nearest ancestor match",
+          "body": "`getElementById` and `querySelector` give one element or `null`. `querySelectorAll` gives a `NodeList`, empty when nothing matches. `closest` walks up from an element, starting with the element itself."
+        },
+        {
+          "type": "text",
+          "title": "Live or snapshot?",
+          "body": "`querySelectorAll` returns a **static** `NodeList`: a snapshot taken once. `getElementsByClassName` and `children` return a **live** `HTMLCollection`. It updates by itself when matching elements come or go. A `NodeList` has `forEach`. An `HTMLCollection` doesn't, so use `Array.from()` or `for...of`."
+        },
+        {
+          "type": "text",
+          "title": "Wait for the page",
+          "body": "Code can only find elements that already exist. `DOMContentLoaded` fires once the HTML is parsed and **deferred** scripts have run. It doesn't wait for images or stylesheets. The `load` event on `window` waits for everything. A script with `defer` or `type=\"module\"` runs after parsing too."
+        },
+        {
+          "type": "trap",
+          "body": "`getElementById('#signup')` finds nothing: it takes a plain id, with no `#`. It returns `null`, and the next line throws a `TypeError` when it reads a property of `null`. Also, an empty `NodeList` is still an object, so `if (list)` is always true. Check `list.length`."
+        },
+        {
+          "type": "tip",
+          "title": "Remember it",
+          "body": "**\"All is a photo, getElements is a live camera.\"** `querySelectorAll` snaps once. `getElementsBy…` keeps filming. Single finders give one element or `null`."
+        }
+      ],
+      "check": [
+        "browser-q1",
+        "browser-q4",
+        "browser-x1"
+      ],
+      "terms": [
+        {
+          "term": "DOM",
+          "match": [
+            "Document Object Model"
+          ],
+          "say": "The page as a tree of objects. Every tag is a box JavaScript can find, read and change. Change the tree, and the page on screen changes."
+        },
+        {
+          "term": "document",
+          "say": "The object that stands for the whole page. It is the starting point for finding elements, like the front door of the tree."
+        },
+        {
+          "term": "getElementById",
+          "say": "Finds the one element with a given id. You pass the id with no # sign. If no element has that id, you get null."
+        },
+        {
+          "term": "querySelector",
+          "say": "Finds the first element that matches a CSS selector, like \".item\" or \"#menu a\". If nothing matches, you get null."
+        },
+        {
+          "term": "querySelectorAll",
+          "say": "Finds every element that matches a CSS selector. It gives back a list that never changes later, even if the page does."
+        },
+        {
+          "term": "NodeList",
+          "say": "A list of page nodes. The one from querySelectorAll is a snapshot. It has forEach and a length, but no map."
+        },
+        {
+          "term": "HTMLCollection",
+          "say": "A live list of elements. It updates by itself when elements are added or removed. It has a length but no forEach."
+        },
+        {
+          "term": "closest",
+          "say": "Climbs up from an element to find the nearest one matching a selector. It checks the element itself first. If none match, you get null."
+        },
+        {
+          "term": "DOMContentLoaded",
+          "say": "An event that fires when the HTML is fully read and deferred scripts have run. Images may still be loading."
+        },
+        {
+          "term": "deferred",
+          "match": [
+            "defer"
+          ],
+          "say": "A script marked to wait. It downloads while the page is read, then runs after the HTML is parsed, in order."
+        }
+      ]
+    },
+    {
+      "id": "browser-2",
+      "title": "Changing the DOM safely",
+      "minutes": 3,
+      "objective": "Given a business requirement, evaluate and manipulate the DOM.",
+      "cards": [
+        {
+          "type": "text",
+          "title": "In plain words",
+          "body": "Once you have an element, you can change its text, classes and attributes, or add new elements. Some tools treat your string as **plain text**. Others read it as HTML and build real tags from it. Picking the wrong one can let an attacker run code on your page."
+        },
+        {
+          "type": "tip",
+          "title": "Think of it like…",
+          "body": "A sign painter. `textContent` paints your words exactly as written. `innerHTML` reads your words as building plans and builds whatever they describe. Where it stops: a real painter would refuse a strange plan. `innerHTML` builds anything it is given."
+        },
+        {
+          "type": "text",
+          "title": "Text or HTML?",
+          "body": "`textContent` sets plain text, so `<b>` shows as the characters `<b>`. Reading it returns all text, even hidden text. `innerText` reads only the text a user can see. `innerHTML` parses the string as HTML. With user input, that is an **XSS** hole (cross-site scripting: someone else's script runs in your page)."
+        },
+        {
+          "type": "code",
+          "title": "Build, then attach",
+          "lang": "js",
+          "code": "const li = document.createElement('li');\nli.textContent = userName;      // safe: plain text\nli.classList.add('member');\nli.dataset.userId = '42';       // data-user-id=\"42\"\nlist.append(li, ' (new)');      // nodes or strings",
+          "body": "`createElement` makes an element that is not on the page yet. `append` adds nodes or strings and returns `undefined`. `appendChild` takes one node and returns it."
+        },
+        {
+          "type": "list",
+          "title": "Handy tools",
+          "items": [
+            "`classList` has `add`, `remove` and `toggle`; `toggle` returns `true` if the class is now on",
+            "`dataset`: `data-order-count` becomes `dataset.orderCount`, always a **string**",
+            "`setAttribute(name, value)` and `getAttribute(name)` work for any attribute",
+            "`insertAdjacentHTML` parses an HTML string and puts it at one of four spots",
+            "`remove()` takes an element off the page"
+          ]
+        },
+        {
+          "type": "trap",
+          "body": "\"Scripts added with `innerHTML` don't run, so it's safe.\" Wrong. A `<script>` tag added that way stays asleep, but `<img src=x onerror=...>` runs. Put untrusted text in with `textContent`. Also: appending an element that is already on the page **moves** it. It does not copy it."
+        },
+        {
+          "type": "tip",
+          "title": "Remember it",
+          "body": "**\"Text for people, HTML only for code you wrote.\"** User data goes in `textContent`. `innerHTML` only gets strings you control."
+        }
+      ],
+      "check": [
+        "browser-q12",
+        "browser-q15",
+        "browser-x8"
+      ],
+      "terms": [
+        {
+          "term": "textContent",
+          "say": "Sets or reads an element's text as plain letters. Tags you put in show up as typed characters, so nothing in them can run."
+        },
+        {
+          "term": "innerText",
+          "say": "Reads only the text a person can actually see on screen. Hidden parts are skipped. Setting it also puts in plain text."
+        },
+        {
+          "term": "innerHTML",
+          "say": "Reads or sets an element's inside as HTML. A string you set is turned into real tags, so never feed it user text."
+        },
+        {
+          "term": "XSS",
+          "match": [
+            "cross-site scripting"
+          ],
+          "say": "A trick where a bad person sneaks a script into your page. It runs in other people's browsers and can act as them."
+        },
+        {
+          "term": "createElement",
+          "say": "Makes a brand-new element, like a new li tag. It is not on the page until you add it somewhere."
+        },
+        {
+          "term": "append",
+          "say": "Adds one or more nodes or plain strings to the end of an element. It gives back nothing (undefined)."
+        },
+        {
+          "term": "appendChild",
+          "say": "Adds exactly one node to the end of an element and gives that node back. It does not accept plain strings."
+        },
+        {
+          "term": "classList",
+          "say": "An element's list of CSS classes, with handy tools: add, remove, toggle and contains."
+        },
+        {
+          "term": "dataset",
+          "say": "A way to read and write data- attributes. data-user-id is read as dataset.userId. The values are always strings."
+        },
+        {
+          "term": "insertAdjacentHTML",
+          "say": "Turns an HTML string into elements and puts them at one spot: before, inside at the start, inside at the end, or after an element."
+        }
+      ]
+    },
+    {
+      "id": "browser-3",
+      "title": "Event listeners and their options",
+      "minutes": 3,
+      "objective": "Given a business requirement, utilize Events, event handlers, and propagation.",
+      "cards": [
+        {
+          "type": "text",
+          "title": "In plain words",
+          "body": "An **event** is a signal that something happened: a click, a key press, a form submit. A **listener** is a function you ask the browser to run when that event happens. You attach it with `addEventListener`. The browser hands it an event object full of details."
+        },
+        {
+          "type": "tip",
+          "title": "Think of it like…",
+          "body": "A doorbell. You wire a bell (the listener) to a door (the element) for one kind of press (the event type). Press it, and your function runs. Where it stops: one door can have many bells for the same press. They all ring, in the order you wired them."
+        },
+        {
+          "type": "code",
+          "title": "Add and remove",
+          "lang": "js",
+          "code": "function onSave(event) {\n  console.log(this === event.currentTarget); // true\n}\nbtn.addEventListener('click', onSave);\nbtn.addEventListener('click', onSave);    // ignored: same function\nbtn.removeEventListener('click', onSave); // needs the same function",
+          "body": "Adding the **same** function twice for the same type does nothing. To remove it with `removeEventListener`, pass that same function again. In a regular function, `this` is the element. An arrow function keeps the outer `this`."
+        },
+        {
+          "type": "list",
+          "title": "The options object",
+          "items": [
+            "`once: true` removes the listener after its first run",
+            "`capture: true` runs it on the way down (next lesson)",
+            "`passive: true` promises not to call `preventDefault()`; if it does, the call is ignored, so scrolling stays smooth",
+            "`signal`: pass an `AbortController` signal; calling `abort()` removes the listener"
+          ]
+        },
+        {
+          "type": "text",
+          "title": "The older way",
+          "body": "`btn.onclick = fn` sets an **event handler property**. Each element has only one per event, so a second assignment replaces the first. `addEventListener` can stack many listeners. Use the property for quick demos and listeners for real apps."
+        },
+        {
+          "type": "trap",
+          "body": "Two arrow functions that look the same are two **different** functions. So `removeEventListener('click', () => save())` removes nothing. Keep a named reference. Also, the `capture` flag must match: a listener added with `capture: true` is only removed with `capture: true`."
+        },
+        {
+          "type": "tip",
+          "title": "Remember it",
+          "body": "**\"Same function, same flag, or it stays.\"** Removal needs the exact function and the same `capture` setting."
+        }
+      ],
+      "check": [
+        "browser-q21",
+        "browser-q22",
+        "browser-x11"
+      ],
+      "terms": [
+        {
+          "term": "event",
+          "say": "A signal from the browser that something happened, like a click or a key press. Your code can listen for it."
+        },
+        {
+          "term": "listener",
+          "say": "A function you ask the browser to run when an event happens on an element. It gets an event object with the details."
+        },
+        {
+          "term": "addEventListener",
+          "say": "The method that hooks a listener to an element for one event type, like click. You can hook up many listeners this way."
+        },
+        {
+          "term": "removeEventListener",
+          "say": "Unhooks a listener. You must pass the exact same function, and the same capture setting, that you used to add it."
+        },
+        {
+          "term": "once",
+          "match": [
+            "once: true"
+          ],
+          "say": "An option that makes a listener run one time only. After its first run, the browser removes it for you."
+        },
+        {
+          "term": "passive",
+          "match": [
+            "passive: true"
+          ],
+          "say": "An option that promises the listener will not cancel the event. The browser can then scroll smoothly without waiting for it."
+        },
+        {
+          "term": "preventDefault()",
+          "match": [
+            "preventDefault"
+          ],
+          "say": "Tells the browser not to do its normal job for this event, like following a link or sending a form."
+        },
+        {
+          "term": "AbortController",
+          "say": "An object with a signal and an abort() method. Give the signal to listeners or requests, then call abort() to stop them all at once."
+        },
+        {
+          "term": "event handler property",
+          "say": "An on-something property, like onclick. It holds one function at a time, so setting it again replaces the old one."
+        },
+        {
+          "term": "capture",
+          "match": [
+            "capture: true"
+          ],
+          "say": "An option that runs the listener while the event travels down toward the clicked element, before it bubbles back up."
+        }
+      ]
+    },
+    {
+      "id": "browser-4",
+      "title": "Propagation: capture, target, bubble",
+      "minutes": 3,
+      "objective": "Given a business requirement, utilize Events, event handlers, and propagation.",
+      "cards": [
+        {
+          "type": "text",
+          "title": "In plain words",
+          "body": "Click a button inside a card inside a page, and you clicked all three. So the event takes a trip. It travels down from `window` to the button (**capture phase**), reaches the button (**target phase**), then travels back up (**bubble phase**). Listeners along the path run as it passes."
+        },
+        {
+          "type": "tip",
+          "title": "Think of it like…",
+          "body": "A parcel delivered to a flat. It passes the city, the street and the building on the way in, and the empty box goes back out the same way. Where it stops: not every event comes back out. Some, like `focus`, don't bubble at all."
+        },
+        {
+          "type": "code",
+          "title": "Who runs first?",
+          "lang": "js",
+          "code": "outer.addEventListener('click', () => log('outer down'), true);\nouter.addEventListener('click', () => log('outer up'));\ninner.addEventListener('click', () => log('inner'));\n// click inner: outer down, inner, outer up",
+          "body": "Capture listeners on ancestors run on the way down. Then the target's listeners. Then **bubbling** listeners on the way back up. With no options, `addEventListener` listens in the bubble phase."
+        },
+        {
+          "type": "list",
+          "title": "Three different brakes",
+          "items": [
+            "`stopPropagation()`: stops the trip to other elements; other listeners on the **current** element still run",
+            "`stopImmediatePropagation()`: stops the trip **and** skips the rest of this element's listeners",
+            "`preventDefault()`: cancels the browser's **default action** (following a link, submitting a form); the trip goes on"
+          ]
+        },
+        {
+          "type": "text",
+          "title": "Reading the trip",
+          "body": "`event.eventPhase` says where the trip is: 1 capturing, 2 at the target, 3 bubbling. `event.bubbles` says if this event bubbles at all. `event.defaultPrevented` says if a listener called `preventDefault()`. That only works when the event is **cancelable**."
+        },
+        {
+          "type": "trap",
+          "body": "\"`stopPropagation()` stops the form from submitting.\" No. It only stops the event's trip, and the default action still happens. To stop the submit, call `preventDefault()`. To stop both, call both."
+        },
+        {
+          "type": "tip",
+          "title": "Remember it",
+          "body": "**\"Down, hit, up.\"** Capture goes down, the target is hit, bubbling comes up. **Stop** stops the trip; **prevent** stops the browser."
+        }
+      ],
+      "check": [
+        "browser-q33",
+        "browser-q34",
+        "browser-x19"
+      ],
+      "terms": [
+        {
+          "term": "capture phase",
+          "say": "The first part of an event's trip. It travels down from the window toward the element that was clicked."
+        },
+        {
+          "term": "target phase",
+          "say": "The moment the event reaches the element it happened on, like the button you clicked."
+        },
+        {
+          "term": "bubble phase",
+          "match": [
+            "bubbling"
+          ],
+          "say": "The last part of the trip. The event travels back up from the clicked element through its parents to the window."
+        },
+        {
+          "term": "window",
+          "say": "The browser tab's top object. Events start their trip here and end it here."
+        },
+        {
+          "term": "stopPropagation()",
+          "match": [
+            "stopPropagation"
+          ],
+          "say": "Stops the event from traveling on to other elements. Listeners on the current element still run, and the browser's normal action still happens."
+        },
+        {
+          "term": "stopImmediatePropagation()",
+          "match": [
+            "stopImmediatePropagation"
+          ],
+          "say": "Stops the trip and also skips any other listeners on this same element that haven't run yet."
+        },
+        {
+          "term": "default action",
+          "say": "What the browser does by itself after an event, like opening a link or sending a form. preventDefault() cancels it."
+        },
+        {
+          "term": "eventPhase",
+          "match": [
+            "event.eventPhase"
+          ],
+          "say": "A number on the event that tells where its trip is: 1 going down, 2 at the target, 3 coming back up."
+        },
+        {
+          "term": "cancelable",
+          "say": "Says whether an event's default action may be stopped. If it isn't cancelable, preventDefault() does nothing."
+        }
+      ]
+    },
+    {
+      "id": "browser-5",
+      "title": "Event delegation and custom events",
+      "minutes": 3,
+      "objective": "Given a business requirement, utilize Events, event handlers, and propagation.",
+      "cards": [
+        {
+          "type": "text",
+          "title": "In plain words",
+          "body": "**Event delegation** means one listener on a parent handles events for all its children. It works because events bubble up. It saves memory, and it also covers children added later, like new rows in a list."
+        },
+        {
+          "type": "tip",
+          "title": "Think of it like…",
+          "body": "A school office. Instead of a phone on every desk, one office phone takes every call and asks who it is for. Where it stops: events that don't bubble never reach the office, so delegation can't catch them."
+        },
+        {
+          "type": "code",
+          "title": "One listener, many buttons",
+          "lang": "js",
+          "code": "list.addEventListener('click', (event) => {\n  const btn = event.target.closest('button.delete');\n  if (!btn) return;            // the click was elsewhere\n  removeRow(btn.dataset.id);\n});",
+          "body": "`event.target` is what was actually clicked, maybe a tiny icon inside the button. `closest()` climbs up to the button you want. `event.currentTarget` is `list`, where the listener sits."
+        },
+        {
+          "type": "trap",
+          "body": "\"`event.target` is the element with the listener.\" No, that is `currentTarget`. And `currentTarget` is only set while listeners run. Keep the event and read it later, say after an `await`, and `currentTarget` is `null`."
+        },
+        {
+          "type": "code",
+          "title": "Your own events",
+          "lang": "js",
+          "code": "const evt = new CustomEvent('cart-change', {\n  detail: { count: 3 }, // your data\n  bubbles: true,        // default: false\n  composed: true        // may leave a shadow DOM\n});\ncard.dispatchEvent(evt);",
+          "body": "A `CustomEvent` carries your data in `detail`. It does **not** bubble unless you set `bubbles: true`. Add `composed: true` so it can also cross out of a **shadow DOM**, which matters in Lightning Web Components."
+        },
+        {
+          "type": "text",
+          "title": "Dispatch runs right away",
+          "body": "`dispatchEvent()` runs every matching listener **before** it returns. So the line after it runs after the listeners. It returns `false` if the event is cancelable and a listener called `preventDefault()`. Otherwise it returns `true`."
+        },
+        {
+          "type": "tip",
+          "title": "Remember it",
+          "body": "**\"Target got hit, currentTarget is listening.\"** Custom events stay put unless you say `bubbles: true`."
+        }
+      ],
+      "check": [
+        "browser-q43",
+        "browser-q44",
+        "browser-x23"
+      ],
+      "terms": [
+        {
+          "term": "Event delegation",
+          "say": "Putting one listener on a parent instead of one on every child. Events bubble up to the parent, which checks which child was hit."
+        },
+        {
+          "term": "event.target",
+          "say": "The element where the event really happened, like the exact icon you clicked. It can be deep inside the element that listens."
+        },
+        {
+          "term": "event.currentTarget",
+          "match": [
+            "currentTarget"
+          ],
+          "say": "The element whose listener is running right now. Once the event is finished, it becomes null."
+        },
+        {
+          "term": "closest()",
+          "say": "Climbs up from an element to the nearest one matching a selector, starting with itself. Great for finding the button around a clicked icon."
+        },
+        {
+          "term": "CustomEvent",
+          "say": "An event you invent and name yourself. It can carry your own data in its detail."
+        },
+        {
+          "term": "detail",
+          "say": "The box inside a CustomEvent where you put your own data, like a count or an id. Listeners read it as event.detail."
+        },
+        {
+          "term": "bubbles: true",
+          "match": [
+            "bubbles"
+          ],
+          "say": "An option that lets an event travel up through the parents. Events you create stay on their element without it."
+        },
+        {
+          "term": "composed: true",
+          "match": [
+            "composed"
+          ],
+          "say": "An option that lets an event leave a component's private shadow DOM, so the page outside can hear it."
+        },
+        {
+          "term": "shadow DOM",
+          "say": "A private, hidden tree inside a component. Its insides are kept apart from the rest of the page."
+        },
+        {
+          "term": "dispatchEvent()",
+          "match": [
+            "dispatchEvent"
+          ],
+          "say": "Fires an event on an element. All its listeners run right away, before the next line of your code."
+        }
+      ]
+    },
+    {
+      "id": "browser-6",
+      "title": "Browser APIs: storage, history, fetch and timers",
+      "minutes": 4,
+      "objective": "Given a scenario and requirements, utilize browser specific APIs.",
+      "cards": [
+        {
+          "type": "text",
+          "title": "In plain words",
+          "body": "The browser gives JavaScript extra tools that aren't part of the language. You can save data on the device, change the address bar, ask a server for data and run code later. These are **Web APIs**. Some, like the DOM and `history`, don't exist in Node.js."
+        },
+        {
+          "type": "tip",
+          "title": "Think of it like…",
+          "body": "A hotel. `localStorage` is a locker that keeps your things until you empty it. `sessionStorage` is the room safe: it empties when you check out (close the tab). Where it stops: both only take paper notes (strings), so you fold objects into JSON first."
+        },
+        {
+          "type": "text",
+          "title": "Storage",
+          "body": "`localStorage` keeps data per **origin** (scheme, host and port), with no expiry. `sessionStorage` is per origin and per tab: it survives a reload but clears when the tab closes. Both store **strings** only. `setItem('n', 5)` stores `'5'`, and an object becomes `'[object Object]'`. A missing key gives `null`."
+        },
+        {
+          "type": "text",
+          "title": "History and location",
+          "body": "`history.pushState()` changes the address bar without loading a page. `replaceState()` swaps the current entry instead of adding one. Neither fires **`popstate`**; that fires on back and forward. `location.assign(url)` or setting `location.href` really loads a page. `navigator` describes the browser."
+        },
+        {
+          "type": "code",
+          "title": "Fetch: check ok",
+          "lang": "js",
+          "code": "const res = await fetch('/api/items');\nif (!res.ok) {                  // status 200-299?\n  throw new Error(`HTTP ${res.status}`);\n}\nconst items = await res.json();",
+          "body": "`fetch()` returns a promise for a response. It rejects only on a network failure. A 404 or 500 still **fulfills**, so check `res.ok`. Cancel a request with an `AbortController` signal."
+        },
+        {
+          "type": "list",
+          "title": "Timers",
+          "items": [
+            "`setTimeout` runs once later; `setInterval` repeats; both return an id for `clearTimeout` / `clearInterval`",
+            "The delay is a **minimum**: busy code, deep nesting and background tabs make it later",
+            "`requestAnimationFrame` runs your code just before the next repaint: best for animation",
+            "**Debounce**: wait until calls stop (search box). **Throttle**: at most once per period (scroll)"
+          ]
+        },
+        {
+          "type": "trap",
+          "body": "\"`fetch` throws on a 404.\" It doesn't. The promise fulfills with `ok` set to `false`. Only network errors and aborts reject. And `pushState` never fires `popstate` by itself."
+        },
+        {
+          "type": "tip",
+          "title": "Remember it",
+          "body": "**\"Strings in storage, ok after fetch, ids for timers.\"**"
+        }
+      ],
+      "check": [
+        "browser-q53",
+        "browser-q55",
+        "browser-x28"
+      ],
+      "terms": [
+        {
+          "term": "Web APIs",
+          "say": "Extra tools the browser gives JavaScript, like storage, fetch and timers. They are not part of the JavaScript language itself."
+        },
+        {
+          "term": "localStorage",
+          "say": "A small key-value store in the browser for one website. Its strings stay after the browser closes, until someone removes them."
+        },
+        {
+          "term": "sessionStorage",
+          "say": "Like localStorage, but only for one tab. It survives a reload, and it is wiped when that tab closes."
+        },
+        {
+          "term": "origin",
+          "say": "A website's address family: scheme, host and port together. https://shop.com and http://shop.com are different origins with separate storage."
+        },
+        {
+          "term": "pushState",
+          "match": [
+            "history.pushState()"
+          ],
+          "say": "Adds a new entry to the tab's history and changes the address bar, without loading a new page."
+        },
+        {
+          "term": "popstate",
+          "say": "An event that fires when the user moves through history, like pressing Back. Calling pushState doesn't fire it."
+        },
+        {
+          "term": "fetch()",
+          "match": [
+            "fetch"
+          ],
+          "say": "The browser's way to ask a server for data. It gives a promise for the response, even when the server answers with an error code."
+        },
+        {
+          "term": "requestAnimationFrame",
+          "say": "Asks the browser to run your function just before it next paints the screen. It keeps animations smooth."
+        },
+        {
+          "term": "Debounce",
+          "say": "Waiting until calls stop for a moment, then running once. A search box waits until you pause typing."
+        },
+        {
+          "term": "Throttle",
+          "say": "Letting a function run at most once in each time slot, however often it is called. Handy for scroll events."
+        }
+      ]
+    },
+    {
+      "id": "browser-7",
+      "title": "Browser Dev Tools: inspect, watch and measure",
+      "minutes": 3,
+      "objective": "Given a scenario, utilize the Browser Dev Tools to investigate code behavior.",
+      "cards": [
+        {
+          "type": "text",
+          "title": "In plain words",
+          "body": "**Browser Dev Tools** are the toolbox built into Chrome and other browsers (press F12). They show the live DOM, run code, pause scripts, list network calls and measure speed. You use them to find out why the page does what it does."
+        },
+        {
+          "type": "tip",
+          "title": "Think of it like…",
+          "body": "A mechanic's garage. One bay lifts the car to look underneath (Elements). One plugs into the engine computer (Console). One films the engine running (Performance). Where it stops: most changes you make in Dev Tools are gone after a reload. They don't save to your code."
+        },
+        {
+          "type": "list",
+          "title": "Which panel?",
+          "items": [
+            "**Elements**: live DOM and CSS, an Event Listeners pane, DOM change breakpoints",
+            "**Console**: run code, read logs and errors",
+            "**Sources**: breakpoints, stepping, Scope, Call Stack and **Watch**",
+            "**Network**: each request's status, headers, response and timing",
+            "**Performance** and **Memory**: slow frames, CPU time, heap snapshots",
+            "**Application**: storage and cookies"
+          ]
+        },
+        {
+          "type": "code",
+          "title": "Console shortcuts",
+          "lang": "js",
+          "code": "$0                    // element picked in Elements\n$('.cart')            // like document.querySelector\n$$('li')              // like querySelectorAll, as an array\ngetEventListeners($0) // listeners on that element\nmonitorEvents(window, 'resize') // log each resize",
+          "body": "These **Console Utilities** only work when typed into the Console. Your page's own scripts can't call them."
+        },
+        {
+          "type": "text",
+          "title": "Smarter breakpoints",
+          "body": "You can pause on more than a line. An **event listener breakpoint** pauses when, say, any `click` listener runs. An XHR/fetch breakpoint pauses when a request URL contains some text. A DOM change breakpoint pauses on code that edits a node. A **logpoint** logs a message without pausing."
+        },
+        {
+          "type": "text",
+          "title": "Network and memory",
+          "body": "Each Network row is one request: method, status, type, size and time. **Throttling** fakes a slow connection. \"Disable cache\" acts like a first-time visitor. \"Preserve log\" keeps rows across page loads. In Memory, a **heap snapshot** shows what JavaScript still holds, like detached DOM nodes that leak."
+        },
+        {
+          "type": "trap",
+          "body": "\"Fix it in Elements and you're done.\" Edits there live only in this tab, and a reload throws them away. Fix your source files. Also, `$0` and `monitorEvents` exist only in the Console. Called in page code, they throw a `ReferenceError`."
+        },
+        {
+          "type": "tip",
+          "title": "Remember it",
+          "body": "**\"Elements to look, Console to ask, Sources to pause, Network to fetch, Performance to time.\"**"
+        }
+      ],
+      "check": [
+        "browser-q60",
+        "browser-q61",
+        "browser-x35"
+      ],
+      "terms": [
+        {
+          "term": "Browser Dev Tools",
+          "match": [
+            "Dev Tools"
+          ],
+          "say": "A toolbox built into the browser for looking inside a page. You can see the page tree, run code, pause scripts and watch requests."
+        },
+        {
+          "term": "Elements",
+          "say": "The Dev Tools panel that shows the live page tree and its CSS. You can pick any element and see or change it."
+        },
+        {
+          "term": "Sources",
+          "say": "The Dev Tools panel for your scripts. You set breakpoints there and step through code line by line."
+        },
+        {
+          "term": "Watch",
+          "say": "A pane where you type expressions, like cart.total. While the code is paused, it shows their current values."
+        },
+        {
+          "term": "$0",
+          "say": "A Console shortcut for the element you last picked in the Elements panel."
+        },
+        {
+          "term": "Console Utilities",
+          "say": "Extra helper commands, like $0 and monitorEvents, that work only when typed into the Console, not in page code."
+        },
+        {
+          "term": "monitorEvents",
+          "say": "A Console command that prints every chosen event that happens on an element, like each key press."
+        },
+        {
+          "term": "event listener breakpoint",
+          "say": "A Sources setting that pauses the code whenever a chosen kind of event, like click, runs a listener."
+        },
+        {
+          "term": "logpoint",
+          "say": "A breakpoint that only prints a message to the Console. The code keeps running without pausing."
+        },
+        {
+          "term": "heap snapshot",
+          "say": "A picture of everything JavaScript holds in memory at one moment. It helps you find objects that should have been freed."
+        }
+      ]
+    }
+  ],
+  "flashcards": [
+    {
+      "id": "browser-f1",
+      "front": "What do `getElementById` and `querySelector` return when nothing matches?",
+      "back": "`null`. Both return one element or `null`. Reading a property of that `null` throws a `TypeError`."
+    },
+    {
+      "id": "browser-f2",
+      "front": "What is the difference between `querySelectorAll` and `getElementsByClassName`?",
+      "back": "`querySelectorAll` returns a static `NodeList`, a snapshot. `getElementsByClassName` returns a live `HTMLCollection` that updates by itself."
+    },
+    {
+      "id": "browser-f3",
+      "front": "What does `element.closest(selector)` do?",
+      "back": "It climbs from the element up through its ancestors and returns the first match, starting with the element itself. No match gives `null`."
+    },
+    {
+      "id": "browser-f4",
+      "front": "When does `DOMContentLoaded` fire, compared with `load`?",
+      "back": "`DOMContentLoaded` fires when the HTML is parsed and deferred scripts have run. `load` waits for images and stylesheets too."
+    },
+    {
+      "id": "browser-f5",
+      "front": "Why is `innerHTML` risky with user input?",
+      "back": "It parses the string as HTML. Tags like `<img onerror>` can run code: that is XSS. Use `textContent` for user text."
+    },
+    {
+      "id": "browser-f6",
+      "front": "What is the difference between `textContent` and `innerText` when reading?",
+      "back": "`textContent` returns all text, hidden text included. `innerText` returns only the text a user can see."
+    },
+    {
+      "id": "browser-f7",
+      "front": "How do `append` and `appendChild` differ?",
+      "back": "`append` takes many nodes or strings and returns `undefined`. `appendChild` takes one node and returns it."
+    },
+    {
+      "id": "browser-f8",
+      "front": "How does `dataset` name a `data-user-id` attribute?",
+      "back": "As `dataset.userId`: dashes become camelCase. Values are always strings."
+    },
+    {
+      "id": "browser-f9",
+      "front": "What happens if you add the same listener function twice?",
+      "back": "The second call is ignored, as long as the type and the `capture` flag match. Two separate arrow functions count as two listeners."
+    },
+    {
+      "id": "browser-f10",
+      "front": "What does `removeEventListener` need to work?",
+      "back": "The same event type, the exact same function, and the same `capture` flag used when it was added."
+    },
+    {
+      "id": "browser-f11",
+      "front": "What do the `once`, `passive` and `signal` options do?",
+      "back": "`once` removes the listener after one run. `passive` makes `preventDefault()` ignored. `signal` removes it when its `AbortController` aborts."
+    },
+    {
+      "id": "browser-f12",
+      "front": "What is `this` inside an event listener?",
+      "back": "In a regular function, the element the listener is on (`currentTarget`). An arrow function keeps the outer `this`."
+    },
+    {
+      "id": "browser-f13",
+      "front": "What are the three phases of an event's trip?",
+      "back": "Capture (down from `window`), target (at the element), then bubble (back up). With no options, listeners run in the bubble phase."
+    },
+    {
+      "id": "browser-f14",
+      "front": "How do `stopPropagation()` and `stopImmediatePropagation()` differ?",
+      "back": "Both stop the trip to other elements. `stopImmediatePropagation()` also skips the remaining listeners on the same element."
+    },
+    {
+      "id": "browser-f15",
+      "front": "Does `stopPropagation()` stop a link or form submit?",
+      "back": "No. It only stops the trip. `preventDefault()` cancels the default action, and only for cancelable events."
+    },
+    {
+      "id": "browser-f16",
+      "front": "What is event delegation, and why use it?",
+      "back": "One listener on a parent handles events from its children through bubbling. It uses fewer listeners and covers children added later."
+    },
+    {
+      "id": "browser-f17",
+      "front": "What is the difference between `event.target` and `event.currentTarget`?",
+      "back": "`target` is where the event happened. `currentTarget` is the element whose listener is running, and it is `null` after dispatch ends."
+    },
+    {
+      "id": "browser-f18",
+      "front": "How do you send data with a custom event, and does it bubble?",
+      "back": "Put the data in `detail`: `new CustomEvent('pick', { detail })`. It doesn't bubble unless you set `bubbles: true`."
+    },
+    {
+      "id": "browser-f19",
+      "front": "When do listeners run after `dispatchEvent()`?",
+      "back": "Right away, before `dispatchEvent()` returns. It returns `false` if a cancelable event was canceled with `preventDefault()`."
+    },
+    {
+      "id": "browser-f20",
+      "front": "How do `localStorage` and `sessionStorage` differ?",
+      "back": "`localStorage` lasts with no expiry. `sessionStorage` is per tab and clears when the tab closes. Both are per origin and store strings only."
+    },
+    {
+      "id": "browser-f21",
+      "front": "Does `fetch()` reject on a 404 or 500?",
+      "back": "No. It fulfills with `ok` set to `false`. It rejects only on network failure or an abort. Check `response.ok`."
+    },
+    {
+      "id": "browser-f22",
+      "front": "Does `history.pushState()` fire `popstate`?",
+      "back": "No. It changes the URL without loading a page. `popstate` fires when the user goes back or forward."
+    },
+    {
+      "id": "browser-f23",
+      "front": "What is the difference between debounce and throttle?",
+      "back": "Debounce waits until calls stop, then runs once. Throttle runs at most once per time period while calls continue."
+    },
+    {
+      "id": "browser-f24",
+      "front": "Which Dev Tools panel do you use for what?",
+      "back": "Elements: DOM and CSS. Console: run code and logs. Sources: breakpoints. Network: requests. Performance and Memory: speed and leaks. Application: storage."
+    },
+    {
+      "id": "browser-f25",
+      "front": "What are `$0`, `getEventListeners()` and `monitorEvents()`?",
+      "back": "Console Utilities: the selected element, the listeners on an object, and a live log of its events. They work only in the Console."
+    },
+    {
+      "id": "browser-f26",
+      "front": "Which breakpoints can pause without a line number?",
+      "back": "Event listener breakpoints, XHR/fetch breakpoints, DOM change breakpoints and exception breakpoints. Conditional breakpoints and logpoints sit on a line."
+    }
+  ],
+  "questions": [
+    {
+      "id": "browser-q1",
+      "lesson": "browser-1",
+      "difficulty": 1,
+      "q": "A page has no element with the class `alert`. What does `document.querySelector('.alert')` return?",
+      "options": [
+        "`undefined`",
+        "An empty `NodeList`",
+        "`null`",
+        "It throws a `SyntaxError`"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "`querySelector` returns the first match, or `null` when nothing matches. Only `querySelectorAll` returns a list.",
+      "wrong": [
+        "The method returns `null`, not `undefined`, when nothing matches.",
+        "An empty `NodeList` comes from `querySelectorAll`, not `querySelector`.",
+        "",
+        "`.alert` is a valid selector, so nothing is thrown."
+      ],
+      "source": "MDN: Document: querySelector() method"
+    },
+    {
+      "id": "browser-q2",
+      "lesson": "browser-1",
+      "difficulty": 1,
+      "q": "A developer needs every element on the page that matches the CSS selector `ul.menu > li`. Which method fits?",
+      "options": [
+        "`document.querySelectorAll()`",
+        "`document.querySelector()`",
+        "`document.getElementById()`",
+        "`document.getElementsByName()`"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "`querySelectorAll` returns every element that matches a CSS selector, in document order.",
+      "wrong": [
+        "",
+        "`querySelector` returns only the first match.",
+        "`getElementById` takes one id, not a CSS selector.",
+        "`getElementsByName` matches the `name` attribute, not a CSS selector."
+      ],
+      "source": "MDN: Document: querySelectorAll() method"
+    },
+    {
+      "id": "browser-q3",
+      "lesson": "browser-1",
+      "difficulty": 1,
+      "q": "A click listener has the clicked `button`. The developer needs the nearest `<form>` that contains it, however deep the button sits. Which call fits?",
+      "options": [
+        "`button.querySelector('form')`",
+        "`button.parentElement`",
+        "`document.querySelector('form')`",
+        "`button.closest('form')`"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "`closest()` walks up the ancestors, starting with the element itself, and returns the first match.",
+      "wrong": [
+        "`querySelector` on the button searches its children, not its ancestors.",
+        "`parentElement` goes up only one level, which may not be the form.",
+        "This returns the first form on the page, which may be a different one.",
+        ""
+      ],
+      "source": "MDN: Element: closest() method"
+    },
+    {
+      "id": "browser-q4",
+      "lesson": "browser-1",
+      "difficulty": 2,
+      "q": "The page starts with two `.item` elements. What is logged?",
+      "code": "const all = document.querySelectorAll('.item');\nconst live = document.getElementsByClassName('item');\nconst li = document.createElement('li');\nli.className = 'item';\ndocument.querySelector('ul').append(li);\nconsole.log(all.length, live.length);",
+      "lang": "js",
+      "options": [
+        "3 3",
+        "2 3",
+        "2 2",
+        "3 2"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "`querySelectorAll` returns a static snapshot, so it still holds 2. `getElementsByClassName` returns a live `HTMLCollection`, so it now holds 3.",
+      "wrong": [
+        "The `NodeList` from `querySelectorAll` doesn't update after it is created.",
+        "",
+        "The `HTMLCollection` is live, so it sees the new element.",
+        "It is the other way round: the live one grows, the snapshot doesn't."
+      ],
+      "source": "MDN: Document: querySelectorAll() method"
+    },
+    {
+      "id": "browser-q5",
+      "lesson": "browser-1",
+      "difficulty": 2,
+      "q": "The form exists in the HTML as `<form id=\"signup\">`. What happens when this runs?",
+      "code": "const form = document.getElementById('#signup');\nform.addEventListener('submit', save);",
+      "lang": "js",
+      "options": [
+        "The listener is added to the form",
+        "A `TypeError`, because `form` is `null`",
+        "A `SyntaxError` about the selector",
+        "`form` is an empty `HTMLCollection`"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "`getElementById` takes a plain id with no `#`. No element has the id `#signup`, so it returns `null`, and reading `addEventListener` on `null` throws a `TypeError`.",
+      "wrong": [
+        "The `#` makes the id `#signup`, which no element has.",
+        "",
+        "`getElementById` doesn't parse selectors, so it never throws a `SyntaxError`.",
+        "`getElementById` returns one element or `null`, never a collection."
+      ],
+      "source": "MDN: Document: getElementById() method"
+    },
+    {
+      "id": "browser-q6",
+      "lesson": "browser-1",
+      "difficulty": 2,
+      "q": "A script must start as soon as the HTML is parsed. It must not wait for the large hero images to finish loading. Which event should it listen for?",
+      "options": [
+        "`load` on `window`",
+        "`pageshow` on `window`",
+        "`beforeunload` on `window`",
+        "`DOMContentLoaded` on `document`"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "`DOMContentLoaded` fires once the HTML is parsed and deferred scripts have run. It doesn't wait for images or stylesheets.",
+      "wrong": [
+        "`load` waits for images and stylesheets too, so it fires later.",
+        "`pageshow` fires after `load`, so it is later still.",
+        "`beforeunload` fires when the user leaves the page.",
+        ""
+      ],
+      "source": "MDN: Document: DOMContentLoaded event"
+    },
+    {
+      "id": "browser-q7",
+      "lesson": "browser-1",
+      "difficulty": 2,
+      "q": "What happens when this runs on a page with several `.card` elements?",
+      "code": "const cards = document.getElementsByClassName('card');\ncards.forEach((c) => c.classList.add('ready'));",
+      "lang": "js",
+      "options": [
+        "A `TypeError`: `forEach` is not a function",
+        "Every card gets the `ready` class",
+        "Only the first card gets the class",
+        "Nothing, because the loop runs zero times"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "`getElementsByClassName` returns an `HTMLCollection`, which has no `forEach` method. Use `Array.from(cards)` or a `for...of` loop.",
+      "wrong": [
+        "",
+        "That would need a `NodeList` or an array; an `HTMLCollection` has no `forEach`.",
+        "The call fails before any card changes.",
+        "The loop never starts, because the method doesn't exist."
+      ],
+      "source": "MDN: HTMLCollection"
+    },
+    {
+      "id": "browser-q8",
+      "lesson": "browser-1",
+      "difficulty": 2,
+      "q": "Which two return a live collection that updates by itself when matching elements are added or removed? (Choose 2)",
+      "options": [
+        "`document.getElementsByClassName('row')`",
+        "`document.querySelectorAll('.row')`",
+        "`table.children`",
+        "`document.getElementById('row')`",
+        "`document.querySelector('.row')`"
+      ],
+      "answer": [
+        0,
+        2
+      ],
+      "explain": "`getElementsByClassName` and `children` return live `HTMLCollection`s. `querySelectorAll` returns a static `NodeList`.",
+      "wrong": [
+        "",
+        "`querySelectorAll` takes a snapshot that never updates.",
+        "",
+        "`getElementById` returns a single element, not a collection.",
+        "`querySelector` returns a single element, not a collection."
+      ],
+      "source": "MDN: HTMLCollection"
+    },
+    {
+      "id": "browser-q9",
+      "lesson": "browser-1",
+      "difficulty": 2,
+      "q": "A developer needs an array with the text of every `.tag` element. Which two lines work? (Choose 2)",
+      "options": [
+        "`document.querySelectorAll('.tag').map((el) => el.textContent)`",
+        "`Array.from(document.querySelectorAll('.tag'), (el) => el.textContent)`",
+        "`document.getElementsByClassName('tag').map((el) => el.textContent)`",
+        "`[...document.querySelectorAll('.tag')].map((el) => el.textContent)`",
+        "`document.querySelector('.tag').textContent.split()`"
+      ],
+      "answer": [
+        1,
+        3
+      ],
+      "explain": "A `NodeList` has `forEach` but no `map`. Turn it into an array first, with `Array.from` (which can map as it copies) or with spread syntax.",
+      "wrong": [
+        "A `NodeList` has no `map` method, so this throws a `TypeError`.",
+        "",
+        "An `HTMLCollection` has no `map` method either.",
+        "",
+        "`querySelector` finds only the first `.tag`, so this misses the rest."
+      ],
+      "source": "MDN: NodeList"
+    },
+    {
+      "id": "browser-x1",
+      "lesson": "browser-1",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "The table has no rows with the class `overdue`. What happens?",
+      "code": "const rows = document.querySelectorAll('tr.overdue');\nif (rows) {\n  showBanner(rows.length + ' overdue');\n}",
+      "lang": "js",
+      "options": [
+        "No banner, because `rows` is `null`",
+        "A `TypeError` on `rows.length`",
+        "The banner shows \"0 overdue\"",
+        "No banner, because an empty list is falsy"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "`querySelectorAll` always returns a `NodeList`, empty when nothing matches. Every object is truthy, so the `if` passes and the length is 0. Test `rows.length` instead.",
+      "wrong": [
+        "`querySelectorAll` never returns `null`; only the single finders do.",
+        "An empty `NodeList` still has a `length` of 0.",
+        "",
+        "Objects are truthy even when empty, so the `if` passes."
+      ],
+      "source": "MDN: Document: querySelectorAll() method"
+    },
+    {
+      "id": "browser-x2",
+      "lesson": "browser-1",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "What is logged?",
+      "code": "// <div class=\"card\" data-id=\"7\">\n//   <button class=\"card\">Open</button>\n// </div>\nconst btn = document.querySelector('button');\nconsole.log(btn.closest('.card').dataset.id);",
+      "lang": "js",
+      "options": [
+        "7",
+        "null",
+        "It throws a TypeError",
+        "undefined"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "`closest()` checks the element itself first. The button has the class `card`, so `closest` returns the button, which has no `data-id`.",
+      "wrong": [
+        "That would need `closest` to skip the button itself, but it doesn't.",
+        "`closest` found a match (the button), so it doesn't return `null`.",
+        "The button exists and `dataset.id` is simply missing, so nothing throws.",
+        ""
+      ],
+      "source": "MDN: Element: closest() method"
+    },
+    {
+      "id": "browser-x3",
+      "lesson": "browser-1",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "The file `app.js` holds `document.getElementById('buy').addEventListener('click', buy);`. Clicking Buy does nothing, and the console shows a `TypeError`. Which two changes fix it? (Choose 2)",
+      "code": "<head>\n  <script src=\"app.js\"></script>\n</head>\n<body>\n  <button id=\"buy\">Buy</button>\n</body>",
+      "lang": "html",
+      "options": [
+        "Add the `async` attribute to the script tag",
+        "Use `document.querySelector('#buy')` instead",
+        "Add the `defer` attribute to the script tag",
+        "Wrap the line in a `try...catch` block",
+        "Run the code inside a `DOMContentLoaded` listener"
+      ],
+      "answer": [
+        2,
+        4
+      ],
+      "explain": "The script runs in the head before the button is parsed, so the lookup returns `null`. `defer` runs the script after parsing, and `DOMContentLoaded` waits for parsing too.",
+      "wrong": [
+        "`async` runs the script as soon as it downloads, which can still be before the button exists.",
+        "`querySelector` also returns `null` if the button isn't parsed yet.",
+        "",
+        "Catching the error hides it, but the listener is still never added.",
+        ""
+      ],
+      "source": "MDN: Document: DOMContentLoaded event"
+    },
+    {
+      "id": "browser-x4",
+      "lesson": "browser-1",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "Four elements have the class `todo`. What is logged?",
+      "code": "const items = document.getElementsByClassName('todo');\nfor (let i = 0; i < items.length; i++) {\n  items[i].classList.remove('todo');\n}\nconsole.log(items.length);",
+      "lang": "js",
+      "options": [
+        "0",
+        "2",
+        "4",
+        "1"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "The `HTMLCollection` is live, so each removed class shrinks it while the index still moves up. Two passes run, the loop stops at `i = 2`, and 2 items are left.",
+      "wrong": [
+        "That would need every item visited, but the shrinking list makes the loop skip every other one.",
+        "",
+        "The live list does shrink as classes are removed.",
+        "The loop stops when `i` reaches the new length of 2, leaving 2."
+      ],
+      "source": "MDN: HTMLCollection"
+    },
+    {
+      "id": "browser-x5",
+      "lesson": "browser-1",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A dashboard stores `const rows = document.querySelectorAll('.row')` at startup. Later, new rows are added with `append`. Now `rows.length` is too low. Which change makes the count right every time with the least code?",
+      "options": [
+        "Read `rows.length` inside a `DOMContentLoaded` listener",
+        "Use `Array.from(rows).length` instead",
+        "Call `querySelectorAll('.row')` again when the count is needed",
+        "Store the list with `const` inside a block"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "`querySelectorAll` returns a snapshot taken once. Running the query again, when you need the count, sees the new rows.",
+      "wrong": [
+        "`DOMContentLoaded` fires once at startup, before the new rows exist.",
+        "Copying the old snapshot into an array keeps the old count.",
+        "",
+        "How the variable is declared doesn't refresh the snapshot."
+      ],
+      "source": "MDN: NodeList"
+    },
+    {
+      "id": "browser-q10",
+      "lesson": "browser-2",
+      "difficulty": 1,
+      "q": "A page shows a name typed by a visitor. Which property puts it on the page as plain text, so no tags in it can run?",
+      "options": [
+        "`textContent`",
+        "`innerHTML`",
+        "`outerHTML`",
+        "`insertAdjacentHTML`"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "`textContent` sets plain text. Any `<` or `>` in the value shows as characters and never becomes a tag.",
+      "wrong": [
+        "",
+        "`innerHTML` parses the value as HTML, which can run attacker code.",
+        "`outerHTML` parses HTML too, and replaces the element itself.",
+        "`insertAdjacentHTML` parses its string as HTML."
+      ],
+      "source": "MDN: Node: textContent property"
+    },
+    {
+      "id": "browser-q11",
+      "lesson": "browser-2",
+      "difficulty": 1,
+      "q": "An element is written as `<div data-order-id=\"9\">`. Which expression reads the 9?",
+      "options": [
+        "`el.dataset['order-id']`",
+        "`el.dataset.orderid`",
+        "`el.dataset.orderId`",
+        "`el.data.orderId`"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "`dataset` turns the dashed name after `data-` into camelCase. So `data-order-id` is read as `dataset.orderId`.",
+      "wrong": [
+        "Dashed keys aren't used in `dataset`; this returns `undefined`.",
+        "The camelCase needs a capital I, so this returns `undefined`.",
+        "",
+        "Elements have no `data` property; the property is `dataset`."
+      ],
+      "source": "MDN: HTMLElement: dataset property"
+    },
+    {
+      "id": "browser-q12",
+      "lesson": "browser-2",
+      "difficulty": 1,
+      "q": "An element has no `open` class. What does `el.classList.toggle('open')` do?",
+      "options": [
+        "Adds `open` and returns `true`",
+        "Adds `open` and returns `false`",
+        "Does nothing and returns `false`",
+        "Replaces every class with `open`"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "`toggle` adds the class when it is missing and removes it when present. It returns `true` when the class is on afterwards.",
+      "wrong": [
+        "",
+        "It returns `true` because the class is now present.",
+        "The class is missing, so `toggle` adds it.",
+        "`toggle` changes only the class you name; the others stay."
+      ],
+      "source": "MDN: DOMTokenList: toggle() method"
+    },
+    {
+      "id": "browser-q13",
+      "lesson": "browser-2",
+      "difficulty": 2,
+      "q": "The paragraph is on the page. What is logged?",
+      "code": "// <p id=\"msg\">Hi<span hidden> there</span></p>\nconst p = document.getElementById('msg');\nconsole.log(p.textContent + '|' + p.innerText);",
+      "lang": "js",
+      "options": [
+        "Hi|Hi",
+        "Hi there|Hi there",
+        "Hi|Hi there",
+        "Hi there|Hi"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "`textContent` returns all the text, hidden or not. `innerText` returns only the text a user can see, so the hidden span is skipped.",
+      "wrong": [
+        "`textContent` includes hidden text too.",
+        "`innerText` skips text that isn't rendered.",
+        "It is the other way round.",
+        ""
+      ],
+      "source": "MDN: HTMLElement: innerText property"
+    },
+    {
+      "id": "browser-q14",
+      "lesson": "browser-2",
+      "difficulty": 2,
+      "q": "What is logged?",
+      "code": "const ul = document.querySelector('ul');\nconst a = ul.append(document.createElement('li'));\nconst b = ul.appendChild(document.createElement('li'));\nconsole.log(a, b.tagName);",
+      "lang": "js",
+      "options": [
+        "LI LI",
+        "undefined LI",
+        "undefined undefined",
+        "UL LI"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "`append` returns `undefined`. `appendChild` returns the node it added, here an `li`.",
+      "wrong": [
+        "`append` doesn't return the node it added.",
+        "",
+        "`appendChild` returns the added node, so `b.tagName` is `LI`.",
+        "Neither method returns the parent."
+      ],
+      "source": "MDN: Element: append() method"
+    },
+    {
+      "id": "browser-q15",
+      "lesson": "browser-2",
+      "difficulty": 2,
+      "q": "A developer must add a visitor's `name` at the end of `el`. The existing children must stay, and the name must never be parsed as HTML. Which two lines work? (Choose 2)",
+      "options": [
+        "`el.append(name)`",
+        "`el.appendChild(name)`",
+        "`el.innerHTML += name`",
+        "`el.appendChild(document.createTextNode(name))`",
+        "`el.insertAdjacentHTML('beforeend', name)`"
+      ],
+      "answer": [
+        0,
+        3
+      ],
+      "explain": "`append` accepts strings and adds them as text nodes. `createTextNode` makes a text node, which `appendChild` can add.",
+      "wrong": [
+        "",
+        "`appendChild` accepts only a node, so a string throws a `TypeError`.",
+        "`innerHTML +=` parses the name as HTML and rebuilds every child.",
+        "",
+        "`insertAdjacentHTML` parses the name as HTML."
+      ],
+      "source": "MDN: Element: append() method"
+    },
+    {
+      "id": "browser-q16",
+      "lesson": "browser-2",
+      "difficulty": 2,
+      "q": "What happens to the item in `#todo`?",
+      "code": "const item = document.querySelector('#todo li');\ndocument.querySelector('#done').appendChild(item);",
+      "lang": "js",
+      "options": [
+        "It is copied: it is now in both lists",
+        "It moves: it is now only in `#done`",
+        "A `DOMException` is thrown, because it has a parent",
+        "It is removed from `#todo` and not added anywhere"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "A node can only be in one place. Appending a node that is already on the page moves it to the new parent.",
+      "wrong": [
+        "Appending never copies; use `cloneNode()` to copy.",
+        "",
+        "Moving a node that has a parent is allowed.",
+        "The node is added to `#done` as it leaves `#todo`."
+      ],
+      "source": "MDN: Node: appendChild() method"
+    },
+    {
+      "id": "browser-q17",
+      "lesson": "browser-2",
+      "difficulty": 2,
+      "q": "What is logged?",
+      "code": "const el = document.createElement('div');\nel.dataset.count = 5;\nconsole.log(typeof el.dataset.count, el.getAttribute('data-count'));",
+      "lang": "js",
+      "options": [
+        "number 5",
+        "string null",
+        "undefined null",
+        "string 5"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "`dataset` values are stored as attributes, and attributes are strings. So the number 5 becomes the string `'5'` in `data-count`.",
+      "wrong": [
+        "Values are turned into strings when they are stored.",
+        "Setting `dataset.count` creates the `data-count` attribute.",
+        "The value was set, so it isn't `undefined`.",
+        ""
+      ],
+      "source": "MDN: HTMLElement: dataset property"
+    },
+    {
+      "id": "browser-q18",
+      "lesson": "browser-2",
+      "difficulty": 2,
+      "q": "What is logged?",
+      "code": "const p = document.createElement('p');\np.textContent = 'Saved';\nconsole.log(document.body.contains(p));",
+      "lang": "js",
+      "options": [
+        "false",
+        "true",
+        "undefined",
+        "It throws a TypeError"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "`createElement` makes an element that isn't on the page yet. It joins the page only when you add it, for example with `append`.",
+      "wrong": [
+        "",
+        "Nothing has added the paragraph to the page yet.",
+        "`contains` always returns a boolean.",
+        "`contains` accepts any node, so nothing throws."
+      ],
+      "source": "MDN: Document: createElement() method"
+    },
+    {
+      "id": "browser-q19",
+      "lesson": "browser-2",
+      "difficulty": 2,
+      "q": "A comments widget shows text that users typed. A security review flags this line. Which change is the right fix?",
+      "code": "commentBox.innerHTML = comment.text;",
+      "lang": "js",
+      "options": [
+        "Remove `<script>` tags from the text first",
+        "Use `insertAdjacentHTML` to add the text",
+        "Set `commentBox.textContent = comment.text`",
+        "Set `commentBox.outerHTML` instead"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "User text must go in as plain text. `textContent` never parses HTML, so nothing in the comment can run.",
+      "wrong": [
+        "Other tags, like `<img onerror>`, still run code without any `<script>` tag.",
+        "`insertAdjacentHTML` parses HTML too.",
+        "",
+        "`outerHTML` parses HTML as well, and replaces the box itself."
+      ],
+      "source": "MDN: Element: innerHTML property"
+    },
+    {
+      "id": "browser-x6",
+      "lesson": "browser-2",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A profile page runs this with a bio a user typed. What happens?",
+      "code": "const bio = '<img src=\"x\" onerror=\"steal()\">';\nprofile.innerHTML = bio;",
+      "lang": "js",
+      "options": [
+        "Nothing runs: `innerHTML` never runs code",
+        "The text shows on the page exactly as typed",
+        "The browser throws a security error",
+        "`steal()` runs when the image fails to load"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "A `<script>` added with `innerHTML` doesn't run, but event-handler attributes do. The broken image fires `onerror`, so `steal()` runs. This is XSS.",
+      "wrong": [
+        "Only `<script>` tags stay asleep; attributes like `onerror` still run.",
+        "`innerHTML` parses the string as HTML, so it isn't shown as text.",
+        "The browser builds the tags without any error.",
+        ""
+      ],
+      "source": "MDN: Element: innerHTML property"
+    },
+    {
+      "id": "browser-x7",
+      "lesson": "browser-2",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "After this code, clicking Save does nothing. Why?",
+      "code": "const btn = document.createElement('button');\nbtn.textContent = 'Save';\nbtn.addEventListener('click', save);\npanel.append(btn);\npanel.innerHTML += '<p>Saved drafts: 2</p>';",
+      "lang": "js",
+      "options": [
+        "The new paragraph covers the button",
+        "`innerHTML +=` rebuilds every child, so the button is a new one with no listener",
+        "`append` doesn't keep listeners on the elements it adds",
+        "Listeners are dropped when `textContent` is set"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "`innerHTML +=` reads the HTML as a string, adds to it, and parses it all again. Every child is a brand-new element, and listeners aren't part of the HTML.",
+      "wrong": [
+        "The paragraph comes after the button; it doesn't cover it.",
+        "",
+        "`append` moves the real element, listeners and all.",
+        "The text was set before the listener and doesn't touch it."
+      ],
+      "source": "MDN: Element: innerHTML property"
+    },
+    {
+      "id": "browser-x8",
+      "lesson": "browser-2",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "Which two lines safely show `userName`, typed by a user, inside `<span id=\"who\">`? (Choose 2)",
+      "options": [
+        "`who.innerHTML = userName`",
+        "`who.textContent = userName`",
+        "`who.insertAdjacentHTML('afterbegin', userName)`",
+        "`who.outerHTML = userName`",
+        "`who.innerText = userName`"
+      ],
+      "answer": [
+        1,
+        4
+      ],
+      "explain": "Both `textContent` and `innerText` set plain text, so tags in the value show as characters. The other three parse HTML.",
+      "wrong": [
+        "`innerHTML` parses the value as HTML, an XSS risk.",
+        "",
+        "`insertAdjacentHTML` parses the value as HTML.",
+        "`outerHTML` parses HTML and also replaces the span.",
+        ""
+      ],
+      "source": "MDN: Node: textContent property"
+    },
+    {
+      "id": "browser-x9",
+      "lesson": "browser-2",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "What is logged?",
+      "code": "// <ul id=\"list\"><li>B</li></ul>\nconst list = document.getElementById('list');\nlist.insertAdjacentHTML('afterbegin', '<li>A</li>');\nlist.insertAdjacentHTML('beforeend', '<li>C</li>');\nlist.insertAdjacentHTML('beforebegin', '<h2>T</h2>');\nconsole.log(list.children.length);",
+      "lang": "js",
+      "options": [
+        "4",
+        "2",
+        "3",
+        "1"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "`afterbegin` and `beforeend` insert inside the list. `beforebegin` inserts before the list itself, outside it. So the list has A, B and C.",
+      "wrong": [
+        "The `h2` goes before the `ul`, not inside it.",
+        "Both `afterbegin` and `beforeend` add an item inside.",
+        "",
+        "Two items were added to the one already there."
+      ],
+      "source": "MDN: Element: insertAdjacentHTML() method"
+    },
+    {
+      "id": "browser-x10",
+      "lesson": "browser-2",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "In an HTML page, which attributes does the row end up with?",
+      "code": "const row = document.createElement('tr');\nrow.dataset.customerId = 'C-7';\nrow.setAttribute('data-Status', 'new');",
+      "lang": "js",
+      "options": [
+        "`data-customer-id` and `data-status`",
+        "`data-customerId` and `data-Status`",
+        "`data-customer-id` and `data-Status`",
+        "`data-customerid` and `data-status`"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "`dataset` turns camelCase into dashes: `customerId` becomes `data-customer-id`. In an HTML page, `setAttribute` lowercases the name.",
+      "wrong": [
+        "",
+        "`dataset` writes dashed names, and `setAttribute` lowercases.",
+        "`setAttribute` lowercases names on HTML elements.",
+        "`dataset` adds a dash before each capital letter."
+      ],
+      "source": "MDN: HTMLElement: dataset property"
+    },
+    {
+      "id": "browser-q20",
+      "lesson": "browser-3",
+      "difficulty": 1,
+      "q": "Which line runs `onSave` each time the button is clicked?",
+      "options": [
+        "`btn.addEventListener('onclick', onSave)`",
+        "`btn.addEventListener('click', onSave())`",
+        "`btn.addEventListener('click', onSave)`",
+        "`btn.addEventListener(onSave, 'click')`"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "Pass the event type without `on`, then the function itself. The browser calls it on each click.",
+      "wrong": [
+        "The event type is `click`; `onclick` is the property name.",
+        "`onSave()` runs once right away and passes its result, not the function.",
+        "",
+        "The type comes first and the listener second."
+      ],
+      "source": "MDN: EventTarget: addEventListener() method"
+    },
+    {
+      "id": "browser-q21",
+      "lesson": "browser-3",
+      "difficulty": 1,
+      "q": "Which options object makes a listener run only the first time the event fires?",
+      "options": [
+        "`{ once: true }`",
+        "`{ passive: true }`",
+        "`{ capture: true }`",
+        "`{ single: true }`"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "`once: true` removes the listener automatically after its first run.",
+      "wrong": [
+        "",
+        "`passive` promises not to call `preventDefault()`; it still runs every time.",
+        "`capture` changes the phase, not how often it runs.",
+        "There is no `single` option; it is ignored."
+      ],
+      "source": "MDN: EventTarget: addEventListener() method"
+    },
+    {
+      "id": "browser-q22",
+      "lesson": "browser-3",
+      "difficulty": 1,
+      "q": "A listener is written as a regular `function` and added with `addEventListener`. What is `this` inside it?",
+      "options": [
+        "Always the global `window`",
+        "The event object",
+        "Always `undefined`",
+        "The element the listener is attached to"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "For a regular function, `this` is the element the listener is on, the same as `event.currentTarget`. Arrow functions don't get their own `this`.",
+      "wrong": [
+        "The browser sets `this` to the element for regular functions.",
+        "The event object is passed as the first argument, not as `this`.",
+        "The browser binds `this` to the element, even in strict mode.",
+        ""
+      ],
+      "source": "MDN: EventTarget: addEventListener() method"
+    },
+    {
+      "id": "browser-q23",
+      "lesson": "browser-3",
+      "difficulty": 2,
+      "q": "What is logged after one click?",
+      "code": "let count = 0;\nconst add = () => count++;\nbtn.addEventListener('click', add);\nbtn.addEventListener('click', add);\nbtn.addEventListener('click', () => count++);\nbtn.click();\nconsole.log(count);",
+      "lang": "js",
+      "options": [
+        "1",
+        "2",
+        "3",
+        "0"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "Adding the same function twice with the same type and phase is ignored. The arrow is a different function, so two listeners run.",
+      "wrong": [
+        "The second, separate arrow function is a listener too.",
+        "",
+        "The second `add` is a duplicate and is ignored.",
+        "`btn.click()` fires the listeners right away."
+      ],
+      "source": "MDN: EventTarget: addEventListener() method"
+    },
+    {
+      "id": "browser-q24",
+      "lesson": "browser-3",
+      "difficulty": 2,
+      "q": "Later, the button is clicked. What happens?",
+      "code": "btn.addEventListener('click', () => save());\n// later, when the form closes:\nbtn.removeEventListener('click', () => save());",
+      "lang": "js",
+      "options": [
+        "`save()` doesn't run: the listener was removed",
+        "`save()` still runs: the removal names a different function",
+        "A `TypeError` is thrown by `removeEventListener`",
+        "`save()` runs twice: the removal added another one"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "Each arrow expression creates a new function. `removeEventListener` only removes the exact function that was added, so nothing is removed.",
+      "wrong": [
+        "The two arrows look alike but are different functions.",
+        "",
+        "Removing a function that isn't registered just does nothing.",
+        "`removeEventListener` never adds a listener."
+      ],
+      "source": "MDN: EventTarget: removeEventListener() method"
+    },
+    {
+      "id": "browser-q25",
+      "lesson": "browser-3",
+      "difficulty": 2,
+      "q": "After one click, `counter.count` is still 0. Which two changes make it count clicks? (Choose 2)",
+      "code": "const counter = {\n  count: 0,\n  start(btn) {\n    btn.addEventListener('click', function () {\n      this.count++;\n    });\n  },\n};\ncounter.start(document.querySelector('button'));",
+      "lang": "js",
+      "options": [
+        "Use an arrow function as the listener",
+        "Pass `{ capture: true }` as the options",
+        "Call `event.preventDefault()` first",
+        "Pass `{ once: true }` as the options",
+        "Add `.bind(this)` after the listener function"
+      ],
+      "answer": [
+        0,
+        4
+      ],
+      "explain": "In a regular-function listener, `this` is the button. An arrow function keeps `this` from `start`, and `bind(this)` fixes it to `counter`.",
+      "wrong": [
+        "",
+        "The phase doesn't change what `this` points to.",
+        "Canceling the default action doesn't change `this`.",
+        "It would run once, still with `this` set to the button.",
+        ""
+      ],
+      "source": "MDN: EventTarget: addEventListener() method"
+    },
+    {
+      "id": "browser-q26",
+      "lesson": "browser-3",
+      "difficulty": 2,
+      "q": "A modal adds three listeners: on `window`, on `document` and on a button. All three must go when the modal closes. Which two approaches remove them? (Choose 2)",
+      "options": [
+        "Call `removeEventListener('click')` with no function",
+        "Pass one `AbortController` signal to all three, then call `abort()`",
+        "Keep each function and call `removeEventListener` with matching options",
+        "Add `{ once: true }` to each listener",
+        "Call `removeAllListeners()` on each target"
+      ],
+      "answer": [
+        1,
+        2
+      ],
+      "explain": "A listener added with a `signal` is removed when that controller aborts. Calling `removeEventListener` with the same function and `capture` flag also works.",
+      "wrong": [
+        "The function argument is required; without it the call throws a `TypeError`.",
+        "",
+        "",
+        "`once` removes a listener after it fires, not when the modal closes.",
+        "Browser elements have no `removeAllListeners` method."
+      ],
+      "source": "MDN: EventTarget: addEventListener() method"
+    },
+    {
+      "id": "browser-q27",
+      "lesson": "browser-3",
+      "difficulty": 2,
+      "q": "The button is clicked once. What is logged?",
+      "code": "btn.onclick = () => console.log('A');\nbtn.onclick = () => console.log('B');\nbtn.addEventListener('click', () => console.log('C'));",
+      "lang": "js",
+      "options": [
+        "A, B, C",
+        "C",
+        "A, C",
+        "B, C"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "An event handler property holds one function, so the second assignment replaces the first. `addEventListener` adds a separate listener.",
+      "wrong": [
+        "Assigning `onclick` again replaces the old function.",
+        "The `onclick` handler still runs alongside listeners.",
+        "`A` was replaced by `B`.",
+        ""
+      ],
+      "source": "MDN: EventTarget: addEventListener() method"
+    },
+    {
+      "id": "browser-q28",
+      "lesson": "browser-3",
+      "difficulty": 2,
+      "q": "What happens when this runs and the button is then clicked twice?",
+      "code": "function onSave() { console.log('saved'); }\nbtn.addEventListener('click', onSave());",
+      "lang": "js",
+      "options": [
+        "\"saved\" logs once right away; the clicks log nothing",
+        "\"saved\" logs once on each click",
+        "\"saved\" logs once right away and once per click",
+        "A `TypeError` is thrown, and nothing logs"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "`onSave()` runs right away and returns `undefined`. Passing `undefined` as the listener adds nothing, so clicks do nothing.",
+      "wrong": [
+        "",
+        "The function was called, not passed, so no listener was added.",
+        "Only the immediate call runs; no listener exists.",
+        "A missing listener is silently ignored; no error is thrown."
+      ],
+      "source": "MDN: EventTarget: addEventListener() method"
+    },
+    {
+      "id": "browser-q29",
+      "lesson": "browser-3",
+      "difficulty": 2,
+      "q": "What is logged?",
+      "code": "let n = 0;\nbtn.addEventListener('click', () => n++, { once: true });\nbtn.click();\nbtn.click();\nbtn.click();\nconsole.log(n);",
+      "lang": "js",
+      "options": [
+        "3",
+        "0",
+        "1",
+        "2"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "With `once: true`, the listener is removed after its first run. The next two clicks find no listener.",
+      "wrong": [
+        "`once` stops it after the first click.",
+        "The first click does run it.",
+        "",
+        "It is removed straight after the first run."
+      ],
+      "source": "MDN: EventTarget: addEventListener() method"
+    },
+    {
+      "id": "browser-x11",
+      "lesson": "browser-3",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A user clicks the link. What happens?",
+      "code": "link.addEventListener('click', (e) => {\n  e.preventDefault();\n  openModal();\n}, { passive: true });",
+      "lang": "js",
+      "options": [
+        "The modal opens, and the link doesn't navigate",
+        "Nothing happens: passive listeners never run on clicks",
+        "A `TypeError` is thrown by `preventDefault()`",
+        "The modal opens, and the link still navigates"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "A passive listener promises not to cancel the event, so the browser ignores its `preventDefault()` call. The listener runs, but the default action still happens.",
+      "wrong": [
+        "Inside a passive listener, `preventDefault()` is ignored.",
+        "Passive listeners run normally; only canceling is ignored.",
+        "The call is ignored, with at most a console warning.",
+        ""
+      ],
+      "source": "MDN: EventTarget: addEventListener() method"
+    },
+    {
+      "id": "browser-x12",
+      "lesson": "browser-3",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "What is logged when the box is clicked?",
+      "code": "const log = () => console.log('hit');\nbox.addEventListener('click', log, true);\nbox.removeEventListener('click', log);\nbox.click();",
+      "lang": "js",
+      "options": [
+        "Nothing",
+        "\"hit\" once",
+        "\"hit\" twice",
+        "A `TypeError`"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "Removal must match the `capture` flag. The listener was added with `capture` true, and the removal used false, so nothing was removed.",
+      "wrong": [
+        "The capture listener is still there, so it runs.",
+        "",
+        "Only one listener was ever added.",
+        "A removal that matches nothing is silently ignored."
+      ],
+      "source": "MDN: EventTarget: removeEventListener() method"
+    },
+    {
+      "id": "browser-x13",
+      "lesson": "browser-3",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "The element is clicked twice. What is `n` afterwards?",
+      "code": "let n = 0;\nconst f = () => n++;\nel.addEventListener('click', f);\nel.addEventListener('click', f, { capture: true });\nel.addEventListener('click', f, { once: true });\nel.click();\nel.click();",
+      "lang": "js",
+      "options": [
+        "3",
+        "5",
+        "4",
+        "2"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "The capture listener counts as a separate one, so there are two. The third call matches the first (same function, not capture), so it is ignored, `once` and all. Two clicks run two listeners each.",
+      "wrong": [
+        "The `once` listener was never added, so nothing drops off after the first click.",
+        "The third call is a duplicate and adds nothing.",
+        "",
+        "The capture version is a separate listener, so each click runs two."
+      ],
+      "source": "MDN: EventTarget: addEventListener() method"
+    },
+    {
+      "id": "browser-x14",
+      "lesson": "browser-3",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A `touchmove` listener tracks where the user scrolls. It must not slow down scrolling. It must also go away when its section is closed, without keeping a reference to the function. Which two options should it use? (Choose 2)",
+      "options": [
+        "`capture: true`",
+        "`once: true`",
+        "`passive: true`",
+        "`signal: controller.signal`",
+        "`bubbles: false`"
+      ],
+      "answer": [
+        2,
+        3
+      ],
+      "explain": "`passive: true` tells the browser it can scroll without waiting for the listener. A `signal` lets `controller.abort()` remove the listener later.",
+      "wrong": [
+        "The phase doesn't affect scrolling speed or removal.",
+        "`once` would remove it after the first move, too early.",
+        "",
+        "",
+        "`bubbles` is an event setting, not a listener option."
+      ],
+      "source": "MDN: EventTarget: addEventListener() method"
+    },
+    {
+      "id": "browser-x15",
+      "lesson": "browser-3",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "Calling `stop()` doesn't remove the scroll listener. Why?",
+      "code": "class Tracker {\n  start(el) {\n    el.addEventListener('scroll', this.onScroll.bind(this));\n  }\n  stop(el) {\n    el.removeEventListener('scroll', this.onScroll.bind(this));\n  }\n  onScroll() { /* ... */ }\n}",
+      "lang": "js",
+      "options": [
+        "Each `bind()` call makes a new function, so the removal names a different one",
+        "Scroll listeners can't be removed once they are added",
+        "The removal also needs the `{ passive: true }` option",
+        "Class methods can't be used as event listeners"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "`bind()` returns a new function every time. Save the bound function once, for example `this.handler = this.onScroll.bind(this)`, and use it for both calls.",
+      "wrong": [
+        "",
+        "Any listener can be removed with the same function and `capture` flag.",
+        "Only the `capture` flag must match; `passive` doesn't matter for removal.",
+        "Methods work fine as listeners, bound or not."
+      ],
+      "source": "MDN: EventTarget: removeEventListener() method"
+    },
+    {
+      "id": "browser-q30",
+      "lesson": "browser-4",
+      "difficulty": 1,
+      "q": "A click happens on a button inside a `div`. In what order does the event travel?",
+      "options": [
+        "Bubble phase, target phase, then capture phase",
+        "Target phase, capture phase, then bubble phase",
+        "Capture phase, target phase, then bubble phase",
+        "Target phase, then bubble phase only"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "The event travels down from `window` (capture), reaches the button (target), then goes back up (bubble).",
+      "wrong": [
+        "Bubbling is the last part of the trip, not the first.",
+        "Capturing happens on the way down, before the target.",
+        "",
+        "The capture phase always runs first, even for events that don't bubble."
+      ],
+      "source": "MDN: Event bubbling"
+    },
+    {
+      "id": "browser-q31",
+      "lesson": "browser-4",
+      "difficulty": 1,
+      "q": "A form's `submit` listener finds invalid data. Which call stops the browser from sending the form?",
+      "options": [
+        "`event.preventDefault()`",
+        "`event.stopPropagation()`",
+        "`event.stopImmediatePropagation()`",
+        "`event.cancelBubble = true`"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "Sending the form is the default action. Only `preventDefault()` cancels a default action.",
+      "wrong": [
+        "",
+        "`stopPropagation()` stops the event's trip, but the form still sends.",
+        "This stops the trip and the other listeners, but the form still sends.",
+        "`cancelBubble` is an old name for `stopPropagation()`; the form still sends."
+      ],
+      "source": "MDN: Event: preventDefault() method"
+    },
+    {
+      "id": "browser-q32",
+      "lesson": "browser-4",
+      "difficulty": 1,
+      "q": "A `div` has a click listener added with no options. A button inside it is clicked. During which phase does the `div`'s listener run?",
+      "options": [
+        "The capture phase",
+        "Both phases, once each",
+        "It doesn't run, because the `div` wasn't clicked",
+        "The bubble phase"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "With no options, `addEventListener` listens in the bubble phase. The click bubbles up from the button to the `div`.",
+      "wrong": [
+        "Capture needs `capture: true` or `true` as the third argument.",
+        "A listener is registered for one phase only.",
+        "Clicks bubble, so ancestors hear clicks on their children.",
+        ""
+      ],
+      "source": "MDN: EventTarget: addEventListener() method"
+    },
+    {
+      "id": "browser-q33",
+      "lesson": "browser-4",
+      "difficulty": 2,
+      "q": "What is logged?",
+      "code": "// <div id=\"outer\"><button id=\"inner\">Go</button></div>\nouter.addEventListener('click', () => console.log('A'), true);\nouter.addEventListener('click', () => console.log('B'));\ninner.addEventListener('click', () => console.log('C'));\ninner.click();",
+      "lang": "js",
+      "options": [
+        "C, B, A",
+        "A, C, B",
+        "A, B, C",
+        "C, A, B"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "The capture listener on `outer` runs on the way down. Then the button's own listener runs. Then the bubbling listener on `outer` runs on the way up.",
+      "wrong": [
+        "`A` is a capture listener, so it runs first, not last.",
+        "",
+        "`B` listens in the bubble phase, after the target.",
+        "Capture listeners on ancestors run before the target's listeners."
+      ],
+      "source": "MDN: EventTarget: addEventListener() method"
+    },
+    {
+      "id": "browser-q34",
+      "lesson": "browser-4",
+      "difficulty": 2,
+      "q": "What is logged when the button is clicked?",
+      "code": "inner.addEventListener('click', (e) => {\n  e.stopPropagation();\n  console.log('inner 1');\n});\ninner.addEventListener('click', () => console.log('inner 2'));\nouter.addEventListener('click', () => console.log('outer'));",
+      "lang": "js",
+      "options": [
+        "inner 1",
+        "inner 1, inner 2",
+        "inner 1, inner 2, outer",
+        "inner 1, outer"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "`stopPropagation()` stops the trip to other elements. Other listeners on the same element still run, so `inner 2` logs, but `outer` doesn't.",
+      "wrong": [
+        "That would need `stopImmediatePropagation()`.",
+        "",
+        "The bubbling to `outer` was stopped.",
+        "The same element's second listener still runs, and `outer` doesn't."
+      ],
+      "source": "MDN: Event: stopPropagation() method"
+    },
+    {
+      "id": "browser-q35",
+      "lesson": "browser-4",
+      "difficulty": 2,
+      "q": "What is logged when the button is clicked?",
+      "code": "inner.addEventListener('click', (e) => {\n  e.stopImmediatePropagation();\n  console.log('inner 1');\n});\ninner.addEventListener('click', () => console.log('inner 2'));\nouter.addEventListener('click', () => console.log('outer'));",
+      "lang": "js",
+      "options": [
+        "inner 1, inner 2",
+        "inner 1, outer",
+        "inner 1, inner 2, outer",
+        "inner 1"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "`stopImmediatePropagation()` stops the trip and also skips the remaining listeners on the same element.",
+      "wrong": [
+        "The second listener on the same element is skipped too.",
+        "Bubbling to `outer` is stopped.",
+        "Both the trip and the remaining listeners are stopped.",
+        ""
+      ],
+      "source": "MDN: Event: stopImmediatePropagation() method"
+    },
+    {
+      "id": "browser-q36",
+      "lesson": "browser-4",
+      "difficulty": 2,
+      "q": "A product card has a click listener that opens a preview. A \"Details\" link inside the card must open its page without also opening the preview. What should the link's click listener do?",
+      "options": [
+        "Call `event.stopPropagation()`",
+        "Call `event.preventDefault()`",
+        "Call both methods",
+        "Return `false`"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "`stopPropagation()` keeps the click from bubbling up to the card. It doesn't cancel the default action, so the link still opens.",
+      "wrong": [
+        "",
+        "`preventDefault()` would stop the link from opening, and the card would still hear the click.",
+        "`preventDefault()` would stop the link from opening.",
+        "A return value from an `addEventListener` listener is ignored."
+      ],
+      "source": "MDN: Event: stopPropagation() method"
+    },
+    {
+      "id": "browser-q37",
+      "lesson": "browser-4",
+      "difficulty": 2,
+      "q": "Which two statements about `preventDefault()` are true? (Choose 2)",
+      "options": [
+        "It stops the event from reaching parent elements",
+        "It removes the listener that called it",
+        "It skips the other listeners on the same element",
+        "It cancels the browser's default action, like following a link",
+        "It has no effect when the event isn't cancelable"
+      ],
+      "answer": [
+        3,
+        4
+      ],
+      "explain": "`preventDefault()` only cancels the default action, and only for cancelable events. The event keeps traveling, and other listeners still run.",
+      "wrong": [
+        "The event keeps bubbling; that is `stopPropagation()`'s job.",
+        "Listeners stay registered after calling it.",
+        "That is what `stopImmediatePropagation()` does.",
+        "",
+        ""
+      ],
+      "source": "MDN: Event: preventDefault() method"
+    },
+    {
+      "id": "browser-q38",
+      "lesson": "browser-4",
+      "difficulty": 2,
+      "q": "Which two calls in the button's click listener stop a click listener on the button's parent from running? (Choose 2)",
+      "options": [
+        "`event.stopPropagation()`",
+        "`event.stopImmediatePropagation()`",
+        "`event.preventDefault()`",
+        "`return false`",
+        "Adding the button's listener with `{ passive: true }`"
+      ],
+      "answer": [
+        0,
+        1
+      ],
+      "explain": "Both `stopPropagation()` and `stopImmediatePropagation()` stop the bubble trip, so the parent's listener never runs.",
+      "wrong": [
+        "",
+        "",
+        "It only cancels the default action; the event still bubbles.",
+        "Return values from `addEventListener` listeners are ignored.",
+        "`passive` only affects `preventDefault()`, not bubbling."
+      ],
+      "source": "MDN: Event: stopPropagation() method"
+    },
+    {
+      "id": "browser-q39",
+      "lesson": "browser-4",
+      "difficulty": 2,
+      "q": "The form is invalid, but it still sends and the page reloads. Why?",
+      "code": "form.addEventListener('submit', (e) => {\n  if (!isValid()) {\n    e.stopPropagation();\n  }\n});",
+      "lang": "js",
+      "options": [
+        "The listener must be added with `capture: true`",
+        "`submit` events can't be canceled",
+        "`stopPropagation()` doesn't cancel the default action",
+        "The check must run in a `click` listener"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "Sending the form is the default action. `stopPropagation()` only stops the trip; use `preventDefault()` to stop the send.",
+      "wrong": [
+        "The phase doesn't matter; the wrong method is used.",
+        "`submit` is cancelable with `preventDefault()`.",
+        "",
+        "A `submit` listener is the right place for the check."
+      ],
+      "source": "MDN: Event: preventDefault() method"
+    },
+    {
+      "id": "browser-x16",
+      "lesson": "browser-4",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "`locked` is `true`. The user clicks a button that has its own click listener. Which listeners run?",
+      "code": "document.addEventListener('click', (e) => {\n  if (locked) e.stopPropagation();\n}, true);",
+      "lang": "js",
+      "options": [
+        "The document listener, then the button's listener",
+        "Only the button's listener",
+        "None, because the click is canceled",
+        "Only the document's capture listener"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "The capture listener on `document` runs on the way down. Stopping propagation there means the event never reaches the button.",
+      "wrong": [
+        "The trip stops at `document`, before the button.",
+        "The capture listener runs first and then stops the trip.",
+        "The document's own listener has already run when the trip stops.",
+        ""
+      ],
+      "source": "MDN: Event: stopPropagation() method"
+    },
+    {
+      "id": "browser-x17",
+      "lesson": "browser-4",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A form listener `form.addEventListener('focus', highlight)` never runs when an input inside it gets focus. Which two changes make it run? (Choose 2)",
+      "options": [
+        "Listen for `focusin` instead of `focus`",
+        "Pass `{ passive: true }` as the options",
+        "Pass `true` as the third argument",
+        "Pass `{ once: true }` as the options",
+        "Listen for `blur` instead of `focus`"
+      ],
+      "answer": [
+        0,
+        2
+      ],
+      "explain": "`focus` doesn't bubble, so a form never hears it in the bubble phase. `focusin` bubbles, and a capture listener catches `focus` on its way down.",
+      "wrong": [
+        "",
+        "`passive` doesn't make an event bubble.",
+        "",
+        "`once` doesn't make an event bubble.",
+        "`blur` doesn't bubble either, and it fires when focus leaves."
+      ],
+      "source": "MDN: Element: focusin event"
+    },
+    {
+      "id": "browser-x18",
+      "lesson": "browser-4",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A user clicks Home. What is logged, and does the page change?",
+      "code": "// <ul id=\"menu\"><li><a id=\"home\" href=\"/home\">Home</a></li></ul>\nmenu.addEventListener('click', () => console.log('menu'));\nhome.addEventListener('click', (e) => {\n  e.preventDefault();\n  console.log('link');\n});",
+      "lang": "js",
+      "options": [
+        "\"link\" only; the page stays",
+        "\"link\" then \"menu\"; the page stays",
+        "\"link\" then \"menu\"; it goes to /home",
+        "\"menu\" then \"link\"; the page stays"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "`preventDefault()` stops the navigation but not the trip. The link's listener runs, then the click bubbles to the menu.",
+      "wrong": [
+        "Only the default action is canceled; the click still bubbles.",
+        "",
+        "The navigation was canceled by `preventDefault()`.",
+        "The target's listener runs before the bubbling listener."
+      ],
+      "source": "MDN: Event: preventDefault() method"
+    },
+    {
+      "id": "browser-x19",
+      "lesson": "browser-4",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "What is logged when the inner button is clicked?",
+      "code": "outer.addEventListener('click', () => console.log('outer capture'), true);\nouter.addEventListener('click', () => console.log('outer bubble'));\ninner.addEventListener('click', (e) => {\n  e.stopPropagation();\n  console.log('inner');\n});",
+      "lang": "js",
+      "options": [
+        "inner",
+        "inner, outer bubble",
+        "outer capture, inner",
+        "outer capture, inner, outer bubble"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "The capture listener runs on the way down, before the target. Stopping at the target only blocks the bubble trip back up.",
+      "wrong": [
+        "The capture listener already ran before the button's listener.",
+        "The bubbling listener is the one that's stopped.",
+        "",
+        "The trip ends at the button, so `outer bubble` never runs."
+      ],
+      "source": "MDN: Event: stopPropagation() method"
+    },
+    {
+      "id": "browser-x20",
+      "lesson": "browser-4",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "What is logged?",
+      "code": "outer.addEventListener('ping', () => console.log('capture'), true);\nouter.addEventListener('ping', () => console.log('bubble'));\ninner.dispatchEvent(new Event('ping'));",
+      "lang": "js",
+      "options": [
+        "capture",
+        "Nothing",
+        "capture, bubble",
+        "bubble"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "`new Event()` doesn't bubble by default. But every event still travels down in the capture phase, so only the capture listener runs.",
+      "wrong": [
+        "",
+        "The capture phase runs even for events that don't bubble.",
+        "The event doesn't bubble, so the bubble listener is skipped.",
+        "Bubbling is off by default for `new Event()`."
+      ],
+      "source": "MDN: Event: bubbles property"
+    },
+    {
+      "id": "browser-q40",
+      "lesson": "browser-5",
+      "difficulty": 1,
+      "q": "What is event delegation?",
+      "options": [
+        "Handing an event to a Web Worker to process",
+        "Copying a listener onto every child element",
+        "One listener on a parent that handles events from its children",
+        "Sending an event from a child to a sibling"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "Delegation puts one listener on a common parent. Events from the children bubble up to it, and the listener checks `event.target`.",
+      "wrong": [
+        "Delegation is about where listeners live, not about workers.",
+        "That is the opposite: one listener per child.",
+        "",
+        "Events travel up and down the tree, not sideways to siblings."
+      ],
+      "source": "MDN: Event bubbling"
+    },
+    {
+      "id": "browser-q41",
+      "lesson": "browser-5",
+      "difficulty": 1,
+      "q": "Inside a listener, which property is the element the listener is attached to?",
+      "options": [
+        "`event.currentTarget`",
+        "`event.target`",
+        "`event.relatedTarget`",
+        "`event.srcElement`"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "`currentTarget` is the element whose listener is running. `target` is where the event started.",
+      "wrong": [
+        "",
+        "`target` is the element that was actually clicked, which can be a child.",
+        "`relatedTarget` is a second element for some events, like where the mouse came from.",
+        "`srcElement` is an old name for `target`."
+      ],
+      "source": "MDN: Event: currentTarget property"
+    },
+    {
+      "id": "browser-q42",
+      "lesson": "browser-5",
+      "difficulty": 1,
+      "q": "Does an event made with `new CustomEvent('saved')` bubble?",
+      "options": [
+        "Yes, all custom events bubble",
+        "Only when it carries a `detail`",
+        "Only when it crosses a shadow DOM",
+        "No, not unless `bubbles: true` is set"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "Events you create default to `bubbles: false`. Set `bubbles: true` in the options to make it travel up.",
+      "wrong": [
+        "The default for created events is not to bubble.",
+        "`detail` holds data; it doesn't change bubbling.",
+        "`composed` handles shadow DOM, and it needs `bubbles` too.",
+        ""
+      ],
+      "source": "MDN: CustomEvent: CustomEvent() constructor"
+    },
+    {
+      "id": "browser-q43",
+      "lesson": "browser-5",
+      "difficulty": 2,
+      "q": "The user clicks the word \"Milk\". What is logged?",
+      "code": "// <ul id=\"list\"><li><span>Milk</span></li></ul>\nlist.addEventListener('click', (e) => {\n  console.log(e.target.tagName, e.currentTarget.tagName);\n});",
+      "lang": "js",
+      "options": [
+        "UL UL",
+        "SPAN UL",
+        "LI UL",
+        "SPAN SPAN"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "`target` is the deepest element clicked, the `span`. `currentTarget` is where the listener sits, the `ul`.",
+      "wrong": [
+        "`target` is the clicked element, not the listening one.",
+        "",
+        "The click landed on the `span`, inside the `li`.",
+        "`currentTarget` is the element with the listener, the `ul`."
+      ],
+      "source": "MDN: Event: target property"
+    },
+    {
+      "id": "browser-q44",
+      "lesson": "browser-5",
+      "difficulty": 2,
+      "q": "What is logged?",
+      "code": "el.addEventListener('saved', () => console.log('B'));\nconsole.log('A');\nel.dispatchEvent(new CustomEvent('saved'));\nconsole.log('C');",
+      "lang": "js",
+      "options": [
+        "A, C, B",
+        "A, B, C",
+        "B, A, C",
+        "A, C"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "`dispatchEvent()` runs the listeners right away, before it returns. So `B` logs between `A` and `C`.",
+      "wrong": [
+        "Dispatching doesn't wait for a later task; listeners run at once.",
+        "",
+        "The listener runs only when the event is dispatched, after `A`.",
+        "The listener is on the same element, so it runs."
+      ],
+      "source": "MDN: EventTarget: dispatchEvent() method"
+    },
+    {
+      "id": "browser-q45",
+      "lesson": "browser-5",
+      "difficulty": 2,
+      "q": "Nothing is logged. Which change makes the card hear the event?",
+      "code": "// <div id=\"card\"><button id=\"buy\">Buy</button></div>\ncard.addEventListener('add', (e) => console.log(e.detail.qty));\nbuy.dispatchEvent(new CustomEvent('add', { detail: { qty: 2 } }));",
+      "lang": "js",
+      "options": [
+        "Use `new Event('add')` instead",
+        "Move `qty` to the top level of the options",
+        "Add `cancelable: true` to the options",
+        "Add `bubbles: true` to the options"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "The event fires on the button, and custom events don't bubble by default. With `bubbles: true`, it travels up to the card.",
+      "wrong": [
+        "`new Event()` doesn't bubble by default either, and it has no `detail`.",
+        "Data must go in `detail`; other keys are ignored.",
+        "`cancelable` controls `preventDefault()`, not bubbling.",
+        ""
+      ],
+      "source": "MDN: CustomEvent: CustomEvent() constructor"
+    },
+    {
+      "id": "browser-q46",
+      "lesson": "browser-5",
+      "difficulty": 2,
+      "q": "A child sends `new CustomEvent('pick', { detail: { id: 7 }, bubbles: true })`. How does a parent's listener read the 7?",
+      "options": [
+        "`event.detail.id`",
+        "`event.id`",
+        "`event.data.id`",
+        "`event.target.id`"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "A `CustomEvent` keeps your data in `detail`. So the listener reads `event.detail.id`.",
+      "wrong": [
+        "",
+        "Your data isn't copied onto the event itself.",
+        "Custom events use `detail`, not `data`.",
+        "That reads the HTML `id` of the element that fired it."
+      ],
+      "source": "MDN: CustomEvent: CustomEvent() constructor"
+    },
+    {
+      "id": "browser-q47",
+      "lesson": "browser-5",
+      "difficulty": 2,
+      "q": "Which line creates an event named `pick` that bubbles and carries `{ id: 7 }`?",
+      "options": [
+        "`new CustomEvent('pick', { id: 7, bubbles: true })`",
+        "`new CustomEvent({ type: 'pick', detail: { id: 7 } })`",
+        "`new CustomEvent('pick', { detail: { id: 7 }, bubbles: true })`",
+        "`new Event('pick', { detail: { id: 7 }, bubbles: true })`"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "The type is the first argument. Data goes in `detail`, and `bubbles: true` makes it travel up.",
+      "wrong": [
+        "Keys other than `detail` are ignored, so the data is lost.",
+        "The type must be a string as the first argument.",
+        "",
+        "A plain `Event` has no `detail`, so the data is lost."
+      ],
+      "source": "MDN: CustomEvent: CustomEvent() constructor"
+    },
+    {
+      "id": "browser-q48",
+      "lesson": "browser-5",
+      "difficulty": 2,
+      "q": "A table has 500 rows, and rows are added while the page is open. Which two are benefits of one delegated listener on the table? (Choose 2)",
+      "options": [
+        "Events that don't bubble are caught too",
+        "One listener instead of 500",
+        "`event.target` is always the row element",
+        "Rows added later work with no new listener",
+        "The listener runs before any capture listener"
+      ],
+      "answer": [
+        1,
+        3
+      ],
+      "explain": "Delegation uses one listener for all rows, and new rows bubble to the same listener. It relies on bubbling, so non-bubbling events are missed.",
+      "wrong": [
+        "Delegation needs bubbling, so non-bubbling events never reach the table.",
+        "",
+        "`target` is whatever was clicked, often a cell or text inside the row.",
+        "",
+        "A bubbling listener on the table runs after capture listeners."
+      ],
+      "source": "MDN: Event bubbling"
+    },
+    {
+      "id": "browser-q49",
+      "lesson": "browser-5",
+      "difficulty": 2,
+      "q": "A table has one click listener. Clicks may land on a cell, or on bold text inside a cell. Which line always gets the row?",
+      "options": [
+        "`e.target.parentElement`",
+        "`e.currentTarget.closest('tr')`",
+        "`e.target.querySelector('tr')`",
+        "`e.target.closest('tr')`"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "`closest()` climbs up from what was clicked until it finds a `tr`. It works however deep the click landed.",
+      "wrong": [
+        "One level up is the row only when the cell itself was clicked.",
+        "`currentTarget` is the table, so climbing from there never meets the row.",
+        "`querySelector` searches down, but the row is above the target.",
+        ""
+      ],
+      "source": "MDN: Element: closest() method"
+    },
+    {
+      "id": "browser-x21",
+      "lesson": "browser-5",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A Lightning web component fires an event from a button inside its shadow DOM. A listener on a `div` that wraps the component must hear it. Which options should the event use?",
+      "options": [
+        "`{ composed: true }`",
+        "`{ bubbles: true, composed: true }`",
+        "`{ bubbles: true }`",
+        "`{ cancelable: true }`"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "The event must bubble, and it must cross the shadow DOM boundary. That needs both `bubbles` and `composed`.",
+      "wrong": [
+        "Without `bubbles`, the host hears it but the wrapping `div` doesn't.",
+        "",
+        "Without `composed`, the event stops at the shadow root.",
+        "`cancelable` only allows `preventDefault()`; the event stays where it is."
+      ],
+      "source": "MDN: Event: composed property"
+    },
+    {
+      "id": "browser-x22",
+      "lesson": "browser-5",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "What is logged when the form is submitted?",
+      "code": "form.addEventListener('submit', async (e) => {\n  e.preventDefault();\n  await saveDraft();\n  console.log(e.currentTarget);\n});",
+      "lang": "js",
+      "options": [
+        "The form element",
+        "The submit button",
+        "`null`",
+        "`undefined`"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "`currentTarget` is set only while the event's listeners run. After the `await`, dispatch has finished, so it is `null`. Save it in a variable first.",
+      "wrong": [
+        "It would be the form only before the `await`.",
+        "The button is the submitter, not `currentTarget`.",
+        "",
+        "The property exists; it is reset to `null`."
+      ],
+      "source": "MDN: Event: currentTarget property"
+    },
+    {
+      "id": "browser-x23",
+      "lesson": "browser-5",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "`hasUnsavedWork` is `true`. What is logged?",
+      "code": "panel.addEventListener('close', (e) => {\n  if (hasUnsavedWork) e.preventDefault();\n});\nconst ok = panel.dispatchEvent(\n  new CustomEvent('close', { cancelable: true })\n);\nconsole.log(ok);",
+      "lang": "js",
+      "options": [
+        "false",
+        "true",
+        "undefined",
+        "The event object"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "`dispatchEvent()` returns `false` when the event is cancelable and a listener called `preventDefault()`. The caller can use that to stop closing.",
+      "wrong": [
+        "",
+        "It returns `true` only when nobody canceled the event.",
+        "It always returns a boolean.",
+        "It returns a boolean, not the event."
+      ],
+      "source": "MDN: EventTarget: dispatchEvent() method"
+    },
+    {
+      "id": "browser-x24",
+      "lesson": "browser-5",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "Delete buttons stopped working after a teammate added the second block. Why?",
+      "code": "list.addEventListener('click', (e) => {\n  const btn = e.target.closest('.del');\n  if (btn) removeRow(btn);\n});\ndocument.querySelectorAll('.del').forEach((b) =>\n  b.addEventListener('click', (e) => e.stopPropagation()));",
+      "lang": "js",
+      "options": [
+        "Each button now has two listeners that cancel out",
+        "`closest()` can't find elements with a listener",
+        "The clicks no longer bubble up to the list's listener",
+        "`stopPropagation()` removes the list's listener"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "Delegation depends on bubbling. Stopping propagation on the buttons keeps their clicks from reaching the list.",
+      "wrong": [
+        "Listeners don't cancel each other; the list just never hears the click.",
+        "`closest()` doesn't care about listeners.",
+        "",
+        "Listeners stay registered; the event just never arrives."
+      ],
+      "source": "MDN: Event: stopPropagation() method"
+    },
+    {
+      "id": "browser-x25",
+      "lesson": "browser-5",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A new button is created and added to `toolbar` after the page loads. Which two setups run `handle` when it is clicked? (Choose 2)",
+      "options": [
+        "Listeners added at page load with `querySelectorAll('button').forEach`",
+        "A `{ once: true }` listener on each button found at page load",
+        "A click listener on `toolbar` that checks `event.target.closest('button')`",
+        "A capture listener on each button found at page load",
+        "A click listener added to the new button right after it is created"
+      ],
+      "answer": [
+        2,
+        4
+      ],
+      "explain": "A delegated listener on an existing parent catches clicks from future children. Adding a listener to the new element directly also works.",
+      "wrong": [
+        "That loop ran before the new button existed, so it skipped it.",
+        "Those listeners sit on the old buttons only.",
+        "",
+        "A listener on another button doesn't hear clicks on the new one.",
+        ""
+      ],
+      "source": "MDN: Event bubbling"
+    },
+    {
+      "id": "browser-q50",
+      "lesson": "browser-6",
+      "difficulty": 1,
+      "q": "Which storage keeps its data through a page reload but clears it when the tab is closed?",
+      "options": [
+        "`sessionStorage`",
+        "`localStorage`",
+        "`IndexedDB`",
+        "A cookie with an expiry date"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "`sessionStorage` lasts for the tab's session. It survives reloads and is cleared when the tab closes.",
+      "wrong": [
+        "",
+        "`localStorage` keeps data after the tab and the browser close.",
+        "`IndexedDB` keeps data until it is deleted.",
+        "A cookie with an expiry date lasts until that date."
+      ],
+      "source": "MDN: Window: sessionStorage property"
+    },
+    {
+      "id": "browser-q51",
+      "lesson": "browser-6",
+      "difficulty": 1,
+      "q": "A timer was started with `const id = setTimeout(remind, 5000)`. Which line cancels it?",
+      "options": [
+        "`clearTimeout(remind)`",
+        "`id.cancel()`",
+        "`clearInterval(remind)`",
+        "`clearTimeout(id)`"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "`setTimeout` returns an id. Pass that id to `clearTimeout` to cancel the timer.",
+      "wrong": [
+        "`clearTimeout` needs the timer id, not the function.",
+        "In the browser the id is a number with no methods.",
+        "`clearInterval` also takes an id, not the function.",
+        ""
+      ],
+      "source": "MDN: Window: setTimeout() method"
+    },
+    {
+      "id": "browser-q52",
+      "lesson": "browser-6",
+      "difficulty": 1,
+      "q": "What does `response.ok` tell you after `fetch()`?",
+      "options": [
+        "Whether the network request reached the server",
+        "Whether the status is in the range 200-299",
+        "Whether the body is valid JSON",
+        "Whether the status is exactly 200"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "`ok` is `true` when the HTTP status is from 200 to 299, and `false` otherwise.",
+      "wrong": [
+        "A 404 also reached the server, but `ok` is `false`.",
+        "",
+        "`ok` doesn't look at the body at all.",
+        "Any status from 200 to 299 counts, like 201 or 204."
+      ],
+      "source": "MDN: Response: ok property"
+    },
+    {
+      "id": "browser-q53",
+      "lesson": "browser-6",
+      "difficulty": 2,
+      "q": "What is logged?",
+      "code": "localStorage.setItem('visits', 1);\nconst v = localStorage.getItem('visits') + 1;\nconsole.log(v);",
+      "lang": "js",
+      "options": [
+        "2",
+        "11",
+        "NaN",
+        "It throws a TypeError"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "Web storage keeps strings only. `getItem` returns `'1'`, and `'1' + 1` joins the strings into `'11'`.",
+      "wrong": [
+        "The stored value comes back as a string, so `+` joins.",
+        "",
+        "Joining a string with a number gives a string, not `NaN`.",
+        "Storing a number is allowed; it is turned into a string."
+      ],
+      "source": "MDN: Storage: setItem() method"
+    },
+    {
+      "id": "browser-q54",
+      "lesson": "browser-6",
+      "difficulty": 2,
+      "q": "What is logged?",
+      "code": "localStorage.setItem('cart', { items: 3 });\nconsole.log(localStorage.getItem('cart'));",
+      "lang": "js",
+      "options": [
+        "{\"items\":3}",
+        "{ items: 3 }",
+        "null",
+        "[object Object]"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "`setItem` turns the value into a string with `String()`. A plain object becomes `'[object Object]'`. Use `JSON.stringify` when you save.",
+      "wrong": [
+        "That needs `JSON.stringify`; `setItem` doesn't call it.",
+        "Storage can't keep objects, only strings.",
+        "Something was stored under the key, so it isn't `null`.",
+        ""
+      ],
+      "source": "MDN: Storage: setItem() method"
+    },
+    {
+      "id": "browser-q55",
+      "lesson": "browser-6",
+      "difficulty": 2,
+      "q": "The server answers this request with a 404. What is logged?",
+      "code": "try {\n  const res = await fetch('/api/missing');\n  console.log('got', res.status);\n} catch (err) {\n  console.log('failed');\n}",
+      "lang": "js",
+      "options": [
+        "got 404",
+        "failed",
+        "got undefined",
+        "Nothing, because the promise never settles"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "A `fetch` promise rejects only on a network failure. A 404 is still a response, so the promise fulfills and `res.status` is 404.",
+      "wrong": [
+        "",
+        "HTTP error codes don't reject the promise.",
+        "The response has a `status`, here 404.",
+        "The promise fulfills once the response headers arrive."
+      ],
+      "source": "MDN: Window: fetch() method"
+    },
+    {
+      "id": "browser-q56",
+      "lesson": "browser-6",
+      "difficulty": 2,
+      "q": "A single-page app runs `history.pushState({ tab: 'billing' }, '', '/billing')`. Which two statements are true? (Choose 2)",
+      "options": [
+        "The address bar shows /billing, and no page loads",
+        "The browser requests /billing from the server",
+        "`popstate` fires right away with the state",
+        "`popstate` doesn't fire because of this call",
+        "The current history entry is replaced"
+      ],
+      "answer": [
+        0,
+        3
+      ],
+      "explain": "`pushState` adds a history entry and changes the URL without loading. `popstate` fires only when the user moves through history, like pressing Back.",
+      "wrong": [
+        "",
+        "Nothing is loaded; only the URL and history change.",
+        "`pushState` never fires `popstate` by itself.",
+        "",
+        "That is `replaceState`; `pushState` adds a new entry."
+      ],
+      "source": "MDN: History: pushState() method"
+    },
+    {
+      "id": "browser-q57",
+      "lesson": "browser-6",
+      "difficulty": 2,
+      "q": "A search box calls the server on every key press. The team wants one call, made only after the user stops typing for 300 ms. Which technique fits?",
+      "options": [
+        "Throttle the handler",
+        "Run it in `requestAnimationFrame`",
+        "Debounce the handler",
+        "Poll the box with `setInterval`"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "Debouncing waits until calls stop for a set time, then runs once. That matches \"after the user stops typing\".",
+      "wrong": [
+        "Throttling runs at a steady rate while the user types.",
+        "`requestAnimationFrame` runs before each repaint, many times a second.",
+        "",
+        "Polling runs on a timer whether or not the user stopped typing."
+      ],
+      "source": "MDN: Debounce"
+    },
+    {
+      "id": "browser-q58",
+      "lesson": "browser-6",
+      "difficulty": 2,
+      "q": "Which line loads the page at `/login` and keeps the current page in the Back history?",
+      "options": [
+        "`location.replace('/login')`",
+        "`history.pushState(null, '', '/login')`",
+        "`history.replaceState(null, '', '/login')`",
+        "`location.assign('/login')`"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "`location.assign()` loads the new page and adds it to the history, so Back returns here.",
+      "wrong": [
+        "`replace()` loads the page but drops the current one from the history.",
+        "`pushState` changes the URL but loads nothing.",
+        "`replaceState` changes the URL without loading, and adds no entry.",
+        ""
+      ],
+      "source": "MDN: Location: assign() method"
+    },
+    {
+      "id": "browser-q59",
+      "lesson": "browser-6",
+      "difficulty": 2,
+      "q": "A user opens the app in two separate tabs. Tab A runs `sessionStorage.setItem('draft', 'x')`. What does `sessionStorage.getItem('draft')` return in tab B?",
+      "options": [
+        "`'x'`",
+        "`null`",
+        "`undefined`",
+        "`''`"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "`sessionStorage` is kept per origin and per tab. Tab B has its own empty store, and a missing key gives `null`.",
+      "wrong": [
+        "Only `localStorage` is shared across tabs of the same origin.",
+        "",
+        "`getItem` returns `null`, not `undefined`, for a missing key.",
+        "A missing key gives `null`, not an empty string."
+      ],
+      "source": "MDN: Window: sessionStorage property"
+    },
+    {
+      "id": "browser-x26",
+      "lesson": "browser-6",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "The server answers with status 500 and an HTML error page. What happens?",
+      "code": "async function load() {\n  const res = await fetch('/api/orders');\n  return res.json();\n}\nload().catch(() => showError());",
+      "lang": "js",
+      "options": [
+        "`showError()` runs, because `fetch` rejects on a 500",
+        "`load()` resolves with the HTML as a string",
+        "`showError()` runs, because `res.json()` can't parse the HTML",
+        "`load()` resolves with `undefined`"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "`fetch` fulfills on a 500. The error comes from `res.json()`, which rejects with a `SyntaxError` on HTML. Check `res.ok` first to handle it on purpose.",
+      "wrong": [
+        "`fetch` doesn't reject on HTTP error codes.",
+        "`json()` parses the body; it doesn't return raw text.",
+        "",
+        "The parse fails, so `load()` rejects."
+      ],
+      "source": "MDN: Response: json() method"
+    },
+    {
+      "id": "browser-x27",
+      "lesson": "browser-6",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "Which two statements about `setTimeout(fn, 0)` are true? (Choose 2)",
+      "options": [
+        "`fn` runs right away, before the next line",
+        "`fn` runs after the current code has finished",
+        "`fn` runs before callbacks of promises that are already resolved",
+        "It returns a promise that resolves when `fn` runs",
+        "The delay is a minimum, so `fn` may run later"
+      ],
+      "answer": [
+        1,
+        4
+      ],
+      "explain": "A timer callback waits for the current code and for queued promise callbacks. The delay is only the shortest wait; it can be longer.",
+      "wrong": [
+        "Timer callbacks never run in the middle of the current code.",
+        "",
+        "Promise callbacks (microtasks) run before timer callbacks.",
+        "In the browser it returns a number id, not a promise.",
+        ""
+      ],
+      "source": "MDN: Window: setTimeout() method"
+    },
+    {
+      "id": "browser-x28",
+      "lesson": "browser-6",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "What is logged, and when?",
+      "code": "function debounce(fn, ms) {\n  let id;\n  return (...args) => {\n    clearTimeout(id);\n    id = setTimeout(() => fn(...args), ms);\n  };\n}\nconst save = debounce((t) => console.log(t), 200);\nsave('a'); save('b'); save('c');",
+      "lang": "js",
+      "options": [
+        "\"c\", once, about 200 ms later",
+        "\"a\", \"b\" and \"c\", about 200 ms later",
+        "\"a\" right away, nothing more",
+        "\"a\" right away, then \"c\" 200 ms later"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "Each call cancels the timer from the call before. Only the last timer survives, so `fn` runs once with `'c'`.",
+      "wrong": [
+        "",
+        "The first two timers are cleared before they fire.",
+        "Nothing runs right away; every call only sets a timer.",
+        "This version never runs on the first call."
+      ],
+      "source": "MDN: Debounce"
+    },
+    {
+      "id": "browser-x29",
+      "lesson": "browser-6",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "What is logged?",
+      "code": "const controller = new AbortController();\nfetch('/api/report', { signal: controller.signal })\n  .then(() => console.log('done'))\n  .catch((err) => console.log(err.name));\ncontroller.abort();",
+      "lang": "js",
+      "options": [
+        "done",
+        "TypeError",
+        "AbortError",
+        "Nothing"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "Aborting the signal rejects the `fetch` promise with a `DOMException` named `AbortError`.",
+      "wrong": [
+        "The request was aborted before it could finish.",
+        "An abort gives an `AbortError`, not a network `TypeError`.",
+        "",
+        "The rejection reaches the `catch`, which logs it."
+      ],
+      "source": "MDN: AbortController: abort() method"
+    },
+    {
+      "id": "browser-x30",
+      "lesson": "browser-6",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "What is logged?",
+      "code": "let n = 0;\nconst id = setInterval(() => {\n  n++;\n  if (n === 3) clearInterval(id);\n}, 10);\nsetTimeout(() => console.log(n), 200);",
+      "lang": "js",
+      "options": [
+        "3",
+        "0",
+        "20",
+        "1"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "The interval runs every 10 ms and stops itself on the third run. By 200 ms, `n` is 3.",
+      "wrong": [
+        "",
+        "The interval runs several times before 200 ms.",
+        "`clearInterval` stops it after the third run.",
+        "The interval repeats until it is cleared."
+      ],
+      "source": "MDN: Window: setInterval() method"
+    },
+    {
+      "id": "browser-x31",
+      "lesson": "browser-6",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A user's theme `{ mode: 'dark' }` must still be there after the browser restarts. Which two lines save and read it correctly? (Choose 2)",
+      "options": [
+        "`localStorage.setItem('theme', JSON.stringify(theme))`",
+        "`sessionStorage.setItem('theme', JSON.stringify(theme))`",
+        "`localStorage.setItem('theme', theme)`",
+        "`localStorage.getItem('theme').mode`",
+        "`JSON.parse(localStorage.getItem('theme'))`"
+      ],
+      "answer": [
+        0,
+        4
+      ],
+      "explain": "`localStorage` survives restarts but holds strings only. Save with `JSON.stringify` and read back with `JSON.parse`.",
+      "wrong": [
+        "",
+        "`sessionStorage` is cleared when the tab closes.",
+        "An object is saved as `'[object Object]'`.",
+        "`getItem` returns a string, which has no `mode` property.",
+        ""
+      ],
+      "source": "MDN: Window: localStorage property"
+    },
+    {
+      "id": "browser-q60",
+      "lesson": "browser-7",
+      "difficulty": 1,
+      "q": "Which Dev Tools panel shows each request's status code and timing?",
+      "options": [
+        "Elements",
+        "Sources",
+        "Application",
+        "Network"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "The Network panel lists every request with its method, status, size and time.",
+      "wrong": [
+        "Elements shows the DOM and CSS, not requests.",
+        "Sources is for scripts and breakpoints.",
+        "Application shows storage and cookies.",
+        ""
+      ],
+      "source": "Chrome DevTools docs: Inspect network activity"
+    },
+    {
+      "id": "browser-q61",
+      "lesson": "browser-7",
+      "difficulty": 1,
+      "q": "In the Chrome Console, what is `$0`?",
+      "options": [
+        "The first element on the page",
+        "The element last selected in the Elements panel",
+        "The value of the last expression you ran",
+        "The first script loaded by the page"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "`$0` points to the element you selected most recently in Elements. `$1` is the one before that.",
+      "wrong": [
+        "For the first match of a selector, use `$(selector)`.",
+        "",
+        "The last result is `$_`.",
+        "`$0` refers to selected elements, not scripts."
+      ],
+      "source": "Chrome DevTools docs: Console Utilities API reference"
+    },
+    {
+      "id": "browser-q62",
+      "lesson": "browser-7",
+      "difficulty": 2,
+      "q": "A button seems to run its click code twice. The button is selected in Elements. Which Console call lists the listeners registered on it?",
+      "options": [
+        "`monitorEvents($0)`",
+        "`getEventListeners($0)`",
+        "`console.dir($0)`",
+        "`$$('button')`"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "`getEventListeners()` returns the listeners on an object, grouped by event type.",
+      "wrong": [
+        "`monitorEvents` logs events as they happen, not the listeners.",
+        "",
+        "`console.dir` shows the element's properties, not its listeners.",
+        "`$$` finds every button; it doesn't list listeners."
+      ],
+      "source": "Chrome DevTools docs: Console Utilities API reference"
+    },
+    {
+      "id": "browser-q63",
+      "lesson": "browser-7",
+      "difficulty": 2,
+      "q": "Which two jobs can you do in the Application panel? (Choose 2)",
+      "options": [
+        "Set a breakpoint on a line of code",
+        "View and edit `localStorage` entries",
+        "Delete the site's cookies",
+        "See the timing of each request",
+        "Change an element's CSS"
+      ],
+      "answer": [
+        1,
+        2
+      ],
+      "explain": "The Application panel holds the page's storage: local and session storage, cookies and more.",
+      "wrong": [
+        "Line breakpoints are set in Sources.",
+        "",
+        "",
+        "Request timing is in the Network panel.",
+        "CSS is changed in the Elements panel."
+      ],
+      "source": "Chrome DevTools docs: View and edit local storage"
+    },
+    {
+      "id": "browser-q64",
+      "lesson": "browser-7",
+      "difficulty": 2,
+      "q": "Something keeps changing an element's `class` attribute, and nobody knows which script does it. What is the quickest way to find the code?",
+      "options": [
+        "Add a logpoint to every line that uses `classList`",
+        "Filter the Network panel by the class name",
+        "Record a trace in the Performance panel",
+        "In Elements, set \"Break on\" attribute modifications for that element"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "A DOM change breakpoint pauses on the exact line that changes the attribute. The Call Stack then shows who called it.",
+      "wrong": [
+        "That is slow, and it misses changes made through `className` or `setAttribute`.",
+        "The Network panel shows requests, not DOM changes.",
+        "A trace shows timing, but it doesn't pause on the change.",
+        ""
+      ],
+      "source": "Chrome DevTools docs: Pause your code with breakpoints"
+    },
+    {
+      "id": "browser-q65",
+      "lesson": "browser-7",
+      "difficulty": 2,
+      "q": "A page loads slowly for new visitors on phones. Which two Network panel features help reproduce it on a fast desktop? (Choose 2)",
+      "options": [
+        "Preserve log",
+        "The Event Listeners pane",
+        "Disable cache, then reload",
+        "Throttling set to a slow connection",
+        "Force `:hover` state"
+      ],
+      "answer": [
+        2,
+        3
+      ],
+      "explain": "\"Disable cache\" acts like a first visit, and throttling fakes a slow network. Together they mimic a new visitor on a phone.",
+      "wrong": [
+        "Preserve log keeps rows across loads; it doesn't slow anything.",
+        "That pane is in Elements and lists listeners.",
+        "",
+        "",
+        "Forcing `:hover` is an Elements styling tool."
+      ],
+      "source": "Chrome DevTools docs: Network features reference"
+    },
+    {
+      "id": "browser-x32",
+      "lesson": "browser-7",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A loop runs 1,000 times. It fails only when `order.total` is negative. What is the quickest way to pause only at that moment?",
+      "options": [
+        "A conditional breakpoint with `order.total < 0`",
+        "A `debugger` statement as the loop's first line",
+        "A logpoint that prints `order.total`",
+        "Turn on \"Pause on caught exceptions\""
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "A conditional breakpoint pauses only when its condition is true. It skips the 999 good runs.",
+      "wrong": [
+        "",
+        "`debugger` pauses on every pass through the loop.",
+        "A logpoint never pauses; it only prints.",
+        "A negative total may not throw anything, so this may never pause."
+      ],
+      "source": "Chrome DevTools docs: Pause your code with breakpoints"
+    },
+    {
+      "id": "browser-x33",
+      "lesson": "browser-7",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "Some requests go to a wrong URL that contains `price`. A developer wants to pause on the line of code that sends them. Which breakpoint fits?",
+      "options": [
+        "An event listener breakpoint on `load`",
+        "A DOM change breakpoint on `<body>`",
+        "An XHR/fetch breakpoint for URLs containing `price`",
+        "A breakpoint inside the browser's own `fetch`"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "An XHR/fetch breakpoint pauses when a request URL contains the text you give it. It stops on the code that sends the request.",
+      "wrong": [
+        "That pauses on `load` listeners, not on requests.",
+        "Requests don't change the DOM, so this never pauses.",
+        "",
+        "`fetch` is built into the browser, so you can't set a line breakpoint in it."
+      ],
+      "source": "Chrome DevTools docs: Pause your code with breakpoints"
+    },
+    {
+      "id": "browser-x34",
+      "lesson": "browser-7",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A single-page app uses more memory each time a modal opens and closes. Which tool shows DOM nodes that left the page but are still held by JavaScript?",
+      "options": [
+        "The waterfall in the Network panel",
+        "The Storage view in the Application panel",
+        "The Event Listeners pane in Elements",
+        "A heap snapshot in the Memory panel"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "A heap snapshot lists what JavaScript still holds, including detached DOM nodes. Compare snapshots to find the leak.",
+      "wrong": [
+        "The waterfall shows requests, not memory.",
+        "Storage shows saved data, not objects in memory.",
+        "It lists listeners on the selected element, not leaked nodes.",
+        ""
+      ],
+      "source": "Chrome DevTools docs: Fix memory problems"
+    },
+    {
+      "id": "browser-x35",
+      "lesson": "browser-7",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A developer adds this to `app.js` to see key events on the search box. What happens when the page loads the script?",
+      "code": "const input = document.querySelector('#search');\nmonitorEvents(input, 'key');",
+      "lang": "js",
+      "options": [
+        "Each key event on the box is logged to the Console",
+        "A `ReferenceError`: `monitorEvents` exists only in the Console",
+        "Only `keydown` events are logged",
+        "Nothing, because it is ignored outside Dev Tools"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "Console Utilities like `monitorEvents` and `$0` exist only for code typed into the Console. In page scripts the name is not defined.",
+      "wrong": [
+        "That works only when typed into the Console.",
+        "",
+        "In the Console, `'key'` covers several key events, but here it doesn't run at all.",
+        "An unknown name throws; it isn't silently ignored."
+      ],
+      "source": "Chrome DevTools docs: Console Utilities API reference"
+    }
+  ]
+}

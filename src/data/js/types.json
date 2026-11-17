@@ -1,0 +1,4940 @@
+{
+  "id": "types",
+  "title": "Variables, Types, and Collections",
+  "weight": 23,
+  "summary": "Declare it right, know its type, and shape your data: let and const, coercion, truthy and falsy, arrays, Map and Set, and JSON.",
+  "lessons": [
+    {
+      "id": "types-1",
+      "title": "var, let and const",
+      "minutes": 3,
+      "objective": "Given a scenario, write code to create variables and initialize them correctly.",
+      "cards": [
+        {
+          "type": "text",
+          "title": "In plain words",
+          "body": "A **variable** is a name that holds a value. JavaScript gives you three ways to make one: `var`, `let` and `const`. They differ in where the name works (its **scope**), whether you can point it at a new value, and what happens if you read it too early."
+        },
+        {
+          "type": "tip",
+          "title": "Think of it like…",
+          "body": "Name tags on boxes. A `const` tag is glued to one box for good, but you can still change what is inside the box. A `let` tag can move to another box. Where it stops: a `var` tag ignores room walls, so it wanders out of `if` and `for` blocks."
+        },
+        {
+          "type": "text",
+          "title": "Block or function?",
+          "body": "`let` and `const` are **block-scoped**: they live only inside the nearest `{ }`. `var` is **function-scoped**: it ignores `if` and `for` blocks and lives in the whole function. Outside any function, it lives in the whole script."
+        },
+        {
+          "type": "code",
+          "title": "Reading too early",
+          "lang": "js",
+          "code": "console.log(a); // undefined\nvar a = 1;\n\nconsole.log(b); // ReferenceError\nlet b = 2;",
+          "body": "`var` declarations are **hoisted**: set up before any code runs, holding `undefined`. `let` and `const` wait in the **temporal dead zone** (TDZ) until their line runs. Reading them earlier throws."
+        },
+        {
+          "type": "code",
+          "title": "const locks the name, not the object",
+          "lang": "js",
+          "code": "const user = { name: 'Ana' };\nuser.name = 'Bo'; // fine\nuser.age = 30;    // fine\nuser = {};        // TypeError",
+          "body": "`const` must get a value right away and can never be **reassigned**. The object it points to can still change."
+        },
+        {
+          "type": "list",
+          "title": "More rules",
+          "items": [
+            "Declaring the same `let` or `const` twice in one scope is a `SyntaxError`. `var` allows it.",
+            "`const rate;` with no value is a `SyntaxError`.",
+            "Assigning to a name you never declared creates a **global** variable in sloppy mode.",
+            "In **strict mode** (`'use strict'`), that same assignment throws a `ReferenceError`."
+          ]
+        },
+        {
+          "type": "trap",
+          "body": "\"`const` makes an object read-only.\" Wrong. `const` only glues the name to one value. Properties can still be added, changed or deleted. To lock the object itself, use `Object.freeze()`."
+        },
+        {
+          "type": "tip",
+          "title": "Remember it",
+          "body": "**\"const by default, let when it changes, var never.\"** Read too early: `var` says `undefined`, `let` and `const` throw."
+        }
+      ],
+      "check": [
+        "types-q1",
+        "types-q3",
+        "types-q5"
+      ],
+      "terms": [
+        {
+          "term": "variable",
+          "say": "A name that holds a value, like a labeled box. You use the name to get the value back later."
+        },
+        {
+          "term": "scope",
+          "say": "The part of the code where a name can be used. Outside its scope, the name does not exist."
+        },
+        {
+          "term": "block-scoped",
+          "say": "Lives only inside the nearest pair of curly braces. When the block ends, the name is gone."
+        },
+        {
+          "term": "function-scoped",
+          "say": "Lives in the whole function it was made in, even outside the if or for block where you wrote it."
+        },
+        {
+          "term": "hoisted",
+          "match": [
+            "hoisting"
+          ],
+          "say": "Set up before any code runs. A hoisted var already exists at the top, holding undefined, until its line gives it a value."
+        },
+        {
+          "term": "temporal dead zone",
+          "match": [
+            "TDZ"
+          ],
+          "say": "The time between the start of a block and the line that declares a let or const. Touching the name then throws an error."
+        },
+        {
+          "term": "reassigned",
+          "say": "Pointed at a new value with =. A const can never be reassigned. A let can."
+        },
+        {
+          "term": "global",
+          "say": "A variable every part of the program can see. Making one by accident is a classic bug."
+        },
+        {
+          "term": "strict mode",
+          "say": "A stricter set of JavaScript rules, switched on with 'use strict'. Mistakes that used to pass quietly now throw errors."
+        },
+        {
+          "term": "Object.freeze()",
+          "say": "Locks an object so nobody can add, change or delete its properties. Changes are ignored, or throw in strict mode."
+        }
+      ]
+    },
+    {
+      "id": "types-2",
+      "title": "Primitive types and typeof",
+      "minutes": 3,
+      "objective": "Given a scenario, write code to create variables and initialize them correctly.",
+      "cards": [
+        {
+          "type": "text",
+          "title": "In plain words",
+          "body": "Every value has a type. There are seven **primitive** types: string, number, bigint, boolean, undefined, symbol and null. Everything else is an **object**, including arrays and functions. The `typeof` operator tells you the type as a string, like `'number'`."
+        },
+        {
+          "type": "tip",
+          "title": "Think of it like…",
+          "body": "Primitives are coins: a 5 is a 5, and you can't reshape a coin. Objects are backpacks: you can put things in and take them out. Where it stops: coins come with a free helper, so `'hi'.toUpperCase()` still works on a plain string."
+        },
+        {
+          "type": "text",
+          "title": "Primitives never change",
+          "body": "Primitives are **immutable**. No method changes them in place: `s.toUpperCase()` returns a new string and `s` stays the same. Methods work because JavaScript briefly wraps the value in a **wrapper object** (`String`, `Number`, `Boolean`…). `null` and `undefined` have no wrapper, so `null.x` throws a `TypeError`."
+        },
+        {
+          "type": "code",
+          "title": "What typeof says",
+          "lang": "js",
+          "code": "typeof 'hi'          // 'string'\ntypeof 42            // 'number'\ntypeof 10n           // 'bigint'\ntypeof undefined     // 'undefined'\ntypeof Symbol()      // 'symbol'\ntypeof null          // 'object' (old bug)\ntypeof []            // 'object'\ntypeof function(){}  // 'function'",
+          "body": "`typeof` always returns a string. Functions and classes give `'function'`, even though they are objects."
+        },
+        {
+          "type": "text",
+          "title": "Check arrays and null the right way",
+          "body": "`typeof []` is `'object'`, so use `Array.isArray(value)`. To find `null`, compare directly: `value === null`. `typeof` on a name that was never declared returns `'undefined'`, with no error. But `typeof` on a `let` or `const` before its line throws."
+        },
+        {
+          "type": "text",
+          "title": "undefined vs null",
+          "body": "`undefined` means \"no value yet\". You get it from a declared variable with no value, a missing property, or a function with no `return`. `null` means \"empty on purpose\". JavaScript never sets it for you; your code does."
+        },
+        {
+          "type": "trap",
+          "body": "\"`typeof null` is `'null'`.\" Wrong. It is `'object'`, a bug kept since the first version of JavaScript. Also: `typeof NaN` is `'number'`."
+        },
+        {
+          "type": "tip",
+          "title": "Remember it",
+          "body": "**\"Seven coins, then backpacks.\"** String, number, bigint, boolean, undefined, symbol, null. Everything else is an object."
+        }
+      ],
+      "check": [
+        "types-q12",
+        "types-q15",
+        "types-x7"
+      ],
+      "terms": [
+        {
+          "term": "primitive",
+          "say": "A simple, single value like a number or a piece of text. It is not an object and it can never be changed in place."
+        },
+        {
+          "term": "object",
+          "say": "A container that holds named values. Arrays, functions and dates are all objects."
+        },
+        {
+          "term": "typeof",
+          "say": "An operator that tells you a value's type as a word, like 'string' or 'number'."
+        },
+        {
+          "term": "immutable",
+          "say": "Can never be changed. To get a different value, you make a new one."
+        },
+        {
+          "term": "wrapper object",
+          "say": "A helper object JavaScript makes for a moment around a primitive, so you can call methods like toUpperCase on it."
+        },
+        {
+          "term": "Array.isArray()",
+          "match": [
+            "Array.isArray(value)"
+          ],
+          "say": "Gives true only for real arrays. Use it because typeof says object for arrays."
+        },
+        {
+          "term": "null",
+          "say": "A value that means \"empty on purpose\". Your code sets it to show there is nothing there."
+        },
+        {
+          "term": "undefined",
+          "say": "The value of something that has no value yet, like a variable you declared but never set."
+        },
+        {
+          "term": "TypeError",
+          "say": "The error you get when you use a value the wrong way, like reading a property of null."
+        }
+      ]
+    },
+    {
+      "id": "types-3",
+      "title": "Strings and template literals",
+      "minutes": 3,
+      "objective": "Given a business requirement, utilize strings, numbers, and dates effectively.",
+      "cards": [
+        {
+          "type": "text",
+          "title": "In plain words",
+          "body": "A **string** is text. You can write it in single quotes, double quotes or backticks. Backticks make a **template literal**: text with `${...}` holes for values, and real line breaks. Strings are **immutable**, so every string method returns a new string."
+        },
+        {
+          "type": "tip",
+          "title": "Think of it like…",
+          "body": "A template literal is a fill-in-the-blanks form. You write the sentence once and leave holes. JavaScript fills each hole when the line runs. Where it stops: a hole takes any expression, like a sum or a function call, not just a name."
+        },
+        {
+          "type": "code",
+          "title": "Fill the holes",
+          "lang": "js",
+          "code": "const name = 'Ana';\nconst qty = 3;\nconst msg = `Hi ${name}, you have ${qty * 2} items`;\n// 'Hi Ana, you have 6 items'",
+          "body": "Each `${...}` runs its expression and drops the result into the text. In plain quotes, the same characters would print as they are."
+        },
+        {
+          "type": "text",
+          "title": "slice vs substring",
+          "body": "`slice(start, end)` copies from `start` up to, but not including, `end`. Negative numbers count from the end: `'hello'.slice(-3)` is `'llo'`. `substring` treats negatives as 0. It also swaps its two numbers when start is bigger than end."
+        },
+        {
+          "type": "text",
+          "title": "replace vs replaceAll",
+          "body": "`replace` with a string pattern changes only the **first match**. `replaceAll` changes every match. With a **regular expression** (regex), `replace` needs the `g` flag to change them all. `replaceAll` with a regex that lacks `g` throws a `TypeError`."
+        },
+        {
+          "type": "list",
+          "title": "Everyday tools",
+          "items": [
+            "`trim()` removes spaces at both ends",
+            "`padStart(5, '0')` fills the left: `'42'` becomes `'00042'`",
+            "`includes`, `startsWith`, `endsWith` give `true` or `false`",
+            "`split(',')` makes an array; `join(',')` makes a string",
+            "`indexOf` gives a position, or `-1` when missing"
+          ]
+        },
+        {
+          "type": "trap",
+          "body": "\"`s.replace('a', 'b')` swaps every `a`.\" Wrong. With a string pattern, only the first one changes. Use `replaceAll`, or a regex with the `g` flag."
+        },
+        {
+          "type": "tip",
+          "title": "Remember it",
+          "body": "**\"Backticks bake in values.\"** And string methods never change the old string, so keep the result: `s = s.trim()`."
+        }
+      ],
+      "check": [
+        "types-q22",
+        "types-q24",
+        "types-x11"
+      ],
+      "terms": [
+        {
+          "term": "string",
+          "say": "A piece of text, like a word or a sentence, wrapped in quotes or backticks."
+        },
+        {
+          "term": "template literal",
+          "match": [
+            "template literals"
+          ],
+          "say": "Text written between backticks. It can hold holes with values in them, and it can span many lines."
+        },
+        {
+          "term": "immutable",
+          "say": "Can never be changed. String methods give you a new string and leave the old one alone."
+        },
+        {
+          "term": "slice",
+          "match": [
+            "slice(start, end)"
+          ],
+          "say": "Copies part of a string. Negative numbers count back from the end."
+        },
+        {
+          "term": "substring",
+          "say": "Copies part of a string, like slice. But it treats negative numbers as 0 and swaps the numbers if they are backwards."
+        },
+        {
+          "term": "first match",
+          "say": "Only the first place the pattern shows up. Later copies are left alone."
+        },
+        {
+          "term": "replaceAll",
+          "say": "Changes every place a pattern shows up in a string, not just the first one."
+        },
+        {
+          "term": "regular expression",
+          "match": [
+            "regex"
+          ],
+          "say": "A pattern for finding text, written between slashes, like /cat/g. The g at the end means \"find them all\"."
+        },
+        {
+          "term": "trim()",
+          "say": "Removes spaces, tabs and line breaks from both ends of a string."
+        },
+        {
+          "term": "split(',')",
+          "say": "Cuts a string into an array of pieces at each comma. The pieces don't include the commas."
+        }
+      ]
+    },
+    {
+      "id": "types-4",
+      "title": "Numbers, Math, BigInt and dates",
+      "minutes": 4,
+      "objective": "Given a business requirement, utilize strings, numbers, and dates effectively.",
+      "cards": [
+        {
+          "type": "text",
+          "title": "In plain words",
+          "body": "JavaScript has one main **number** type for whole numbers and decimals alike. It stores them as **floating point** values, so some decimals come out slightly off. For huge whole numbers there is **BigInt**. Dates and times live in `Date` objects."
+        },
+        {
+          "type": "tip",
+          "title": "Think of it like…",
+          "body": "A ruler with very fine marks. Most values land right on a mark. Some, like 0.1, fall between two marks and get rounded to the nearest one. Where it stops: whole numbers are exact up to 2^53 − 1; past that, the marks get too far apart."
+        },
+        {
+          "type": "code",
+          "title": "NaN is odd",
+          "lang": "js",
+          "code": "NaN === NaN;          // false\nNumber.isNaN(NaN);    // true\nisNaN('abc');         // true  (converts first)\nNumber.isNaN('abc');  // false (no converting)\n0.1 + 0.2 === 0.3;    // false",
+          "body": "`NaN` means **not a number**. It is the only value not equal to itself, so test it with `Number.isNaN()`."
+        },
+        {
+          "type": "text",
+          "title": "Numbers from text",
+          "body": "`parseInt('42px', 10)` reads the leading digits and stops at the first letter: `42`. Always pass the **radix**, the number base (usually 10). `Number('42px')` is stricter and gives `NaN`. `parseFloat('3.5kg')` gives `3.5`."
+        },
+        {
+          "type": "text",
+          "title": "Rounding",
+          "body": "`toFixed(2)` rounds to 2 decimals and returns a **string**: `(1.5).toFixed(2)` is `'1.50'`. `Math.round`, `Math.floor`, `Math.ceil` and `Math.max` return numbers. `Math.random()` gives a number from 0 up to, but not including, 1."
+        },
+        {
+          "type": "text",
+          "title": "BigInt",
+          "body": "`Number.MAX_SAFE_INTEGER` is 9007199254740991 (2^53 − 1). Past it, whole numbers lose precision. A BigInt like `10n` stays exact at any size. You can't mix BigInt and number in math: `10n + 1` throws a `TypeError`. `Math` methods don't take BigInts either."
+        },
+        {
+          "type": "text",
+          "title": "Dates",
+          "body": "`new Date(2022, 0, 31)` is 31 January 2022. Months are **zero-based** (January is 0); days start at 1. `getMonth()` returns 0 to 11. `Date.now()` gives milliseconds since 1 January 1970 UTC. To show a date to people, use `toLocaleDateString()` or `Intl.DateTimeFormat`."
+        },
+        {
+          "type": "trap",
+          "body": "\"`getMonth()` on a March date returns 3.\" Wrong. It returns 2, because January is 0. The day of the month, `getDate()`, starts at 1."
+        },
+        {
+          "type": "tip",
+          "title": "Remember it",
+          "body": "**\"NaN won't even match itself.\"** And months start at zero, days at one."
+        }
+      ],
+      "check": [
+        "types-q30",
+        "types-x16",
+        "types-q35"
+      ],
+      "terms": [
+        {
+          "term": "number",
+          "say": "The JavaScript type for both whole numbers and decimals, like 7 or 2.5."
+        },
+        {
+          "term": "floating point",
+          "say": "The way computers store decimals. Some decimals, like 0.1, can only be stored very close, not exactly."
+        },
+        {
+          "term": "BigInt",
+          "say": "A type for whole numbers of any size. You write it with an n at the end, like 10n. It is always exact."
+        },
+        {
+          "term": "not a number",
+          "match": [
+            "NaN"
+          ],
+          "say": "NaN is a special number value that means \"this math failed\", like 0 divided by 0. It is not even equal to itself."
+        },
+        {
+          "term": "Number.isNaN()",
+          "say": "Gives true only if the value really is NaN. It does not convert text first, unlike the older isNaN()."
+        },
+        {
+          "term": "radix",
+          "say": "The number base to read digits in. Base 10 is normal counting. Pass it to parseInt so nothing gets guessed."
+        },
+        {
+          "term": "parseInt('42px', 10)",
+          "match": [
+            "parseInt"
+          ],
+          "say": "Reads the whole number at the start of a text and stops at the first character that is not a digit."
+        },
+        {
+          "term": "zero-based",
+          "say": "Counting starts at 0, not 1. For Date months, January is 0 and December is 11."
+        },
+        {
+          "term": "Date.now()",
+          "say": "Gives the current time as the number of milliseconds since the start of 1970, in UTC."
+        }
+      ]
+    },
+    {
+      "id": "types-5",
+      "title": "Type coercion: +, - and == vs ===",
+      "minutes": 4,
+      "objective": "Given a scenario or example, demonstrate awareness of type coercion and its effects.",
+      "cards": [
+        {
+          "type": "text",
+          "title": "In plain words",
+          "body": "**Type coercion** is JavaScript changing a value's type by itself so an operation can work. It happens with `+`, `-`, `==` and more. It is sometimes handy, but it causes most \"why did that print?\" bugs."
+        },
+        {
+          "type": "tip",
+          "title": "Think of it like…",
+          "body": "A translator. You hand over two things in different languages, and they turn both into one language before working. Where it stops: this translator follows fixed rules, so once you know the rules, every result is predictable."
+        },
+        {
+          "type": "text",
+          "title": "+ loves strings",
+          "body": "`+` first turns both sides into **primitives**. If either side is then a string, it joins them: `1 + '2'` is `'12'`. Otherwise it adds numbers: `true + 1` is `2`. It works left to right: `1 + 2 + '3'` is `'33'`."
+        },
+        {
+          "type": "text",
+          "title": "- * / want numbers",
+          "body": "`-`, `*` and `/` always convert to numbers. `'5' - 2` is `3`, and `'5' * '2'` is `10`. Text that isn't a number becomes `NaN`. Objects become strings first: `[] + {}` is `'[object Object]'`, and `[1, 2] + ''` is `'1,2'`."
+        },
+        {
+          "type": "code",
+          "title": "== vs ===",
+          "lang": "js",
+          "code": "1 == '1'             // true  (converts)\n1 === '1'            // false (no converting)\nnull == undefined    // true\nnull == 0            // false\nnull >= 0            // true\nObject.is(NaN, NaN)  // true",
+          "body": "**Loose equality** (`==`) converts types first. **Strict equality** (`===`) never converts. `Object.is` works like `===`, except `NaN` equals `NaN` and `0` differs from `-0`."
+        },
+        {
+          "type": "list",
+          "title": "Convert on purpose",
+          "items": [
+            "`Number('42')` gives `42`",
+            "`String(42)` gives `'42'`",
+            "`Boolean('')` gives `false`",
+            "`+'7'` gives `7`: the **unary plus** turns a value into a number"
+          ]
+        },
+        {
+          "type": "trap",
+          "body": "\"`null == 0` is true, since `null` is like zero.\" Wrong. `==` has a special rule: `null` only equals `undefined` (and itself). Yet `null >= 0` is `true`, because `>=` does convert `null` to `0`."
+        },
+        {
+          "type": "tip",
+          "title": "Remember it",
+          "body": "**\"Plus picks text, minus picks math.\"** And use `===` unless you really want the conversion."
+        }
+      ],
+      "check": [
+        "types-q41",
+        "types-q44",
+        "types-q46"
+      ],
+      "terms": [
+        {
+          "term": "type coercion",
+          "say": "JavaScript changing a value from one type to another by itself, like turning the number 1 into the text \"1\"."
+        },
+        {
+          "term": "primitives",
+          "match": [
+            "primitive"
+          ],
+          "say": "Simple single values, like numbers, strings and booleans. They are not objects."
+        },
+        {
+          "term": "NaN",
+          "say": "A special number value that means \"this math failed\". It is not equal to anything, not even itself."
+        },
+        {
+          "term": "loose equality",
+          "match": [
+            "=="
+          ],
+          "say": "Comparing with ==. JavaScript converts the two values to a shared type before comparing them."
+        },
+        {
+          "term": "strict equality",
+          "match": [
+            "==="
+          ],
+          "say": "Comparing with ===. The values must have the same type and the same value. Nothing is converted."
+        },
+        {
+          "term": "Object.is",
+          "say": "A way to check if two values are the same. It is like ===, but it says NaN is NaN and keeps 0 and -0 apart."
+        },
+        {
+          "term": "unary plus",
+          "say": "A + with only one value after it, like +\"7\". It turns the value into a number."
+        },
+        {
+          "term": "[object Object]",
+          "match": [
+            "'[object Object]'"
+          ],
+          "say": "The text you get when a plain object is turned into a string. It is the default, and it is rarely what you want."
+        }
+      ]
+    },
+    {
+      "id": "types-6",
+      "title": "Truthy, falsy and the logical operators",
+      "minutes": 3,
+      "objective": "Given a specific scenario, distinguish truthy or falsey evaluations.",
+      "cards": [
+        {
+          "type": "text",
+          "title": "In plain words",
+          "body": "When JavaScript needs a yes or no, in an `if`, a loop or after `!`, it turns any value into `true` or `false`. Values that become `false` are **falsy**. All the others are **truthy**."
+        },
+        {
+          "type": "tip",
+          "title": "Think of it like…",
+          "body": "A door with a short \"no entry\" list. Only eight values are turned away; those are falsy. Everyone else walks in, even values that look empty, like `[]` or `'0'`. Where it stops: truthy does not mean `== true`. That is a different rule."
+        },
+        {
+          "type": "list",
+          "title": "The falsy list",
+          "items": [
+            "`false`",
+            "`0`, `-0` and `0n`",
+            "`''`, the empty string",
+            "`null` and `undefined`",
+            "`NaN`",
+            "Plus one browser oddity: `document.all`"
+          ]
+        },
+        {
+          "type": "text",
+          "title": "Everything else is truthy",
+          "body": "That includes `[]`, `{}`, `'0'`, `'false'`, a string with one space, and `new Boolean(false)`. Any object is truthy, even an empty one. To check for an empty array, test `arr.length`."
+        },
+        {
+          "type": "text",
+          "title": "|| and && hand back values",
+          "body": "`a || b` returns the first truthy **operand**, or the last one. `a && b` returns the first falsy operand, or the last one. They return the value itself, not a **boolean**. Both **short-circuit**: they stop as soon as the answer is known."
+        },
+        {
+          "type": "code",
+          "title": "?? and ?.",
+          "lang": "js",
+          "code": "const qty = 0;\nqty || 5;   // 5\nqty ?? 5;   // 0\n\nconst user = null;\nuser?.name; // undefined\nuser.name;  // TypeError",
+          "body": "**Nullish coalescing** (`??`) falls back only for `null` or `undefined`, so a real `0` survives. **Optional chaining** (`?.`) stops at `null` or `undefined` and gives `undefined`."
+        },
+        {
+          "type": "text",
+          "title": "Assign only when needed",
+          "body": "`a ||= b` sets `a` only if `a` is falsy. `a &&= b` sets it only if `a` is truthy. `a ??= b` sets it only if `a` is `null` or `undefined`. Write `!!value` to get a real `true` or `false`."
+        },
+        {
+          "type": "trap",
+          "body": "\"`[]` is empty, so `if ([])` is skipped.\" Wrong. Every object is truthy, even an empty array. Check `arr.length` instead."
+        },
+        {
+          "type": "tip",
+          "title": "Remember it",
+          "body": "**\"Eight say no.\"** false, 0, -0, 0n, empty string, null, undefined, NaN. Use `??` when 0 is a real answer."
+        }
+      ],
+      "check": [
+        "types-q50",
+        "types-q54",
+        "types-x31"
+      ],
+      "terms": [
+        {
+          "term": "falsy",
+          "say": "A value that counts as \"no\" in an if. There are only eight, like 0, empty text, null and undefined."
+        },
+        {
+          "term": "truthy",
+          "say": "A value that counts as \"yes\" in an if. Every value that is not falsy is truthy, even an empty array."
+        },
+        {
+          "term": "document.all",
+          "say": "An old browser object kept for very old web pages. It is the one object that counts as falsy."
+        },
+        {
+          "term": "new Boolean(false)",
+          "say": "An object that wraps the value false. Because it is an object, it counts as truthy. Avoid it."
+        },
+        {
+          "term": "operand",
+          "say": "A value an operator works on. In a || b, both a and b are operands."
+        },
+        {
+          "term": "boolean",
+          "say": "A value that is either true or false, nothing else."
+        },
+        {
+          "term": "short-circuit",
+          "say": "Stop early. Once the answer is clear, the right side is never even run."
+        },
+        {
+          "term": "nullish coalescing",
+          "match": [
+            "??"
+          ],
+          "say": "The ?? operator. It uses the right side only when the left side is null or undefined. A 0 or empty text is kept."
+        },
+        {
+          "term": "optional chaining",
+          "match": [
+            "?."
+          ],
+          "say": "The ?. operator. If the value on its left is null or undefined, it stops and gives undefined instead of an error."
+        }
+      ]
+    },
+    {
+      "id": "types-7",
+      "title": "Arrays: change it or copy it?",
+      "minutes": 3,
+      "objective": "Given a list of data, demonstrate data manipulation with arrays.",
+      "cards": [
+        {
+          "type": "text",
+          "title": "In plain words",
+          "body": "An **array** is an ordered list, like `['a', 'b', 'c']`. Positions, called **indexes**, start at 0. Some array methods **mutate**: they change the array itself. Others hand back a new array and leave the original alone. The exam loves asking which is which."
+        },
+        {
+          "type": "tip",
+          "title": "Think of it like…",
+          "body": "Mutating is writing on the original page. Copying is making a photocopy first and writing on the copy. Where it stops: array copies are **shallow**. Objects inside are shared, not photocopied."
+        },
+        {
+          "type": "list",
+          "title": "These change the array",
+          "items": [
+            "`push` / `pop`: add or remove at the end",
+            "`unshift` / `shift`: add or remove at the start",
+            "`splice(start, count, ...items)`: remove or insert anywhere",
+            "`sort` and `reverse`: reorder in place",
+            "`fill`: overwrite values"
+          ]
+        },
+        {
+          "type": "list",
+          "title": "These give you something new",
+          "items": [
+            "`slice(start, end)`: a copy of a part",
+            "`concat`: joins arrays into a new one",
+            "`map` and `filter`: new arrays",
+            "`[...arr]`: a **spread** copy",
+            "`Array.from(x)`: an array from any iterable or array-like value, like a string or a `Set`"
+          ]
+        },
+        {
+          "type": "code",
+          "title": "slice copies, splice cuts",
+          "lang": "js",
+          "code": "const a = [1, 2, 3, 4];\nconst part = a.slice(1, 3);  // [2, 3]; a unchanged\nconst cut = a.splice(1, 2);  // [2, 3]; a is now [1, 4]",
+          "body": "`slice` copies. `splice` cuts items out of the original and returns the removed ones."
+        },
+        {
+          "type": "text",
+          "title": "Finding things",
+          "body": "`includes(x)` gives `true` or `false` and can find `NaN`. `indexOf(x)` gives the position, or `-1`. It uses `===`, so it never finds `NaN`. `at(-1)` reads the last item (new in ES2022); `arr[arr.length - 1]` works everywhere."
+        },
+        {
+          "type": "trap",
+          "body": "\"`const sorted = arr.sort()` keeps `arr` safe.\" Wrong. `sort` reorders `arr` in place and returns that same array. Copy first: `[...arr].sort()`. Also, `push` returns the new length, not the array."
+        },
+        {
+          "type": "tip",
+          "title": "Remember it",
+          "body": "**\"Splice is surgery, slice is a photocopy.\"** Surgery changes the patient."
+        }
+      ],
+      "check": [
+        "types-q60",
+        "types-x34",
+        "types-q64"
+      ],
+      "terms": [
+        {
+          "term": "array",
+          "say": "A list of values kept in order. Each value sits at a numbered spot, starting at 0."
+        },
+        {
+          "term": "indexes",
+          "match": [
+            "index"
+          ],
+          "say": "The numbered spots in an array. The first spot is index 0, the second is index 1."
+        },
+        {
+          "term": "mutate",
+          "say": "Change the thing itself, instead of making a changed copy."
+        },
+        {
+          "term": "shallow",
+          "say": "A copy of only the outer list. Objects inside are shared, so changing one shows up in both lists."
+        },
+        {
+          "term": "splice(start, count, ...items)",
+          "match": [
+            "splice"
+          ],
+          "say": "Cuts items out of an array, and can put new ones in, right in the original. It returns what it cut out."
+        },
+        {
+          "term": "slice(start, end)",
+          "match": [
+            "slice"
+          ],
+          "say": "Copies part of an array into a new one. The original stays the same."
+        },
+        {
+          "term": "spread",
+          "say": "The ... syntax. It spills out every item of a list, so [...arr] makes a new array with the same items."
+        },
+        {
+          "term": "Array.from(x)",
+          "match": [
+            "Array.from"
+          ],
+          "say": "Builds a new array from anything you can loop over, like a string or a Set, or from an array-like value."
+        },
+        {
+          "term": "includes(x)",
+          "match": [
+            "includes"
+          ],
+          "say": "Tells you true or false: is this value in the array? It can even find NaN."
+        },
+        {
+          "term": "indexOf(x)",
+          "match": [
+            "indexOf"
+          ],
+          "say": "Tells you where a value sits in an array, or -1 if it is not there. It can never find NaN."
+        }
+      ]
+    },
+    {
+      "id": "types-8",
+      "title": "Arrays: map, filter, reduce, find and sort",
+      "minutes": 4,
+      "objective": "Given a list of data, demonstrate data manipulation with arrays.",
+      "cards": [
+        {
+          "type": "text",
+          "title": "In plain words",
+          "body": "Most array work is \"do something with each item\". Array methods do the looping for you. Each one takes a **callback**: a function you pass in, which runs once per item. Pick the method by what you want back."
+        },
+        {
+          "type": "tip",
+          "title": "Think of it like…",
+          "body": "A factory belt. `map` repaints every box. `filter` lets only some boxes through. `reduce` packs every box into one crate. `find` grabs the first box that fits. Where it stops: `forEach` just walks the belt and hands back nothing."
+        },
+        {
+          "type": "list",
+          "title": "What each one returns",
+          "items": [
+            "`map`: a new array, same length",
+            "`filter`: a new array of the items that pass",
+            "`reduce`: one single value",
+            "`find`: the first match, or `undefined`",
+            "`findIndex`: its index, or `-1`",
+            "`some` / `every`: `true` or `false`",
+            "`forEach`: always `undefined`"
+          ]
+        },
+        {
+          "type": "code",
+          "title": "reduce",
+          "lang": "js",
+          "code": "const cart = [{ price: 5 }, { price: 7 }];\ncart.reduce((sum, item) => sum + item.price, 0); // 12\n\n[].reduce((a, b) => a + b);    // TypeError\n[].reduce((a, b) => a + b, 0); // 0",
+          "body": "`reduce` carries an **accumulator**, the running result, from item to item. Always give it a start value. On an empty array with no start value, it throws a `TypeError`."
+        },
+        {
+          "type": "code",
+          "title": "sort",
+          "lang": "js",
+          "code": "[1, 10, 2].sort();                 // [1, 10, 2]\n[1, 10, 2].sort((a, b) => a - b);  // [1, 2, 10]\n[1, 10, 2].sort((a, b) => b - a);  // [10, 2, 1]",
+          "body": "By default `sort` compares items as strings, so `'10'` comes before `'2'`. For numbers, pass a **compare function**. A negative result puts `a` first."
+        },
+        {
+          "type": "text",
+          "title": "forEach can't stop",
+          "body": "There is no `break` in `forEach`, and a `return` only ends that one callback. To stop early, use a `for...of` loop. Or use `some`, `every`, `find` or `findIndex`, which stop by themselves once they know the answer."
+        },
+        {
+          "type": "trap",
+          "body": "\"`map` without `return` keeps the items.\" Wrong. A callback with braces and no `return` returns `undefined`, so you get an array of `undefined`. Write `n => n * 2`, or add `return`."
+        },
+        {
+          "type": "tip",
+          "title": "Remember it",
+          "body": "**\"Map makes, filter keeps, reduce squeezes.\"** Sort numbers with `(a, b) => a - b`."
+        }
+      ],
+      "check": [
+        "types-q70",
+        "types-x39",
+        "types-q72"
+      ],
+      "terms": [
+        {
+          "term": "callback",
+          "say": "A function you hand to another function, so it can call yours later, here once for each item."
+        },
+        {
+          "term": "map",
+          "say": "Makes a new array by running your function on every item. Same number of items out as in."
+        },
+        {
+          "term": "filter",
+          "say": "Makes a new array with only the items your function says yes to."
+        },
+        {
+          "term": "reduce",
+          "say": "Walks through the array and squeezes all the items into one single value, like a total."
+        },
+        {
+          "term": "find",
+          "say": "Gives the first item your function says yes to, or undefined if none match."
+        },
+        {
+          "term": "forEach",
+          "say": "Runs your function once for each item. It gives back nothing and can't be stopped early."
+        },
+        {
+          "term": "accumulator",
+          "say": "The running result that reduce carries from one item to the next, like a running total."
+        },
+        {
+          "term": "compare function",
+          "say": "A function you give to sort. It gets two items and returns a negative number, zero or a positive number to say which goes first."
+        },
+        {
+          "term": "for...of",
+          "say": "A loop that walks through each item of an array or other list. You can stop it with break."
+        },
+        {
+          "term": "some",
+          "say": "Tells you true if at least one item passes your test. It stops at the first one that does."
+        }
+      ]
+    },
+    {
+      "id": "types-9",
+      "title": "Map, Set and WeakMap",
+      "minutes": 3,
+      "objective": "Given a list of data, demonstrate data manipulation with arrays.",
+      "cards": [
+        {
+          "type": "text",
+          "title": "In plain words",
+          "body": "Besides objects and arrays, JavaScript has **collections** built for one job. A **Map** stores key-value pairs, and any value can be a key. A **Set** stores values with no repeats. A **WeakMap** attaches data to objects without keeping those objects alive."
+        },
+        {
+          "type": "tip",
+          "title": "Think of it like…",
+          "body": "A Map is a coat check: you hand over any item and it keeps a ticket for it. A Set is a guest book that refuses to write the same name twice. Where it stops: two look-alike objects are still two different guests."
+        },
+        {
+          "type": "code",
+          "title": "Map",
+          "lang": "js",
+          "code": "const visits = new Map();\nconst user = { id: 7 };\nvisits.set(user, 3);\nvisits.set('total', 10);\nvisits.get(user);    // 3\nvisits.size;         // 2\nvisits.has('total'); // true",
+          "body": "Keys can be objects, functions, anything. A Map remembers **insertion order**, and `size` is a property, not a method."
+        },
+        {
+          "type": "text",
+          "title": "Map or plain object?",
+          "body": "Object keys are always strings or symbols: the number `1` becomes `'1'`. A Map keeps the real key. A Map is easy to loop with `for...of`, and its size is ready to read. Plain objects are still best for fixed shapes and for JSON."
+        },
+        {
+          "type": "code",
+          "title": "Set",
+          "lang": "js",
+          "code": "const tags = ['js', 'css', 'js'];\nconst unique = [...new Set(tags)];\n// ['js', 'css']\n\nconst s = new Set([1, 1, 2]);\ns.add(2).add(3);\ns.size; // 3",
+          "body": "`new Set(array)` drops repeats. Spread it back into an array to **de-duplicate**. Set has `add`, `has`, `delete` and `size`."
+        },
+        {
+          "type": "text",
+          "title": "WeakMap and WeakSet",
+          "body": "WeakMap keys must be objects (newer engines also allow some symbols). It holds them **weakly**: once nothing else uses a key object, the **garbage collector** can delete it and its entry. So a WeakMap has no `size` and can't be looped over. **WeakSet** works the same way for values."
+        },
+        {
+          "type": "trap",
+          "body": "\"`map.size()` returns the count.\" Wrong. `size` is a property: `map.size`. And `map['key'] = 1` doesn't add an entry. Use `set` to add and `get` to read."
+        },
+        {
+          "type": "tip",
+          "title": "Remember it",
+          "body": "**\"Map maps anything, Set says it once, WeakMap lets go.\"**"
+        }
+      ],
+      "check": [
+        "types-q77",
+        "types-q79",
+        "types-q81"
+      ],
+      "terms": [
+        {
+          "term": "collections",
+          "say": "Containers that hold many values, like arrays, Maps and Sets."
+        },
+        {
+          "term": "Map",
+          "say": "A list of key and value pairs. Any value can be a key, even an object, and it remembers the order you added them."
+        },
+        {
+          "term": "Set",
+          "say": "A list where every value can appear only once. Adding the same value again does nothing."
+        },
+        {
+          "term": "WeakMap",
+          "say": "Like a Map, but its keys must be objects, and it lets go of an entry when nothing else uses that key object."
+        },
+        {
+          "term": "insertion order",
+          "say": "The order you added things in. A Map gives its entries back in that same order."
+        },
+        {
+          "term": "size",
+          "say": "A property that tells how many entries a Map or Set has. You read it without parentheses."
+        },
+        {
+          "term": "de-duplicate",
+          "say": "Remove the repeats, so each value is left only once."
+        },
+        {
+          "term": "weakly",
+          "say": "Without keeping it alive. If nothing else needs the object, it can be cleaned away."
+        },
+        {
+          "term": "garbage collector",
+          "say": "The part of JavaScript that frees memory by deleting values nothing can reach anymore."
+        },
+        {
+          "term": "WeakSet",
+          "say": "Like a Set, but it holds only objects, lets go of them when nothing else uses them, and can't be looped over."
+        }
+      ]
+    },
+    {
+      "id": "types-10",
+      "title": "JSON in and out",
+      "minutes": 3,
+      "objective": "Given a JSON response, demonstrate how to operate the JSON object.",
+      "cards": [
+        {
+          "type": "text",
+          "title": "In plain words",
+          "body": "**JSON** (JavaScript Object Notation) is a text format for sending data, for example in an API response. It looks like a JavaScript object, but it is just a string. `JSON.parse` turns JSON text into values. `JSON.stringify` turns values into JSON text."
+        },
+        {
+          "type": "tip",
+          "title": "Think of it like…",
+          "body": "Flat-pack furniture. `stringify` packs an object into a box of text you can ship. `parse` unpacks it into a real object again. Where it stops: some parts never fit in the box, like functions and `undefined`. And a `Date` comes out as plain text."
+        },
+        {
+          "type": "text",
+          "title": "JSON rules are strict",
+          "body": "Keys need **double quotes**: `{\"id\": 1}`. Strings use double quotes too. No **trailing commas**, no comments, no `undefined`, no functions. `JSON.parse` on invalid text throws a `SyntaxError`. So wrap it in `try...catch` when the text comes from outside."
+        },
+        {
+          "type": "code",
+          "title": "What stringify drops",
+          "lang": "js",
+          "code": "JSON.stringify({ a: 1, b: undefined, c: () => 1 });\n// '{\"a\":1}'\nJSON.stringify([1, undefined, () => 1]);\n// '[1,null,null]'\nJSON.stringify({ n: 10n }); // TypeError",
+          "body": "In objects, `undefined`, functions and symbols are **left out**. In arrays they become `null`. A BigInt throws."
+        },
+        {
+          "type": "code",
+          "title": "Pick keys and indent",
+          "lang": "js",
+          "code": "const user = { name: 'Ana', pin: 1234 };\nJSON.stringify(user, ['name']); // '{\"name\":\"Ana\"}'\nJSON.stringify(user, null, 2);  // pretty, 2-space indent",
+          "body": "The second argument is a **replacer**: an array of keys to keep, or a function. The third adds indentation for humans."
+        },
+        {
+          "type": "text",
+          "title": "Dates and toJSON",
+          "body": "If an object has a `toJSON()` method, `stringify` uses whatever it returns. `Date` has one, so a date becomes an **ISO string** like `\"2022-06-01T00:00:00.000Z\"`. `parse` gives back that string, not a `Date`. A **reviver**, the second argument of `parse`, can turn it back."
+        },
+        {
+          "type": "trap",
+          "body": "\"`JSON.parse(JSON.stringify(obj))` makes a perfect copy.\" Not always. It drops `undefined` and functions, turns dates into strings, and throws on BigInt. It is fine for plain data only."
+        },
+        {
+          "type": "tip",
+          "title": "Remember it",
+          "body": "**\"Stringify packs, parse unpacks.\"** Double quotes always; functions never make the trip."
+        }
+      ],
+      "check": [
+        "types-q85",
+        "types-q87",
+        "types-q88"
+      ],
+      "terms": [
+        {
+          "term": "JSON",
+          "say": "A plain text way to write data, like {\"id\": 1}. Programs use it to send data to each other."
+        },
+        {
+          "term": "JSON.parse",
+          "say": "Reads JSON text and builds real values from it, like objects, arrays and numbers."
+        },
+        {
+          "term": "JSON.stringify",
+          "say": "Turns values like objects and arrays into JSON text, so you can send or save them."
+        },
+        {
+          "term": "double quotes",
+          "say": "The \" marks. JSON only accepts these around keys and strings, never single quotes."
+        },
+        {
+          "term": "trailing commas",
+          "say": "A comma after the last item in a list or object. JavaScript allows it, but JSON does not."
+        },
+        {
+          "term": "SyntaxError",
+          "say": "The error for text or code that breaks the grammar rules, like JSON with single quotes."
+        },
+        {
+          "term": "replacer",
+          "say": "The second argument of stringify. It picks which keys to keep, or changes values on the way out."
+        },
+        {
+          "term": "toJSON()",
+          "say": "A method an object can have. When stringify finds it, it uses what the method returns instead of the object."
+        },
+        {
+          "term": "ISO string",
+          "say": "A standard way to write a date and time as text, like 2022-06-01T00:00:00.000Z."
+        },
+        {
+          "term": "reviver",
+          "say": "The second argument of parse. It can change each value as it is read, like turning date text back into a Date."
+        }
+      ]
+    }
+  ],
+  "flashcards": [
+    {
+      "id": "types-f1",
+      "front": "What is the scope of `let`, `const` and `var`?",
+      "back": "`let` and `const` are block-scoped: they live inside the nearest `{ }`. `var` is function-scoped: it lives in the whole function, or the whole script."
+    },
+    {
+      "id": "types-f2",
+      "front": "What happens if you read a variable before its declaration line?",
+      "back": "`var` gives `undefined`, because it is hoisted with that value. `let` and `const` throw a `ReferenceError`: they are in the temporal dead zone."
+    },
+    {
+      "id": "types-f3",
+      "front": "Can you change an object stored in a `const`?",
+      "back": "Yes. `const` only stops reassigning the name. You can still add, change or delete properties. Use `Object.freeze()` to lock the object."
+    },
+    {
+      "id": "types-f4",
+      "front": "What happens when you assign to a name you never declared?",
+      "back": "In sloppy mode it quietly creates a global variable. In strict mode it throws a `ReferenceError`."
+    },
+    {
+      "id": "types-f5",
+      "front": "What are the seven primitive types?",
+      "back": "string, number, bigint, boolean, undefined, symbol and null. Everything else is an object, including arrays and functions."
+    },
+    {
+      "id": "types-f6",
+      "front": "What does `typeof null` return?",
+      "back": "`'object'`. It is a bug from the first version of JavaScript. Check for null with `value === null`."
+    },
+    {
+      "id": "types-f7",
+      "front": "How do you check whether a value is an array?",
+      "back": "Use `Array.isArray(value)`. `typeof` returns `'object'` for arrays, so it can't tell them from plain objects."
+    },
+    {
+      "id": "types-f8",
+      "front": "What can a template literal do that quotes can't?",
+      "back": "Template literals use backticks. They can hold `${expression}` holes that are filled with values, and they can contain real line breaks."
+    },
+    {
+      "id": "types-f9",
+      "front": "How do `slice` and `substring` treat negative numbers?",
+      "back": "`slice` counts negatives back from the end. `substring` treats negatives as 0, and swaps its two numbers if start is bigger than end."
+    },
+    {
+      "id": "types-f10",
+      "front": "Does `'a-b-c'.replace('-', '+')` change every dash?",
+      "back": "No. With a string pattern, `replace` changes only the first match, giving `'a+b-c'`. Use `replaceAll` or a regex with the `g` flag."
+    },
+    {
+      "id": "types-f11",
+      "front": "How do you test whether a value is `NaN`?",
+      "back": "Use `Number.isNaN(x)`. `NaN === NaN` is always false. Global `isNaN()` converts first, so `isNaN('abc')` is true, but `Number.isNaN('abc')` is false."
+    },
+    {
+      "id": "types-f12",
+      "front": "What type does `toFixed()` return?",
+      "back": "A string, rounded to that many decimals. `(1.5).toFixed(2)` is `'1.50'`. Adding to it joins text instead of adding numbers."
+    },
+    {
+      "id": "types-f13",
+      "front": "When do you need BigInt?",
+      "back": "For whole numbers past `Number.MAX_SAFE_INTEGER` (2^53 − 1). Write `10n`. You can't mix BigInt with number in math; that throws a `TypeError`."
+    },
+    {
+      "id": "types-f14",
+      "front": "What does `getMonth()` return for a date in January?",
+      "back": "`0`. Date months are zero-based, from 0 to 11. Days of the month, from `getDate()`, start at 1."
+    },
+    {
+      "id": "types-f15",
+      "front": "What is `1 + '2'`, and what is `'5' - 2`?",
+      "back": "`1 + '2'` is `'12'`: `+` joins when either side is a string. `'5' - 2` is `3`: `-` always converts to numbers."
+    },
+    {
+      "id": "types-f16",
+      "front": "What is the difference between `==` and `===`?",
+      "back": "`==` converts the values to a shared type before comparing. `===` never converts: type and value must both match. Prefer `===`."
+    },
+    {
+      "id": "types-f17",
+      "front": "Is `null == 0` true?",
+      "back": "No. With `==`, `null` only equals `undefined` and itself. But `null >= 0` is `true`, because `>=` converts `null` to `0`."
+    },
+    {
+      "id": "types-f18",
+      "front": "How is `Object.is` different from `===`?",
+      "back": "`Object.is(NaN, NaN)` is `true` and `Object.is(0, -0)` is `false`. For every other pair it agrees with `===`."
+    },
+    {
+      "id": "types-f19",
+      "front": "Which values are falsy?",
+      "back": "`false`, `0`, `-0`, `0n`, `''`, `null`, `undefined` and `NaN` (plus `document.all` in browsers). Everything else is truthy, including `[]`, `{}` and `'0'`."
+    },
+    {
+      "id": "types-f20",
+      "front": "What do `||` and `&&` return?",
+      "back": "A value, not always a boolean. `||` returns the first truthy operand, or the last one. `&&` returns the first falsy operand, or the last one."
+    },
+    {
+      "id": "types-f21",
+      "front": "When should you use `??` instead of `||`?",
+      "back": "When `0` or `''` are valid values. `??` falls back only for `null` or `undefined`. So `0 ?? 5` is `0`, but `0 || 5` is `5`."
+    },
+    {
+      "id": "types-f22",
+      "front": "Which array methods change the original array?",
+      "back": "`push`, `pop`, `shift`, `unshift`, `splice`, `sort`, `reverse` and `fill`. `slice`, `concat`, `map`, `filter` and spread make new arrays."
+    },
+    {
+      "id": "types-f23",
+      "front": "What is the difference between `slice` and `splice`?",
+      "back": "`slice(start, end)` copies a part into a new array; the original is unchanged. `splice(start, count)` removes items from the original and returns them."
+    },
+    {
+      "id": "types-f24",
+      "front": "Why can `includes` find `NaN` but `indexOf` can't?",
+      "back": "`indexOf` compares with `===`, and `NaN === NaN` is false. `includes` uses SameValueZero, which treats `NaN` as equal to itself."
+    },
+    {
+      "id": "types-f25",
+      "front": "How do you sort a copy and keep the original?",
+      "back": "Copy first, then sort: `[...arr].sort()` or `arr.slice().sort()`. `sort` itself changes the array in place."
+    },
+    {
+      "id": "types-f26",
+      "front": "What do `map`, `filter` and `reduce` return?",
+      "back": "`map`: a new array of the same length. `filter`: a new array of the items that pass. `reduce`: one value built from all items."
+    },
+    {
+      "id": "types-f27",
+      "front": "Why does `[1, 10, 2].sort()` give `[1, 10, 2]`?",
+      "back": "By default, `sort` compares items as strings, and `'10'` comes before `'2'`. For numbers, pass `(a, b) => a - b`."
+    },
+    {
+      "id": "types-f28",
+      "front": "When does `reduce` throw a `TypeError`?",
+      "back": "When the array is empty and you gave no start value. Pass a start value, like `0`, to be safe."
+    },
+    {
+      "id": "types-f29",
+      "front": "How can you stop a loop over an array early?",
+      "back": "Not with `forEach`: it can't break. Use a `for...of` loop with `break`, or `some`, `every`, `find` or `findIndex`, which stop by themselves."
+    },
+    {
+      "id": "types-f30",
+      "front": "When would you use a `Map` instead of a plain object?",
+      "back": "When keys are not strings, such as objects. Or when you need insertion order and an easy `size`. Object keys always become strings or symbols."
+    },
+    {
+      "id": "types-f31",
+      "front": "How do you remove repeats from an array?",
+      "back": "`[...new Set(arr)]`. A `Set` keeps each value only once, and spread turns it back into an array."
+    },
+    {
+      "id": "types-f32",
+      "front": "What makes a `WeakMap` different from a `Map`?",
+      "back": "Its keys must be objects, held weakly: an entry can vanish once its key object is unused elsewhere. It has no `size` and can't be looped over."
+    },
+    {
+      "id": "types-f33",
+      "front": "What does `JSON.stringify` do with `undefined` and functions?",
+      "back": "In objects it leaves those keys out. In arrays it writes `null` in their place. A BigInt makes it throw a `TypeError`."
+    },
+    {
+      "id": "types-f34",
+      "front": "What happens when `JSON.parse` gets invalid JSON?",
+      "back": "It throws a `SyntaxError`. Single-quoted keys, trailing commas and comments are all invalid. Wrap outside data in `try...catch`."
+    },
+    {
+      "id": "types-f35",
+      "front": "Does a `Date` survive `JSON.stringify` and `JSON.parse`?",
+      "back": "No. `stringify` turns it into an ISO string through `toJSON()`. `parse` gives back that string. Use a reviver to rebuild the `Date`."
+    }
+  ],
+  "questions": [
+    {
+      "id": "types-q1",
+      "lesson": "types-1",
+      "difficulty": 1,
+      "q": "A developer needs a `count` variable that exists only inside one `if` block and can change later. Which declaration fits?",
+      "options": [
+        "`count = 0;`",
+        "`const count = 0;`",
+        "`let count = 0;`",
+        "`var count = 0;`"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "`let` is block-scoped and can be reassigned. That matches both needs.",
+      "wrong": [
+        "With no keyword it becomes a global in sloppy mode, or throws in strict mode.",
+        "`const` is block-scoped, but it can never be reassigned, so `count` can't change.",
+        "",
+        "`var` ignores the `if` block, so `count` leaks into the whole function."
+      ],
+      "source": "MDN: let"
+    },
+    {
+      "id": "types-q2",
+      "lesson": "types-1",
+      "difficulty": 1,
+      "q": "Which declaration is a `SyntaxError`?",
+      "options": [
+        "`const rate;`",
+        "`let rate;`",
+        "`var rate;`",
+        "`let rate = undefined;`"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "A `const` must get its value in the same statement. `const rate;` breaks that rule, so the code won't even start.",
+      "wrong": [
+        "",
+        "A `let` with no value is fine. It holds `undefined`.",
+        "A `var` with no value is fine. It holds `undefined`.",
+        "Setting `undefined` on purpose is allowed."
+      ],
+      "source": "MDN: const"
+    },
+    {
+      "id": "types-q3",
+      "lesson": "types-1",
+      "difficulty": 2,
+      "q": "What does this code log?",
+      "code": "function test() {\n  console.log(x);\n  var x = 5;\n  console.log(x);\n}\ntest();",
+      "lang": "js",
+      "options": [
+        "`5`, then `5`",
+        "A `ReferenceError` is thrown",
+        "`null`, then `5`",
+        "`undefined`, then `5`"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "A `var` declaration is hoisted to the top of the function with the value `undefined`. The value `5` arrives only when its line runs.",
+      "wrong": [
+        "Only the declaration is hoisted, not the value `5`.",
+        "That happens with `let` or `const`, not `var`.",
+        "Hoisted `var` holds `undefined`, never `null`.",
+        ""
+      ],
+      "source": "MDN: var"
+    },
+    {
+      "id": "types-q4",
+      "lesson": "types-1",
+      "difficulty": 2,
+      "q": "The same function now uses `let`. What happens?",
+      "code": "function test() {\n  console.log(x);\n  let x = 5;\n}\ntest();",
+      "lang": "js",
+      "options": [
+        "It logs `null`",
+        "It throws a `ReferenceError`",
+        "It logs `undefined`",
+        "It logs `5`"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "A `let` is in the temporal dead zone until its line runs. Reading it there throws a `ReferenceError`.",
+      "wrong": [
+        "No rule ever gives a variable `null` by itself.",
+        "",
+        "That is how `var` behaves, not `let`.",
+        "The value is set on the line after the log."
+      ],
+      "source": "MDN: let"
+    },
+    {
+      "id": "types-q5",
+      "lesson": "types-1",
+      "difficulty": 2,
+      "q": "What does this code log?",
+      "code": "const cart = { items: 1 };\ncart.items = 2;\ncart.total = 9;\nconsole.log(cart.items, cart.total);",
+      "lang": "js",
+      "options": [
+        "A `TypeError` on line 3",
+        "`2 9`",
+        "`1 undefined`",
+        "A `TypeError` on line 2"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "`const` stops you from reassigning the name, not from changing the object. Both property changes work.",
+      "wrong": [
+        "Adding a property is allowed on a `const` object.",
+        "",
+        "The changes really happen; `const` doesn't block them.",
+        "Changing a property is not reassigning the name."
+      ],
+      "source": "MDN: const"
+    },
+    {
+      "id": "types-q6",
+      "lesson": "types-1",
+      "difficulty": 2,
+      "q": "Which two statements about `const` are true? (Choose 2)",
+      "options": [
+        "It must get a value in the same statement",
+        "Its name can never point to a new value",
+        "It makes every property of an object read-only",
+        "It is function-scoped, the same as `var`",
+        "It is hoisted holding `undefined`, like `var`"
+      ],
+      "answer": [
+        0,
+        1
+      ],
+      "explain": "A `const` needs a value at once and can't be reassigned. It is block-scoped and does not freeze objects.",
+      "wrong": [
+        "",
+        "",
+        "Properties can still change; only the name is locked.",
+        "`const` is block-scoped, like `let`.",
+        "It sits in the temporal dead zone; reading it early throws."
+      ],
+      "source": "MDN: const"
+    },
+    {
+      "id": "types-q7",
+      "lesson": "types-1",
+      "difficulty": 2,
+      "q": "What does this code log?",
+      "code": "for (var i = 0; i < 3; i++) {}\nconsole.log(i);",
+      "lang": "js",
+      "options": [
+        "`2`",
+        "`undefined`",
+        "A `ReferenceError`",
+        "`3`"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "`var` is function-scoped, so `i` lives on after the loop. The loop stops when `i` reaches 3.",
+      "wrong": [
+        "The loop adds 1 once more before the check fails.",
+        "`i` was set by the loop, so it holds a number.",
+        "`var` ignores the loop block, so `i` still exists.",
+        ""
+      ],
+      "source": "MDN: var"
+    },
+    {
+      "id": "types-q8",
+      "lesson": "types-1",
+      "difficulty": 2,
+      "q": "What does this code log?",
+      "code": "let level = 'outer';\nif (true) {\n  let level = 'inner';\n  console.log(level);\n}\nconsole.log(level);",
+      "lang": "js",
+      "options": [
+        "`inner`, then `outer`",
+        "`inner`, then `inner`",
+        "`outer`, then `outer`",
+        "A `SyntaxError` for declaring `level` twice"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "Each block gets its own `let`. The inner one hides the outer one only inside its `{ }`.",
+      "wrong": [
+        "",
+        "The inner `level` disappears when its block ends.",
+        "Inside the block, the inner `level` hides the outer one.",
+        "The two `level`s are in different blocks, which is allowed."
+      ],
+      "source": "MDN: let"
+    },
+    {
+      "id": "types-x1",
+      "lesson": "types-1",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A developer runs this script. What happens?",
+      "code": "var a = 1;\nvar a = 2;\nlet b = 1;\nlet b = 2;\nconsole.log(a, b);",
+      "lang": "js",
+      "options": [
+        "`2 2` is logged",
+        "`2 1` is logged",
+        "A `SyntaxError` is thrown and nothing is logged",
+        "`2` is logged, then a `SyntaxError`"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "Declaring the same `let` twice in one scope is a `SyntaxError`. Syntax errors are found before the script starts, so no line runs at all.",
+      "wrong": [
+        "Redeclaring `b` with `let` is not allowed.",
+        "The second `let b` isn't skipped; it is an error.",
+        "",
+        "Syntax errors stop the script before any line runs."
+      ],
+      "source": "MDN: let"
+    },
+    {
+      "id": "types-x2",
+      "lesson": "types-1",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "This file runs in strict mode. What happens?",
+      "code": "'use strict';\nfunction save() {\n  total = 10;\n}\nsave();\nconsole.log(total);",
+      "lang": "js",
+      "options": [
+        "A `TypeError` inside `save()`",
+        "`10` is logged",
+        "`undefined` is logged",
+        "A `ReferenceError` inside `save()`"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "Strict mode forbids assigning to a name that was never declared. The assignment in `save()` throws a `ReferenceError`.",
+      "wrong": [
+        "An undeclared name gives a `ReferenceError`, not a `TypeError`.",
+        "That would happen in sloppy mode, which makes a global.",
+        "The code never reaches the log line.",
+        ""
+      ],
+      "source": "MDN: Strict mode"
+    },
+    {
+      "id": "types-q9",
+      "lesson": "types-1",
+      "difficulty": 2,
+      "q": "A developer needs a `config` object that no code can point at a different object, and a block-scoped `attempts` counter that the code adds to. Which two declarations fit? (Choose 2)",
+      "options": [
+        "`let config = { retries: 3 };`",
+        "`const attempts;`",
+        "`const config = { retries: 3 };`",
+        "`let attempts = 0;`",
+        "`const attempts = 0;`"
+      ],
+      "answer": [
+        2,
+        3
+      ],
+      "explain": "Use `const` when the name must never be reassigned. Use `let` when the value must change.",
+      "wrong": [
+        "A `let` can be pointed at a different object.",
+        "A `const` without a value is a `SyntaxError`.",
+        "",
+        "",
+        "A `const` can't be added to; `attempts++` would throw."
+      ],
+      "source": "MDN: const"
+    },
+    {
+      "id": "types-x3",
+      "lesson": "types-1",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "What does this code log?",
+      "code": "let x = 1;\n{\n  console.log(x);\n  let x = 2;\n}",
+      "lang": "js",
+      "options": [
+        "`2`",
+        "`undefined`",
+        "A `ReferenceError`",
+        "`1`"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "The inner `let x` owns the name `x` for its whole block, starting at `{`. Before its line, it is in the temporal dead zone, so the read throws.",
+      "wrong": [
+        "The value `2` is set after the log.",
+        "That is how a hoisted `var` would behave.",
+        "",
+        "The inner `x` already owns the name for the whole block."
+      ],
+      "source": "MDN: let"
+    },
+    {
+      "id": "types-x4",
+      "lesson": "types-1",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "What does this code log?",
+      "code": "var name = 'global';\nfunction show() {\n  if (false) {\n    var name = 'local';\n  }\n  console.log(name);\n}\nshow();",
+      "lang": "js",
+      "options": [
+        "`'local'`",
+        "`undefined`",
+        "A `ReferenceError`",
+        "`'global'`"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "A `var` is hoisted to the top of its function, even from inside a block that never runs. So `show()` has its own `name`, still `undefined`.",
+      "wrong": [
+        "That line never runs, because the condition is `false`.",
+        "",
+        "A hoisted `var` exists, so reading it never throws.",
+        "The inner `var name` hides the outer one in the whole function."
+      ],
+      "source": "MDN: var"
+    },
+    {
+      "id": "types-q10",
+      "lesson": "types-1",
+      "difficulty": 1,
+      "q": "Where can a `var` declared inside a function be used?",
+      "options": [
+        "Anywhere in that function",
+        "Only inside the nearest `{ }` block",
+        "Anywhere in the whole program",
+        "Only on lines after the declaration"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "`var` is function-scoped. It ignores `if` and `for` blocks and lives in the whole function.",
+      "wrong": [
+        "",
+        "That is `let` and `const`.",
+        "Only a `var` outside every function is global.",
+        "Hoisting makes it exist from the top of the function."
+      ],
+      "source": "MDN: var"
+    },
+    {
+      "id": "types-q11",
+      "lesson": "types-1",
+      "difficulty": 2,
+      "q": "This code runs in sloppy (non-strict) mode. What does it log?",
+      "code": "const settings = Object.freeze({ theme: 'dark' });\nsettings.theme = 'light';\nconsole.log(settings.theme);",
+      "lang": "js",
+      "options": [
+        "`'dark'`",
+        "`'light'`",
+        "A `TypeError` on line 2",
+        "`undefined`"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "`Object.freeze()` locks the object. In sloppy mode, a change is quietly ignored, so `theme` stays `'dark'`.",
+      "wrong": [
+        "",
+        "A frozen object ignores changes.",
+        "Only strict mode throws here; sloppy mode ignores the change.",
+        "The property still exists with its old value."
+      ],
+      "source": "MDN: Object.freeze()"
+    },
+    {
+      "id": "types-x5",
+      "lesson": "types-1",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A script already starts with `let total = 0;`. Which two lines would cause a `SyntaxError` if added at the same top level? (Choose 2)",
+      "options": [
+        "`function f() { let total = 1; }`",
+        "`let total = 1;`",
+        "`var total = 1;`",
+        "`total = 1;`",
+        "`{ let total = 1; }`"
+      ],
+      "answer": [
+        1,
+        2
+      ],
+      "explain": "A name declared with `let` can't be declared again in the same scope. That is true for a second `let` and for a `var`.",
+      "wrong": [
+        "A function has its own scope, so this `total` is separate.",
+        "",
+        "",
+        "This just reassigns the existing `let`.",
+        "The braces make a new block, so this `total` is separate."
+      ],
+      "source": "MDN: let"
+    },
+    {
+      "id": "types-q12",
+      "lesson": "types-2",
+      "difficulty": 1,
+      "q": "What does `typeof null` return?",
+      "options": [
+        "`'none'`",
+        "`'object'`",
+        "`'null'`",
+        "`'undefined'`"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "`typeof null` returns `'object'`. It is a bug from the first version of JavaScript that was never fixed.",
+      "wrong": [
+        "`typeof` never returns this word.",
+        "",
+        "There is no `'null'` type name; this is a known old bug.",
+        "That is the result for `undefined`, not `null`."
+      ],
+      "source": "MDN: typeof"
+    },
+    {
+      "id": "types-q13",
+      "lesson": "types-2",
+      "difficulty": 1,
+      "q": "Which of these is NOT a primitive type in JavaScript?",
+      "options": [
+        "bigint",
+        "undefined",
+        "object",
+        "symbol"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "The seven primitives are string, number, bigint, boolean, undefined, symbol and null. Object is the one non-primitive type.",
+      "wrong": [
+        "BigInt is one of the seven primitive types.",
+        "Undefined is one of the seven primitive types.",
+        "",
+        "Symbol is one of the seven primitive types."
+      ],
+      "source": "MDN: JavaScript data types and data structures"
+    },
+    {
+      "id": "types-q14",
+      "lesson": "types-2",
+      "difficulty": 2,
+      "q": "Which two expressions return `'function'`? (Choose 2)",
+      "options": [
+        "`typeof []`",
+        "`typeof null`",
+        "`typeof new Date()`",
+        "`typeof class Cart {}`",
+        "`typeof function () {}`"
+      ],
+      "answer": [
+        3,
+        4
+      ],
+      "explain": "`typeof` gives `'function'` for anything you can call. A class is a special kind of function, so it counts too.",
+      "wrong": [
+        "Arrays are objects, so this gives `'object'`.",
+        "This gives `'object'`, a known old bug.",
+        "A date made with `new` is an object, so this gives `'object'`.",
+        "",
+        ""
+      ],
+      "source": "MDN: typeof"
+    },
+    {
+      "id": "types-q15",
+      "lesson": "types-2",
+      "difficulty": 2,
+      "q": "A function receives `items`, which may be an array or a plain object. Which check is `true` only for arrays?",
+      "options": [
+        "`typeof items === 'array'`",
+        "`typeof items === 'object'`",
+        "`items instanceof Object`",
+        "`Array.isArray(items)`"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "Arrays are objects, so `typeof` can't tell them apart. `Array.isArray()` checks for a real array.",
+      "wrong": [
+        "`typeof` never returns `'array'`; arrays give `'object'`.",
+        "This is true for plain objects too.",
+        "Both arrays and plain objects are instances of `Object`.",
+        ""
+      ],
+      "source": "MDN: Array.isArray()"
+    },
+    {
+      "id": "types-q16",
+      "lesson": "types-2",
+      "difficulty": 2,
+      "q": "What does `console.log(typeof typeof 42)` print?",
+      "options": [
+        "`undefined`",
+        "`object`",
+        "`string`",
+        "`number`"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "`typeof` always returns a string. So the outer `typeof` checks `'number'`, which is a string.",
+      "wrong": [
+        "Both `typeof` calls return real values.",
+        "A string is a primitive, not an object.",
+        "",
+        "The inner `typeof` gives the string `'number'`, and the outer one checks that string."
+      ],
+      "source": "MDN: typeof"
+    },
+    {
+      "id": "types-x6",
+      "lesson": "types-2",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "What does this code log?",
+      "code": "let s = 'cat';\ns.toUpperCase();\ns[0] = 'b';\nconsole.log(s);",
+      "lang": "js",
+      "options": [
+        "`cat`",
+        "`CAT`",
+        "`bat`",
+        "`BAT`"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "Strings are immutable. `toUpperCase()` returns a new string that is thrown away, and writing to `s[0]` is quietly ignored.",
+      "wrong": [
+        "",
+        "`toUpperCase()` returns a new string; nobody kept it.",
+        "Strings are immutable; writing to `s[0]` is ignored.",
+        "Neither change touches `s`."
+      ],
+      "source": "MDN: JavaScript data types and data structures"
+    },
+    {
+      "id": "types-x7",
+      "lesson": "types-2",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "What happens when this code runs?",
+      "code": "console.log(typeof ghost);\nconsole.log(typeof later);\nlet later = 1;",
+      "lang": "js",
+      "options": [
+        "`'undefined'` is logged twice",
+        "A `ReferenceError` on the first line",
+        "`'undefined'`, then `'number'`",
+        "`'undefined'` is logged, then a `ReferenceError`"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "`typeof` on a name that was never declared returns `'undefined'`. But a `let` read before its line is in the temporal dead zone, so even `typeof` throws.",
+      "wrong": [
+        "`later` is a `let` in its temporal dead zone, so `typeof` can't save it.",
+        "`typeof` on a name never declared is safe; it gives `'undefined'`.",
+        "The value `1` is set after the second log.",
+        ""
+      ],
+      "source": "MDN: typeof"
+    },
+    {
+      "id": "types-q17",
+      "lesson": "types-2",
+      "difficulty": 1,
+      "q": "What does this code log?",
+      "code": "function greet(name) {\n  const msg = 'Hi ' + name;\n}\nconst result = greet('Ana');\nconsole.log(result);",
+      "lang": "js",
+      "options": [
+        "An empty string",
+        "`undefined`",
+        "`'Hi Ana'`",
+        "`null`"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "A function with no `return` gives back `undefined`.",
+      "wrong": [
+        "No string is returned at all.",
+        "",
+        "The function builds `msg` but never returns it.",
+        "JavaScript never returns `null` by itself."
+      ],
+      "source": "MDN: JavaScript data types and data structures"
+    },
+    {
+      "id": "types-q18",
+      "lesson": "types-2",
+      "difficulty": 2,
+      "q": "Which two values are primitives? (Choose 2)",
+      "options": [
+        "`{ id: 1 }`",
+        "`function () {}`",
+        "`'hello'`",
+        "`42n`",
+        "`[1, 2]`"
+      ],
+      "answer": [
+        2,
+        3
+      ],
+      "explain": "A string and a BigInt are primitives. Arrays, plain objects and functions are all objects.",
+      "wrong": [
+        "A plain object is not a primitive.",
+        "A function is an object you can call.",
+        "",
+        "",
+        "An array is an object."
+      ],
+      "source": "MDN: JavaScript data types and data structures"
+    },
+    {
+      "id": "types-x8",
+      "lesson": "types-2",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "What does this code log?",
+      "code": "const values = [null, [], {}, NaN];\nconsole.log(values.map(v => typeof v).join(' '));",
+      "lang": "js",
+      "options": [
+        "`null object object undefined`",
+        "`object object object number`",
+        "`null array object number`",
+        "`object array object NaN`"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "`typeof` says `'object'` for `null` and for arrays. `NaN` is a special number, so its type is `'number'`.",
+      "wrong": [
+        "`typeof null` is `'object'`, and `NaN` is a number.",
+        "",
+        "`typeof` never returns `'null'` or `'array'`.",
+        "Arrays give `'object'`, and `NaN` has type `'number'`."
+      ],
+      "source": "MDN: typeof"
+    },
+    {
+      "id": "types-q19",
+      "lesson": "types-2",
+      "difficulty": 1,
+      "q": "What is the most reliable way to check whether `value` is exactly `null`?",
+      "options": [
+        "`typeof value === 'null'`",
+        "`typeof value === 'object'`",
+        "`value == 0`",
+        "`value === null`"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "`typeof` reports `null` as an object, so compare directly with `=== null`.",
+      "wrong": [
+        "`typeof null` is `'object'`, so this is never true.",
+        "This is also true for arrays and plain objects.",
+        "`null == 0` is `false`, and `0` would match.",
+        ""
+      ],
+      "source": "MDN: typeof"
+    },
+    {
+      "id": "types-x9",
+      "lesson": "types-2",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "What does this code log?",
+      "code": "const a = 'hi';\nconst b = new String('hi');\nconsole.log(typeof a, typeof b, a === b);",
+      "lang": "js",
+      "options": [
+        "`string object false`",
+        "`string string true`",
+        "`string object true`",
+        "`object object false`"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "`new String('hi')` builds a wrapper object, so its type is `'object'`. `===` compares without converting, so the primitive and the object are not equal.",
+      "wrong": [
+        "",
+        "`new String()` makes a wrapper object, not a primitive.",
+        "`===` never converts, so a primitive and an object differ.",
+        "A string literal is a primitive, so `typeof` gives `'string'`."
+      ],
+      "source": "MDN: JavaScript data types and data structures"
+    },
+    {
+      "id": "types-x10",
+      "lesson": "types-2",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "What does this code log?",
+      "code": "const a = Symbol('id');\nconst b = Symbol('id');\nconsole.log(a === b, typeof a);",
+      "lang": "js",
+      "options": [
+        "`false string`",
+        "`true object`",
+        "`false symbol`",
+        "`true symbol`"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "Every call to `Symbol()` returns a brand-new unique value, even with the same label. Its type is `'symbol'`.",
+      "wrong": [
+        "The label `'id'` is only a description; the type is `'symbol'`.",
+        "A symbol is a primitive, and each one is unique.",
+        "",
+        "Every `Symbol()` call makes a new, unique value."
+      ],
+      "source": "MDN: Symbol"
+    },
+    {
+      "id": "types-q20",
+      "lesson": "types-2",
+      "difficulty": 2,
+      "q": "Which two statements about `undefined` and `null` are true? (Choose 2)",
+      "options": [
+        "A declared variable with no value holds `undefined`",
+        "Reading a missing object property gives `undefined`",
+        "A function with no `return` gives back `null`",
+        "`typeof undefined` returns `'object'`",
+        "Reading a property of `null` gives `undefined`"
+      ],
+      "answer": [
+        0,
+        1
+      ],
+      "explain": "JavaScript uses `undefined` for \"no value yet\": empty variables, missing properties, missing returns. `null` is only there when code sets it.",
+      "wrong": [
+        "",
+        "",
+        "It gives back `undefined`.",
+        "It returns `'undefined'`; only `null` gives `'object'`.",
+        "It throws a `TypeError`, because `null` has no properties."
+      ],
+      "source": "MDN: JavaScript data types and data structures"
+    },
+    {
+      "id": "types-q21",
+      "lesson": "types-3",
+      "difficulty": 2,
+      "q": "Which two variables hold the string `Total: 15`? (Choose 2)",
+      "code": "const total = 15;\nconst a = 'Total: ${total}';\nconst b = \"Total: ${total}\";\nconst c = `Total: ${total}`;\nconst d = 'Total: ' + total;\nconst e = `Total: $total`;",
+      "lang": "js",
+      "options": [
+        "`c`",
+        "`d`",
+        "`e`",
+        "`a`",
+        "`b`"
+      ],
+      "answer": [
+        0,
+        1
+      ],
+      "explain": "Only backticks fill `${...}` holes. Joining with `+` gives the same text the old way.",
+      "wrong": [
+        "",
+        "",
+        "A hole needs braces: `${total}`, not `$total`.",
+        "Single quotes print `${total}` as plain characters.",
+        "Double quotes print `${total}` as plain characters too."
+      ],
+      "source": "MDN: Template literals (Template strings)"
+    },
+    {
+      "id": "types-q22",
+      "lesson": "types-3",
+      "difficulty": 1,
+      "q": "What does this code log?",
+      "code": "const word = 'JavaScript';\nconsole.log(word.slice(0, 4));",
+      "lang": "js",
+      "options": [
+        "`JavaS`",
+        "`ava`",
+        "`Scri`",
+        "`Java`"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "`slice(start, end)` copies from `start` up to, but not including, `end`. Indexes 0 to 3 are `Java`.",
+      "wrong": [
+        "The end index is not included.",
+        "Index 0 is the first letter, so `J` is included.",
+        "`slice(0, 4)` starts at the first letter.",
+        ""
+      ],
+      "source": "MDN: String.prototype.slice()"
+    },
+    {
+      "id": "types-q23",
+      "lesson": "types-3",
+      "difficulty": 2,
+      "q": "A developer needs the file extension from `report.final.pdf`. What does this code log?",
+      "code": "const file = 'report.final.pdf';\nconsole.log(file.slice(-3));",
+      "lang": "js",
+      "options": [
+        "`rep`",
+        "An empty string",
+        "`pdf`",
+        "`.pd`"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "A negative start in `slice` counts back from the end. `-3` means the last three characters.",
+      "wrong": [
+        "A negative start counts from the end, not the front.",
+        "`slice` treats negatives as places from the end; it does not give up.",
+        "",
+        "Counting from the end, the last three letters are `pdf`."
+      ],
+      "source": "MDN: String.prototype.slice()"
+    },
+    {
+      "id": "types-q24",
+      "lesson": "types-3",
+      "difficulty": 2,
+      "q": "What does this code log?",
+      "code": "const s = 'a-b-c';\nconsole.log(s.replace('-', '+'));",
+      "lang": "js",
+      "options": [
+        "`+a-b-c`",
+        "`a+b-c`",
+        "`a+b+c`",
+        "`a-b-c`"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "`replace` with a string pattern changes only the first match. The second dash stays.",
+      "wrong": [
+        "The plus takes the place of the first dash; nothing is added in front.",
+        "",
+        "Only `replaceAll` or a `g` regex changes every dash.",
+        "`replace` does change the first match."
+      ],
+      "source": "MDN: String.prototype.replace()"
+    },
+    {
+      "id": "types-x11",
+      "lesson": "types-3",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "What happens when this code runs?",
+      "code": "const s = 'x1x2';\nconsole.log(s.replaceAll(/x/, 'y'));",
+      "lang": "js",
+      "options": [
+        "A `TypeError` is thrown",
+        "`x1x2` is logged",
+        "`y1y2` is logged",
+        "`y1x2` is logged"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "`replaceAll` with a regular expression needs the `g` flag. Without it, `replaceAll` throws a `TypeError`.",
+      "wrong": [
+        "",
+        "The method does not quietly skip the work.",
+        "The regex lacks the `g` flag, and `replaceAll` refuses that.",
+        "That is what `replace` would do; `replaceAll` throws instead."
+      ],
+      "source": "MDN: String.prototype.replaceAll()"
+    },
+    {
+      "id": "types-x12",
+      "lesson": "types-3",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "What are `a` and `b` after this code runs?",
+      "code": "const s = 'abcdef';\nconst a = s.substring(4, 1);\nconst b = s.slice(4, 1);\nconsole.log(JSON.stringify([a, b]));",
+      "lang": "js",
+      "options": [
+        "`'bcd'` and an empty string",
+        "`'bcd'` and `'bcd'`",
+        "An empty string and `'bcd'`",
+        "`'dcb'` and an empty string"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "`substring(4, 1)` swaps to `substring(1, 4)`, giving `bcd`. `slice` never swaps, so `slice(4, 1)` gives an empty string.",
+      "wrong": [
+        "",
+        "`slice` never swaps; with start after end it returns an empty string.",
+        "`substring` is the one that swaps; `slice` is the one that gives up.",
+        "Neither method reverses the letters."
+      ],
+      "source": "MDN: String.prototype.substring()"
+    },
+    {
+      "id": "types-q25",
+      "lesson": "types-3",
+      "difficulty": 1,
+      "q": "An invoice number must always show 6 digits, so `42` becomes `000042`. Which expression does it?",
+      "options": [
+        "`String(42).padStart(4, '0')`",
+        "`String(42).padStart(6, '0')`",
+        "`String(42).padEnd(6, '0')`",
+        "`'0'.repeat(6) + 42`"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "`padStart(length, filler)` adds the filler on the left until the string reaches `length`.",
+      "wrong": [
+        "The first number is the final length, so this gives four digits.",
+        "",
+        "`padEnd` adds the zeros on the right: `'420000'`.",
+        "This always adds six zeros: `0000042`, seven digits."
+      ],
+      "source": "MDN: String.prototype.padStart()"
+    },
+    {
+      "id": "types-q26",
+      "lesson": "types-3",
+      "difficulty": 2,
+      "q": "What does this code log?",
+      "code": "let code = '  ab12 ';\ncode.trim();\ncode.toUpperCase();\nconsole.log(code.length);",
+      "lang": "js",
+      "options": [
+        "`6`",
+        "`5`",
+        "`7`",
+        "`4`"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "Strings are immutable. `trim()` and `toUpperCase()` return new strings, but the code never stores them, so `code` still has 7 characters.",
+      "wrong": [
+        "Count every space: two in front and one at the end.",
+        "Nothing was removed, because the results were thrown away.",
+        "",
+        "The trimmed string was never saved back into `code`."
+      ],
+      "source": "MDN: String.prototype.trim()"
+    },
+    {
+      "id": "types-q27",
+      "lesson": "types-3",
+      "difficulty": 2,
+      "q": "A developer must check whether `email` ends with `@acme.com`. Which two expressions work? (Choose 2)",
+      "options": [
+        "`email.includes('@acme.com')`",
+        "`email.endsWith('@acme.com')`",
+        "`email.slice(-9) === '@acme.com'`",
+        "`email.startsWith('@acme.com')`",
+        "`email.indexOf('@acme.com') === 0`"
+      ],
+      "answer": [
+        1,
+        2
+      ],
+      "explain": "`endsWith` checks the end directly. `slice(-9)` takes the last 9 characters, the exact length of `@acme.com`.",
+      "wrong": [
+        "This also matches the text in the middle, like `x@acme.com.evil.io`.",
+        "",
+        "",
+        "This checks the start of the string.",
+        "This is true only if the text sits at the very start."
+      ],
+      "source": "MDN: String.prototype.endsWith()"
+    },
+    {
+      "id": "types-q28",
+      "lesson": "types-3",
+      "difficulty": 2,
+      "q": "What does this code log?",
+      "code": "const tags = 'red, green,blue';\nconsole.log(tags.split(',').map(t => t.trim()).join('|'));",
+      "lang": "js",
+      "options": [
+        "`red| green|blue`",
+        "`red, green,blue`",
+        "`red|green,blue`",
+        "`red|green|blue`"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "`split(',')` cuts at every comma. `trim()` removes the extra space, and `join('|')` glues the parts with bars.",
+      "wrong": [
+        "`trim()` removed the space before `green`.",
+        "`split` and `join` changed the commas into bars.",
+        "`split` cuts at every comma, not just the first.",
+        ""
+      ],
+      "source": "MDN: String.prototype.split()"
+    },
+    {
+      "id": "types-q29",
+      "lesson": "types-3",
+      "difficulty": 2,
+      "q": "What does this code log?",
+      "code": "const n = 1;\nconsole.log(`${n} item${n === 1 ? '' : 's'} left`);",
+      "lang": "js",
+      "options": [
+        "`${n} item left`",
+        "`1 item'' left`",
+        "`1 item left`",
+        "`1 items left`"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "A `${...}` hole can hold any expression, including a `? :` choice. Here it adds nothing because `n` is 1.",
+      "wrong": [
+        "Backticks fill the hole with the value of `n`.",
+        "The empty string adds nothing, not quote marks.",
+        "",
+        "When `n` is 1, the hole adds an empty string."
+      ],
+      "source": "MDN: Template literals (Template strings)"
+    },
+    {
+      "id": "types-x13",
+      "lesson": "types-3",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "What does this code log?",
+      "code": "const s = 'hello';\nconst a = s[s.length];\nconst b = s.charAt(s.length);\nconsole.log(a, b === '');",
+      "lang": "js",
+      "options": [
+        "`undefined true`",
+        "`o true`",
+        "`undefined false`",
+        "`o false`"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "Positions go from 0 to `length - 1`. Past the end, brackets give `undefined` but `charAt` gives an empty string.",
+      "wrong": [
+        "",
+        "The last letter is at `s.length - 1`, not `s.length`.",
+        "`charAt` gives an empty string for a missing position.",
+        "Position `s.length` is one past the end of the string."
+      ],
+      "source": "MDN: String.prototype.charAt()"
+    },
+    {
+      "id": "types-x14",
+      "lesson": "types-3",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "Which two expressions return `'ABC'`? (Choose 2)",
+      "options": [
+        "`'abc'.toUpperCase()`",
+        "`['a', 'b', 'c'].join('').toUpperCase()`",
+        "`'abc'.split('').toUpperCase()`",
+        "`'abc'.upperCase()`",
+        "`'a b c'.replace(' ', '').toUpperCase()`"
+      ],
+      "answer": [
+        0,
+        1
+      ],
+      "explain": "`toUpperCase()` works on strings. `join('')` turns the array back into a string first, so it works too.",
+      "wrong": [
+        "",
+        "",
+        "`split` returns an array, and arrays have no `toUpperCase`, so it throws.",
+        "There is no `upperCase` method; this throws a `TypeError`.",
+        "`replace` removes only the first space, giving `'AB C'`."
+      ],
+      "source": "MDN: String.prototype.toUpperCase()"
+    },
+    {
+      "id": "types-x15",
+      "lesson": "types-3",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "What does this code log?",
+      "code": "const html = `<p>\n  Hi\n</p>`;\nconsole.log(html.split('\\n').length);",
+      "lang": "js",
+      "options": [
+        "`1`",
+        "`2`",
+        "`5`",
+        "`3`"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "Template literals keep real line breaks. Two breaks split the text into three lines.",
+      "wrong": [
+        "A template literal keeps its real line breaks.",
+        "There are two line breaks, so there are three pieces.",
+        "Spaces are not split points; only `\\n` is.",
+        ""
+      ],
+      "source": "MDN: Template literals (Template strings)"
+    },
+    {
+      "id": "types-q30",
+      "lesson": "types-4",
+      "difficulty": 1,
+      "q": "What does `console.log(0.1 + 0.2 === 0.3)` print?",
+      "options": [
+        "A `RangeError`",
+        "`false`",
+        "`true`",
+        "`NaN`"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "Numbers are stored as floating point, so `0.1 + 0.2` comes out a tiny bit above `0.3`. Strict equality sees two different numbers.",
+      "wrong": [
+        "Small rounding errors never throw.",
+        "",
+        "`0.1 + 0.2` is really `0.30000000000000004`.",
+        "The sum is a real number, just slightly off."
+      ],
+      "source": "MDN: JavaScript data types and data structures"
+    },
+    {
+      "id": "types-q31",
+      "lesson": "types-4",
+      "difficulty": 1,
+      "q": "Which month is `new Date(2023, 1, 10)`?",
+      "options": [
+        "October",
+        "February",
+        "January",
+        "March"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "Date months are zero-based: January is 0, so 1 is February. The third number is the day, which starts at 1.",
+      "wrong": [
+        "The `10` is the day of the month.",
+        "",
+        "January is month `0`, not `1`.",
+        "Months are counted from 0, so 2 would be March."
+      ],
+      "source": "MDN: Date() constructor"
+    },
+    {
+      "id": "types-q32",
+      "lesson": "types-4",
+      "difficulty": 2,
+      "q": "What does `console.log(isNaN('hello'), Number.isNaN('hello'))` print?",
+      "options": [
+        "`true true`",
+        "`false false`",
+        "`false true`",
+        "`true false`"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "Global `isNaN()` converts its input to a number first, and `'hello'` becomes `NaN`. `Number.isNaN()` doesn't convert, so a string is never `NaN`.",
+      "wrong": [
+        "`Number.isNaN` doesn't convert, and a string is not `NaN`.",
+        "Global `isNaN` converts `'hello'` to `NaN` first.",
+        "The two functions behave the other way round.",
+        ""
+      ],
+      "source": "MDN: Number.isNaN()"
+    },
+    {
+      "id": "types-x16",
+      "lesson": "types-4",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "What does this code log?",
+      "code": "const price = 4.5;\nconst label = price.toFixed(2);\nconsole.log(label + 1);",
+      "lang": "js",
+      "options": [
+        "`4.501`",
+        "`5.5`",
+        "`5.50`",
+        "`4.51`"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "`toFixed()` returns a string, here `'4.50'`. `+` with a string joins text, so the result is `'4.501'`.",
+      "wrong": [
+        "",
+        "`toFixed` returns a string, so `+` joins text.",
+        "No adding happens; `+` with a string joins text.",
+        "The string `'4.50'` keeps both decimals before the `1` is joined."
+      ],
+      "source": "MDN: Number.prototype.toFixed()"
+    },
+    {
+      "id": "types-q33",
+      "lesson": "types-4",
+      "difficulty": 2,
+      "q": "What does `console.log(parseInt('12.9kg', 10), Number('12.9kg'))` print?",
+      "options": [
+        "`13 12.9`",
+        "`12 12`",
+        "`12 NaN`",
+        "`12.9 NaN`"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "`parseInt` reads leading digits and stops at the first character that isn't one. `Number()` is strict: any stray letters give `NaN`.",
+      "wrong": [
+        "`parseInt` never rounds, and `Number` rejects the letters.",
+        "`Number` needs the whole text to be a number.",
+        "",
+        "`parseInt` reads only whole-number digits and stops at the dot."
+      ],
+      "source": "MDN: parseInt()"
+    },
+    {
+      "id": "types-q34",
+      "lesson": "types-4",
+      "difficulty": 2,
+      "q": "A developer must do exact math on order ids larger than `Number.MAX_SAFE_INTEGER`. Which choice keeps the results exact?",
+      "options": [
+        "`Number` values rounded with `Math.round()`",
+        "`parseFloat()` on each id string",
+        "`Number` values formatted with `toFixed(0)`",
+        "BigInt values like `9007199254740993n`"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "Past `Number.MAX_SAFE_INTEGER` (2^53 − 1), normal numbers lose precision. BigInt keeps whole numbers exact at any size.",
+      "wrong": [
+        "Rounding can't restore digits a number already lost.",
+        "`parseFloat` makes a normal number, which loses precision past the limit.",
+        "This only formats a number that is already imprecise.",
+        ""
+      ],
+      "source": "MDN: BigInt"
+    },
+    {
+      "id": "types-x17",
+      "lesson": "types-4",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "What happens when this code runs?",
+      "code": "const big = 2n ** 64n;\nconsole.log(big + 1);",
+      "lang": "js",
+      "options": [
+        "`18446744073709551617` is logged",
+        "`NaN` is logged",
+        "A `TypeError` is thrown",
+        "`18446744073709551617n` is logged"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "You can't mix BigInt and number in arithmetic. `big + 1` throws a `TypeError`; write `big + 1n` instead.",
+      "wrong": [
+        "JavaScript never converts a BigInt silently in math.",
+        "Mixing the types throws; it does not give `NaN`.",
+        "",
+        "The `1` is a number, and BigInt and number can't be mixed."
+      ],
+      "source": "MDN: BigInt"
+    },
+    {
+      "id": "types-x18",
+      "lesson": "types-4",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "Which two lines run without throwing an error? (Choose 2)",
+      "options": [
+        "`Math.max(10n, 5n)`",
+        "`10n * 1.5`",
+        "`10n + 5n`",
+        "`10n + BigInt(5)`",
+        "`10n + 5`"
+      ],
+      "answer": [
+        2,
+        3
+      ],
+      "explain": "BigInt math works only with other BigInts. `BigInt(5)` turns a number into a BigInt first, so that line works too.",
+      "wrong": [
+        "`Math` methods don't accept BigInt values.",
+        "This mixes types, and BigInts hold only whole numbers anyway.",
+        "",
+        "",
+        "This mixes a BigInt with a number, which throws."
+      ],
+      "source": "MDN: BigInt"
+    },
+    {
+      "id": "types-q35",
+      "lesson": "types-4",
+      "difficulty": 2,
+      "q": "What does this code log?",
+      "code": "const d = new Date(2022, 11, 25);\nconsole.log(d.getMonth(), d.getDate());",
+      "lang": "js",
+      "options": [
+        "`12 24`",
+        "`11 25`",
+        "`12 25`",
+        "`11 24`"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "Month 11 is December, because months are zero-based. `getDate()` gives the day of the month, which starts at 1.",
+      "wrong": [
+        "Neither number shifts.",
+        "",
+        "`getMonth()` gives back the same zero-based month: 11.",
+        "Days of the month start at 1, so 25 stays 25."
+      ],
+      "source": "MDN: Date.prototype.getMonth()"
+    },
+    {
+      "id": "types-x19",
+      "lesson": "types-4",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "What does this code log?",
+      "code": "const d = new Date(2022, 0, 32);\nconsole.log(d.getMonth(), d.getDate());",
+      "lang": "js",
+      "options": [
+        "`1 1`",
+        "`0 32`",
+        "An `Invalid Date` message",
+        "`0 31`"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "Date parts that are too big carry over. Day 32 of January is 1 February, which is month 1, day 1.",
+      "wrong": [
+        "",
+        "A Date never stores a 32nd day; the extra day carries over.",
+        "Out-of-range parts carry over instead of failing.",
+        "The day is not capped at the end of the month."
+      ],
+      "source": "MDN: Date() constructor"
+    },
+    {
+      "id": "types-q36",
+      "lesson": "types-4",
+      "difficulty": 2,
+      "q": "A dice game needs a random whole number from 1 to 6, each equally likely. Which expression works?",
+      "options": [
+        "`Math.floor(Math.random() * 6) + 1`",
+        "`Math.round(Math.random() * 6)`",
+        "`Math.random(1, 6)`",
+        "`Math.ceil(Math.random() * 5)`"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "`Math.random()` gives 0 up to, but not including, 1. Times 6, floored, gives 0 to 5; adding 1 gives 1 to 6.",
+      "wrong": [
+        "",
+        "This can give 0, and 0 and 6 come up half as often.",
+        "`Math.random()` ignores arguments and gives a decimal below 1.",
+        "This never gives 6."
+      ],
+      "source": "MDN: Math.random()"
+    },
+    {
+      "id": "types-x20",
+      "lesson": "types-4",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "What does this code log?",
+      "code": "const max = Number.MAX_SAFE_INTEGER;\nconsole.log(max + 1 === max + 2);",
+      "lang": "js",
+      "options": [
+        "`NaN`",
+        "`true`",
+        "`false`",
+        "A `RangeError`"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "Past `Number.MAX_SAFE_INTEGER`, numbers can't hold every whole value. `max + 1` and `max + 2` round to the same number.",
+      "wrong": [
+        "The sums are real numbers, just imprecise.",
+        "",
+        "Past the safe limit, both sums round to the same number.",
+        "Going past the safe limit never throws."
+      ],
+      "source": "MDN: Number.MAX_SAFE_INTEGER"
+    },
+    {
+      "id": "types-q37",
+      "lesson": "types-4",
+      "difficulty": 1,
+      "q": "How should a developer check whether a calculation produced `NaN`?",
+      "options": [
+        "`result == NaN`",
+        "`typeof result === 'NaN'`",
+        "`Number.isNaN(result)`",
+        "`result === NaN`"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "`NaN` is the only value not equal to itself, so comparisons never find it. Use `Number.isNaN()`.",
+      "wrong": [
+        "Loose equality fails the same way.",
+        "`typeof NaN` is `'number'`.",
+        "",
+        "`NaN` is never equal to anything, even itself."
+      ],
+      "source": "MDN: Number.isNaN()"
+    },
+    {
+      "id": "types-q38",
+      "lesson": "types-4",
+      "difficulty": 2,
+      "q": "Which two expressions give the current time in milliseconds since 1 January 1970 UTC? (Choose 2)",
+      "options": [
+        "`Date.parse()`",
+        "`Date.now()`",
+        "`new Date().getTime()`",
+        "`new Date().getDate()`",
+        "`new Date().getMilliseconds()`"
+      ],
+      "answer": [
+        1,
+        2
+      ],
+      "explain": "Both `Date.now()` and `getTime()` give milliseconds since the epoch, 1 January 1970 UTC.",
+      "wrong": [
+        "This reads a date string; with no string it gives `NaN`.",
+        "",
+        "",
+        "`getDate()` gives the day of the month.",
+        "This gives only the 0 to 999 milliseconds part."
+      ],
+      "source": "MDN: Date.now()"
+    },
+    {
+      "id": "types-q39",
+      "lesson": "types-4",
+      "difficulty": 2,
+      "q": "What does this code log?",
+      "code": "const total = [19.99, 5.01].reduce((s, n) => s + n, 0);\nconsole.log(total.toFixed(2), typeof total.toFixed(2));",
+      "lang": "js",
+      "options": [
+        "`25 number`",
+        "`25.00 number`",
+        "`24.99 string`",
+        "`25.00 string`"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "`toFixed(2)` rounds to two decimals and returns a string. It hides tiny floating point errors in the display.",
+      "wrong": [
+        "`toFixed(2)` always shows two decimals, as text.",
+        "`toFixed` returns a string, not a number.",
+        "`toFixed` rounds to the nearest value.",
+        ""
+      ],
+      "source": "MDN: Number.prototype.toFixed()"
+    },
+    {
+      "id": "types-q40",
+      "lesson": "types-4",
+      "difficulty": 2,
+      "q": "Which two expressions give the number `42`? (Choose 2)",
+      "options": [
+        "`Number('42px')`",
+        "`(42).toFixed(0)`",
+        "`parseInt('px42', 10)`",
+        "`parseInt('42px', 10)`",
+        "`Number('42')`"
+      ],
+      "answer": [
+        3,
+        4
+      ],
+      "explain": "`parseInt` reads leading digits and ignores the rest. `Number` works when the whole text is a number.",
+      "wrong": [
+        "`Number` needs the whole text to be numeric, so this is `NaN`.",
+        "This gives the string `'42'`, not a number.",
+        "`parseInt` stops at the first letter, so it finds no digits: `NaN`.",
+        "",
+        ""
+      ],
+      "source": "MDN: parseInt()"
+    },
+    {
+      "id": "types-q41",
+      "lesson": "types-5",
+      "difficulty": 1,
+      "q": "What does `1 + '2'` give?",
+      "options": [
+        "`'3'`, a string",
+        "`12`, a number",
+        "`'12'`, a string",
+        "`3`, a number"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "`+` joins when either side is a string. The number `1` becomes `'1'`, and the result is `'12'`.",
+      "wrong": [
+        "No adding happens before the join.",
+        "Joining gives a string, not a number.",
+        "",
+        "With a string on either side, `+` joins instead of adding."
+      ],
+      "source": "MDN: Addition (+)"
+    },
+    {
+      "id": "types-q42",
+      "lesson": "types-5",
+      "difficulty": 1,
+      "q": "What does `'5' - 2` give?",
+      "options": [
+        "`3`",
+        "`'52'`",
+        "`'3'`",
+        "`NaN`"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "`-` always converts both sides to numbers. `'5'` becomes 5, so the result is 3.",
+      "wrong": [
+        "",
+        "Only `+` joins strings; `-` always does math.",
+        "The result of `-` is a number, not a string.",
+        "`'5'` converts cleanly to the number 5."
+      ],
+      "source": "MDN: Subtraction (-)"
+    },
+    {
+      "id": "types-q43",
+      "lesson": "types-5",
+      "difficulty": 2,
+      "q": "What does `console.log(1 + 2 + '3', '1' + 2 + 3)` print?",
+      "options": [
+        "`6 6`",
+        "`123 123`",
+        "`33 15`",
+        "`33 123`"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "`+` works left to right. `1 + 2` is 3, then `3 + '3'` joins to `'33'`. In the second, `'1' + 2` is already a string, so everything joins.",
+      "wrong": [
+        "A string is involved in both, so joining happens.",
+        "In the first one, `1 + 2` is added before the string shows up.",
+        "Once the left side is a string, every later `+` joins.",
+        ""
+      ],
+      "source": "MDN: Addition (+)"
+    },
+    {
+      "id": "types-q44",
+      "lesson": "types-5",
+      "difficulty": 2,
+      "q": "What does `console.log(null == undefined, null === undefined, null == 0)` print?",
+      "options": [
+        "`true false true`",
+        "`true false false`",
+        "`true true false`",
+        "`false false true`"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "With `==`, `null` and `undefined` equal each other and nothing else. `===` doesn't convert, so their different types make it `false`.",
+      "wrong": [
+        "`null` equals only `undefined` (and itself) with `==`.",
+        "",
+        "`===` sees two different types, so it is `false`.",
+        "`==` treats `null` and `undefined` as equal, and `null` never equals `0`."
+      ],
+      "source": "MDN: Equality (==)"
+    },
+    {
+      "id": "types-x21",
+      "lesson": "types-5",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "What does `console.log(null >= 0, null > 0, null == 0)` print?",
+      "options": [
+        "`false true false`",
+        "`true false false`",
+        "`false false false`",
+        "`true false true`"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "The comparison operators `>=` and `>` convert `null` to `0`. But `==` uses a special rule where `null` only equals `undefined`.",
+      "wrong": [
+        "`null` becomes `0`, and `0 > 0` is false.",
+        "",
+        "`>=` converts `null` to `0`, and `0 >= 0` is true.",
+        "`==` has its own rule: `null` equals only `undefined`."
+      ],
+      "source": "MDN: Greater than or equal (>=)"
+    },
+    {
+      "id": "types-x22",
+      "lesson": "types-5",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "What does `console.log([] + {}, ([] + []).length)` print?",
+      "options": [
+        "`0 0`",
+        "`NaN 0`",
+        "`[object Object] 2`",
+        "`[object Object] 0`"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "`+` turns both objects into strings first. `[]` becomes an empty string and `{}` becomes `'[object Object]'`.",
+      "wrong": [
+        "`+` turns objects into strings, not numbers.",
+        "`+` with strings joins; it never gives `NaN` here.",
+        "An empty array becomes an empty string, so the join is empty.",
+        ""
+      ],
+      "source": "MDN: Addition (+)"
+    },
+    {
+      "id": "types-q45",
+      "lesson": "types-5",
+      "difficulty": 2,
+      "q": "Which two comparisons are `true`? (Choose 2)",
+      "options": [
+        "`Object.is(0, -0)`",
+        "`'1' === 1`",
+        "`'1' == 1`",
+        "`Object.is(NaN, NaN)`",
+        "`NaN === NaN`"
+      ],
+      "answer": [
+        2,
+        3
+      ],
+      "explain": "`==` converts `'1'` to 1 before comparing. `Object.is` treats `NaN` as equal to itself.",
+      "wrong": [
+        "`Object.is` treats `0` and `-0` as different.",
+        "`===` never converts, and a string is not a number.",
+        "",
+        "",
+        "`NaN` is never strictly equal to itself."
+      ],
+      "source": "MDN: Object.is()"
+    },
+    {
+      "id": "types-q46",
+      "lesson": "types-5",
+      "difficulty": 1,
+      "q": "A form gives the quantity as the string `'3'`. The code `total = qty + 2` sets `'32'`. Which fix gives `5`?",
+      "options": [
+        "`total = Number(qty) + 2`",
+        "`total = String(qty) + 2`",
+        "`total = qty + '2'`",
+        "`total = qty.concat(2)`"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "Convert the text to a number before adding. `Number('3')` is 3, and `3 + 2` is 5.",
+      "wrong": [
+        "",
+        "This is still a string, so `+` still joins.",
+        "Both sides are strings, so the result is `'32'`.",
+        "`concat` joins strings too."
+      ],
+      "source": "MDN: Addition (+)"
+    },
+    {
+      "id": "types-x23",
+      "lesson": "types-5",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "What does this code log?",
+      "code": "const a = [1, 2];\nconst b = '1,2';\nconsole.log(a == b, a === b);",
+      "lang": "js",
+      "options": [
+        "`true true`",
+        "`false true`",
+        "`true false`",
+        "`false false`"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "With `==`, the array is turned into a string, `'1,2'`, which matches `b`. `===` doesn't convert, and the types differ.",
+      "wrong": [
+        "`===` never converts, so an array and a string can't match.",
+        "`===` is the stricter check; it can't pass when `==` fails.",
+        "",
+        "`==` turns the array into the string `'1,2'` first."
+      ],
+      "source": "MDN: Equality (==)"
+    },
+    {
+      "id": "types-q47",
+      "lesson": "types-5",
+      "difficulty": 2,
+      "q": "What does `console.log(true + true, '4' * '2')` print?",
+      "options": [
+        "`truetrue 8`",
+        "`2 42`",
+        "`NaN 8`",
+        "`2 8`"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "With no strings involved, `+` adds numbers, and `true` is 1. `*` always converts to numbers, so `'4' * '2'` is 8.",
+      "wrong": [
+        "With no strings, `+` adds numbers: `true` is 1.",
+        "`*` converts to numbers; it never joins.",
+        "`true` converts to 1, a valid number.",
+        ""
+      ],
+      "source": "MDN: Addition (+)"
+    },
+    {
+      "id": "types-x24",
+      "lesson": "types-5",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A developer sums quantities read from a CSV file. What does this code log?",
+      "code": "const items = ['10', '9', '1'];\nlet sum = 0;\nfor (const n of items) sum += n;\nconsole.log(sum);",
+      "lang": "js",
+      "options": [
+        "`1091`",
+        "`NaN`",
+        "`01091`",
+        "`20`"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "`+=` with a string joins text. `0 + '10'` is `'010'`, and every later item is added to the end.",
+      "wrong": [
+        "The starting `0` becomes the first character.",
+        "Joining strings never gives `NaN`.",
+        "",
+        "The items are strings, so `+=` joins text."
+      ],
+      "source": "MDN: Addition (+)"
+    },
+    {
+      "id": "types-x25",
+      "lesson": "types-5",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "Which two expressions give `NaN`? (Choose 2)",
+      "options": [
+        "`'abc' * 2`",
+        "`undefined + 1`",
+        "`null + 1`",
+        "`'5' - '2'`",
+        "`[] - 1`"
+      ],
+      "answer": [
+        0,
+        1
+      ],
+      "explain": "`undefined` converts to `NaN`, and so does text that isn't a number. Any math with `NaN` gives `NaN`.",
+      "wrong": [
+        "",
+        "",
+        "`null` converts to `0`, so this is `1`.",
+        "Both strings convert cleanly, so this is `3`.",
+        "An empty array becomes `''`, then `0`, so this is `-1`."
+      ],
+      "source": "MDN: JavaScript data types and data structures"
+    },
+    {
+      "id": "types-q48",
+      "lesson": "types-5",
+      "difficulty": 2,
+      "q": "What does `console.log(+'42' + 1, +'', +'4 2')` print?",
+      "options": [
+        "`43 0 42`",
+        "`43 0 NaN`",
+        "`421 0 NaN`",
+        "`43 NaN NaN`"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "The unary plus turns a value into a number. An empty string becomes `0`; text with a space in the middle becomes `NaN`.",
+      "wrong": [
+        "A space in the middle makes the text invalid.",
+        "",
+        "The unary plus already made `42` a number.",
+        "An empty string converts to `0`."
+      ],
+      "source": "MDN: Unary plus (+)"
+    },
+    {
+      "id": "types-q49",
+      "lesson": "types-5",
+      "difficulty": 1,
+      "q": "Which operator compares two values without converting their types?",
+      "options": [
+        "`===`",
+        "`==`",
+        "`=`",
+        "`>=`"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "Strict equality, `===`, never converts. Both type and value must match.",
+      "wrong": [
+        "",
+        "Loose equality converts types before comparing.",
+        "A single `=` assigns a value; it does not compare.",
+        "Comparison operators convert values to numbers."
+      ],
+      "source": "MDN: Strict equality (===)"
+    },
+    {
+      "id": "types-x26",
+      "lesson": "types-5",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "What does `console.log('0' == false, 'false' == false)` print?",
+      "options": [
+        "`true false`",
+        "`false false`",
+        "`true true`",
+        "`false true`"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "`==` with a boolean turns both sides into numbers. `'0'` and `false` both become 0, but `'false'` becomes `NaN`.",
+      "wrong": [
+        "",
+        "`false` becomes `0`, and `'0'` becomes `0` too.",
+        "`'false'` turns into `NaN`, which equals nothing.",
+        "The word `'false'` has no special meaning to `==`."
+      ],
+      "source": "MDN: Equality (==)"
+    },
+    {
+      "id": "types-x27",
+      "lesson": "types-5",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "Which two expressions give the string `'12'`? (Choose 2)",
+      "options": [
+        "`1 + 2 + ''`",
+        "`+'1' + 2`",
+        "`'3' * '4'`",
+        "`'1' + 2`",
+        "`[1] + [2]`"
+      ],
+      "answer": [
+        3,
+        4
+      ],
+      "explain": "`+` joins once either side is a string. Arrays become strings too: `[1]` becomes `'1'` and `[2]` becomes `'2'`.",
+      "wrong": [
+        "The numbers add first, giving `'3'`.",
+        "The unary plus makes both sides numbers, giving `3`.",
+        "`*` converts to numbers, giving `12`, a number.",
+        "",
+        ""
+      ],
+      "source": "MDN: Addition (+)"
+    },
+    {
+      "id": "types-q50",
+      "lesson": "types-6",
+      "difficulty": 1,
+      "q": "Which two values are falsy? (Choose 2)",
+      "options": [
+        "`'false'`",
+        "`0`",
+        "`''`",
+        "`'0'`",
+        "`[]`"
+      ],
+      "answer": [
+        1,
+        2
+      ],
+      "explain": "Only eight values are falsy, including `0` and the empty string. Non-empty strings and all objects are truthy.",
+      "wrong": [
+        "Any non-empty string is truthy.",
+        "",
+        "",
+        "A string with a character in it is truthy, even `'0'`.",
+        "Every array is an object, and every object is truthy."
+      ],
+      "source": "MDN: Falsy"
+    },
+    {
+      "id": "types-q51",
+      "lesson": "types-6",
+      "difficulty": 1,
+      "q": "Which value is truthy?",
+      "options": [
+        "`0n`",
+        "`{}`",
+        "`null`",
+        "`NaN`"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "Every object is truthy, even an empty one. `null`, `NaN` and `0n` are all on the falsy list.",
+      "wrong": [
+        "BigInt zero is falsy, like `0`.",
+        "",
+        "`null` is on the falsy list.",
+        "`NaN` is on the falsy list."
+      ],
+      "source": "MDN: Truthy"
+    },
+    {
+      "id": "types-q52",
+      "lesson": "types-6",
+      "difficulty": 2,
+      "q": "What does this code log?",
+      "code": "const name = '' || 'Guest';\nconst count = 0 ?? 10;\nconsole.log(name, count);",
+      "lang": "js",
+      "options": [
+        "An empty string and `0`",
+        "An empty string and `10`",
+        "`Guest 0`",
+        "`Guest 10`"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "`||` falls back for any falsy value, so the empty string is replaced. `??` falls back only for `null` or `undefined`, so `0` stays.",
+      "wrong": [
+        "`||` skips the falsy empty string.",
+        "Both operators work the other way round.",
+        "",
+        "`??` keeps `0`, because `0` is not `null` or `undefined`."
+      ],
+      "source": "MDN: Nullish coalescing operator (??)"
+    },
+    {
+      "id": "types-q53",
+      "lesson": "types-6",
+      "difficulty": 2,
+      "q": "What does `console.log(1 && 'a' && 0 && 'b')` print?",
+      "options": [
+        "`b`",
+        "`false`",
+        "`true`",
+        "`0`"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "`&&` returns the first falsy operand, or the last one if all are truthy. Here `0` is the first falsy value.",
+      "wrong": [
+        "`&&` stops at the first falsy value, so it never reaches `'b'`.",
+        "`&&` returns the value itself, not a boolean.",
+        "`&&` never turns its result into a boolean.",
+        ""
+      ],
+      "source": "MDN: Logical AND (&&)"
+    },
+    {
+      "id": "types-x28",
+      "lesson": "types-6",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "What does `console.log(null || undefined || '')` print?",
+      "options": [
+        "`undefined`",
+        "`false`",
+        "An empty string",
+        "`null`"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "`||` returns the first truthy operand. When none is truthy, it returns the last one, the empty string.",
+      "wrong": [
+        "`undefined` is falsy, so `||` moves on.",
+        "`||` returns a value from the list, not a boolean.",
+        "",
+        "`null` is falsy, so `||` moves on."
+      ],
+      "source": "MDN: Logical OR (||)"
+    },
+    {
+      "id": "types-q54",
+      "lesson": "types-6",
+      "difficulty": 2,
+      "q": "A settings object may hold `volume: 0`, which is a valid choice. When `volume` is missing, the code must use 50. Which expression works?",
+      "options": [
+        "`settings.volume ?? 50`",
+        "`settings.volume || 50`",
+        "`settings.volume && 50`",
+        "`!settings.volume ? 50 : settings.volume`"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "`??` falls back only for `null` or `undefined`. A real `0` is kept.",
+      "wrong": [
+        "",
+        "`||` would also replace a real `0` with 50.",
+        "This gives 50 when a nonzero volume is set, and `undefined` when it is missing.",
+        "A real `0` is falsy, so this also replaces it."
+      ],
+      "source": "MDN: Nullish coalescing operator (??)"
+    },
+    {
+      "id": "types-x29",
+      "lesson": "types-6",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "What does this code log?",
+      "code": "const order = { customer: null };\nconsole.log(order.customer?.address.city);",
+      "lang": "js",
+      "options": [
+        "A `TypeError`",
+        "`null`",
+        "An empty string",
+        "`undefined`"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "When `?.` meets `null` or `undefined`, it stops the whole rest of the chain and gives `undefined`. So `.address.city` is never read.",
+      "wrong": [
+        "`?.` stops the whole chain, so `.city` is never read.",
+        "`?.` gives `undefined`, not the `null` it found.",
+        "Optional chaining never makes a string.",
+        ""
+      ],
+      "source": "MDN: Optional chaining (?.)"
+    },
+    {
+      "id": "types-x30",
+      "lesson": "types-6",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "What does this code log?",
+      "code": "const items = [];\nif (items) console.log('A');\nif (items.length) console.log('B');\nif (items == false) console.log('C');",
+      "lang": "js",
+      "options": [
+        "`A`, `B` and `C`",
+        "`A` and `C`",
+        "`A` only",
+        "`C` only"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "Every object is truthy, so `A` logs. `length` is 0, so `B` doesn't. But `==` converts both sides to numbers, and `[]` becomes 0, so `C` logs.",
+      "wrong": [
+        "`items.length` is `0`, which is falsy.",
+        "",
+        "`==` turns `[]` into `''` and then `0`, which equals `false` turned into `0`.",
+        "An empty array is an object, and every object is truthy."
+      ],
+      "source": "MDN: Truthy"
+    },
+    {
+      "id": "types-q55",
+      "lesson": "types-6",
+      "difficulty": 2,
+      "q": "What does this code log?",
+      "code": "const opts = { retries: 0, mode: '' };\nopts.retries ??= 3;\nopts.mode ||= 'fast';\nconsole.log(opts.retries, opts.mode);",
+      "lang": "js",
+      "options": [
+        "`3` and an empty string",
+        "`0 fast`",
+        "`3 fast`",
+        "`0` and an empty string"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "`??=` assigns only for `null` or `undefined`, so `0` stays. `||=` assigns for any falsy value, so the empty string is replaced.",
+      "wrong": [
+        "Both operators work the other way round.",
+        "",
+        "`??=` assigns only when the value is `null` or `undefined`.",
+        "`||=` assigns when the value is falsy, and `''` is falsy."
+      ],
+      "source": "MDN: Nullish coalescing assignment (??=)"
+    },
+    {
+      "id": "types-q56",
+      "lesson": "types-6",
+      "difficulty": 1,
+      "q": "What does `console.log(!!'false', !!NaN)` print?",
+      "options": [
+        "`false false`",
+        "`false true`",
+        "`true true`",
+        "`true false`"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "`!!` turns a value into its boolean. A non-empty string is truthy; `NaN` is falsy.",
+      "wrong": [
+        "`'false'` is a non-empty string, so it is truthy.",
+        "Both results are the other way round.",
+        "`NaN` is on the falsy list.",
+        ""
+      ],
+      "source": "MDN: Truthy"
+    },
+    {
+      "id": "types-x31",
+      "lesson": "types-6",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A function must log `'missing'` only when `input` is `null` or `undefined`. An empty string and `0` are valid inputs. Which two conditions work? (Choose 2)",
+      "options": [
+        "`input == null`",
+        "`input === null || input === undefined`",
+        "`!input`",
+        "`input === null`",
+        "`typeof input === 'undefined'`"
+      ],
+      "answer": [
+        0,
+        1
+      ],
+      "explain": "`== null` is true for exactly `null` and `undefined`, because of the special `==` rule. Spelling out both checks with `===` works too.",
+      "wrong": [
+        "",
+        "",
+        "This is also true for `0` and the empty string.",
+        "This misses `undefined`.",
+        "This misses `null`."
+      ],
+      "source": "MDN: Equality (==)"
+    },
+    {
+      "id": "types-x32",
+      "lesson": "types-6",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "What does this code log?",
+      "code": "let calls = 0;\nconst hit = () => { calls++; return true; };\nconst a = false && hit();\nconst b = true || hit();\nconst c = null ?? hit();\nconsole.log(calls);",
+      "lang": "js",
+      "options": [
+        "`1`",
+        "`0`",
+        "`2`",
+        "`3`"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "Logical operators short-circuit: the right side runs only if needed. Only the `??` line runs `hit()`, because its left side is `null`.",
+      "wrong": [
+        "",
+        "`??` must run `hit()`, because its left side is `null`.",
+        "`&&` and `||` both know their answer from the left side.",
+        "Short-circuiting skips the right side twice."
+      ],
+      "source": "MDN: Logical OR (||)"
+    },
+    {
+      "id": "types-x33",
+      "lesson": "types-6",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "What does this code log?",
+      "code": "const flag = new Boolean(false);\nconsole.log(flag ? 'yes' : 'no');",
+      "lang": "js",
+      "options": [
+        "A `TypeError`",
+        "`undefined`",
+        "`yes`",
+        "`no`"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "`new Boolean(false)` is an object that wraps `false`. Every object is truthy, so the condition passes.",
+      "wrong": [
+        "Any value can be tested in a condition.",
+        "The `? :` picks one of its two strings.",
+        "",
+        "`new Boolean()` makes an object, and every object is truthy."
+      ],
+      "source": "MDN: Boolean"
+    },
+    {
+      "id": "types-q57",
+      "lesson": "types-6",
+      "difficulty": 1,
+      "q": "What does `a || b` return when `a` is truthy?",
+      "options": [
+        "`true`",
+        "The value of `b`",
+        "`false`",
+        "The value of `a`"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "`||` returns the first truthy operand. When `a` is truthy, it returns `a` and never looks at `b`.",
+      "wrong": [
+        "`||` returns one of its operands, not a boolean.",
+        "`b` is returned only when `a` is falsy.",
+        "`||` never returns a value that was not an operand.",
+        ""
+      ],
+      "source": "MDN: Logical OR (||)"
+    },
+    {
+      "id": "types-q58",
+      "lesson": "types-7",
+      "difficulty": 1,
+      "q": "Which two methods change the original array? (Choose 2)",
+      "options": [
+        "`map`",
+        "`concat`",
+        "`push`",
+        "`sort`",
+        "`slice`"
+      ],
+      "answer": [
+        2,
+        3
+      ],
+      "explain": "`push` adds to the original, and `sort` reorders it in place. `slice`, `map` and `concat` all return new arrays.",
+      "wrong": [
+        "`map` builds a new array.",
+        "`concat` builds a new, joined array.",
+        "",
+        "",
+        "`slice` copies a part into a new array."
+      ],
+      "source": "MDN: Array.prototype.sort()"
+    },
+    {
+      "id": "types-q59",
+      "lesson": "types-7",
+      "difficulty": 2,
+      "q": "What does this code log?",
+      "code": "const list = ['a', 'b'];\nconst result = list.push('c');\nconsole.log(result);",
+      "lang": "js",
+      "options": [
+        "`'c'`",
+        "`undefined`",
+        "`3`",
+        "`['a', 'b', 'c']`"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "`push` adds to the end of the array and returns the new length, not the array.",
+      "wrong": [
+        "`push` does not return the item it added.",
+        "`push` does return something: the new length.",
+        "",
+        "`push` changes `list`, but returns the new length."
+      ],
+      "source": "MDN: Array.prototype.push()"
+    },
+    {
+      "id": "types-q60",
+      "lesson": "types-7",
+      "difficulty": 2,
+      "q": "What does this code log?",
+      "code": "const nums = [10, 20, 30, 40];\nconst removed = nums.splice(1, 2);\nconsole.log(removed.join(), nums.join());",
+      "lang": "js",
+      "options": [
+        "`10,40 20,30`",
+        "`20,30 10,40`",
+        "`20,30 10,20,30,40`",
+        "`20 10,30,40`"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "`splice(1, 2)` removes 2 items starting at index 1, straight from `nums`. It returns the removed items.",
+      "wrong": [
+        "`splice` returns the removed items, not what is left.",
+        "",
+        "`splice` removes the items from `nums` itself.",
+        "The second number is how many to remove: 2."
+      ],
+      "source": "MDN: Array.prototype.splice()"
+    },
+    {
+      "id": "types-x34",
+      "lesson": "types-7",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "What does this code log?",
+      "code": "const a = [3, 1, 2];\nconst b = a.sort();\nb.push(4);\nconsole.log(a.join());",
+      "lang": "js",
+      "options": [
+        "`1,2,3,4`",
+        "`3,1,2`",
+        "`1,2,3`",
+        "`3,1,2,4`"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "`sort` reorders the array in place and returns that same array. So `a` and `b` are one array, and the push shows in both.",
+      "wrong": [
+        "",
+        "`sort` changes `a` in place.",
+        "`b` is the same array as `a`, so the push shows in `a`.",
+        "`sort` already reordered `a` before the push."
+      ],
+      "source": "MDN: Array.prototype.sort()"
+    },
+    {
+      "id": "types-q61",
+      "lesson": "types-7",
+      "difficulty": 2,
+      "q": "A developer must show a sorted copy of `prices` and keep `prices` in its original order. Which line works?",
+      "options": [
+        "`const sorted = [...prices].sort((a, b) => a - b);`",
+        "`const sorted = prices.sort((a, b) => a - b);`",
+        "`const sorted = prices; sorted.sort((a, b) => a - b);`",
+        "`const sorted = prices.reverse().sort((a, b) => a - b);`"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "Spread makes a new array first, so `sort` changes only the copy.",
+      "wrong": [
+        "",
+        "`sort` changes `prices` in place.",
+        "`sorted` is the same array, not a copy.",
+        "`reverse` and `sort` both change `prices`."
+      ],
+      "source": "MDN: Array.prototype.sort()"
+    },
+    {
+      "id": "types-q62",
+      "lesson": "types-7",
+      "difficulty": 2,
+      "q": "What does this code log?",
+      "code": "const vals = [1, NaN, 3];\nconsole.log(vals.includes(NaN), vals.indexOf(NaN));",
+      "lang": "js",
+      "options": [
+        "`false 1`",
+        "`true -1`",
+        "`true 1`",
+        "`false -1`"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "`includes` treats `NaN` as equal to itself. `indexOf` uses `===`, which never matches `NaN`.",
+      "wrong": [
+        "The two methods behave the other way round.",
+        "",
+        "`indexOf` uses `===`, and `NaN === NaN` is false.",
+        "`includes` can find `NaN`."
+      ],
+      "source": "MDN: Array.prototype.includes()"
+    },
+    {
+      "id": "types-x35",
+      "lesson": "types-7",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "What does this code log?",
+      "code": "const team = [{ name: 'Ana' }];\nconst copy = [...team];\ncopy[0].name = 'Bo';\ncopy.push({ name: 'Cy' });\nconsole.log(team.length, team[0].name);",
+      "lang": "js",
+      "options": [
+        "`2 Bo`",
+        "`2 Ana`",
+        "`1 Bo`",
+        "`1 Ana`"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "Spread makes a shallow copy: a new list holding the same objects. Pushing changes only the copy, but editing a shared object shows in both.",
+      "wrong": [
+        "Pushing to `copy` does not change `team`.",
+        "The copy is a separate list, but its objects are shared.",
+        "",
+        "The copy shares the same object, so the name change shows."
+      ],
+      "source": "MDN: Spread syntax (...)"
+    },
+    {
+      "id": "types-x36",
+      "lesson": "types-7",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "What does this code log?",
+      "code": "const a = Array.from('abc');\nconst b = Array.from({ length: 3 }, (_, i) => i * 2);\nconsole.log(a.join('-'), b.join('-'));",
+      "lang": "js",
+      "options": [
+        "`abc 0-2-4`",
+        "`a-b-c 2-4-6`",
+        "`abc --`",
+        "`a-b-c 0-2-4`"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "`Array.from` makes one item per character of a string. With `{ length: 3 }` and a map function, it builds `[0, 2, 4]` from the indexes.",
+      "wrong": [
+        "A string is iterable, so each letter becomes one item.",
+        "Indexes start at 0, so the first item is `0 * 2`.",
+        "The second argument fills each slot by mapping it.",
+        ""
+      ],
+      "source": "MDN: Array.from()"
+    },
+    {
+      "id": "types-q63",
+      "lesson": "types-7",
+      "difficulty": 1,
+      "q": "Which method removes the first item of an array and returns it?",
+      "options": [
+        "`unshift()`",
+        "`slice(0, 1)`",
+        "`shift()`",
+        "`pop()`"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "`shift` removes the first item and returns it. `pop` does the same at the end.",
+      "wrong": [
+        "`unshift` adds items at the start.",
+        "`slice` copies; it removes nothing.",
+        "",
+        "`pop` removes the last item."
+      ],
+      "source": "MDN: Array.prototype.shift()"
+    },
+    {
+      "id": "types-q64",
+      "lesson": "types-7",
+      "difficulty": 2,
+      "q": "A developer needs a new array with `newItem` added at the end, and `cart` must not change. Which two work? (Choose 2)",
+      "options": [
+        "`cart.unshift(newItem)`",
+        "`[...cart, newItem]`",
+        "`cart.concat(newItem)`",
+        "`cart.push(newItem)`",
+        "`cart.splice(cart.length, 0, newItem)`"
+      ],
+      "answer": [
+        1,
+        2
+      ],
+      "explain": "Spread and `concat` build new arrays. `push`, `splice` and `unshift` change the original.",
+      "wrong": [
+        "`unshift` changes `cart`, and adds to the start.",
+        "",
+        "",
+        "`push` changes `cart` and returns a number.",
+        "`splice` changes `cart` in place."
+      ],
+      "source": "MDN: Array.prototype.concat()"
+    },
+    {
+      "id": "types-x37",
+      "lesson": "types-7",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "What does this code log?",
+      "code": "const days = ['Mon', 'Wed'];\nconst out = days.splice(1, 0, 'Tue');\nconsole.log(out.length, days.join());",
+      "lang": "js",
+      "options": [
+        "`0 Mon,Tue,Wed`",
+        "`1 Mon,Tue,Wed`",
+        "`0 Mon,Wed`",
+        "`3 Tue,Mon,Wed`"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "`splice(1, 0, 'Tue')` removes nothing and inserts at index 1. It returns the removed items: an empty array.",
+      "wrong": [
+        "",
+        "`splice` returns the removed items, and none were removed.",
+        "The third argument is inserted into `days`.",
+        "The insert happens at index 1, not at the start."
+      ],
+      "source": "MDN: Array.prototype.splice()"
+    },
+    {
+      "id": "types-x38",
+      "lesson": "types-7",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "What does this code log?",
+      "code": "const arr = [1, 2, 3, 4, 5];\narr.length = 2;\nconsole.log(arr.join(), arr[3]);",
+      "lang": "js",
+      "options": [
+        "`1,2,3,4,5 4`",
+        "A `TypeError`, as `length` is read-only",
+        "`1,2 4`",
+        "`1,2 undefined`"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "Setting an array's `length` lower cuts off the items past it. Reading a missing index gives `undefined`.",
+      "wrong": [
+        "Setting `length` lower really removes items.",
+        "An array's `length` can be set.",
+        "Item 3 was removed along with the others.",
+        ""
+      ],
+      "source": "MDN: Array: length"
+    },
+    {
+      "id": "types-q65",
+      "lesson": "types-7",
+      "difficulty": 2,
+      "q": "What does this code log?",
+      "code": "const word = ['a', 'b', 'c'];\nconst rev = word.reverse();\nconsole.log(word === rev, word[0]);",
+      "lang": "js",
+      "options": [
+        "`true a`",
+        "`true c`",
+        "`false a`",
+        "`false c`"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "`reverse` flips the array in place and returns the same array. So `word` and `rev` are one array, now starting with `c`.",
+      "wrong": [
+        "`word` itself was reversed.",
+        "",
+        "`reverse` changes `word` and returns that same array.",
+        "`rev` is not a copy; it is the same array."
+      ],
+      "source": "MDN: Array.prototype.reverse()"
+    },
+    {
+      "id": "types-q66",
+      "lesson": "types-7",
+      "difficulty": 2,
+      "q": "Changing `copy` must never change `src`. `src` holds only numbers. Which two lines make a separate array? (Choose 2)",
+      "options": [
+        "`const copy = src;`",
+        "`const copy = src.sort();`",
+        "`const copy = src.fill(0);`",
+        "`const copy = src.slice();`",
+        "`const copy = Array.from(src);`"
+      ],
+      "answer": [
+        3,
+        4
+      ],
+      "explain": "`slice()` with no arguments and `Array.from` both build a new array. For numbers, a shallow copy is a full copy.",
+      "wrong": [
+        "This copies the reference, so both names point to one array.",
+        "`sort` returns the same array, after reordering it.",
+        "`fill` overwrites `src` and returns it.",
+        "",
+        ""
+      ],
+      "source": "MDN: Array.prototype.slice()"
+    },
+    {
+      "id": "types-q67",
+      "lesson": "types-8",
+      "difficulty": 2,
+      "q": "What does `[1, 10, 2].sort()` return?",
+      "options": [
+        "`[2, 10, 1]`",
+        "`[1, 10, 2]`",
+        "`[1, 2, 10]`",
+        "`[10, 2, 1]`"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "Without a compare function, `sort` compares items as strings. `'1'` < `'10'` < `'2'`, so the order looks unchanged.",
+      "wrong": [
+        "As strings, `'1'` comes first.",
+        "",
+        "That needs a compare function like `(a, b) => a - b`.",
+        "That is a high-to-low sort, which also needs a compare function."
+      ],
+      "source": "MDN: Array.prototype.sort()"
+    },
+    {
+      "id": "types-q68",
+      "lesson": "types-8",
+      "difficulty": 1,
+      "q": "Which array method returns the first element that passes a test?",
+      "options": [
+        "`filter`",
+        "`some`",
+        "`indexOf`",
+        "`find`"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "`find` returns the first element for which the callback is truthy, or `undefined` if there is none.",
+      "wrong": [
+        "`filter` returns a new array of all matches.",
+        "`some` returns `true` or `false`.",
+        "`indexOf` looks for one exact value and returns its position.",
+        ""
+      ],
+      "source": "MDN: Array.prototype.find()"
+    },
+    {
+      "id": "types-q69",
+      "lesson": "types-8",
+      "difficulty": 1,
+      "q": "What does `forEach` return?",
+      "options": [
+        "Always `undefined`",
+        "A new array, like `map` does",
+        "The same array, so calls can chain",
+        "The number of items it visited"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "`forEach` runs the callback for each item and always returns `undefined`. Use `map` when you want a new array.",
+      "wrong": [
+        "",
+        "`forEach` builds nothing; it only runs the callback.",
+        "It returns nothing, so chaining after it fails.",
+        "It returns nothing at all."
+      ],
+      "source": "MDN: Array.prototype.forEach()"
+    },
+    {
+      "id": "types-q70",
+      "lesson": "types-8",
+      "difficulty": 2,
+      "q": "What does this code log?",
+      "code": "const doubled = [1, 2, 3].map(n => { n * 2; });\nconsole.log(doubled);",
+      "lang": "js",
+      "options": [
+        "`[1, 2, 3]`",
+        "`[]`",
+        "`[undefined, undefined, undefined]`",
+        "`[2, 4, 6]`"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "An arrow function with braces returns nothing unless you write `return`. So each item becomes `undefined`.",
+      "wrong": [
+        "`map` uses what the callback returns, not the old items.",
+        "`map` always keeps the same length.",
+        "",
+        "With braces, the arrow function needs `return`."
+      ],
+      "source": "MDN: Array.prototype.map()"
+    },
+    {
+      "id": "types-q71",
+      "lesson": "types-8",
+      "difficulty": 2,
+      "q": "What does this code log?",
+      "code": "const words = ['hi', 'there', 'you'];\nconst total = words.reduce((sum, w) => sum + w.length, 0);\nconsole.log(total);",
+      "lang": "js",
+      "options": [
+        "`3`",
+        "`0hithereyou`",
+        "`NaN`",
+        "`10`"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "`reduce` starts the accumulator at 0 and adds each word's length: 2 + 5 + 3 = 10.",
+      "wrong": [
+        "That is the number of words, not the letters.",
+        "The callback adds `w.length`, a number, not the word.",
+        "The start value `0` keeps the sum a number.",
+        ""
+      ],
+      "source": "MDN: Array.prototype.reduce()"
+    },
+    {
+      "id": "types-x39",
+      "lesson": "types-8",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "What does this code log?",
+      "code": "const cart = [{ price: 4 }, { price: 6 }];\nconst total = cart.reduce((sum, item) => sum + item.price);\nconsole.log(total);",
+      "lang": "js",
+      "options": [
+        "`NaN`",
+        "A `TypeError`",
+        "`[object Object]6`",
+        "`10`"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "With no start value, `reduce` uses the first item as the accumulator. That is an object, and object `+` number joins as text.",
+      "wrong": [
+        "`+` with an object joins strings; it does not give `NaN`.",
+        "Only an empty array with no start value throws.",
+        "",
+        "With no start value, the first item, an object, becomes the sum."
+      ],
+      "source": "MDN: Array.prototype.reduce()"
+    },
+    {
+      "id": "types-x40",
+      "lesson": "types-8",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "What happens when this code runs?",
+      "code": "const scores = [40, 30].filter(s => s > 50);\nconsole.log(scores.reduce((a, b) => a + b));",
+      "lang": "js",
+      "options": [
+        "`NaN` is logged",
+        "A `TypeError` is thrown",
+        "`0` is logged",
+        "`undefined` is logged"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "`filter` returns an empty array. `reduce` on an empty array with no start value throws a `TypeError`.",
+      "wrong": [
+        "The callback never even runs.",
+        "",
+        "There is no start value to fall back to.",
+        "`reduce` throws on an empty array with no start value."
+      ],
+      "source": "MDN: Array.prototype.reduce()"
+    },
+    {
+      "id": "types-q72",
+      "lesson": "types-8",
+      "difficulty": 2,
+      "q": "A developer must check whether any order has `status === 'late'`, and stop looking at the first match. Which two work? (Choose 2)",
+      "options": [
+        "`orders.every(o => o.status === 'late')`",
+        "`orders.filter(o => o.status === 'late')`",
+        "`orders.some(o => o.status === 'late')`",
+        "`orders.find(o => o.status === 'late') !== undefined`",
+        "`orders.forEach(o => o.status === 'late')`"
+      ],
+      "answer": [
+        2,
+        3
+      ],
+      "explain": "`some` and `find` stop as soon as one item passes. `some` gives a boolean; comparing `find` to `undefined` gives one too.",
+      "wrong": [
+        "`every` checks that all orders are late.",
+        "`filter` visits every item and returns an array, which is always truthy.",
+        "",
+        "",
+        "`forEach` returns `undefined` and visits every item."
+      ],
+      "source": "MDN: Array.prototype.some()"
+    },
+    {
+      "id": "types-q73",
+      "lesson": "types-8",
+      "difficulty": 2,
+      "q": "What does this code log?",
+      "code": "const users = [\n  { name: 'Ana', active: true },\n  { name: 'Bo', active: false },\n  { name: 'Cy', active: true },\n];\nconsole.log(users.filter(u => u.active).map(u => u.name).join(' '));",
+      "lang": "js",
+      "options": [
+        "`Ana Cy`",
+        "`Ana Bo Cy`",
+        "`Bo`",
+        "`true false true`"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "`filter` keeps the active users, then `map` turns each user into a name.",
+      "wrong": [
+        "",
+        "`filter` dropped Bo, who is not active.",
+        "`filter` keeps the items where the callback is truthy.",
+        "`map` picks the names, not the `active` flags."
+      ],
+      "source": "MDN: Array.prototype.filter()"
+    },
+    {
+      "id": "types-x41",
+      "lesson": "types-8",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "What does this code log?",
+      "code": "function firstBig(nums) {\n  nums.forEach(n => {\n    if (n > 10) return n;\n  });\n  return -1;\n}\nconsole.log(firstBig([5, 20, 30]));",
+      "lang": "js",
+      "options": [
+        "`-1`",
+        "`20`",
+        "`30`",
+        "`undefined`"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "`return` inside the callback ends only that callback. `forEach` ignores it and keeps going, so `firstBig` returns `-1`.",
+      "wrong": [
+        "",
+        "The `return` only ends one callback call, not `firstBig`.",
+        "`forEach` throws away whatever the callback returns.",
+        "`firstBig` does reach its own `return -1`."
+      ],
+      "source": "MDN: Array.prototype.forEach()"
+    },
+    {
+      "id": "types-q74",
+      "lesson": "types-8",
+      "difficulty": 2,
+      "q": "A developer must sort `products` by `price`, lowest first. Which line works?",
+      "options": [
+        "`products.sort((a, b) => a.price > b.price)`",
+        "`products.sort((a, b) => a.price - b.price)`",
+        "`products.sort((a, b) => b.price - a.price)`",
+        "`products.sort()`"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "A compare function must return a negative, zero or positive number. `a.price - b.price` puts cheaper items first.",
+      "wrong": [
+        "It returns `true`/`false`, never a negative number, so the order is unreliable.",
+        "",
+        "This sorts from highest to lowest.",
+        "Objects all become `'[object Object]'`, so nothing useful happens."
+      ],
+      "source": "MDN: Array.prototype.sort()"
+    },
+    {
+      "id": "types-x42",
+      "lesson": "types-8",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "What does `['banana', 'Cherry', 'apple'].sort()` return?",
+      "options": [
+        "`['banana', 'Cherry', 'apple']`",
+        "`['apple', 'Cherry', 'banana']`",
+        "`['Cherry', 'apple', 'banana']`",
+        "`['apple', 'banana', 'Cherry']`"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "The default sort compares UTF-16 code units. Every capital letter comes before every lowercase letter.",
+      "wrong": [
+        "`sort` does reorder the array.",
+        "Default sort is not case-insensitive.",
+        "",
+        "Default sort compares character codes, and capitals come first."
+      ],
+      "source": "MDN: Array.prototype.sort()"
+    },
+    {
+      "id": "types-x43",
+      "lesson": "types-8",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "Which two compare functions sort numbers from highest to lowest? (Choose 2)",
+      "options": [
+        "`(a, b) => b - a`",
+        "`(a, b) => (a > b ? -1 : a < b ? 1 : 0)`",
+        "`(a, b) => a - b`",
+        "`(a, b) => a < b`",
+        "`(a, b) => b > a`"
+      ],
+      "answer": [
+        0,
+        1
+      ],
+      "explain": "A negative result puts `a` first. Both correct functions return a negative number when `a` is bigger.",
+      "wrong": [
+        "",
+        "",
+        "This sorts from lowest to highest.",
+        "It returns a boolean, never a negative number.",
+        "It returns a boolean, so the order is unreliable."
+      ],
+      "source": "MDN: Array.prototype.sort()"
+    },
+    {
+      "id": "types-x44",
+      "lesson": "types-8",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "What does `console.log([].every(x => x > 0), [].some(x => x > 0))` print?",
+      "options": [
+        "`false false`",
+        "`true true`",
+        "`false true`",
+        "`true false`"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "`every` is `true` unless some item fails, so an empty array gives `true`. `some` needs one passing item, so it gives `false`.",
+      "wrong": [
+        "`every` on an empty array finds nothing that fails, so it is `true`.",
+        "`some` needs at least one item that passes.",
+        "Both results are the other way round.",
+        ""
+      ],
+      "source": "MDN: Array.prototype.every()"
+    },
+    {
+      "id": "types-q75",
+      "lesson": "types-8",
+      "difficulty": 2,
+      "q": "What does this code log?",
+      "code": "const ids = [4, 8, 15, 16];\nconst a = ids.find(n => n > 10);\nconst b = ids.filter(n => n > 10);\nconsole.log(a, b.join());",
+      "lang": "js",
+      "options": [
+        "`2 15,16`",
+        "`15 15`",
+        "`15 15,16`",
+        "`15,16 15,16`"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "`find` returns the first matching item. `filter` returns a new array of all matches.",
+      "wrong": [
+        "`2` is the index; that is what `findIndex` returns.",
+        "`filter` keeps every match.",
+        "",
+        "`find` returns only the first match."
+      ],
+      "source": "MDN: Array.prototype.find()"
+    },
+    {
+      "id": "types-q76",
+      "lesson": "types-8",
+      "difficulty": 2,
+      "q": "A developer needs the names of products with `price > 10`, in a new array. Which two lines do it? (Choose 2)",
+      "options": [
+        "`products.map(p => (p.price > 10 ? p.name : undefined))`",
+        "`products.find(p => p.price > 10).name`",
+        "`products.forEach(p => p.price > 10 && p.name)`",
+        "`products.filter(p => p.price > 10).map(p => p.name)`",
+        "`products.reduce((acc, p) => (p.price > 10 ? [...acc, p.name] : acc), [])`"
+      ],
+      "answer": [
+        3,
+        4
+      ],
+      "explain": "`filter` then `map` keeps the matches and picks their names. A `reduce` that adds names to an array does the same.",
+      "wrong": [
+        "This keeps every item, with `undefined` for the cheap ones.",
+        "`find` gives only the first match.",
+        "`forEach` returns `undefined`.",
+        "",
+        ""
+      ],
+      "source": "MDN: Array.prototype.reduce()"
+    },
+    {
+      "id": "types-q77",
+      "lesson": "types-9",
+      "difficulty": 1,
+      "q": "A developer needs a collection that keeps each value only once. Which built-in fits best?",
+      "options": [
+        "`Set`",
+        "`Map`",
+        "`WeakMap`",
+        "`Array`"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "A `Set` stores unique values. Adding a value it already has does nothing.",
+      "wrong": [
+        "",
+        "A `Map` stores key-value pairs; values can repeat.",
+        "A `WeakMap` maps object keys to values.",
+        "An array happily holds repeats."
+      ],
+      "source": "MDN: Set"
+    },
+    {
+      "id": "types-q78",
+      "lesson": "types-9",
+      "difficulty": 1,
+      "q": "What does this code log?",
+      "code": "const ids = [3, 1, 3, 2, 1];\nconsole.log([...new Set(ids)].join());",
+      "lang": "js",
+      "options": [
+        "`1,2,3`",
+        "`3,1,3,2,1`",
+        "`2`",
+        "`3,1,2`"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "A `Set` keeps one copy of each value, in the order it first saw them. Spread turns it back into an array.",
+      "wrong": [
+        "A `Set` keeps insertion order; it does not sort.",
+        "A `Set` drops the repeats.",
+        "A `Set` keeps one copy of each value, not only the values that never repeat.",
+        ""
+      ],
+      "source": "MDN: Set"
+    },
+    {
+      "id": "types-q79",
+      "lesson": "types-9",
+      "difficulty": 2,
+      "q": "What does this code log?",
+      "code": "const m = new Map();\nm.set('a', 1).set('b', 2).set('a', 3);\nconsole.log(m.size, m.get('a'));",
+      "lang": "js",
+      "options": [
+        "`3 1`",
+        "`2 3`",
+        "`3 3`",
+        "`2 1`"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "Map keys are unique. Setting an existing key replaces its value. `set` returns the map, so calls can chain.",
+      "wrong": [
+        "Keys are unique, and the last value wins.",
+        "",
+        "Setting `'a'` again updates it; it adds no new entry.",
+        "The second `set` replaced the old value."
+      ],
+      "source": "MDN: Map"
+    },
+    {
+      "id": "types-x45",
+      "lesson": "types-9",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "What does this code log?",
+      "code": "const obj = {};\nconst map = new Map();\nobj[1] = 'x';\nmap.set(1, 'x');\nconsole.log(obj['1'], map.get('1'));",
+      "lang": "js",
+      "options": [
+        "`undefined undefined`",
+        "`x undefined`",
+        "`x x`",
+        "`undefined x`"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "Object keys are turned into strings, so `1` and `'1'` are the same key. A Map keeps the real key, and the number `1` is not the string `'1'`.",
+      "wrong": [
+        "The object turned its key into a string, so it finds it.",
+        "",
+        "A Map keeps the number `1`; the string `'1'` is a different key.",
+        "Object keys become strings, so `obj['1']` finds the value."
+      ],
+      "source": "MDN: Map"
+    },
+    {
+      "id": "types-q80",
+      "lesson": "types-9",
+      "difficulty": 2,
+      "q": "Which two statements about `WeakMap` are true? (Choose 2)",
+      "options": [
+        "It keeps insertion order for looping, like `Map`",
+        "An entry can vanish once its key object is unused elsewhere",
+        "You can't loop over its entries",
+        "Its `size` property counts the entries",
+        "It accepts strings and numbers as keys"
+      ],
+      "answer": [
+        1,
+        2
+      ],
+      "explain": "A WeakMap holds its keys weakly, so the garbage collector can remove entries. That is why it can't be counted or looped over.",
+      "wrong": [
+        "It can't be looped over at all.",
+        "",
+        "",
+        "A `WeakMap` has no `size`.",
+        "Primitive keys like these throw a `TypeError`."
+      ],
+      "source": "MDN: WeakMap"
+    },
+    {
+      "id": "types-x46",
+      "lesson": "types-9",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "What does this code log?",
+      "code": "const s = new Set();\ns.add({ id: 1 });\ns.add({ id: 1 });\nconst k = { id: 2 };\ns.add(k).add(k);\nconsole.log(s.size);",
+      "lang": "js",
+      "options": [
+        "`2`",
+        "`1`",
+        "`4`",
+        "`3`"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "A Set compares objects by reference. The two `{ id: 1 }` objects are different, but `k` is one object added twice.",
+      "wrong": [
+        "The two `{ id: 1 }` objects are different objects.",
+        "Look-alike objects are not the same value.",
+        "Adding `k` twice keeps one copy.",
+        ""
+      ],
+      "source": "MDN: Set"
+    },
+    {
+      "id": "types-q81",
+      "lesson": "types-9",
+      "difficulty": 2,
+      "q": "A developer stores extra data for page elements. Each entry must go away by itself once its element is gone and nothing else uses it. Which should they use?",
+      "options": [
+        "`WeakMap`",
+        "`Map`",
+        "`Set`",
+        "A plain object"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "A WeakMap holds its object keys weakly. When nothing else uses the element, its entry can be cleaned up.",
+      "wrong": [
+        "",
+        "A `Map` keeps its keys alive as long as the map exists.",
+        "A `Set` stores values, not data linked to a key.",
+        "Object keys become strings, and they keep their values alive."
+      ],
+      "source": "MDN: WeakMap"
+    },
+    {
+      "id": "types-q82",
+      "lesson": "types-9",
+      "difficulty": 2,
+      "q": "What does this code log?",
+      "code": "const m = new Map([['z', 1], ['a', 2]]);\nm.set('m', 3);\nconsole.log([...m.keys()].join(''));",
+      "lang": "js",
+      "options": [
+        "`maz`",
+        "`zma`",
+        "`zam`",
+        "`amz`"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "A Map keeps insertion order. Keys come back in the order they were first added.",
+      "wrong": [
+        "New keys go at the end, not the front.",
+        "`'a'` was added before `'m'`.",
+        "",
+        "A Map does not sort its keys."
+      ],
+      "source": "MDN: Map"
+    },
+    {
+      "id": "types-x47",
+      "lesson": "types-9",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "What happens when this code runs?",
+      "code": "const wm = new WeakMap();\nwm.set('id', 1);\nconsole.log(wm.get('id'));",
+      "lang": "js",
+      "options": [
+        "`1` is logged",
+        "`undefined` is logged",
+        "`'id'` is logged",
+        "A `TypeError` is thrown"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "WeakMap keys must be objects. Setting a string key throws a `TypeError`.",
+      "wrong": [
+        "A string can't be a WeakMap key.",
+        "The `set` call fails before the log.",
+        "`get` would return a value, not the key.",
+        ""
+      ],
+      "source": "MDN: WeakMap"
+    },
+    {
+      "id": "types-x48",
+      "lesson": "types-9",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "What does this code log?",
+      "code": "const prices = new Map();\nprices['apple'] = 2;\nconsole.log(prices.size, prices.get('apple'));",
+      "lang": "js",
+      "options": [
+        "`1 undefined`",
+        "`0 2`",
+        "`0 undefined`",
+        "`1 2`"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "Brackets put a normal property on the Map object. Map entries are added only with `set`, so the Map is still empty.",
+      "wrong": [
+        "No entry was added, so the size stays 0.",
+        "`get` reads entries only, not properties.",
+        "",
+        "Bracket assignment adds a normal property, not a Map entry."
+      ],
+      "source": "MDN: Map"
+    },
+    {
+      "id": "types-q83",
+      "lesson": "types-9",
+      "difficulty": 2,
+      "q": "Which two expressions give the number of entries in a `Map` named `m`? (Choose 2)",
+      "options": [
+        "`m.size`",
+        "`[...m].length`",
+        "`m.size()`",
+        "`m.length`",
+        "`Object.keys(m).length`"
+      ],
+      "answer": [
+        0,
+        1
+      ],
+      "explain": "`size` is a property on Map. Spreading a Map gives one array item per entry, so its `length` works too.",
+      "wrong": [
+        "",
+        "",
+        "`size` is a property, so calling it throws.",
+        "A Map has no `length`.",
+        "Map entries are not object properties, so this is 0."
+      ],
+      "source": "MDN: Map"
+    },
+    {
+      "id": "types-x49",
+      "lesson": "types-9",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "What does this code log?",
+      "code": "const s = new Set([NaN, NaN, 0, -0]);\nconsole.log(s.size, s.has(NaN));",
+      "lang": "js",
+      "options": [
+        "`2 false`",
+        "`2 true`",
+        "`4 false`",
+        "`3 true`"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "A Set uses SameValueZero: `NaN` matches `NaN`, and `0` matches `-0`. So only two values are kept.",
+      "wrong": [
+        "A Set can find `NaN`.",
+        "",
+        "A Set treats `NaN` as equal to `NaN`.",
+        "A Set treats `0` and `-0` as the same value."
+      ],
+      "source": "MDN: Set"
+    },
+    {
+      "id": "types-q84",
+      "lesson": "types-9",
+      "difficulty": 1,
+      "q": "How do you read the number of values in a `Set` named `s`?",
+      "options": [
+        "`s.size`",
+        "`s.length`",
+        "`s.size()`",
+        "`s.count()`"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "Map and Set both have a `size` property. Read it without parentheses.",
+      "wrong": [
+        "",
+        "A Set has no `length`.",
+        "`size` is a property, not a method.",
+        "A Set has no `count` method."
+      ],
+      "source": "MDN: Set"
+    },
+    {
+      "id": "types-x50",
+      "lesson": "types-9",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "Which two lines throw a `TypeError`? (Choose 2)",
+      "options": [
+        "`new Set().add({})`",
+        "`new WeakMap().set({}, 1)`",
+        "`new WeakMap().set(1, 'a')`",
+        "`new WeakSet().add('a')`",
+        "`new Map().set(1, 'a')`"
+      ],
+      "answer": [
+        2,
+        3
+      ],
+      "explain": "WeakMap keys and WeakSet values must be objects. A number or a string there throws a `TypeError`.",
+      "wrong": [
+        "A Set accepts any value, objects included.",
+        "An object is a valid WeakMap key.",
+        "",
+        "",
+        "A Map accepts any key, numbers included."
+      ],
+      "source": "MDN: WeakSet"
+    },
+    {
+      "id": "types-q85",
+      "lesson": "types-10",
+      "difficulty": 1,
+      "q": "Which string is valid JSON?",
+      "options": [
+        "`{\"id\": 1, \"name\": \"Ana\"}`",
+        "`{id: 1, name: \"Ana\"}`",
+        "`{'id': 1, 'name': 'Ana'}`",
+        "`{\"id\": 1, \"name\": \"Ana\",}`"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "JSON needs double quotes around every key and string, and no trailing commas.",
+      "wrong": [
+        "",
+        "JSON keys must be in double quotes.",
+        "JSON does not allow single quotes.",
+        "JSON does not allow a trailing comma."
+      ],
+      "source": "MDN: JSON.parse()"
+    },
+    {
+      "id": "types-q86",
+      "lesson": "types-10",
+      "difficulty": 1,
+      "q": "What does this code log?",
+      "code": "const data = JSON.parse('{\"total\": 5}');\nconsole.log(typeof data, data.total + 1);",
+      "lang": "js",
+      "options": [
+        "`string 51`",
+        "`object 6`",
+        "`string 6`",
+        "`object 51`"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "`JSON.parse` turns JSON text into real values. Here that is an object whose `total` is the number 5.",
+      "wrong": [
+        "The result is an object, and its `total` is a number.",
+        "",
+        "`JSON.parse` builds an object from the text.",
+        "`total` was parsed as the number 5, not the text `'5'`."
+      ],
+      "source": "MDN: JSON.parse()"
+    },
+    {
+      "id": "types-q87",
+      "lesson": "types-10",
+      "difficulty": 2,
+      "q": "What does this code log?",
+      "code": "const order = { id: 7, note: undefined, total: () => 9 };\nconsole.log(JSON.stringify(order));",
+      "lang": "js",
+      "options": [
+        "`{\"id\":7,\"note\":undefined,\"total\":9}`",
+        "`{\"id\":7,\"note\":null,\"total\":null}`",
+        "`{\"id\":7}`",
+        "`{\"id\":7,\"note\":null}`"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "In objects, `JSON.stringify` leaves out keys whose value is `undefined`, a function or a symbol.",
+      "wrong": [
+        "JSON has no `undefined`, and functions are never called.",
+        "`null` replaces them only inside arrays.",
+        "",
+        "`undefined` in an object is left out, not turned into `null`."
+      ],
+      "source": "MDN: JSON.stringify()"
+    },
+    {
+      "id": "types-x51",
+      "lesson": "types-10",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "What does this code log?",
+      "code": "console.log(JSON.stringify([1, undefined, function () {}, 'x']));",
+      "lang": "js",
+      "options": [
+        "`[1,\"x\"]`",
+        "`[1,undefined,null,\"x\"]`",
+        "`[1,\"undefined\",\"function\",\"x\"]`",
+        "`[1,null,null,\"x\"]`"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "Inside arrays, `undefined` and functions become `null`. That keeps the other items at the same positions.",
+      "wrong": [
+        "Arrays keep their positions, so the items become `null`.",
+        "JSON has no `undefined`; it is written as `null`.",
+        "Values are not turned into their type names.",
+        ""
+      ],
+      "source": "MDN: JSON.stringify()"
+    },
+    {
+      "id": "types-q88",
+      "lesson": "types-10",
+      "difficulty": 2,
+      "q": "What does this code log?",
+      "code": "try {\n  JSON.parse(\"{'a': 1}\");\n  console.log('ok');\n} catch (e) {\n  console.log(e.name);\n}",
+      "lang": "js",
+      "options": [
+        "`TypeError`",
+        "`RangeError`",
+        "`SyntaxError`",
+        "`ok`"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "JSON allows only double quotes. `JSON.parse` throws a `SyntaxError` on invalid text.",
+      "wrong": [
+        "Bad JSON text is a grammar problem, so it is a `SyntaxError`.",
+        "Nothing here is out of range.",
+        "",
+        "Single quotes are not valid JSON, so `parse` throws."
+      ],
+      "source": "MDN: JSON.parse()"
+    },
+    {
+      "id": "types-x52",
+      "lesson": "types-10",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "What does this code log?",
+      "code": "const event = { at: new Date(Date.UTC(2022, 5, 1)) };\nconst copy = JSON.parse(JSON.stringify(event));\nconsole.log(typeof copy.at, copy.at);",
+      "lang": "js",
+      "options": [
+        "`string 2022-06-01T00:00:00.000Z`",
+        "`object 2022-06-01T00:00:00.000Z`",
+        "`object 2022-05-01T00:00:00.000Z`",
+        "`string 2022-05-01T00:00:00.000Z`"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "A `Date` becomes an ISO string through its `toJSON()` method. `JSON.parse` leaves that string as a string.",
+      "wrong": [
+        "",
+        "`parse` gives back a string, not a `Date` object.",
+        "Month 5 is June, and the result is a string.",
+        "Month index 5 is June, since months are zero-based."
+      ],
+      "source": "MDN: JSON.stringify()"
+    },
+    {
+      "id": "types-q89",
+      "lesson": "types-10",
+      "difficulty": 2,
+      "q": "What does this code log?",
+      "code": "const user = { id: 1, name: 'Ana', password: 'x9' };\nconsole.log(JSON.stringify(user, ['id', 'name']));",
+      "lang": "js",
+      "options": [
+        "`{\"password\":\"x9\"}`",
+        "`[\"id\",\"name\"]`",
+        "`{\"id\":1,\"name\":\"Ana\",\"password\":\"x9\"}`",
+        "`{\"id\":1,\"name\":\"Ana\"}`"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "When the replacer is an array, only the listed keys are kept.",
+      "wrong": [
+        "The array lists the keys to keep, not to drop.",
+        "The array is a replacer, not the value to convert.",
+        "Keys not in the replacer array are left out.",
+        ""
+      ],
+      "source": "MDN: JSON.stringify()"
+    },
+    {
+      "id": "types-x53",
+      "lesson": "types-10",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "What does this code log?",
+      "code": "const money = {\n  amount: 5,\n  toJSON() { return '$' + this.amount; },\n};\nconsole.log(JSON.stringify({ price: money }));",
+      "lang": "js",
+      "options": [
+        "`{\"price\":{}}`",
+        "`{\"price\":\"$5\"}`",
+        "`{\"price\":{\"amount\":5}}`",
+        "`{\"price\":5}`"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "When a value has a `toJSON()` method, `stringify` uses what it returns. Here that is the string `$5`.",
+      "wrong": [
+        "Methods are dropped, but `toJSON()` is called first.",
+        "",
+        "`stringify` uses what `toJSON()` returns.",
+        "`toJSON()` returns the string `'$5'`."
+      ],
+      "source": "MDN: JSON.stringify()"
+    },
+    {
+      "id": "types-q90",
+      "lesson": "types-10",
+      "difficulty": 2,
+      "q": "Which two statements about `JSON.parse` are true? (Choose 2)",
+      "options": [
+        "It returns `undefined` when the text is not valid",
+        "It throws a `SyntaxError` when the text is not valid JSON",
+        "Its optional second argument, a reviver, can change each value",
+        "It turns ISO date strings back into `Date` objects",
+        "It accepts keys in single quotes"
+      ],
+      "answer": [
+        1,
+        2
+      ],
+      "explain": "`JSON.parse` throws a `SyntaxError` on bad input. A reviver function can transform each value as it is read.",
+      "wrong": [
+        "It throws instead of returning.",
+        "",
+        "",
+        "Dates stay strings unless a reviver changes them.",
+        "JSON allows only double quotes."
+      ],
+      "source": "MDN: JSON.parse()"
+    },
+    {
+      "id": "types-x54",
+      "lesson": "types-10",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "What does this code log?",
+      "code": "const row = { id: 9007199254740993n };\nlet out;\ntry {\n  out = JSON.stringify(row);\n} catch (e) {\n  out = e.name;\n}\nconsole.log(out);",
+      "lang": "js",
+      "options": [
+        "`{}`",
+        "`TypeError`",
+        "`{\"id\":9007199254740993}`",
+        "`{\"id\":\"9007199254740993n\"}`"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "`JSON.stringify` throws a `TypeError` on a BigInt value. You must convert it, for example with `toString()`, first.",
+      "wrong": [
+        "BigInt values are not skipped like functions.",
+        "",
+        "BigInt has no JSON form, so `stringify` throws.",
+        "BigInt is not turned into a string by itself."
+      ],
+      "source": "MDN: JSON.stringify()"
+    },
+    {
+      "id": "types-q91",
+      "lesson": "types-10",
+      "difficulty": 1,
+      "q": "A developer wants to log `config` as JSON with a 2-space indent. Which call does it?",
+      "options": [
+        "`JSON.stringify(config, 2)`",
+        "`JSON.stringify(config, { indent: 2 })`",
+        "`JSON.parse(config, null, 2)`",
+        "`JSON.stringify(config, null, 2)`"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "The third argument of `JSON.stringify` sets the indent. Pass `null` as the replacer to keep every key.",
+      "wrong": [
+        "The second argument is the replacer; the indent is the third.",
+        "There is no options object; the indent is the third argument.",
+        "`parse` reads JSON; it doesn't write it.",
+        ""
+      ],
+      "source": "MDN: JSON.stringify()"
+    },
+    {
+      "id": "types-x55",
+      "lesson": "types-10",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "What does this code log?",
+      "code": "const text = '{\"price\": \"5\", \"qty\": \"2\"}';\nconst obj = JSON.parse(text, (key, value) =>\n  key === 'price' ? Number(value) : value\n);\nconsole.log(obj.price + obj.qty);",
+      "lang": "js",
+      "options": [
+        "`52`, a string",
+        "`7`, a number",
+        "`7`, a string",
+        "`NaN`"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "The reviver turns only `price` into a number. `qty` stays the string `'2'`, so `+` joins: `'52'`.",
+      "wrong": [
+        "",
+        "`qty` is still the string `'2'`, so `+` joins.",
+        "No adding happens once a string is involved.",
+        "Joining a number and a string never gives `NaN`."
+      ],
+      "source": "MDN: JSON.parse()"
+    },
+    {
+      "id": "types-x56",
+      "lesson": "types-10",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A developer copies `data` with `JSON.parse(JSON.stringify(data))`. Which two values will NOT come back the same? (Choose 2)",
+      "options": [
+        "An array of numbers in `scores`",
+        "A `null` in `deletedAt`",
+        "A boolean `true` in `active`",
+        "A `Date` in `created`",
+        "A method in `format`"
+      ],
+      "answer": [
+        3,
+        4
+      ],
+      "explain": "A date comes back as a string, and a method is dropped. Plain data like numbers, arrays, booleans and `null` round-trips fine.",
+      "wrong": [
+        "Arrays of numbers fit JSON exactly.",
+        "`null` is valid JSON and comes back as `null`.",
+        "Booleans are valid JSON.",
+        "",
+        ""
+      ],
+      "source": "MDN: JSON.stringify()"
+    },
+    {
+      "id": "types-q92",
+      "lesson": "types-10",
+      "difficulty": 2,
+      "q": "What does `console.log(JSON.stringify('hi'), JSON.stringify(null))` print?",
+      "options": [
+        "`'hi' \"null\"`",
+        "`\"hi\" undefined`",
+        "`\"hi\" null`",
+        "`hi null`"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "`stringify` works on any JSON value, not just objects. A string gets double quotes; `null` stays `null`.",
+      "wrong": [
+        "JSON uses double quotes, and `null` is not quoted.",
+        "`null` is valid JSON, written as `null`.",
+        "",
+        "A JSON string keeps its double quotes."
+      ],
+      "source": "MDN: JSON.stringify()"
+    }
+  ]
+}

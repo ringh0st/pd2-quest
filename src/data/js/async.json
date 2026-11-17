@@ -23,7 +23,7 @@
         {
           "type": "text",
           "title": "Sync and async",
-          "body": "**Synchronous** code runs line by line. Each line waits for the one before. **Asynchronous** code starts now and finishes later. `setTimeout`, `fetch`, browser events and Node file reads are asynchronous. The lines after them run first, before their callbacks."
+          "body": "**Synchronous** code runs line by line. Each line waits for the one before. **Asynchronous** code starts now and finishes later. `setTimeout`, `fetch`, browser events and Node's `fs.readFile` are asynchronous. The lines after them run first, before their callbacks."
         },
         {
           "type": "code",
@@ -606,7 +606,7 @@
         },
         {
           "term": "CommonJS",
-          "say": "The classic Node.js module style, with require and module.exports. A plain .js file uses it unless the project says \"type\": \"module\"."
+          "say": "The classic Node.js module style, with require and module.exports. Node.js treats a .js file this way by default."
         }
       ]
     }
@@ -1236,7 +1236,7 @@
       "lesson": "async-2",
       "difficulty": 3,
       "pack": "hard",
-      "q": "A developer wraps an old error-first API, `getData(cb)`, in a promise. Which two lines belong in the callback? (Choose 2)",
+      "q": "A developer wraps an old async error-first API, `getData(cb)`, in a promise. Which two lines belong in the callback? (Choose 2)",
       "code": "function getDataAsync() {\n  return new Promise((resolve, reject) => {\n    getData((err, data) => {\n      // which lines go here?\n    });\n  });\n}",
       "lang": "js",
       "options": [
