@@ -1,12 +1,13 @@
 // Behaviour checks for the fixes the testers asked for.
 const { chromium, devices } = require('playwright');
-const { launchForTrack } = require('./track.cjs');
+const { launchForTrack, trackSections } = require('./track.cjs');
 const BASE = process.env.E2E_BASE || 'http://localhost:4173/';
 const seed = (extra = {}) => ({ v: 1, onboarded: true, xp: 300, settings: { theme: 'light', motion: 'reduced', sound: false, haptics: false, textScale: 1.3, sprintSize: 5, focusMinutes: 10, font: 'atkinson' }, ...extra });
 const results = [];
 const ok = (name, pass, info = '') => results.push(`${pass ? 'PASS' : 'FAIL'}  ${name}${info ? ' · ' + info : ''}`);
 
 (async () => {
+  const S = (await trackSections())[0]; // the exam's first section
   const browser = await launchForTrack(chromium);
   const ctx = await browser.newContext({ ...devices['iPhone SE'] });
   const page = await ctx.newPage();
@@ -104,8 +105,8 @@ const ok = (name, pass, info = '') => results.push(`${pass ? 'PASS' : 'FAIL'}  $
   ok('#/play/constructor shows "not found", no crash', /not found/i.test(await page.evaluate(() => document.body.innerText)));
 
   // 8. Boss run: leave mid-fight, come back, Resume continues at the next question
-  await page.evaluate(() => localStorage.setItem('pd2quest.v1', JSON.stringify({ v: 1, onboarded: true, settings: { motion: 'reduced', sound: false }, stars: Object.fromEntries(['fund-1', 'fund-2', 'fund-3', 'fund-hard-1', 'fund-4', 'fund-5', 'fund-6', 'fund-hard-2', 'fund-7', 'fund-8', 'fund-9'].map((id) => [id, 1])) })));
-  await page.goto(BASE + '#/play/fund-boss'); await page.reload(); await page.waitForTimeout(400);
+  await page.evaluate((sec) => localStorage.setItem('pd2quest.v1', JSON.stringify({ v: 1, onboarded: true, settings: { motion: 'reduced', sound: false }, stars: Object.fromEntries(['1', '2', '3', 'hard-1', '4', '5', '6', 'hard-2', '7', '8', '9', '10', 'hard-3'].map((id) => [`${sec}-${id}`, 1])) })), S);
+  await page.goto(BASE + `#/play/${S}-boss`); await page.reload(); await page.waitForTimeout(400);
   const fight = page.getByRole('button', { name: /FIGHT/ });
   if (await fight.count()) {
     await fight.click(); await page.waitForTimeout(300);
@@ -118,7 +119,7 @@ const ok = (name, pass, info = '') => results.push(`${pass ? 'PASS' : 'FAIL'}  $
       await page.waitForTimeout(200);
     }
     await page.getByRole('button', { name: 'Leave session' }).click(); await page.waitForTimeout(300);
-    await page.goto(BASE + '#/play/fund-boss'); await page.waitForTimeout(400);
+    await page.goto(BASE + `#/play/${S}-boss`); await page.waitForTimeout(400);
     const resumeBtn = page.getByRole('button', { name: /Resume/ });
     ok('boss fight can be resumed after leaving', await resumeBtn.count() === 1, await resumeBtn.count() ? await resumeBtn.innerText() : 'no button');
     if (await resumeBtn.count()) {
@@ -129,7 +130,7 @@ const ok = (name, pass, info = '') => results.push(`${pass ? 'PASS' : 'FAIL'}  $
   } else ok('boss intro reachable', false);
 
   // 9. Placement: all wrong → nothing skipped; result screen lists lessons
-  await page.goto(BASE + '#/placement/fund'); await page.waitForTimeout(400);
+  await page.goto(BASE + `#/placement/${S}`); await page.waitForTimeout(400);
   await page.getByRole('button', { name: /Start/ }).click(); await page.waitForTimeout(200);
   for (let k = 0; k < 15; k++) {
     if (!(await page.locator('.option:not([disabled])').count())) break;
