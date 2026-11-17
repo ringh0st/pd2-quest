@@ -390,7 +390,7 @@
     {
       "id": "testing-f11",
       "front": "What is the difference between `clearAllMocks`, `resetAllMocks` and `restoreAllMocks`?",
-      "back": "Clear wipes call records. Reset also drops fake return values. Restore also puts spied original methods back."
+      "back": "Clear wipes call records. Reset also drops fake return values. Restore puts spied original methods back."
     },
     {
       "id": "testing-f12",
@@ -440,7 +440,7 @@
       ],
       "explain": "`console.assert` only writes a message when its condition is false. It never fails the test, so the broken code still gets a green test.",
       "wrong": [
-        "Jest fails a test only when a check throws; `console.assert` doesn't throw.",
+        "`console.assert` only logs; it doesn't throw, so the test can't fail from it.",
         "Jest runs tests without an `expect`; it doesn't skip them.",
         "",
         "Nothing here waits, so there is no timeout."
@@ -516,7 +516,7 @@
         "",
         "Shared changing data makes tests depend on each other and on their order.",
         "",
-        "A log never fails a test; nobody reads it in an automated run.",
+        "A log never fails a test, so a broken result can slip by.",
         "Private details change in safe refactors, which breaks the test for no reason."
       ],
       "source": "Trailhead: Cert Prep: JavaScript Dev: Debugging, Error Handling, and Testing"
@@ -871,7 +871,7 @@
         "",
         "A longer timeout doesn't help if Jest isn't waiting for the promise.",
         "A `try...catch` can't catch a check that runs after the test ended.",
-        "Expecting zero checks proves nothing and would itself fail once a check runs.",
+        "It only says zero checks are expected, so the test still passes.",
         ""
       ],
       "source": "Jest docs: Testing Asynchronous Code"
@@ -1264,7 +1264,7 @@
       "wrong": [
         "",
         "`resetAllMocks` also drops the fake return values.",
-        "`restoreAllMocks` resets the mocks and puts spied originals back.",
+        "`restoreAllMocks` is for putting spied original methods back.",
         "`resetModules` clears the module cache, not mock call records."
       ],
       "source": "Jest docs: The Jest Object"
