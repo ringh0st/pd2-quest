@@ -1,0 +1,1529 @@
+{
+  "id": "testing",
+  "title": "Testing",
+  "weight": 7,
+  "summary": "Tests you can trust: spot the test that checks nothing, then fix it with real Jest assertions, awaited promises, clean setup and well-checked mocks.",
+  "lessons": [
+    {
+      "id": "testing-1",
+      "title": "What makes a test effective?",
+      "minutes": 3,
+      "objective": "With a block of code and the associated Unit Test, determine where the test is ineffective and modify it to make it more effective.",
+      "cards": [
+        {
+          "type": "text",
+          "title": "In plain words",
+          "body": "A **unit test** runs one small piece of code, like a function, and checks the result. A good test fails when the code is broken. It passes when the code works. A weak test passes either way, so it gives you false comfort."
+        },
+        {
+          "type": "tip",
+          "title": "Think of it like…",
+          "body": "A smoke alarm. A good one beeps for a real fire and stays quiet for toast. A broken one never beeps, so the room looks safe. Where it stops: a test only checks what you told it to check. It can't notice anything else."
+        },
+        {
+          "type": "list",
+          "title": "Three sizes of test",
+          "items": [
+            "**Unit test**: one function on its own, with its helpers swapped for fakes.",
+            "**Integration test**: several real parts working together, like a service and its database.",
+            "**End-to-end test**: the whole app, driven like a user in a real browser.",
+            "**Black-box** tests use only inputs and outputs. **White-box** tests are built from the code's inner paths."
+          ]
+        },
+        {
+          "type": "text",
+          "title": "Two ways a test lies",
+          "body": "Treat a pass as \"positive: the code works\". A **false positive** passes while the code is broken, often because nothing real is checked. A **false negative** fails while the code works. Tests on **implementation details** (private names, inner steps) do this after a safe refactor. Some books swap the two labels, so learn the situations."
+        },
+        {
+          "type": "code",
+          "title": "A test that checks nothing",
+          "lang": "js",
+          "code": "test('adds 10% tax', () => {\n  const total = addTax(100);\n  console.assert(total === 110);\n});",
+          "body": "`console.assert` only writes a message to the console. It never fails the test, so this test is green even when `addTax` is broken. Use `expect(total).toBe(110)`."
+        },
+        {
+          "type": "list",
+          "title": "An effective test",
+          "items": [
+            "Has a real **assertion** on the actual result, like `expect(x).toBe(3)`.",
+            "Covers **edge cases**: empty input, `null`, zero, the values right at a limit, and errors.",
+            "Checks what users see through the public interface, not private details.",
+            "Stands alone: fresh data each time, no order between tests."
+          ]
+        },
+        {
+          "type": "trap",
+          "title": "Exam trap",
+          "body": "\"The test is green, so the code works.\" Not always. A test with no assertion, a vague one like `toBeDefined()`, or only easy inputs stays green while the code is broken. The exam shows such a test and asks for the change that would catch the bug."
+        },
+        {
+          "type": "tip",
+          "title": "Remember it",
+          "body": "**\"Break it to trust it.\"** Break the code on purpose for a moment. If the test stays green, it checks nothing, so fix the test."
+        }
+      ],
+      "check": [
+        "testing-q1",
+        "testing-q4",
+        "testing-x2"
+      ],
+      "terms": [
+        {
+          "term": "unit test",
+          "say": "A small test for one piece of code, like one function. Its helpers are swapped for fakes, so only that piece is checked."
+        },
+        {
+          "term": "integration test",
+          "say": "A test that checks several real parts working together, like a service saving to a real test database."
+        },
+        {
+          "term": "end-to-end test",
+          "say": "A test that uses the whole app the way a person would, clicking through a real browser from start to finish."
+        },
+        {
+          "term": "Black-box",
+          "say": "Testing a thing only by what goes in and what comes out. You never look inside the code."
+        },
+        {
+          "term": "White-box",
+          "say": "Testing with the code open in front of you. You pick inputs so every inner path and branch gets a turn."
+        },
+        {
+          "term": "false positive",
+          "say": "A test that says \"all good\" while the code is really broken. It passes when it should fail."
+        },
+        {
+          "term": "false negative",
+          "say": "A test that fails even though the code works fine. It often happens after a safe rename the test depended on."
+        },
+        {
+          "term": "implementation details",
+          "say": "The private inside parts of code, like helper names or inner steps. Users never see them, so tests shouldn't depend on them."
+        },
+        {
+          "term": "assertion",
+          "say": "The line in a test that checks a result, like expect(total).toBe(110). If the check is false, the test fails."
+        },
+        {
+          "term": "edge cases",
+          "match": [
+            "edge case"
+          ],
+          "say": "Unusual inputs at the edges, like an empty list, null, zero or the exact limit. Bugs love to hide there."
+        }
+      ]
+    },
+    {
+      "id": "testing-2",
+      "title": "Jest: matchers, setup and async tests",
+      "minutes": 4,
+      "objective": "With a block of code and the associated Unit Test, determine where the test is ineffective and modify it to make it more effective.",
+      "cards": [
+        {
+          "type": "text",
+          "title": "In plain words",
+          "body": "**Jest** is a popular tool that runs JavaScript tests and reports pass or fail. Install it with `npm install --save-dev jest`, add `\"test\": \"jest\"` to your scripts, and run `npm test`. Jest finds files like `sum.test.js` by itself."
+        },
+        {
+          "type": "tip",
+          "title": "Think of it like…",
+          "body": "A referee with a rule book. `expect(value)` says \"look at this\". The **matcher**, like `toBe(3)`, is the rule it must meet. Where it stops: the referee only judges the moments you point at. Code you never check is never judged."
+        },
+        {
+          "type": "code",
+          "title": "A first test",
+          "lang": "js",
+          "code": "const sum = require('./sum');\n\ndescribe('sum', () => {\n  test('adds two numbers', () => {\n    expect(sum(1, 2)).toBe(3);\n  });\n});",
+          "body": "`describe` groups tests. `test` (or its twin `it`) holds one test. `expect(...).toBe(3)` is the check."
+        },
+        {
+          "type": "list",
+          "title": "Pick the right matcher",
+          "items": [
+            "`toBe`: uses `Object.is`. For primitives, or the very same object.",
+            "`toEqual`: compares objects and arrays deeply. Ignores `undefined` properties.",
+            "`toStrictEqual`: deep too, but also checks `undefined` properties and class types.",
+            "`toBeCloseTo`: for decimals like `0.1 + 0.2`.",
+            "`toThrow`: needs a function, like `expect(() => fn()).toThrow()`."
+          ]
+        },
+        {
+          "type": "code",
+          "title": "Async tests: wait for it",
+          "lang": "js",
+          "code": "test('loads Ana', async () => {\n  await expect(getUser(1)).resolves.toEqual({ name: 'Ana' });\n});\n\ntest('rejects bad ids', () => {\n  return expect(getUser(-1)).rejects.toThrow('Bad id');\n});",
+          "body": "**Return or await** the promise. Without it, the test ends before the promise settles and passes by mistake."
+        },
+        {
+          "type": "text",
+          "title": "Setup and teardown",
+          "body": "`beforeEach` and `afterEach` run around **every** test. `beforeAll` and `afterAll` run **once** per file, or once per `describe` block they sit in. Build fresh data in `beforeEach` so no test leans on another. With `.catch`, add `expect.assertions(1)` so a promise that never rejects fails the test."
+        },
+        {
+          "type": "trap",
+          "title": "Exam trap",
+          "body": "`expect(parse('x')).toThrow()` looks right but isn't. `parse` runs first and throws inside the test, before `toThrow` can catch it. Wrap the call: `expect(() => parse('x')).toThrow()`. And `toBe` on two equal-looking objects fails, because they are different objects."
+        },
+        {
+          "type": "tip",
+          "title": "Remember it",
+          "body": "**\"Same box: toBe. Same stuff: toEqual. Async: await. Throw: wrap.\"**"
+        }
+      ],
+      "check": [
+        "testing-q10",
+        "testing-q11",
+        "testing-x7"
+      ],
+      "terms": [
+        {
+          "term": "Jest",
+          "say": "A tool that runs JavaScript tests and tells you which ones passed and which ones failed."
+        },
+        {
+          "term": "matcher",
+          "say": "The checking word after expect, like toBe or toEqual. It says what the value must be for the test to pass."
+        },
+        {
+          "term": "describe",
+          "say": "A Jest function that groups related tests under one name, so the report is tidy and setup can be shared."
+        },
+        {
+          "term": "toBe",
+          "say": "A Jest matcher that passes only for the same value, or the very same object. Two lookalike objects are not the same object."
+        },
+        {
+          "term": "toEqual",
+          "say": "A Jest matcher that compares what is inside objects and arrays, piece by piece. It skips properties whose value is undefined."
+        },
+        {
+          "term": "toStrictEqual",
+          "say": "Like toEqual, but fussier. Undefined properties count, and a class object doesn't equal a plain object with the same fields."
+        },
+        {
+          "term": "toThrow",
+          "say": "A Jest matcher that checks a function throws an error. You hand it a function to call, not the result of a call."
+        },
+        {
+          "term": "Return or await",
+          "say": "How a test tells Jest to wait for a promise. Without it, Jest ends the test before the promise is done."
+        },
+        {
+          "term": "beforeEach",
+          "say": "A Jest hook that runs before every test in its file or describe block. Great for making fresh test data."
+        },
+        {
+          "term": "expect.assertions(1)",
+          "match": [
+            "expect.assertions"
+          ],
+          "say": "Tells Jest how many checks must run in a test. If a check inside a callback never runs, the test fails instead of passing."
+        }
+      ]
+    },
+    {
+      "id": "testing-3",
+      "title": "Test doubles: mocks, spies and fake timers",
+      "minutes": 4,
+      "objective": "With a block of code and the associated Unit Test, determine where the test is ineffective and modify it to make it more effective.",
+      "cards": [
+        {
+          "type": "text",
+          "title": "In plain words",
+          "body": "A **test double** stands in for something real your code uses, like a web API, a database or a timer. It makes tests fast and repeatable. It also lets you check how your code used it: called or not, how often, with what."
+        },
+        {
+          "type": "tip",
+          "title": "Think of it like…",
+          "body": "A stunt double in a film. The star stays safe while the double does the risky part. Where it stops: a Jest double also takes notes. It writes down every call, so your test can check them afterwards."
+        },
+        {
+          "type": "list",
+          "title": "Kinds of doubles",
+          "items": [
+            "**Stub**: gives canned answers.",
+            "**Spy**: records the calls it gets.",
+            "**Mock**: a fake set up with what it should get and give.",
+            "In Jest: `jest.fn()` makes one, `jest.spyOn(obj, 'method')` watches a real method, `jest.mock('./api')` swaps a whole module."
+          ]
+        },
+        {
+          "type": "code",
+          "title": "A mock function",
+          "lang": "js",
+          "code": "const send = jest.fn().mockReturnValue(true);\n\nnotify(user, send);\n\nexpect(send).toHaveBeenCalledTimes(1);\nexpect(send).toHaveBeenCalledWith('ana@site.co');",
+          "body": "`jest.fn()` records every call in `send.mock.calls`. Also handy: `mockReturnValueOnce`, `mockResolvedValue` for promises and `mockImplementation`."
+        },
+        {
+          "type": "text",
+          "title": "Spies and clean-up",
+          "body": "`jest.spyOn` still calls the **real method** unless you add `.mockImplementation()` or `.mockReturnValue()`. Between tests, `jest.clearAllMocks()` wipes the call records. `jest.resetAllMocks()` also drops the fake return values. `jest.restoreAllMocks()` puts spied originals back."
+        },
+        {
+          "type": "code",
+          "title": "Fake timers",
+          "lang": "js",
+          "code": "jest.useFakeTimers();\n\nconst save = jest.fn();\nsetTimeout(save, 1000);\n\njest.advanceTimersByTime(1000);\nexpect(save).toHaveBeenCalled();",
+          "body": "**Fake timers** let a test move the clock forward at once. `jest.runAllTimers()` runs every waiting timer."
+        },
+        {
+          "type": "trap",
+          "title": "Exam trap",
+          "body": "A mock that is never checked proves nothing. `expect(send).toBeDefined()` passes even if your code never calls `send`. Assert the call itself with `toHaveBeenCalledWith`. Old names like `toBeCalledWith` were removed in Jest 30, so learn the full `toHaveBeenCalled…` names."
+        },
+        {
+          "type": "tip",
+          "title": "Remember it",
+          "body": "**\"Fake it, then check it.\"** Every double needs an `expect` on how it was used. Clean up between tests."
+        }
+      ],
+      "check": [
+        "testing-q23",
+        "testing-q24",
+        "testing-x13"
+      ],
+      "terms": [
+        {
+          "term": "test double",
+          "match": [
+            "doubles"
+          ],
+          "say": "A pretend version of something your code uses, like a fake web API. It makes tests fast and lets you see how it was used."
+        },
+        {
+          "term": "Stub",
+          "say": "A pretend helper that always gives the same ready-made answer. It doesn't keep notes about how it was used."
+        },
+        {
+          "term": "Spy",
+          "say": "A helper that watches calls and writes them down: how many, and with what. In Jest, a spy can still run the real code."
+        },
+        {
+          "term": "Mock",
+          "say": "A fake set up ahead of time with what it should receive and give back. Your test then checks it was used that way."
+        },
+        {
+          "term": "jest.fn()",
+          "say": "Makes a brand-new fake function. It remembers every call, and you can tell it what to return."
+        },
+        {
+          "term": "jest.spyOn",
+          "say": "Watches a real method on an object. By default the real method still runs, and every call is recorded."
+        },
+        {
+          "term": "jest.mock('./api')",
+          "match": [
+            "jest.mock"
+          ],
+          "say": "Swaps a whole module for a fake one in a test file, so its functions become mock functions."
+        },
+        {
+          "term": "real method",
+          "say": "The original code of a function, not a fake. A Jest spy keeps calling it unless you give the spy fake behavior."
+        },
+        {
+          "term": "Fake timers",
+          "say": "A pretend clock. setTimeout and setInterval wait for your test to move time forward, so nothing really waits."
+        },
+        {
+          "term": "jest.clearAllMocks()",
+          "match": [
+            "clearAllMocks"
+          ],
+          "say": "Wipes the call records of every mock but keeps their fake return values. Handy between tests."
+        }
+      ]
+    }
+  ],
+  "flashcards": [
+    {
+      "id": "testing-f1",
+      "front": "What does an effective unit test do?",
+      "back": "It fails when the code is broken and passes when it works. It asserts the real result, covers edge cases and runs on its own."
+    },
+    {
+      "id": "testing-f2",
+      "front": "What is the difference between unit, integration and end-to-end tests?",
+      "back": "Unit: one piece on its own. Integration: several real parts together. End-to-end: the whole app, used like a person would in a browser."
+    },
+    {
+      "id": "testing-f3",
+      "front": "Does `console.assert` fail a test?",
+      "back": "No. It only writes a message to the console when its condition is false. The test still passes. Use `expect` instead."
+    },
+    {
+      "id": "testing-f4",
+      "front": "What is a false positive in testing?",
+      "back": "A test that passes while the code is broken, often because nothing real is checked. A false negative fails while the code works. Some books swap the labels."
+    },
+    {
+      "id": "testing-f5",
+      "front": "When do you use `toBe`, `toEqual` and `toStrictEqual`?",
+      "back": "`toBe` for primitives or the very same object. `toEqual` to compare contents deeply. `toStrictEqual` to also check `undefined` properties and class types."
+    },
+    {
+      "id": "testing-f6",
+      "front": "How do you test that a function throws in Jest?",
+      "back": "Wrap the call in a function: `expect(() => parse('x')).toThrow()`. Calling it directly throws before `expect` can catch it."
+    },
+    {
+      "id": "testing-f7",
+      "front": "Why can an async Jest test pass by mistake?",
+      "back": "If the test doesn't return or await the promise, Jest ends it before the promise settles, so the check runs too late to count."
+    },
+    {
+      "id": "testing-f8",
+      "front": "How often do `beforeEach` and `beforeAll` run?",
+      "back": "`beforeEach` runs before every test in its file or `describe` block. `beforeAll` runs once, before the first of those tests."
+    },
+    {
+      "id": "testing-f9",
+      "front": "What does `jest.fn()` give you?",
+      "back": "A fake function that records each call in `mock.calls`. You can set what it returns with `mockReturnValue` or `mockResolvedValue`."
+    },
+    {
+      "id": "testing-f10",
+      "front": "Does `jest.spyOn` replace the real method?",
+      "back": "No. By default it records calls and still runs the real method. Add `mockImplementation` or `mockReturnValue` to replace it."
+    },
+    {
+      "id": "testing-f11",
+      "front": "What is the difference between `clearAllMocks`, `resetAllMocks` and `restoreAllMocks`?",
+      "back": "Clear wipes call records. Reset also drops fake return values. Restore also puts spied original methods back."
+    },
+    {
+      "id": "testing-f12",
+      "front": "How do you test code that uses `setTimeout` without waiting?",
+      "back": "Call `jest.useFakeTimers()`, then move time with `jest.advanceTimersByTime(ms)` or run everything with `jest.runAllTimers()`."
+    }
+  ],
+  "questions": [
+    {
+      "id": "testing-q1",
+      "lesson": "testing-1",
+      "difficulty": 1,
+      "q": "Which statement describes a unit test?",
+      "options": [
+        "It runs the whole app in a real browser, the way a user would",
+        "It checks one small piece of code, like a function, on its own",
+        "It checks that several real modules and services work together correctly",
+        "It measures how fast a page loads under heavy traffic"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "A unit test checks one small unit of code on its own. Anything it depends on is usually swapped for a fake.",
+      "wrong": [
+        "That is an end-to-end test.",
+        "",
+        "That is an integration test.",
+        "That is a load or performance test, not a unit test."
+      ],
+      "source": "Trailhead: Cert Prep: JavaScript Dev: Debugging, Error Handling, and Testing"
+    },
+    {
+      "id": "testing-q2",
+      "lesson": "testing-1",
+      "difficulty": 2,
+      "q": "The `addTax` function has a bug. What happens when Jest runs this test?",
+      "code": "const addTax = (n) => n; // bug: should add 10%\n\ntest('adds 10% tax', () => {\n  const total = addTax(100);\n  console.assert(total === 110, 'wrong total');\n});",
+      "lang": "js",
+      "options": [
+        "The test fails, and Jest shows the message from the assert",
+        "Jest marks the test as skipped because it has no `expect`",
+        "The test passes, and a message is written to the console",
+        "The test fails with a timeout after five seconds"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "`console.assert` only writes a message when its condition is false. It never fails the test, so the broken code still gets a green test.",
+      "wrong": [
+        "Jest fails a test only when a check throws; `console.assert` doesn't throw.",
+        "Jest runs tests without an `expect`; it doesn't skip them.",
+        "",
+        "Nothing here waits, so there is no timeout."
+      ],
+      "source": "MDN: console: assert() static method"
+    },
+    {
+      "id": "testing-q3",
+      "lesson": "testing-1",
+      "difficulty": 1,
+      "q": "A tester checks a `formatPrice` function only by giving it inputs and comparing the outputs. They never read its code. Which kind of testing is this?",
+      "options": [
+        "White-box testing",
+        "Integration testing",
+        "Snapshot testing",
+        "Black-box testing"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "Black-box testing uses only inputs and outputs, without looking inside the code.",
+      "wrong": [
+        "White-box tests are designed from the code's inner paths.",
+        "Integration tests check several real parts together; this is one function.",
+        "Snapshot tests compare output to a saved copy; reading the code isn't the point.",
+        ""
+      ],
+      "source": "Trailhead: Cert Prep: JavaScript Dev: Debugging, Error Handling, and Testing"
+    },
+    {
+      "id": "testing-q4",
+      "lesson": "testing-1",
+      "difficulty": 2,
+      "q": "The rule says anyone aged 18 or older is an adult. This test passes. Which added line would catch the bug?",
+      "code": "function isAdult(age) {\n  return age > 18;\n}\n\ntest('checks adults', () => {\n  expect(isAdult(30)).toBe(true);\n  expect(isAdult(5)).toBe(false);\n});",
+      "lang": "js",
+      "options": [
+        "`expect(isAdult(18)).toBe(true);`",
+        "`expect(isAdult(40)).toBe(true);`",
+        "`expect(isAdult(17)).toBe(false);`",
+        "`expect(isAdult(5)).toBeFalsy();`"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "Bugs hide at the edges, so test the exact limit. `isAdult(18)` returns `false` here, so this line fails and exposes the bug.",
+      "wrong": [
+        "",
+        "40 is far from the limit; the buggy code still returns `true`.",
+        "17 gives `false` with or without the bug.",
+        "5 is far from the limit; the buggy code still returns `false`."
+      ],
+      "source": "Jest docs: Expect"
+    },
+    {
+      "id": "testing-q5",
+      "lesson": "testing-1",
+      "difficulty": 2,
+      "q": "A team reviews its unit tests. Which two habits make a test more effective? (Choose 2)",
+      "options": [
+        "Assert on the actual result with `expect`",
+        "Share one changing object across all the tests in a file",
+        "Add edge cases such as an empty list and `null`",
+        "Print the result with `console.log` and check it by eye",
+        "Check private helper values instead of the public result"
+      ],
+      "answer": [
+        0,
+        2
+      ],
+      "explain": "An effective test asserts the real result and covers the edge cases. Bugs often hide in empty, missing or boundary inputs.",
+      "wrong": [
+        "",
+        "Shared changing data makes tests depend on each other and on their order.",
+        "",
+        "A log never fails a test; nobody reads it in an automated run.",
+        "Private details change in safe refactors, which breaks the test for no reason."
+      ],
+      "source": "Trailhead: Cert Prep: JavaScript Dev: Debugging, Error Handling, and Testing"
+    },
+    {
+      "id": "testing-x1",
+      "lesson": "testing-1",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A developer renames an internal helper. The app still works for users, but a test that called that helper by name now fails. In the Cert Prep reading's terms, where a pass means \"the code works\", what is this result?",
+      "options": [
+        "A false positive",
+        "A false negative",
+        "A true negative",
+        "A flaky test that fails at random"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "A false negative is a test that fails while the code works. Testing implementation details, like a helper's name, causes it after a safe refactor.",
+      "wrong": [
+        "A false positive passes while the code is broken; this test failed while the code works.",
+        "",
+        "A true negative would mean the code really is broken.",
+        "A flaky test passes and fails at random; this one fails every time."
+      ],
+      "source": "Trailhead: Cert Prep: JavaScript Dev: Debugging, Error Handling, and Testing"
+    },
+    {
+      "id": "testing-x2",
+      "lesson": "testing-1",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "`applyDiscount(cart, 0.1)` should lower `cart.total` from 100 to 90. A teammate says it does nothing, yet this test is green. Which change makes the test catch the bug?",
+      "code": "test('applies a 10% discount', () => {\n  const cart = { total: 100 };\n  applyDiscount(cart, 0.1);\n  expect(cart.total).toBeDefined();\n});",
+      "lang": "js",
+      "options": [
+        "Change the check to `expect(cart).toBeTruthy()`",
+        "Add `expect(cart.total).not.toBeNull()`",
+        "Change the check to `expect(cart.total).toBe(90)`",
+        "Add `expect(() => applyDiscount(cart, 0.1)).not.toThrow()`"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "A test must assert the actual expected result. `toBeDefined()` passes for 100 as well as 90, so only `toBe(90)` catches the bug.",
+      "wrong": [
+        "Any object is truthy, so this passes even when nothing changed.",
+        "100 is not `null`, so this passes even when nothing changed.",
+        "",
+        "A function that does nothing doesn't throw, so this passes too."
+      ],
+      "source": "Jest docs: Expect"
+    },
+    {
+      "id": "testing-x3",
+      "lesson": "testing-1",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "`addItem` works correctly, yet the second test fails. What is the best fix?",
+      "code": "const list = [];\n\ntest('adds an item', () => {\n  addItem(list, 'tea');\n  expect(list).toHaveLength(1);\n});\n\ntest('adds two items', () => {\n  addItem(list, 'tea');\n  addItem(list, 'cake');\n  expect(list).toHaveLength(2);\n});",
+      "lang": "js",
+      "options": [
+        "Empty `list` in an `afterAll` hook",
+        "Use `toEqual(2)` instead of `toHaveLength(2)`",
+        "Rename the tests so they run in a different order",
+        "Create a fresh `list` in a `beforeEach` hook"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "Tests must not share changing data. The second test sees the item left by the first, so it gets 3 items; a fresh list in `beforeEach` fixes that.",
+      "wrong": [
+        "`afterAll` runs once after all the tests, too late to help.",
+        "`toEqual(2)` compares the whole array to the number 2, so it fails too.",
+        "Test names don't decide the order, and order-based fixes are fragile.",
+        ""
+      ],
+      "source": "Jest docs: Setup and Teardown"
+    },
+    {
+      "id": "testing-q6",
+      "lesson": "testing-1",
+      "difficulty": 2,
+      "q": "What does `console.assert(false, 'oops')` do?",
+      "options": [
+        "It writes an error message to the console",
+        "It throws an error that stops the whole script",
+        "It pauses the code like a breakpoint",
+        "It marks the current Jest test as failed"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "`console.assert` writes a message only when its condition is false. It doesn't throw or stop anything.",
+      "wrong": [
+        "",
+        "It only logs; the script carries on.",
+        "Breakpoints come from `debugger` or DevTools, not `console.assert`.",
+        "It never fails a test, which is why it is no substitute for `expect`."
+      ],
+      "source": "MDN: console: assert() static method"
+    },
+    {
+      "id": "testing-q7",
+      "lesson": "testing-1",
+      "difficulty": 2,
+      "q": "A test calls `OrderService.save()`, which writes through the real `Database` module to a test database. Then it reads the order back. What kind of test is this?",
+      "options": [
+        "A unit test",
+        "An integration test",
+        "An end-to-end test",
+        "A snapshot comparison test"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "An integration test checks several real parts working together. Here the service and the real database module both run.",
+      "wrong": [
+        "A unit test would swap the database for a fake.",
+        "",
+        "End-to-end tests drive the whole app through its user interface.",
+        "Snapshot tests compare output to a saved copy."
+      ],
+      "source": "Trailhead: Cert Prep: JavaScript Dev: Debugging, Error Handling, and Testing"
+    },
+    {
+      "id": "testing-x4",
+      "lesson": "testing-1",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "The spec says `getInitials` returns capital initials, and returns `''` for `null` or an empty string. The current test passes. Which two new checks would fail and expose a bug? (Choose 2)",
+      "code": "function getInitials(name) {\n  return name.split(' ').map((p) => p[0]).join('');\n}\n\ntest('gets initials', () => {\n  expect(getInitials('Ada Lovelace')).toBe('AL');\n});",
+      "lang": "js",
+      "options": [
+        "`expect(getInitials('Grace Hopper')).toBe('GH')`",
+        "`expect(getInitials('')).toBe('')`",
+        "`expect(getInitials('Alan Turing')).toBe('AT')`",
+        "`expect(getInitials(null)).toBe('')`",
+        "`expect(getInitials('ada lovelace')).toBe('AL')`"
+      ],
+      "answer": [
+        3,
+        4
+      ],
+      "explain": "Good tests probe edge cases against the spec. `null` makes `split` throw, and lowercase input returns `'al'`, so both checks fail and reveal bugs.",
+      "wrong": [
+        "This returns `'GH'`, so it passes and finds nothing.",
+        "An empty string already returns `''`, so it passes.",
+        "This returns `'AT'`, so it passes and finds nothing.",
+        "",
+        ""
+      ],
+      "source": "Jest docs: Expect"
+    },
+    {
+      "id": "testing-q8",
+      "lesson": "testing-1",
+      "difficulty": 1,
+      "q": "Which statement describes white-box testing?",
+      "options": [
+        "Tests use only inputs and outputs and never read the source code",
+        "Tests are run by end users before a release",
+        "Tests are designed from the code's inner paths and branches",
+        "Tests always run in a browser with no window"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "White-box tests are built with the code in view. You pick inputs so each path and branch runs.",
+      "wrong": [
+        "That is black-box testing.",
+        "That describes user acceptance testing.",
+        "",
+        "A headless browser is a tool choice, not a kind of test design."
+      ],
+      "source": "Trailhead: Cert Prep: JavaScript Dev: Debugging, Error Handling, and Testing"
+    },
+    {
+      "id": "testing-x5",
+      "lesson": "testing-1",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "The team plans to rename `_n` to `_count` without changing how `counter` behaves. Which change keeps this test useful after the rename?",
+      "code": "const counter = {\n  _n: 0,\n  add() { this._n += 1; },\n  get value() { return this._n; },\n};\n\ntest('add counts up', () => {\n  counter.add();\n  expect(counter._n).toBe(1);\n});",
+      "lang": "js",
+      "options": [
+        "Check `counter._count` instead of `counter._n`",
+        "Use `toEqual(1)` instead of `toBe(1)`",
+        "Remove the `expect` and only call `counter.add()`",
+        "Check `counter.value` instead of `counter._n`"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "Test the public behavior, not the private details. `counter.value` stays the same after the rename, so the test won't break for no reason.",
+      "wrong": [
+        "This still depends on a private name, so the next rename breaks it again.",
+        "The matcher isn't the problem; the private property is.",
+        "Without an assertion the test checks nothing.",
+        ""
+      ],
+      "source": "Trailhead: Cert Prep: JavaScript Dev: Debugging, Error Handling, and Testing"
+    },
+    {
+      "id": "testing-x6",
+      "lesson": "testing-1",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "`canVote(age)` returns `age >= 18`. Which two inputs best test the boundary of this rule? (Choose 2)",
+      "options": [
+        "`5`",
+        "`17`",
+        "`18`",
+        "`30`",
+        "`100`"
+      ],
+      "answer": [
+        1,
+        2
+      ],
+      "explain": "Boundary tests use the values right at the limit. 17 must be `false` and 18 must be `true`; a mistake like `>` instead of `>=` shows up there.",
+      "wrong": [
+        "5 is far from the limit, so it misses an off-by-one bug.",
+        "",
+        "",
+        "30 is far from the limit, so it misses an off-by-one bug.",
+        "100 is far from the limit, so it misses an off-by-one bug."
+      ],
+      "source": "Trailhead: Cert Prep: JavaScript Dev: Debugging, Error Handling, and Testing"
+    },
+    {
+      "id": "testing-q9",
+      "lesson": "testing-1",
+      "difficulty": 1,
+      "q": "A team wants to check that a shopper can sign in, add an item and pay, in a real browser against the running app. Which kind of test fits?",
+      "options": [
+        "An end-to-end test",
+        "A unit test",
+        "An integration test",
+        "A white-box test"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "End-to-end tests use the whole app the way a user would, from start to finish.",
+      "wrong": [
+        "",
+        "A unit test checks one small piece on its own.",
+        "An integration test checks a few parts together, not the full user journey.",
+        "White-box is a way to design tests, not a test of the full journey."
+      ],
+      "source": "Trailhead: Cert Prep: JavaScript Dev: Debugging, Error Handling, and Testing"
+    },
+    {
+      "id": "testing-q10",
+      "lesson": "testing-2",
+      "difficulty": 2,
+      "q": "`makeUser('Ana')` returns `{ name: 'Ana', active: true }`. What happens when this test runs?",
+      "code": "test('builds a user', () => {\n  const user = makeUser('Ana');\n  expect(user).toBe({ name: 'Ana', active: true });\n});",
+      "lang": "js",
+      "options": [
+        "It passes, because every property has the same value",
+        "It fails, because `toBe` checks for the very same object",
+        "It fails, because `toBe` only accepts strings and numbers",
+        "It passes, because `toBe` compares objects deeply"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "`toBe` uses `Object.is`, so two separate objects never match. Use `toEqual` to compare their contents.",
+      "wrong": [
+        "Same values aren't enough for `toBe`; it needs the same object.",
+        "",
+        "`toBe` accepts any value; it just compares identity.",
+        "Deep comparison is what `toEqual` does, not `toBe`."
+      ],
+      "source": "Jest docs: Expect"
+    },
+    {
+      "id": "testing-q11",
+      "lesson": "testing-2",
+      "difficulty": 2,
+      "q": "What happens when this test runs?",
+      "code": "function parseAge(text) {\n  const n = Number(text);\n  if (Number.isNaN(n)) throw new TypeError('Not a number');\n  return n;\n}\n\ntest('rejects bad input', () => {\n  expect(parseAge('abc')).toThrow('Not a number');\n});",
+      "lang": "js",
+      "options": [
+        "It passes, because `parseAge('abc')` really does throw the expected message",
+        "It passes, but only if `toThrow` is given the `TypeError` class",
+        "It fails, because `toThrow` cannot take a message string",
+        "It fails, because `parseAge` throws before `toThrow` can catch it"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "`toThrow` needs a function to call. Here `parseAge('abc')` runs first and throws inside the test, so the test fails. Write `expect(() => parseAge('abc')).toThrow('Not a number')`.",
+      "wrong": [
+        "The error escapes before `expect` sees it, so the test fails.",
+        "The argument doesn't matter; the call isn't wrapped in a function.",
+        "`toThrow` accepts a string and checks that the message contains it.",
+        ""
+      ],
+      "source": "Jest docs: Expect"
+    },
+    {
+      "id": "testing-x7",
+      "lesson": "testing-2",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "`fetchUser(1)` resolves to `{ name: 'Bob' }` after a short delay. Why does Jest report this test as passing?",
+      "code": "test('loads the user name', () => {\n  fetchUser(1).then((user) => {\n    expect(user.name).toBe('Ana');\n  });\n});",
+      "lang": "js",
+      "options": [
+        "`toBe` treats two different strings as equal inside a `then` callback",
+        "Jest silently skips any `expect` written inside a callback function",
+        "Nothing returns or awaits the promise, so the test ends first",
+        "A test without the `async` keyword can never fail at all"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "Jest waits only for a promise that the test returns or awaits. Here the test ends first, so the failing check comes too late to count.",
+      "wrong": [
+        "`toBe('Ana')` would fail for `'Bob'` if it ran in time.",
+        "Jest runs checks in callbacks; this one simply runs after the test ended.",
+        "",
+        "Sync tests fail all the time; the problem is the missing wait."
+      ],
+      "source": "Jest docs: Testing Asynchronous Code"
+    },
+    {
+      "id": "testing-x8",
+      "lesson": "testing-2",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "`fetchUser(1)` resolves to `{ name: 'Bob' }` after a short delay, yet this test passes. Which two changes make it fail correctly when the name is wrong? (Choose 2)",
+      "code": "test('loads the user name', () => {\n  fetchUser(1).then((user) => {\n    expect(user.name).toBe('Ana');\n  });\n});",
+      "lang": "js",
+      "options": [
+        "Put `return` before `fetchUser(1)`",
+        "Raise the test timeout to 10 seconds",
+        "Wrap the body of the test in `try...catch`",
+        "Add `expect.assertions(0)` at the start",
+        "Make the test `async` and use `const user = await fetchUser(1)` before the `expect`"
+      ],
+      "answer": [
+        0,
+        4
+      ],
+      "explain": "Returning or awaiting the promise makes Jest wait for it. Then the failing check counts.",
+      "wrong": [
+        "",
+        "A longer timeout doesn't help if Jest isn't waiting for the promise.",
+        "A `try...catch` can't catch a check that runs after the test ended.",
+        "Expecting zero checks proves nothing and would itself fail once a check runs.",
+        ""
+      ],
+      "source": "Jest docs: Testing Asynchronous Code"
+    },
+    {
+      "id": "testing-q12",
+      "lesson": "testing-2",
+      "difficulty": 2,
+      "q": "`saveOrder(order)` is an `async` function. For an order with no items, it should reject with an `Error` whose message contains `'Missing items'`. Which line tests this correctly?",
+      "options": [
+        "`expect(saveOrder({})).toThrow('Missing items');`",
+        "`await expect(saveOrder({})).resolves.toThrow('Missing items');`",
+        "`await expect(saveOrder({})).rejects.toThrow('Missing items');`",
+        "`expect(() => saveOrder({})).toThrow('Missing items');`"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "A rejected promise is tested with `.rejects`, and the test must await it. `.rejects.toThrow` then checks the error message.",
+      "wrong": [
+        "`toThrow` needs a function, and a promise isn't one.",
+        "`.resolves` fails at once because the promise rejects.",
+        "",
+        "An `async` function doesn't throw when called; it returns a rejected promise."
+      ],
+      "source": "Jest docs: Testing Asynchronous Code"
+    },
+    {
+      "id": "testing-q13",
+      "lesson": "testing-2",
+      "difficulty": 2,
+      "q": "Given `const a = { id: 1, note: undefined }` and `const b = { id: 1 }`, which assertion fails?",
+      "options": [
+        "`expect(a).toEqual(b)`",
+        "`expect(a.id).toBe(b.id)`",
+        "`expect(a).not.toStrictEqual({ id: 2 })`",
+        "`expect(a).toStrictEqual(b)`"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "`toStrictEqual` counts properties set to `undefined`, but `toEqual` ignores them. So only the strict check fails.",
+      "wrong": [
+        "`toEqual` skips `undefined` properties, so it passes.",
+        "Both ids are the number 1, so it passes.",
+        "`{ id: 2 }` has a different id, so `not.toStrictEqual` passes.",
+        ""
+      ],
+      "source": "Jest docs: Expect"
+    },
+    {
+      "id": "testing-q14",
+      "lesson": "testing-2",
+      "difficulty": 1,
+      "q": "A developer adds Jest to a project. Jest should be used only while building and testing, not in production. Which command fits?",
+      "options": [
+        "`npm install --save-dev jest`",
+        "`npm install --global jest`",
+        "`npm install jest --save-prod`",
+        "`npm uninstall --save-dev jest`"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "Testing tools go in `devDependencies`. `npm install --save-dev jest` puts Jest there.",
+      "wrong": [
+        "",
+        "A global install isn't recorded in the project, so teammates won't get it.",
+        "`--save-prod` puts Jest in regular `dependencies`.",
+        "`uninstall` removes a package instead of adding it."
+      ],
+      "source": "Jest docs: Getting Started"
+    },
+    {
+      "id": "testing-q15",
+      "lesson": "testing-2",
+      "difficulty": 2,
+      "q": "What number does the third test log?",
+      "code": "let calls = 0;\nbeforeAll(() => { calls += 1; });\nbeforeEach(() => { calls += 10; });\n\ntest('one', () => {});\ntest('two', () => {});\ntest('three', () => {\n  console.log(calls);\n});",
+      "lang": "js",
+      "options": [
+        "`33`",
+        "`31`",
+        "`30`",
+        "`13`"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "`beforeAll` runs once and `beforeEach` runs before every test. By the third test that is 1 + 10 + 10 + 10 = 31.",
+      "wrong": [
+        "`beforeAll` runs once, not before each test.",
+        "",
+        "This misses the single `beforeAll` run.",
+        "`beforeEach` has already run three times, not once."
+      ],
+      "source": "Jest docs: Setup and Teardown"
+    },
+    {
+      "id": "testing-x9",
+      "lesson": "testing-2",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "What does this test file log at the end?",
+      "code": "const log = [];\nbeforeEach(() => log.push('outer'));\n\ndescribe('cart', () => {\n  beforeEach(() => log.push('inner'));\n  test('a', () => {});\n});\n\ntest('b', () => {});\nafterAll(() => console.log(log.join(' ')));",
+      "lang": "js",
+      "options": [
+        "`outer outer inner`",
+        "`inner outer outer`",
+        "`outer inner outer`",
+        "`outer inner outer inner`"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "A top-level `beforeEach` runs before every test, and a hook inside `describe` runs only for that block's tests. Test `a` gets outer then inner; test `b` gets only outer.",
+      "wrong": [
+        "For test `a`, the outer hook runs first, then the inner one; test `b` comes after.",
+        "Outer hooks run before inner hooks, not after.",
+        "",
+        "The inner hook doesn't run for test `b`, which is outside the `describe`."
+      ],
+      "source": "Jest docs: Setup and Teardown"
+    },
+    {
+      "id": "testing-q16",
+      "lesson": "testing-2",
+      "difficulty": 2,
+      "q": "`expect(0.1 + 0.2).toBe(0.3)` fails. Which two assertions pass? (Choose 2)",
+      "options": [
+        "`expect(0.1 + 0.2).toEqual(0.3)`",
+        "`expect(0.1 + 0.2).toStrictEqual(0.3)`",
+        "`expect(0.1 + 0.2).toBeCloseTo(0.3)`",
+        "`expect(0.1 + 0.2).toBeCloseTo(0.3, 5)`",
+        "`expect(0.1 + 0.2 === 0.3).toBe(true)`"
+      ],
+      "answer": [
+        2,
+        3
+      ],
+      "explain": "`0.1 + 0.2` is `0.30000000000000004` in JavaScript. `toBeCloseTo` allows a tiny difference; the optional second number sets how many decimal places to check.",
+      "wrong": [
+        "`toEqual` needs the exact number, so the tiny error fails it.",
+        "`toStrictEqual` needs the exact number too.",
+        "",
+        "",
+        "`0.1 + 0.2 === 0.3` is `false`, so this fails."
+      ],
+      "source": "Jest docs: Using Matchers"
+    },
+    {
+      "id": "testing-x10",
+      "lesson": "testing-2",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "`checkout([])` should reject, but a bug makes it resolve. This test still passes. Which change makes it fail as it should?",
+      "code": "test('rejects an empty cart', () => {\n  return checkout([]).catch((err) => {\n    expect(err.message).toMatch('empty');\n  });\n});",
+      "lang": "js",
+      "options": [
+        "Add `expect.assertions(1)` at the start of the test",
+        "Add `return` before `checkout([])`",
+        "Wrap the `return` statement in a `try...catch` block",
+        "Replace `toMatch('empty')` with `toBe('empty')` in the check"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "If the promise resolves, the `catch` callback never runs and no check happens. `expect.assertions(1)` makes a test with zero checks fail.",
+      "wrong": [
+        "",
+        "The promise is already returned; that isn't the gap.",
+        "A resolved promise throws nothing, so there is nothing to catch.",
+        "The matcher never runs, so changing it changes nothing."
+      ],
+      "source": "Jest docs: Testing Asynchronous Code"
+    },
+    {
+      "id": "testing-q17",
+      "lesson": "testing-2",
+      "difficulty": 2,
+      "q": "With Jest's default settings, which file is picked up as a test file?",
+      "options": [
+        "`sum.tests.js`",
+        "`sum.check.js`",
+        "`test-sum.js`",
+        "`sum.test.js`"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "By default Jest runs files ending in `.test.js` or `.spec.js`, and any `.js` file inside a `__tests__` folder.",
+      "wrong": [
+        "The suffix must be `.test`, not `.tests`.",
+        "`.check` isn't one of the default suffixes.",
+        "A `test-` prefix doesn't count outside a `__tests__` folder.",
+        ""
+      ],
+      "source": "Jest docs: Getting Started"
+    },
+    {
+      "id": "testing-q18",
+      "lesson": "testing-2",
+      "difficulty": 1,
+      "q": "Given `const tags = ['js', 'node']`, which assertion passes?",
+      "options": [
+        "`expect(tags).toBe(['js', 'node'])`",
+        "`expect(tags).toContain(['node'])`",
+        "`expect(tags).toContain('node')`",
+        "`expect(tags).toHaveLength(3)`"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "`toContain` checks that an item is in an array. `'node'` is one of the items.",
+      "wrong": [
+        "A new array literal is a different object, so `toBe` fails.",
+        "The array holds the string `'node'`, not an array with it.",
+        "",
+        "The array has 2 items, not 3."
+      ],
+      "source": "Jest docs: Using Matchers"
+    },
+    {
+      "id": "testing-x11",
+      "lesson": "testing-2",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "Given the `Point` class, which two assertions pass? (Choose 2)",
+      "code": "class Point {\n  constructor(x, y) {\n    this.x = x;\n    this.y = y;\n  }\n}\nconst p = new Point(1, 2);",
+      "lang": "js",
+      "options": [
+        "`expect(p).toStrictEqual({ x: 1, y: 2 })`",
+        "`expect(p).toEqual({ x: 1, y: 2 })`",
+        "`expect(p).toBe(new Point(1, 2))`",
+        "`expect(p).toEqual({ x: 1, y: 2, z: 3 })`",
+        "`expect(p).toStrictEqual(new Point(1, 2))`"
+      ],
+      "answer": [
+        1,
+        4
+      ],
+      "explain": "`toEqual` compares contents and ignores the class. `toStrictEqual` also checks the class, so it passes only against another `Point` with the same values.",
+      "wrong": [
+        "A `Point` isn't a plain object, so the strict check fails.",
+        "",
+        "Two `new Point` calls make two different objects.",
+        "The extra `z` property makes the contents differ.",
+        ""
+      ],
+      "source": "Jest docs: Expect"
+    },
+    {
+      "id": "testing-q19",
+      "lesson": "testing-2",
+      "difficulty": 1,
+      "q": "While fixing a bug, a developer wants Jest to run just one test in a file and skip the rest for now. What should they use?",
+      "options": [
+        "`test.skip`",
+        "`test.todo`",
+        "`describe.each`",
+        "`test.only`"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "`test.only` runs that test and skips the others in the file. Remove it before you commit.",
+      "wrong": [
+        "`test.skip` skips that one test and runs the rest.",
+        "`test.todo` marks a test you plan to write later.",
+        "`describe.each` runs a block once per row of data.",
+        ""
+      ],
+      "source": "Jest docs: Setup and Teardown"
+    },
+    {
+      "id": "testing-q20",
+      "lesson": "testing-3",
+      "difficulty": 1,
+      "q": "What does `greet.mock.calls` hold after this code runs?",
+      "code": "const greet = jest.fn();\ngreet('Ana');\ngreet('Bo', 2);",
+      "lang": "js",
+      "options": [
+        "`[['Ana'], ['Bo', 2]]`",
+        "`['Ana', 'Bo', 2]`",
+        "`2`",
+        "`[['Ana', undefined], ['Bo', 2]]`"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "`mock.calls` is an array with one entry per call. Each entry is the list of arguments for that call.",
+      "wrong": [
+        "",
+        "Calls aren't flattened; each call keeps its own argument list.",
+        "That is the number of calls, which is `mock.calls.length`.",
+        "Only the arguments really passed are recorded; nothing is padded."
+      ],
+      "source": "Jest docs: Mock Functions"
+    },
+    {
+      "id": "testing-q21",
+      "lesson": "testing-3",
+      "difficulty": 2,
+      "q": "What does this code log?",
+      "code": "const roll = jest.fn()\n  .mockReturnValue(6)\n  .mockReturnValueOnce(1)\n  .mockReturnValueOnce(2);\n\nconsole.log(roll(), roll(), roll(), roll());",
+      "lang": "js",
+      "options": [
+        "`6 1 2 6`",
+        "`1 2 6 6`",
+        "`1 2 undefined undefined`",
+        "`6 6 6 6`"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "`mockReturnValueOnce` values are used first, in order. When they run out, the mock falls back to `mockReturnValue`.",
+      "wrong": [
+        "The once values win over the default, even though the default was set first.",
+        "",
+        "The default `6` is used after the once values run out.",
+        "The once values are used before the default."
+      ],
+      "source": "Jest docs: Mock Functions"
+    },
+    {
+      "id": "testing-q22",
+      "lesson": "testing-3",
+      "difficulty": 2,
+      "q": "Which statement about this code is true?",
+      "code": "const math = { double: (n) => n * 2 };\nconst spy = jest.spyOn(math, 'double');\nconst result = math.double(4);",
+      "lang": "js",
+      "options": [
+        "`result` is `undefined`, because the spy replaced `double`",
+        "`result` is 8, but the spy recorded no calls",
+        "`result` is 8, and the spy recorded a call with 4",
+        "`spyOn` throws, because `double` is an arrow function"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "By default `jest.spyOn` records calls and still runs the real method. So the result is real, and the call is tracked.",
+      "wrong": [
+        "A spy only replaces the method if you add a mock implementation.",
+        "The call goes through the spy, so it is recorded.",
+        "",
+        "Any function stored on an object can be spied on."
+      ],
+      "source": "Jest docs: The Jest Object"
+    },
+    {
+      "id": "testing-q23",
+      "lesson": "testing-3",
+      "difficulty": 2,
+      "q": "`registerUser` should call `send('a@b.co', 'Welcome!')`. The test stays green even when that call is deleted. Which assertion should replace the last line?",
+      "code": "test('sends a welcome email', () => {\n  const send = jest.fn();\n  registerUser({ email: 'a@b.co' }, send);\n  expect(send).toBeDefined();\n});",
+      "lang": "js",
+      "options": [
+        "`expect(send).toHaveReturnedWith('a@b.co', 'Welcome!')`",
+        "`expect(send.mock.calls).toEqual(expect.anything())`",
+        "`expect(typeof send).toBe('function')`",
+        "`expect(send).toHaveBeenCalledWith('a@b.co', 'Welcome!')`"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "A mock proves nothing until you assert how it was used. `toHaveBeenCalledWith` fails when the call is missing or has the wrong arguments.",
+      "wrong": [
+        "This checks what `send` returned, and a plain mock returns `undefined`.",
+        "`expect.anything()` matches an empty array too, so it passes with no call.",
+        "A mock is always a function, called or not.",
+        ""
+      ],
+      "source": "Jest docs: Mock Functions"
+    },
+    {
+      "id": "testing-q24",
+      "lesson": "testing-3",
+      "difficulty": 2,
+      "q": "Between tests, a developer wants every mock to keep its `mockReturnValue` setup but forget the calls it recorded. Which call fits?",
+      "options": [
+        "`jest.clearAllMocks()`",
+        "`jest.resetAllMocks()`",
+        "`jest.restoreAllMocks()`",
+        "`jest.resetModules()`"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "`clearAllMocks` wipes `mock.calls` and `mock.results` but keeps each mock's fake behavior.",
+      "wrong": [
+        "",
+        "`resetAllMocks` also drops the fake return values.",
+        "`restoreAllMocks` resets the mocks and puts spied originals back.",
+        "`resetModules` clears the module cache, not mock call records."
+      ],
+      "source": "Jest docs: The Jest Object"
+    },
+    {
+      "id": "testing-q25",
+      "lesson": "testing-3",
+      "difficulty": 2,
+      "q": "What does this code log?",
+      "code": "const store = { load: () => 'real' };\nconst spy = jest.spyOn(store, 'load').mockReturnValue('fake');\n\nconsole.log(store.load());\nspy.mockRestore();\nconsole.log(store.load());",
+      "lang": "js",
+      "options": [
+        "`fake` then `fake`",
+        "`real` then `real`",
+        "`fake` then `real`",
+        "`fake` then `undefined`"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "`mockReturnValue` replaces the spied method's result. `mockRestore` then puts the original method back.",
+      "wrong": [
+        "`mockRestore` brings back the real method for the second call.",
+        "The first call goes to the spy, which returns `'fake'`.",
+        "",
+        "Restore brings back the original method, which returns `'real'`."
+      ],
+      "source": "Jest docs: Mock Functions"
+    },
+    {
+      "id": "testing-x12",
+      "lesson": "testing-3",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "What does this code log?",
+      "code": "const getRate = jest.fn().mockReturnValue(0.2);\ngetRate();\n\njest.resetAllMocks();\n\nconsole.log(getRate(), getRate.mock.calls.length);",
+      "lang": "js",
+      "options": [
+        "`0.2 1`",
+        "`undefined 1`",
+        "`undefined 0`",
+        "`0.2 2`"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "`resetAllMocks` wipes call records and the fake return value, so the mock returns `undefined`. The new call happens before `.length` is read, so it counts as 1.",
+      "wrong": [
+        "Reset drops the `0.2` return value.",
+        "",
+        "The call in `console.log` runs first, so one call is recorded.",
+        "Reset wiped the first call, and the return value is gone."
+      ],
+      "source": "Jest docs: The Jest Object"
+    },
+    {
+      "id": "testing-x13",
+      "lesson": "testing-3",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "`debounce(fn, ms)` waits `ms` after the last call, then calls `fn` once. Which assertion belongs on the last line?",
+      "code": "jest.useFakeTimers();\n\ntest('saves once after 500 ms', () => {\n  const save = jest.fn();\n  const autoSave = debounce(save, 500);\n  autoSave();\n  autoSave();\n  jest.advanceTimersByTime(499);\n  expect(save).not.toHaveBeenCalled();\n  jest.advanceTimersByTime(1);\n  // which assertion here?\n});",
+      "lang": "js",
+      "options": [
+        "`expect(save).toHaveBeenCalledTimes(2);`",
+        "`expect(save).not.toHaveBeenCalled();`",
+        "`expect(save).toHaveBeenCalledTimes(1);`",
+        "`expect(save).toHaveBeenCalledWith(500);`"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "Fake timers move time on command. After 500 ms in total, the debounced `save` runs once, because the two quick calls merge into one.",
+      "wrong": [
+        "Debounce merges quick calls, so `save` runs once, not twice.",
+        "500 ms have passed, so `save` has run.",
+        "",
+        "`save` gets the caller's arguments, not the delay."
+      ],
+      "source": "Jest docs: Timer Mocks"
+    },
+    {
+      "id": "testing-q26",
+      "lesson": "testing-3",
+      "difficulty": 1,
+      "q": "Why would a test call `jest.useFakeTimers()`?",
+      "options": [
+        "To make every `setTimeout` throw an error",
+        "To slow tests down so they behave like a real, slow network",
+        "To run each test in its own browser tab",
+        "To run timer code without waiting for real time to pass"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "Fake timers replace `setTimeout` and friends. The test moves time forward itself, so nothing really waits.",
+      "wrong": [
+        "Timers still work; they just wait for the test to move time.",
+        "Fake timers make tests faster, not slower.",
+        "Timers have nothing to do with browser tabs.",
+        ""
+      ],
+      "source": "Jest docs: Timer Mocks"
+    },
+    {
+      "id": "testing-x14",
+      "lesson": "testing-3",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A mock `log` was called once, with `'a'`. Which two assertions pass? (Choose 2)",
+      "options": [
+        "`expect(log).toHaveBeenCalledWith('a')`",
+        "`expect(log).toHaveReturnedWith('a')`",
+        "`expect(log).toHaveBeenCalledTimes(2)`",
+        "`expect(log).toHaveBeenNthCalledWith(1, 'a')`",
+        "`expect(log).toHaveBeenLastCalledWith(1, 'a')`"
+      ],
+      "answer": [
+        0,
+        3
+      ],
+      "explain": "`toHaveBeenCalledWith` checks the arguments of any call. `toHaveBeenNthCalledWith(1, 'a')` checks the first call; the 1 is the call number.",
+      "wrong": [
+        "",
+        "A plain `jest.fn()` returns `undefined`, not `'a'`.",
+        "The mock was called once, not twice.",
+        "",
+        "`toHaveBeenLastCalledWith` takes only the arguments, so `1` is treated as one of them."
+      ],
+      "source": "Jest docs: Expect"
+    },
+    {
+      "id": "testing-x15",
+      "lesson": "testing-3",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "In this CommonJS test file, `jest.mock('./api')` comes after the `require` lines. The project uses Jest's default `babel-jest` transform. What happens?",
+      "code": "const { getForecast } = require('./weather');\nconst api = require('./api');\njest.mock('./api');\n\ntest('reports rain', async () => {\n  api.fetchSky.mockResolvedValue('rain');\n  await expect(getForecast()).resolves.toBe('Bring an umbrella');\n});",
+      "lang": "js",
+      "options": [
+        "The mock still applies: `jest.mock` calls are hoisted to the top",
+        "The mock is ignored, because `./api` was already loaded with its real code",
+        "Jest throws an error, because `jest.mock` must come first",
+        "Only `getForecast` gets the mock; the `api` variable stays real"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "`babel-jest` hoists `jest.mock` calls above the `require` lines. So both `weather.js` and the test get the mocked `api` module.",
+      "wrong": [
+        "",
+        "Hoisting runs the mock before any `require`, so the real module isn't used.",
+        "No error; the order in the file is fixed up for you.",
+        "Both files share one mocked copy of the module."
+      ],
+      "source": "Jest docs: The Jest Object"
+    },
+    {
+      "id": "testing-q27",
+      "lesson": "testing-3",
+      "difficulty": 2,
+      "q": "`loadUser` calls `api.get('/me')`. Which two values for `fakeGet` let this test pass? (Choose 2)",
+      "code": "function loadUser(api) {\n  return api.get('/me').then((r) => r.name);\n}\n\ntest('loads the name', async () => {\n  // fakeGet is the option you pick\n  const api = { get: fakeGet };\n  await expect(loadUser(api)).resolves.toBe('Ana');\n});",
+      "lang": "js",
+      "options": [
+        "`jest.fn().mockReturnValue({ name: 'Ana' })`",
+        "`jest.fn().mockResolvedValue({ name: 'Ana' })`",
+        "`jest.fn().mockRejectedValue({ name: 'Ana' })`",
+        "`jest.fn().mockReturnValueOnce({ name: 'Ana' })`",
+        "`jest.fn().mockImplementation(() => Promise.resolve({ name: 'Ana' }))`"
+      ],
+      "answer": [
+        1,
+        4
+      ],
+      "explain": "`loadUser` calls `.then`, so `api.get` must return a promise. `mockResolvedValue(x)` is a shortcut for an implementation that returns `Promise.resolve(x)`.",
+      "wrong": [
+        "A plain object has no `.then`, so `loadUser` throws.",
+        "",
+        "A rejected promise makes `.resolves` fail.",
+        "It returns a plain object too, with no `.then`.",
+        ""
+      ],
+      "source": "Jest docs: Mock Functions"
+    },
+    {
+      "id": "testing-q28",
+      "lesson": "testing-3",
+      "difficulty": 1,
+      "q": "Which kind of test double only hands back canned answers and keeps no record of how it was called?",
+      "options": [
+        "A spy",
+        "A stub",
+        "A mock",
+        "A fake timer"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "A stub just gives ready-made answers. Spies and mocks also record or check how they were used.",
+      "wrong": [
+        "A spy records the calls it receives.",
+        "",
+        "A mock is set up with expected calls and is checked against them.",
+        "A fake timer controls time, not answers."
+      ],
+      "source": "Trailhead: Cert Prep: JavaScript Dev: Debugging, Error Handling, and Testing"
+    },
+    {
+      "id": "testing-x16",
+      "lesson": "testing-3",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "`notify` works correctly, but the second test fails. Which two changes fix the tests without hiding real bugs? (Choose 2)",
+      "code": "const mailer = { send: jest.fn() };\n\ntest('emails active users', () => {\n  notify({ active: true }, mailer);\n  expect(mailer.send).toHaveBeenCalled();\n});\n\ntest('skips inactive users', () => {\n  notify({ active: false }, mailer);\n  expect(mailer.send).not.toHaveBeenCalled();\n});",
+      "lang": "js",
+      "options": [
+        "Call `jest.restoreAllMocks()` in an `afterAll` hook",
+        "Replace `not.toHaveBeenCalled()` with `toHaveBeenCalledTimes(0)`",
+        "Call `jest.clearAllMocks()` in a `beforeEach` hook",
+        "Create a new `mailer` with its own `jest.fn()` inside each test",
+        "Add `expect.assertions(1)` to the second test"
+      ],
+      "answer": [
+        2,
+        3
+      ],
+      "explain": "The shared mock still holds the call from the first test. Clearing mocks before each test, or making a fresh mock per test, gives each test a clean record.",
+      "wrong": [
+        "`afterAll` runs once at the very end, too late to help.",
+        "This is the same check, so it still sees the old call.",
+        "",
+        "",
+        "The test already has one assertion; the stale call is the problem."
+      ],
+      "source": "Jest docs: The Jest Object"
+    },
+    {
+      "id": "testing-q29",
+      "lesson": "testing-3",
+      "difficulty": 2,
+      "q": "A test uses `jest.spyOn(api, 'send')` to check that `send` is called. But the real network call still happens during the test. Why?",
+      "options": [
+        "`jest.spyOn` only works on class methods, not on plain objects",
+        "The spy must be created after the code calls `send`",
+        "Spies only take effect after `jest.useFakeTimers()`",
+        "`jest.spyOn` calls through to the real method by default"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "A Jest spy wraps the real method and still calls it by default. Add `.mockImplementation()` or `.mockResolvedValue()` to stop the real call.",
+      "wrong": [
+        "`spyOn` works on any method stored on an object.",
+        "A spy created after the call misses that call entirely.",
+        "Spies don't depend on fake timers.",
+        ""
+      ],
+      "source": "Jest docs: The Jest Object"
+    }
+  ]
+}
