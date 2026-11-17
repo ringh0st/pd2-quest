@@ -1,0 +1,1606 @@
+{
+  "id": "debug",
+  "title": "Debugging and Error Handling",
+  "weight": 7,
+  "summary": "Plan for things going wrong: try, catch and finally, the built-in error types, and the console and breakpoints that show you why.",
+  "lessons": [
+    {
+      "id": "debug-1",
+      "title": "try, catch, finally and throw",
+      "minutes": 3,
+      "objective": "Given a scenario, handle errors properly.",
+      "cards": [
+        {
+          "type": "text",
+          "title": "In plain words",
+          "body": "An **error** stops your code in its tracks. Error handling lets you plan for that. Put risky code in a `try` block. If something goes wrong, the `catch` block runs instead of the program crashing. The `finally` block runs either way, so it's the spot for cleanup."
+        },
+        {
+          "type": "tip",
+          "title": "Think of it like…",
+          "body": "A trapeze act. The `try` is the jump, the `catch` is the safety net, and `finally` is the bow at the end, fall or no fall. Where it stops: the net only catches falls during this jump. An error thrown later, in a callback, misses it."
+        },
+        {
+          "type": "code",
+          "title": "The three parts",
+          "lang": "js",
+          "code": "try {\n  const data = JSON.parse(text);\n  show(data);\n} catch (error) {\n  showMessage('That file looks broken.');\n} finally {\n  hideSpinner();\n}",
+          "body": "If `JSON.parse` throws, the rest of `try` is skipped and `catch` runs. `hideSpinner()` runs in every case."
+        },
+        {
+          "type": "list",
+          "title": "Rules to know",
+          "items": [
+            "`try` needs a `catch`, a `finally`, or both. A bare `try` is a `SyntaxError`.",
+            "Each part must be a block in curly braces.",
+            "The **catch binding** is optional: `catch { }` works when you don't need the error.",
+            "The binding (like `error`) only exists inside its `catch` block."
+          ]
+        },
+        {
+          "type": "text",
+          "title": "throw",
+          "body": "**`throw`** raises an error yourself. The function stops at once, and JavaScript jumps to the nearest `catch`. You can throw any value, even a string. Throw an `Error` object anyway. It carries a `name`, a `message` and a **stack trace** (the list of calls that led here)."
+        },
+        {
+          "type": "text",
+          "title": "finally gets the last word",
+          "body": "`finally` runs before control leaves, even after a `return`. A `return` in `try` waits until `finally` is done. If `finally` has its own `return`, that value **wins**. It even swallows a thrown error. So keep `finally` for cleanup only."
+        },
+        {
+          "type": "trap",
+          "body": "\"My `try` wraps `setTimeout`, so its errors are caught.\" Wrong. The callback runs later, after `try` has finished. The same goes for a promise you don't `await`. Put the `try` inside the callback, or `await` the promise inside an `async` function."
+        },
+        {
+          "type": "tip",
+          "title": "Remember it",
+          "body": "**Try it, catch it, finally tidy it.** And `throw` real `Error` objects, never bare strings."
+        }
+      ],
+      "check": [
+        "debug-q3",
+        "debug-q9",
+        "debug-x1"
+      ],
+      "terms": [
+        {
+          "term": "Error",
+          "say": "JavaScript's object for \"something went wrong\". It has a name, a message and usually a stack trace."
+        },
+        {
+          "term": "try",
+          "say": "A block for code that might fail. If something inside it throws, JavaScript jumps straight to the catch block."
+        },
+        {
+          "term": "catch",
+          "say": "The block that runs when code in try throws. It gets the error, so you can show a message or recover."
+        },
+        {
+          "term": "finally",
+          "say": "A block that always runs after try and catch, error or not. It's the right spot for cleanup, like hiding a spinner."
+        },
+        {
+          "term": "throw",
+          "say": "A statement that raises an error on purpose. The function stops at once, and JavaScript looks for the nearest catch."
+        },
+        {
+          "term": "stack trace",
+          "say": "A list of the function calls that led to an error, newest first. It shows where the error happened."
+        },
+        {
+          "term": "catch binding",
+          "say": "The name in catch (error). It holds whatever was thrown. You can leave it out when you don't need it."
+        },
+        {
+          "term": "callback",
+          "say": "A function you hand to other code so it can call it later, like the function you pass to setTimeout."
+        },
+        {
+          "term": "promise",
+          "say": "An object that stands for a result that isn't ready yet. Later it either fulfills with a value or rejects with an error."
+        },
+        {
+          "term": "await",
+          "say": "A keyword that pauses an async function until a promise settles. If the promise rejects, await throws, so a try around it catches the error."
+        }
+      ]
+    },
+    {
+      "id": "debug-2",
+      "title": "Error types and catching selectively",
+      "minutes": 3,
+      "objective": "Given a scenario, handle errors properly.",
+      "cards": [
+        {
+          "type": "text",
+          "title": "In plain words",
+          "body": "JavaScript has a few **built-in error types**. Each one names a different kind of problem. The type tells you what went wrong before you read the message. You can also check the type in `catch`. Then you handle the errors you expect and let the rest through."
+        },
+        {
+          "type": "tip",
+          "title": "Think of it like…",
+          "body": "Warning lights on a car dashboard. Fuel, oil and engine each get their own light, so you know what to fix. Where it stops: every light here is still an `Error`. `TypeError` and the others all extend `Error`, so `instanceof Error` is true for all of them."
+        },
+        {
+          "type": "list",
+          "title": "The big four",
+          "items": [
+            "`ReferenceError`: a name that doesn't exist, or a `let`/`const` used before its line (the TDZ).",
+            "`TypeError`: the wrong kind of value, like calling `undefined` or reading a property of `null`. Assigning to a `const` too.",
+            "`SyntaxError`: code or text that can't be parsed, including bad input to `JSON.parse`.",
+            "`RangeError`: a number out of range, like `new Array(-1)`."
+          ]
+        },
+        {
+          "type": "list",
+          "title": "And the rarer ones",
+          "items": [
+            "`URIError`: bad input to `decodeURI` or `decodeURIComponent`.",
+            "`EvalError`: about `eval()`. You almost never see it.",
+            "`AggregateError`: many errors in one, with an `errors` list. `Promise.any` rejects with it when every promise fails."
+          ]
+        },
+        {
+          "type": "code",
+          "title": "Catch only what you expect",
+          "lang": "js",
+          "code": "try {\n  saveOrder(order);\n} catch (e) {\n  if (e instanceof TypeError) {\n    showMessage('Order data is incomplete.');\n  } else {\n    throw e;\n  }\n}",
+          "body": "**`instanceof`** checks the error's type. Handle the one you planned for, and **rethrow** everything else so it isn't silently lost."
+        },
+        {
+          "type": "code",
+          "title": "Your own error type",
+          "lang": "js",
+          "code": "class ValidationError extends Error {\n  constructor(message) {\n    super(message);\n    this.name = 'ValidationError';\n  }\n}",
+          "body": "A **custom error** extends `Error`. `super(message)` sets the `message`. Set `name` yourself, or it stays `'Error'`."
+        },
+        {
+          "type": "text",
+          "title": "Keep the original",
+          "body": "Wrapping a low-level error in a friendlier one? Pass the original as the **cause**: `new Error('Save failed', { cause: err })`. This is ES2022, brand new when the exam was written. Older code keeps the original on a property of its own."
+        },
+        {
+          "type": "trap",
+          "body": "Checking `e instanceof Error` first catches everything, because every built-in error extends `Error`. Put specific checks like `TypeError` first. And there's no `catch (TypeError e)` in JavaScript. That's Java. Use one `catch`, then `if` checks."
+        },
+        {
+          "type": "tip",
+          "title": "Remember it",
+          "body": "**Reference: no such name. Type: wrong kind of thing. Range: number out of bounds. Syntax: can't read it.** Check specific types first, and rethrow the rest."
+        }
+      ],
+      "check": [
+        "debug-q13",
+        "debug-q19",
+        "debug-x12"
+      ],
+      "terms": [
+        {
+          "term": "ReferenceError",
+          "say": "The error for a name JavaScript can't find, or a let or const variable used before its line runs."
+        },
+        {
+          "term": "TypeError",
+          "say": "The error for using a value the wrong way, like calling something that isn't a function or reading a property of null."
+        },
+        {
+          "term": "SyntaxError",
+          "say": "The error for text JavaScript can't read as valid code or valid JSON, like a missing bracket."
+        },
+        {
+          "term": "RangeError",
+          "say": "The error for a number outside the allowed range, like asking for an array with a length of -1."
+        },
+        {
+          "term": "AggregateError",
+          "say": "One error that holds a list of several errors. Promise.any rejects with it when every promise fails."
+        },
+        {
+          "term": "instanceof",
+          "say": "An operator that asks: was this object made from this class, or one that extends it? The answer is true or false."
+        },
+        {
+          "term": "rethrow",
+          "say": "Throwing the same error again from catch. It passes errors you can't handle up to code that can."
+        },
+        {
+          "term": "custom error",
+          "say": "Your own error type, made with a class that extends Error. It lets callers tell your errors apart from others."
+        },
+        {
+          "term": "cause",
+          "say": "An option for new Error that keeps the original error inside the new one. Nothing about the first problem gets lost."
+        },
+        {
+          "term": "TDZ",
+          "match": [
+            "temporal dead zone"
+          ],
+          "say": "The temporal dead zone: the part of a block before a let or const line runs. Touching the variable there throws a ReferenceError."
+        }
+      ]
+    },
+    {
+      "id": "debug-3",
+      "title": "The console and breakpoints",
+      "minutes": 4,
+      "objective": "Given code to be debugged, use the console and breakpoints.",
+      "cards": [
+        {
+          "type": "text",
+          "title": "In plain words",
+          "body": "**Debugging** means finding out why code does something you didn't expect. You have two main tools. The **console** prints values while code runs. A **breakpoint** pauses the code on a line. Then you can look at every variable and walk forward one step at a time."
+        },
+        {
+          "type": "tip",
+          "title": "Think of it like…",
+          "body": "The console is a trail of sticky notes your code leaves as it runs. A breakpoint is the pause button on a movie, so you can study one frame. Where it stops: a paused page is frozen for real. Its clicks and timers wait until you resume."
+        },
+        {
+          "type": "list",
+          "title": "Console methods",
+          "items": [
+            "`log`, `info`, `debug`, `warn`, `error`: print at different **log levels** you can filter.",
+            "`console.table(rows)`: an array or object as a table.",
+            "`console.time('x')` then `console.timeEnd('x')`: how long it took. Same label!",
+            "`console.count('x')`: how many times this ran.",
+            "`console.group()` and `groupEnd()`: indent related lines.",
+            "`console.trace()`: the call stack that led here."
+          ]
+        },
+        {
+          "type": "code",
+          "title": "console.assert only logs",
+          "lang": "js",
+          "code": "console.assert(qty >= 0, 'qty is negative');\nconsole.log('still running');",
+          "body": "**`console.assert`** prints an error only when the condition is false. It never throws and never stops the code, so it isn't a real check."
+        },
+        {
+          "type": "text",
+          "title": "Breakpoints",
+          "body": "Click a line number in the **Sources** panel to set a breakpoint. The code pauses before that line runs. While paused, the **Scope** pane shows local and closure variables. The **Call Stack** pane shows how you got here. **Watch** tracks any expression you type."
+        },
+        {
+          "type": "list",
+          "title": "Breakpoint kinds",
+          "items": [
+            "**Conditional**: pauses only when your expression is true.",
+            "**Logpoint**: logs a message without pausing or editing code.",
+            "**DOM change**: in Elements, Break on subtree, attribute or node removal.",
+            "**Event listener**: pauses in the handler for an event like `click`.",
+            "**XHR/fetch**: pauses when a request URL contains your text.",
+            "**Exceptions**: pause on caught or uncaught exceptions."
+          ]
+        },
+        {
+          "type": "text",
+          "title": "Stepping and debugger",
+          "body": "Paused? **Step over** runs the current line, including any function it calls. **Step into** goes inside the called function. **Step out** finishes this function and pauses back in the caller. The **`debugger`** statement pauses like a breakpoint, but only when dev tools are open."
+        },
+        {
+          "type": "trap",
+          "body": "\"A leftover `debugger;` will freeze the app for real users.\" No. With no debugger attached, it does nothing. Also, `console.assert` is not a test. A false assertion just prints a line, and the code keeps going."
+        },
+        {
+          "type": "tip",
+          "title": "Remember it",
+          "body": "**Log to look, break to stop.** Into goes in, over goes past, out goes back."
+        }
+      ],
+      "check": [
+        "debug-q22",
+        "debug-q24",
+        "debug-q26"
+      ],
+      "terms": [
+        {
+          "term": "console",
+          "say": "A panel in the browser's dev tools, or your terminal in Node, where code can print messages and values."
+        },
+        {
+          "term": "breakpoint",
+          "say": "A marker on a line of code. When the code reaches that line, it pauses so you can look at everything."
+        },
+        {
+          "term": "log level",
+          "match": [
+            "log levels"
+          ],
+          "say": "How serious a console message is, like info, warning or error. The console can show or hide messages by level."
+        },
+        {
+          "term": "console.table",
+          "match": [
+            "console.table(rows)"
+          ],
+          "say": "Prints an array or object as a neat table, one row per item. Great for lists of records."
+        },
+        {
+          "term": "console.time",
+          "match": [
+            "console.time('x')"
+          ],
+          "say": "Starts a named stopwatch. console.timeEnd with the same name stops it and prints how many milliseconds passed."
+        },
+        {
+          "term": "console.assert",
+          "say": "Checks a condition. If it's false, it prints an error message. It never throws and never stops your code."
+        },
+        {
+          "term": "call stack",
+          "say": "The list of functions running right now, each called by the one below it. It shows how the code got to this line."
+        },
+        {
+          "term": "logpoint",
+          "say": "A breakpoint that prints a message instead of pausing. You add it in dev tools, so you don't edit the code."
+        },
+        {
+          "term": "debugger",
+          "say": "A statement that pauses code like a breakpoint when dev tools are open. With no debugger attached, it does nothing."
+        },
+        {
+          "term": "step into",
+          "say": "A debugger button. On a line that calls a function, it moves inside that function and pauses there."
+        }
+      ]
+    }
+  ],
+  "flashcards": [
+    {
+      "id": "debug-f1",
+      "front": "When does a `finally` block run?",
+      "back": "Every time, before control leaves the `try` statement: after success, after a caught error, even after a `return`. A `return` inside `finally` overrides the earlier one."
+    },
+    {
+      "id": "debug-f2",
+      "front": "What must a `try` block be paired with?",
+      "back": "A `catch`, a `finally`, or both. A bare `try` is a `SyntaxError`. Each part must be a block in braces."
+    },
+    {
+      "id": "debug-f3",
+      "front": "Why doesn't `try` catch an error thrown in a `setTimeout` callback?",
+      "back": "The callback runs later, after the `try` has finished. Put the `try` inside the callback, or `await` a promise inside `try`."
+    },
+    {
+      "id": "debug-f4",
+      "front": "Why throw an `Error` object instead of a string?",
+      "back": "You can throw any value, but an `Error` carries a `name`, a `message` and a stack trace that shows where it failed."
+    },
+    {
+      "id": "debug-f5",
+      "front": "Which error comes from using a `let` variable before its line?",
+      "back": "`ReferenceError`. The variable is in the temporal dead zone (TDZ) until its declaration runs."
+    },
+    {
+      "id": "debug-f6",
+      "front": "Which error comes from calling `undefined` or reading a property of `null`?",
+      "back": "`TypeError`: the value is the wrong kind for what you did. Assigning to a `const` is a `TypeError` too."
+    },
+    {
+      "id": "debug-f7",
+      "front": "How do you handle only one error type in `catch`?",
+      "back": "Check it with `if (e instanceof TypeError)`, handle it, and `throw e` for everything else. Check specific types before `Error`."
+    },
+    {
+      "id": "debug-f8",
+      "front": "What is `name` on `class MyError extends Error {}`?",
+      "back": "`'Error'`, inherited from `Error.prototype`. Set `this.name = 'MyError'` in the constructor to change it."
+    },
+    {
+      "id": "debug-f9",
+      "front": "What does `console.assert(cond, msg)` do when `cond` is false?",
+      "back": "It prints an error message to the console. It doesn't throw and doesn't stop the code, so it isn't a real test."
+    },
+    {
+      "id": "debug-f10",
+      "front": "How do you time a block of code with the console?",
+      "back": "`console.time('label')` before and `console.timeEnd('label')` after. The labels must match exactly, including case."
+    },
+    {
+      "id": "debug-f11",
+      "front": "What does the `debugger;` statement do?",
+      "back": "It pauses like a breakpoint when dev tools are open. With no debugger attached, it does nothing."
+    },
+    {
+      "id": "debug-f12",
+      "front": "What is the difference between step over, step into and step out?",
+      "back": "Over runs the current line, calls included. Into goes inside the called function. Out finishes this function and pauses in the caller."
+    }
+  ],
+  "questions": [
+    {
+      "id": "debug-q1",
+      "lesson": "debug-1",
+      "difficulty": 1,
+      "q": "When does a `finally` block run?",
+      "options": [
+        "Every time, before control leaves the statement",
+        "Only when the `try` block throws an error",
+        "Only when the `try` block ends without any error at all",
+        "Only when the `catch` block throws again"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "`finally` always runs before control leaves the `try` statement. It runs after success, after a caught error, and even after a `return`.",
+      "wrong": [
+        "",
+        "It also runs when nothing is thrown.",
+        "It also runs after an error, caught or not.",
+        "It runs whether or not `catch` throws."
+      ],
+      "source": "MDN: try...catch"
+    },
+    {
+      "id": "debug-q2",
+      "lesson": "debug-1",
+      "difficulty": 2,
+      "q": "Which two snippets are a `SyntaxError`? (Choose 2)",
+      "options": [
+        "`try { a(); }`",
+        "`try { a(); } finally { b(); }`",
+        "`try a(); catch (e) {}`",
+        "`try { a(); } catch { b(); }`",
+        "`try { a(); } catch (e) {} finally {}`"
+      ],
+      "answer": [
+        0,
+        2
+      ],
+      "explain": "A `try` needs a `catch`, a `finally`, or both, and every part must be a block in braces. A bare `try` and a `try` without braces both fail to parse.",
+      "wrong": [
+        "",
+        "`try` with only `finally` is a valid form.",
+        "",
+        "The catch binding is optional, so `catch { }` is valid.",
+        "All three parts together is a valid form."
+      ],
+      "source": "MDN: try...catch"
+    },
+    {
+      "id": "debug-q3",
+      "lesson": "debug-1",
+      "difficulty": 2,
+      "q": "What does this code log, in order?",
+      "code": "function f() {\n  try {\n    return 'try';\n  } finally {\n    console.log('cleanup');\n  }\n}\nconsole.log(f());",
+      "lang": "js",
+      "options": [
+        "`try`, then `cleanup`",
+        "`cleanup`, then `try`",
+        "Only `try`, since `finally` is skipped after a `return`",
+        "Only `cleanup`"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "`finally` runs before the function really returns. So `cleanup` prints inside `f()`, then the outer `console.log` prints the returned `try`.",
+      "wrong": [
+        "`f()` must finish before its result can be logged, and `finally` runs inside `f()`.",
+        "",
+        "`finally` still runs after a `return`.",
+        "The `return` value isn't lost; it is handed back after `finally`."
+      ],
+      "source": "MDN: try...catch"
+    },
+    {
+      "id": "debug-q4",
+      "lesson": "debug-1",
+      "difficulty": 2,
+      "q": "What happens when this code runs?",
+      "code": "try {\n  setTimeout(() => {\n    throw new Error('late');\n  }, 0);\n} catch (e) {\n  console.log('caught', e.message);\n}\nconsole.log('after');",
+      "lang": "js",
+      "options": [
+        "`caught late` is logged, then `after`",
+        "`after` is logged, then `caught late`",
+        "`after` is logged, then the error goes uncaught",
+        "`caught late` is logged, and then `after` is never reached"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "A `try` only catches errors thrown while it runs. The `setTimeout` callback runs later, outside it, so its error is uncaught. Put the `try` inside the callback instead.",
+      "wrong": [
+        "The callback runs later, after the `try` statement has finished.",
+        "When the timer fires, no `catch` is around the callback anymore.",
+        "",
+        "Nothing is thrown during the `try` block itself."
+      ],
+      "source": "MDN: try...catch"
+    },
+    {
+      "id": "debug-q5",
+      "lesson": "debug-1",
+      "difficulty": 1,
+      "q": "A function only needs to know whether `JSON.parse` worked. It never reads the error. Which `catch` clause is valid?",
+      "options": [
+        "`catch () { return false; }`",
+        "`catch return false;`",
+        "`catch (_) return false;`",
+        "`catch { return false; }`"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "The catch binding is optional. When you don't need the error, leave out the name and its parentheses: `catch { }`.",
+      "wrong": [
+        "Empty parentheses are a `SyntaxError`. Drop them along with the binding.",
+        "`catch` must be followed by a block in braces.",
+        "The binding is fine, but the body must be a block in braces.",
+        ""
+      ],
+      "source": "MDN: try...catch"
+    },
+    {
+      "id": "debug-q6",
+      "lesson": "debug-1",
+      "difficulty": 1,
+      "q": "Why should code throw an `Error` object instead of a plain string?",
+      "options": [
+        "It carries a `name`, a `message` and a stack trace",
+        "Plain strings can't be thrown; only `Error` objects can",
+        "A thrown string skips the `finally` block",
+        "`catch` ignores anything that isn't an `Error`"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "You can throw any value, but an `Error` object carries useful details. Its `name`, `message` and stack trace show what failed and where.",
+      "wrong": [
+        "",
+        "`throw` accepts any value, strings included.",
+        "`finally` runs no matter what value was thrown.",
+        "`catch` receives whatever value was thrown."
+      ],
+      "source": "MDN: throw"
+    },
+    {
+      "id": "debug-q7",
+      "lesson": "debug-1",
+      "difficulty": 2,
+      "q": "What does this code log?",
+      "code": "try {\n  throw 'Oops';\n} catch (e) {\n  console.log(typeof e, e.length);\n}",
+      "lang": "js",
+      "options": [
+        "`object 4`",
+        "`string 4`",
+        "`string undefined`",
+        "`object undefined`"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "`catch` receives exactly what was thrown. Here that is the string `'Oops'`, so `typeof e` is `'string'` and `e.length` is 4. A string has no `message` or stack trace.",
+      "wrong": [
+        "Nothing wraps the string in an object or an `Error`.",
+        "",
+        "`e` is the string itself, and `'Oops'` has a length of 4.",
+        "The thrown value is a plain string, not an object."
+      ],
+      "source": "MDN: throw"
+    },
+    {
+      "id": "debug-q8",
+      "lesson": "debug-1",
+      "difficulty": 2,
+      "q": "What does this code log?",
+      "code": "try {\n  try {\n    throw new Error('inner');\n  } finally {\n    console.log('A');\n  }\n} catch (e) {\n  console.log('B', e.message);\n}",
+      "lang": "js",
+      "options": [
+        "`B inner`, then `A`",
+        "Only `A`",
+        "`A`, then `B inner`",
+        "`A`, then an uncaught error"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "An inner `try` with no `catch` runs its `finally`, then the error moves out. The nearest enclosing `catch` handles it.",
+      "wrong": [
+        "The inner `finally` runs before control moves out to the outer `catch`.",
+        "The error keeps going after `finally` and reaches the outer `catch`.",
+        "",
+        "The outer `catch` handles the error the inner `try` didn't."
+      ],
+      "source": "MDN: try...catch"
+    },
+    {
+      "id": "debug-q9",
+      "lesson": "debug-1",
+      "difficulty": 2,
+      "q": "Which two statements about `finally` are true? (Choose 2)",
+      "options": [
+        "It runs only when the `catch` block didn't handle the thrown error",
+        "It runs even when `try` has already reached a `return`",
+        "It can't be used on its own; a `catch` block must come before it",
+        "A `return` inside it replaces any earlier `return` value",
+        "It runs before the `try` block, to set things up"
+      ],
+      "answer": [
+        1,
+        3
+      ],
+      "explain": "`finally` always runs before control leaves, even after a `return`. If `finally` itself returns, that value overrides the earlier one.",
+      "wrong": [
+        "It runs every time, handled or not.",
+        "",
+        "`try...finally` is a valid form on its own.",
+        "",
+        "It runs after `try` and `catch`, never before."
+      ],
+      "source": "MDN: try...catch"
+    },
+    {
+      "id": "debug-q10",
+      "lesson": "debug-1",
+      "difficulty": 2,
+      "q": "A function reads a settings string from storage. Bad text must return `null` instead of crashing the page. Which body does that?",
+      "options": [
+        "`if (text) { return JSON.parse(text); } else { return null; }`",
+        "`return JSON.parse(text, () => null);`",
+        "`return JSON.parse(text) ?? null;`",
+        "`try { return JSON.parse(text); } catch { return null; }`"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "`JSON.parse` throws a `SyntaxError` on bad text. Only a `try...catch` can turn that throw into a normal return value.",
+      "wrong": [
+        "Bad text that isn't empty still reaches `JSON.parse` and throws.",
+        "A reviver changes values after parsing. Bad text still throws.",
+        "`??` only helps with `null` or `undefined`. It can't stop a throw.",
+        ""
+      ],
+      "source": "MDN: JSON.parse()"
+    },
+    {
+      "id": "debug-q11",
+      "lesson": "debug-1",
+      "difficulty": 1,
+      "q": "What happens right after a `throw` statement runs?",
+      "options": [
+        "The function stops, and control jumps to the nearest `catch`",
+        "The next line runs, and the error is reported later",
+        "The function restarts from its first line",
+        "The error is ignored unless `finally` is present"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "`throw` ends the current block at once. Control moves to the nearest enclosing `catch`, running any `finally` blocks on the way. With no `catch` at all, the error is uncaught.",
+      "wrong": [
+        "",
+        "Nothing after `throw` in that block runs.",
+        "Code never restarts on its own after a throw.",
+        "Without a `catch`, the error goes up the call chain."
+      ],
+      "source": "MDN: throw"
+    },
+    {
+      "id": "debug-x1",
+      "lesson": "debug-1",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "`fetchData()` returns a promise that rejects. Callers of `load()` get the rejection instead of `'fallback'`. Which change makes the `catch` block handle it?",
+      "code": "async function load() {\n  try {\n    return fetchData();\n  } catch (e) {\n    return 'fallback';\n  }\n}",
+      "lang": "js",
+      "options": [
+        "Move `return 'fallback';` into a `finally` block",
+        "Change the line to `return await fetchData();`",
+        "Change `catch (e)` to `catch` with no binding",
+        "Remove `async` so the promise is returned directly"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "A `try` only catches what fails while it runs. `return fetchData()` hands the promise out, and it rejects later. With `await`, the rejection throws inside the `try`, so `catch` runs.",
+      "wrong": [
+        "A `return` in `finally` would replace every result, even a good one.",
+        "",
+        "The binding has nothing to do with which errors are caught.",
+        "Then the rejection still happens later, outside the `try`."
+      ],
+      "source": "MDN: async function"
+    },
+    {
+      "id": "debug-x2",
+      "lesson": "debug-1",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "What does this code log, in order?",
+      "code": "function run() {\n  try {\n    throw new Error('A');\n  } catch (e) {\n    console.log('catch', e.message);\n    throw new Error('B');\n  } finally {\n    console.log('finally');\n  }\n}\ntry {\n  run();\n} catch (e) {\n  console.log('outer', e.message);\n}",
+      "lang": "js",
+      "options": [
+        "`catch A`, `outer B`, `finally`",
+        "`catch A`, `finally`, then an uncaught `B`",
+        "`catch A`, `finally`, `outer B`",
+        "`catch A`, `outer B`"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "A throw inside `catch` waits until `finally` has run. Then the new error `B` leaves `run()` and reaches the outer `catch`.",
+      "wrong": [
+        "`finally` inside `run()` finishes before the error leaves `run()`.",
+        "The outer `try` catches `B`.",
+        "",
+        "`finally` runs even when `catch` throws."
+      ],
+      "source": "MDN: try...catch"
+    },
+    {
+      "id": "debug-x3",
+      "lesson": "debug-1",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "What does `check()` return, and what happens to the error?",
+      "code": "function check() {\n  try {\n    throw new Error('bad input');\n  } finally {\n    return 'done';\n  }\n}\nconsole.log(check());",
+      "lang": "js",
+      "options": [
+        "It returns `'done'`, then the error is thrown",
+        "It throws `bad input`, and the `return` never runs",
+        "It returns `undefined`, and the error is logged",
+        "It returns `'done'`, and the error is discarded"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "A control-flow statement in `finally` overrides the pending one. Here `return 'done'` replaces the throw, so the error silently disappears. That's why `finally` should only clean up.",
+      "wrong": [
+        "A function can't both return and throw. The `return` wins.",
+        "`finally` runs before the error leaves, and its `return` replaces the throw.",
+        "The `return` in `finally` gives `'done'`, and nothing logs the error.",
+        ""
+      ],
+      "source": "MDN: try...catch"
+    },
+    {
+      "id": "debug-x4",
+      "lesson": "debug-1",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "`save()` returns a promise that rejects. The code logs `saved`, and the rejection shows up as unhandled. Which two changes let the code handle it? (Choose 2)",
+      "code": "function save() {\n  return Promise.reject(new Error('no'));\n}\ntry {\n  save();\n  console.log('saved');\n} catch (e) {\n  console.log('error');\n}",
+      "lang": "js",
+      "options": [
+        "Add a `finally` block after the `catch` block",
+        "Wrap the whole `try` statement in a second `try`",
+        "Add `.catch(handle)` to the `save()` call",
+        "Call `save()` just before the `try` instead",
+        "Move it into an `async` function and use `await save();` inside `try`"
+      ],
+      "answer": [
+        2,
+        4
+      ],
+      "explain": "A rejected promise doesn't throw into a plain `try`. Handle it on the promise with `.catch()`, or `await` it inside `try` in an `async` function.",
+      "wrong": [
+        "`finally` can't catch anything, and the rejection still happens later.",
+        "No `try` can see a rejection that arrives after it has finished.",
+        "",
+        "That moves the call outside the `try`, which helps even less.",
+        ""
+      ],
+      "source": "MDN: async function"
+    },
+    {
+      "id": "debug-x5",
+      "lesson": "debug-1",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "What does this code log?",
+      "code": "let count = 0;\nfunction tick() {\n  try {\n    count++;\n    return count;\n  } finally {\n    count++;\n  }\n}\nconsole.log(tick(), count);",
+      "lang": "js",
+      "options": [
+        "`1 2`",
+        "`2 2`",
+        "`1 1`",
+        "`2 1`"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "The `return` value is worked out first (1), then `finally` runs. `finally` raises `count` to 2 but doesn't change the value already being returned.",
+      "wrong": [
+        "",
+        "The return value was already worked out before `finally` ran.",
+        "`finally` still runs and adds 1 to `count`.",
+        "`count` ends at 2, and the function returned 1."
+      ],
+      "source": "MDN: try...catch"
+    },
+    {
+      "id": "debug-x6",
+      "lesson": "debug-1",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "How many times are `try` and `fin` logged?",
+      "code": "for (let i = 0; i < 3; i++) {\n  try {\n    if (i === 1) continue;\n    console.log('try', i);\n  } finally {\n    console.log('fin', i);\n  }\n}",
+      "lang": "js",
+      "options": [
+        "`try` 2 times, `fin` 2 times",
+        "`try` 2 times, `fin` 3 times",
+        "`try` 3 times, `fin` 3 times",
+        "`try` 3 times, `fin` 2 times"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "`finally` runs whenever control leaves the `try` block, also through `continue`. So `fin` logs on all 3 turns, while `try` skips turn 1.",
+      "wrong": [
+        "`finally` still runs when `continue` leaves the `try` block.",
+        "",
+        "When `i` is 1, `continue` skips the `console.log` in `try`.",
+        "`continue` skips a `try` log, not a `fin` log."
+      ],
+      "source": "MDN: try...catch"
+    },
+    {
+      "id": "debug-q12",
+      "lesson": "debug-2",
+      "difficulty": 1,
+      "q": "Which error does the second line throw?",
+      "code": "const settings = {};\nsettings.load();",
+      "lang": "js",
+      "options": [
+        "`ReferenceError`",
+        "`SyntaxError`",
+        "`TypeError`",
+        "`RangeError`"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "Calling something that isn't a function is a `TypeError`. `settings.load` is `undefined`, and `undefined` can't be called.",
+      "wrong": [
+        "`settings` exists. The problem is the kind of value, not the name.",
+        "The code parses fine. It fails while running.",
+        "",
+        "No number is out of range here."
+      ],
+      "source": "MDN: TypeError"
+    },
+    {
+      "id": "debug-q13",
+      "lesson": "debug-2",
+      "difficulty": 1,
+      "q": "What happens when this code runs?",
+      "code": "console.log(total);\nlet total = 5;",
+      "lang": "js",
+      "options": [
+        "It logs `undefined`, as hoisting moves the declaration up",
+        "It logs `5`",
+        "It throws a `TypeError`",
+        "It throws a `ReferenceError`"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "A `let` or `const` variable is in the temporal dead zone (TDZ) until its line runs. Reading it there throws a `ReferenceError`.",
+      "wrong": [
+        "That's how `var` behaves, not `let`.",
+        "The value 5 isn't stored until the `let` line runs.",
+        "Touching a `let` variable too early is a `ReferenceError`.",
+        ""
+      ],
+      "source": "MDN: let"
+    },
+    {
+      "id": "debug-q14",
+      "lesson": "debug-2",
+      "difficulty": 1,
+      "q": "A function builds `new Array(size)`. A caller passes `-1`. Which error is thrown?",
+      "options": [
+        "`RangeError`",
+        "`TypeError`",
+        "`ReferenceError`",
+        "`URIError`"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "An array length must be a whole number from 0 up. A value outside the allowed range throws a `RangeError`.",
+      "wrong": [
+        "",
+        "-1 is the right type (a number). Its value is out of range.",
+        "No name is missing here.",
+        "That's only for bad input to the URI decode functions."
+      ],
+      "source": "MDN: RangeError"
+    },
+    {
+      "id": "debug-q15",
+      "lesson": "debug-2",
+      "difficulty": 2,
+      "q": "A developer passes three promises to `Promise.any()`, and all three reject. What does the returned promise reject with?",
+      "options": [
+        "Only the first rejection reason, as it arrived",
+        "An `AggregateError` that lists all three reasons",
+        "Only the last rejection reason, as it arrived",
+        "A `RangeError`, because no promise was left"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "`Promise.any` fulfills with the first success. If every promise rejects, it rejects with an `AggregateError`, whose `errors` list holds all the reasons.",
+      "wrong": [
+        "`Promise.any` waits for all of them and keeps every reason.",
+        "",
+        "No single reason is picked; all are kept together.",
+        "The error type for this case is `AggregateError`."
+      ],
+      "source": "MDN: Promise.any()"
+    },
+    {
+      "id": "debug-q16",
+      "lesson": "debug-2",
+      "difficulty": 2,
+      "q": "Which call throws a `URIError`?",
+      "options": [
+        "`encodeURIComponent('a b')`",
+        "`JSON.parse('%')`",
+        "`decodeURIComponent('%')`",
+        "`parseInt('%')`"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "`URIError` is for bad input to the URI functions. A lone `%` isn't a valid escape, so `decodeURIComponent` throws.",
+      "wrong": [
+        "Encoding a space is fine; it returns `'a%20b'`.",
+        "Bad JSON throws a `SyntaxError`.",
+        "",
+        "`parseInt` never throws here; it returns `NaN`."
+      ],
+      "source": "MDN: URIError"
+    },
+    {
+      "id": "debug-q17",
+      "lesson": "debug-2",
+      "difficulty": 2,
+      "q": "What does this code log?",
+      "code": "class ValidationError extends Error {}\nconst e = new ValidationError('Bad email');\nconsole.log(e.name, e instanceof Error);",
+      "lang": "js",
+      "options": [
+        "`ValidationError true`",
+        "`ValidationError false`",
+        "`Error false`",
+        "`Error true`"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "A subclass inherits `name` from `Error.prototype`, which is `'Error'`, unless the class sets it. And every subclass instance is also an `instanceof Error`.",
+      "wrong": [
+        "The class never sets `name`, so it inherits `'Error'`.",
+        "`name` isn't set, and the class does extend `Error`.",
+        "A subclass of `Error` is still an `instanceof Error`.",
+        ""
+      ],
+      "source": "MDN: Error"
+    },
+    {
+      "id": "debug-q18",
+      "lesson": "debug-2",
+      "difficulty": 2,
+      "q": "Given this class, which two are true for `const e = new ValidationError('Too short')`? (Choose 2)",
+      "code": "class ValidationError extends Error {\n  constructor(message) {\n    super(message);\n    this.name = 'ValidationError';\n  }\n}",
+      "lang": "js",
+      "options": [
+        "`e instanceof Error` is `true`",
+        "`e.name` is `'Error'`",
+        "`e instanceof TypeError` is `true`",
+        "`e.message` is `'Too short'`",
+        "`e instanceof ValidationError` is `false`"
+      ],
+      "answer": [
+        0,
+        3
+      ],
+      "explain": "A class that extends `Error` makes objects that are `instanceof` both classes. `super(message)` stores the `message`.",
+      "wrong": [
+        "",
+        "The constructor sets `name` to `'ValidationError'`.",
+        "`ValidationError` extends `Error`, not `TypeError`.",
+        "",
+        "`e` was made by `new ValidationError`, so it's `true`."
+      ],
+      "source": "MDN: Error"
+    },
+    {
+      "id": "debug-q19",
+      "lesson": "debug-2",
+      "difficulty": 2,
+      "q": "Inside `catch (e)`, the code must handle a `TypeError` and pass every other error on. Which code does that?",
+      "options": [
+        "`if (e instanceof TypeError) { fix(); } else { throw e; }`",
+        "`if (e === TypeError) { fix(); } else { throw e; }`",
+        "`if (typeof e === 'TypeError') { fix(); } else { throw e; }`",
+        "`if (e instanceof TypeError) { fix(); } else { return; }`"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "Use `instanceof` to check the error's type. Handle the one you expect and rethrow the rest, so other errors aren't silently lost.",
+      "wrong": [
+        "",
+        "`e` is an error object, never the `TypeError` class itself.",
+        "`typeof` gives `'object'` for errors, never a class name.",
+        "`return` swallows the other errors instead of passing them on."
+      ],
+      "source": "MDN: instanceof"
+    },
+    {
+      "id": "debug-x7",
+      "lesson": "debug-2",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "What does this code log?",
+      "code": "function readConfig(text) {\n  try {\n    return JSON.parse(text);\n  } catch (e) {\n    if (e instanceof SyntaxError) return {};\n    throw e;\n  }\n}\nconsole.log(readConfig('{bad}'));",
+      "lang": "js",
+      "options": [
+        "`undefined`",
+        "`{}`",
+        "Nothing; a `SyntaxError` reaches the caller",
+        "`null`"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "`JSON.parse` throws a `SyntaxError` at run time for bad text. The `instanceof SyntaxError` check matches, so `readConfig` returns `{}`.",
+      "wrong": [
+        "The `catch` returns `{}`, not nothing.",
+        "",
+        "Bad JSON throws a `SyntaxError`, and this `catch` handles exactly that type.",
+        "`JSON.parse` doesn't return `null` for bad text; it throws."
+      ],
+      "source": "MDN: JSON.parse()"
+    },
+    {
+      "id": "debug-x8",
+      "lesson": "debug-2",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "What does this code log?",
+      "code": "const limit = 10;\ntry {\n  limit = 20;\n} catch (e) {\n  console.log(e.name);\n}",
+      "lang": "js",
+      "options": [
+        "`SyntaxError`",
+        "`ReferenceError`",
+        "`TypeError`",
+        "Nothing, and `limit` becomes 20"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "Assigning a new value to a `const` throws a `TypeError` when that line runs. Since it happens at run time, the `try` catches it.",
+      "wrong": [
+        "The code parses fine. The bad assignment fails only when it runs.",
+        "`limit` exists. The problem is changing a constant.",
+        "",
+        "A `const` binding can't be given a new value."
+      ],
+      "source": "MDN: const"
+    },
+    {
+      "id": "debug-x9",
+      "lesson": "debug-2",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "What happens when this code runs?",
+      "code": "let x = 1;\n{\n  console.log(x);\n  let x = 2;\n}",
+      "lang": "js",
+      "options": [
+        "It logs `1`, from the outer `x`",
+        "It logs `2`, from the inner `x`",
+        "It logs `undefined`, since `let` is hoisted",
+        "It throws a `ReferenceError`"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "The inner `let x` belongs to the whole block, so it hides the outer `x` from the first line. Before its declaration runs, it's in the TDZ, so reading it throws a `ReferenceError`.",
+      "wrong": [
+        "The inner `let x` shadows the outer one for the whole block.",
+        "The inner `x` gets 2 only after its line runs.",
+        "`let` variables aren't set to `undefined` early; that's `var`.",
+        ""
+      ],
+      "source": "MDN: let"
+    },
+    {
+      "id": "debug-x10",
+      "lesson": "debug-2",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A data layer throws a low-level error. A developer wraps it in a friendlier `Error` and must keep the original for the logs. Which two approaches keep it? (Choose 2)",
+      "options": [
+        "`throw new Error('Save failed', err.message);`",
+        "`throw new Error('Save failed', { cause: err });`",
+        "`const e = new Error('Save failed: ' + err.message); throw e;`",
+        "`throw new Error('Save failed'); throw err;`",
+        "`const e = new Error('Save failed'); e.original = err; throw e;`"
+      ],
+      "answer": [
+        1,
+        4
+      ],
+      "explain": "The `cause` option (ES2022) keeps the original error on the new one. Before that, code stored it on a property of its own, which still works.",
+      "wrong": [
+        "The second argument must be an options object. A string is ignored.",
+        "",
+        "This keeps only the text. The original error object and its stack are gone.",
+        "The second `throw` never runs; the first one already left.",
+        ""
+      ],
+      "source": "MDN: Error: cause"
+    },
+    {
+      "id": "debug-x11",
+      "lesson": "debug-2",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "Which two lines throw a `TypeError`? (Choose 2)",
+      "options": [
+        "`const a = null; a.length;`",
+        "`let count; count = count + 1;`",
+        "`missingName;`",
+        "`const list = new Array(-1);`",
+        "`const fn = 5; fn();`"
+      ],
+      "answer": [
+        0,
+        4
+      ],
+      "explain": "A `TypeError` means a value was used the wrong way. Reading a property of `null` and calling a number are both wrong uses.",
+      "wrong": [
+        "",
+        "This gives `NaN`, with no error at all.",
+        "An unknown name throws a `ReferenceError`.",
+        "A bad array length throws a `RangeError`.",
+        ""
+      ],
+      "source": "MDN: TypeError"
+    },
+    {
+      "id": "debug-x12",
+      "lesson": "debug-2",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A developer expects this code to log `type`. What does it log, and why?",
+      "code": "try {\n  null.x;\n} catch (e) {\n  if (e instanceof Error) console.log('general');\n  else if (e instanceof TypeError) console.log('type');\n}",
+      "lang": "js",
+      "options": [
+        "`general`, because `TypeError` extends `Error`",
+        "`type`, because `instanceof` picks the closest class",
+        "Nothing, because `null.x` returns `undefined`",
+        "`general`, because `null.x` throws a plain `Error`"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "Every built-in error extends `Error`, so `e instanceof Error` is true for a `TypeError`. The first check wins. Put specific checks before the general one.",
+      "wrong": [
+        "",
+        "`if...else` runs the first check that's true. It doesn't look for the closest class.",
+        "Reading any property of `null` throws a `TypeError`.",
+        "It throws a `TypeError`. The first check is true for that too."
+      ],
+      "source": "MDN: instanceof"
+    },
+    {
+      "id": "debug-q20",
+      "lesson": "debug-3",
+      "difficulty": 1,
+      "q": "A developer has an array of 20 order objects and wants to compare their fields side by side. Which console method fits best?",
+      "options": [
+        "`console.count(orders)`",
+        "`console.table(orders)`",
+        "`console.groupCollapsed(orders)`",
+        "`console.time(orders)`"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "`console.table` shows an array or object as a table, one row per item and one column per field.",
+      "wrong": [
+        "`count` prints how many times it was called, not the data.",
+        "",
+        "That starts a folded group of the lines that follow; it doesn't lay out the fields.",
+        "`time` starts a timer; it doesn't show the data."
+      ],
+      "source": "MDN: console: table() static method"
+    },
+    {
+      "id": "debug-q21",
+      "lesson": "debug-3",
+      "difficulty": 1,
+      "q": "A `debugger;` statement was left in code that went live. What happens for a user who never opens dev tools?",
+      "options": [
+        "The page freezes until the user reloads",
+        "The browser throws a `SyntaxError`",
+        "Nothing; the statement has no effect",
+        "The user sees a prompt to open dev tools"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "`debugger` pauses only when debugging tools are available and open. With none attached, it has no effect.",
+      "wrong": [
+        "It only pauses when a debugger is attached.",
+        "`debugger;` is valid JavaScript.",
+        "",
+        "Browsers show no prompt for it."
+      ],
+      "source": "MDN: debugger"
+    },
+    {
+      "id": "debug-q22",
+      "lesson": "debug-3",
+      "difficulty": 2,
+      "q": "What happens when this code runs?",
+      "code": "console.assert(1 === 2, 'math broke');\nconsole.log('next');",
+      "lang": "js",
+      "options": [
+        "It throws an `AssertionError`, so `next` never prints",
+        "It prints only `next`, because assertions are off by default",
+        "It prints `math broke` only when the condition is true",
+        "It prints `Assertion failed: math broke`, then `next`"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "`console.assert` prints an error message only when its condition is false. It never throws, so the code keeps running.",
+      "wrong": [
+        "`console.assert` never throws; that's Node's separate `assert` module.",
+        "There is no setting to switch it on; it always checks.",
+        "It prints when the condition is false, and stays quiet when true.",
+        ""
+      ],
+      "source": "MDN: console: assert() static method"
+    },
+    {
+      "id": "debug-q23",
+      "lesson": "debug-3",
+      "difficulty": 2,
+      "q": "The developer sees no elapsed time for the load. Why?",
+      "code": "console.time('load');\nloadData();\nconsole.timeEnd('Load');",
+      "lang": "js",
+      "options": [
+        "Labels are case-sensitive, so `'Load'` never started",
+        "`console.time` only works inside `async` functions",
+        "`console.timeEnd` needs the start time as a second argument",
+        "The `loadData()` call already stopped the timer"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "`console.timeEnd` must use the exact label passed to `console.time`. `'Load'` and `'load'` are different, so the console warns that no such timer exists.",
+      "wrong": [
+        "",
+        "It works anywhere.",
+        "It only needs the same label.",
+        "Only `timeEnd` with the matching label stops it."
+      ],
+      "source": "MDN: console: time() static method"
+    },
+    {
+      "id": "debug-q24",
+      "lesson": "debug-3",
+      "difficulty": 2,
+      "q": "A loop processes 5,000 orders. The bug shows only for the order with `id === 4071`. What is the quickest way to pause just there?",
+      "options": [
+        "A line breakpoint, then pressing Resume until `id` is `4071`",
+        "A conditional breakpoint with the condition `id === 4071`",
+        "A `console.count()` call inside the loop",
+        "An XHR/fetch breakpoint on the word `orders`"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "A conditional breakpoint pauses only when its expression is true. It skips all the turns you don't care about.",
+      "wrong": [
+        "That works, but it means thousands of clicks.",
+        "",
+        "Counting prints numbers; it never pauses.",
+        "That pauses on network requests, not loop turns."
+      ],
+      "source": "Chrome DevTools: Pause your code with breakpoints"
+    },
+    {
+      "id": "debug-q25",
+      "lesson": "debug-3",
+      "difficulty": 2,
+      "q": "A developer wants to print `total` each time a line runs, without pausing and without editing the source file. What should they use?",
+      "options": [
+        "A conditional breakpoint on that line",
+        "A `debugger;` statement on that line",
+        "A logpoint on that line",
+        "A watch expression for `total`"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "A logpoint logs a message to the Console without pausing. You add it in dev tools, so the code stays untouched.",
+      "wrong": [
+        "Any breakpoint that isn't a logpoint pauses the code.",
+        "That edits the source and pauses.",
+        "",
+        "Watch only updates while the code is paused."
+      ],
+      "source": "Chrome DevTools: Pause your code with breakpoints"
+    },
+    {
+      "id": "debug-q26",
+      "lesson": "debug-3",
+      "difficulty": 2,
+      "q": "The code is paused on the marked line. The developer wants to see what happens inside `getName()`. Which button should they press?",
+      "code": "function updateHeader() {\n  const name = getName(); // paused here\n  updateName(name);\n}\nfunction getName() {\n  return app.first + ' ' + app.last;\n}",
+      "lang": "js",
+      "options": [
+        "Step over",
+        "Step out",
+        "Resume script execution",
+        "Step into"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "Step into goes inside the function called on the current line and pauses on its first line.",
+      "wrong": [
+        "It runs `getName()` in one go and pauses on the next line.",
+        "It finishes `updateHeader()` and pauses in its caller.",
+        "It runs on until the next breakpoint.",
+        ""
+      ],
+      "source": "Chrome DevTools: JavaScript debugging reference"
+    },
+    {
+      "id": "debug-q27",
+      "lesson": "debug-3",
+      "difficulty": 2,
+      "q": "What does this code log?",
+      "code": "function greet(name) {\n  console.count(name);\n}\ngreet('Ana');\ngreet('Ben');\ngreet('Ana');",
+      "lang": "js",
+      "options": [
+        "`Ana: 1`, `Ben: 1`, `Ana: 2`",
+        "`Ana: 1`, `Ben: 2`, `Ana: 3`",
+        "`default: 1`, `default: 2`, `default: 3`",
+        "`Ana: 2`, `Ben: 1`"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "`console.count(label)` prints how many times it has been called with that label. Each label has its own counter.",
+      "wrong": [
+        "",
+        "Each label keeps its own count.",
+        "The name is passed as the label, so `default` isn't used.",
+        "`count` prints on every call, not once at the end."
+      ],
+      "source": "MDN: console: count() static method"
+    },
+    {
+      "id": "debug-q28",
+      "lesson": "debug-3",
+      "difficulty": 2,
+      "q": "Something on the page removes the cart badge, and nobody knows which script does it. Which tool pauses on the line that removes it?",
+      "options": [
+        "An event listener breakpoint for `click`",
+        "A DOM change breakpoint set to Node removal",
+        "A `console.dir()` call on the badge element",
+        "Pause on uncaught exceptions"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "A DOM change breakpoint pauses on the code that changes a node. Node removal fires when the selected element is removed.",
+      "wrong": [
+        "The removal may not come from a click at all.",
+        "",
+        "That lists the element's properties; it doesn't pause.",
+        "Removing an element doesn't throw anything."
+      ],
+      "source": "Chrome DevTools: Pause your code with breakpoints"
+    },
+    {
+      "id": "debug-q29",
+      "lesson": "debug-3",
+      "difficulty": 1,
+      "q": "`applyDiscount()` is called from several places, and one caller passes a bad value. Which console call shows the chain of calls that reached it?",
+      "options": [
+        "`console.group()`",
+        "`console.dir()`",
+        "`console.trace()`",
+        "`console.countReset()`"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "`console.trace()` prints a stack trace: the chain of calls that led to that line.",
+      "wrong": [
+        "`group` only indents the lines that follow.",
+        "`dir` lists one object's properties.",
+        "",
+        "`countReset` sets a counter back to zero."
+      ],
+      "source": "MDN: console: trace() static method"
+    },
+    {
+      "id": "debug-q30",
+      "lesson": "debug-3",
+      "difficulty": 2,
+      "q": "Which two statements about `console.assert()` are true? (Choose 2)",
+      "options": [
+        "It throws an `Error`, stopping the code, when the condition is false",
+        "It prints a message only when the condition is false",
+        "The code keeps running after a failed assertion",
+        "It prints a message every time, true or false",
+        "It returns `false` when the assertion fails"
+      ],
+      "answer": [
+        1,
+        2
+      ],
+      "explain": "`console.assert` writes an error to the console when its condition is false, and does nothing when true. It never throws, so it can't stop the code.",
+      "wrong": [
+        "It only prints; it never throws.",
+        "",
+        "",
+        "A true condition prints nothing.",
+        "It always returns `undefined`."
+      ],
+      "source": "MDN: console: assert() static method"
+    },
+    {
+      "id": "debug-q31",
+      "lesson": "debug-3",
+      "difficulty": 2,
+      "q": "Paused at a breakpoint, a developer wants to see `cart.total * 1.2` update after every step. What should they add?",
+      "options": [
+        "A logpoint",
+        "A `console.table()` call",
+        "An exception breakpoint",
+        "A watch expression"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "The Watch pane shows the value of any expression you type. It updates each time the code pauses or you step.",
+      "wrong": [
+        "A logpoint prints when its line runs, not after each step.",
+        "That needs a code change and prints once.",
+        "That pauses on thrown errors; it doesn't show a value.",
+        ""
+      ],
+      "source": "Chrome DevTools: JavaScript debugging reference"
+    },
+    {
+      "id": "debug-x13",
+      "lesson": "debug-3",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A third-party library catches an error inside its own `try...catch` and returns `null`. The developer wants to pause on the exact line that throws. What should they turn on?",
+      "options": [
+        "Pause on caught exceptions",
+        "Pause on uncaught exceptions",
+        "A logpoint on the line that gets `null`",
+        "An event listener breakpoint for `error` events"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "The error is caught, so only Pause on caught exceptions stops there. DevTools then pauses on the line that throws.",
+      "wrong": [
+        "",
+        "The library catches the error, so it's never uncaught.",
+        "That logs after the fact and never pauses.",
+        "A caught exception fires no `error` event."
+      ],
+      "source": "Chrome DevTools: Pause your code with breakpoints"
+    },
+    {
+      "id": "debug-x14",
+      "lesson": "debug-3",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A page sometimes requests `/api/v1/prices` instead of `/api/v2/prices`. The code is minified and huge. How can the developer pause on the code that sends the bad request?",
+      "options": [
+        "A DOM change breakpoint on the price `<table>`, for subtree changes",
+        "An XHR/fetch breakpoint for URLs containing `v1/prices`",
+        "Network throttling set to a slow connection",
+        "A conditional breakpoint on line 1 of `app.min.js`"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "An XHR/fetch breakpoint pauses when a request URL contains the text you give. It finds the code that sends the request without knowing where it lives.",
+      "wrong": [
+        "The table changes after the data arrives, not when the request is sent.",
+        "",
+        "That slows requests; it doesn't pause any code.",
+        "Line 1 isn't where the request is sent."
+      ],
+      "source": "Chrome DevTools: Pause your code with breakpoints"
+    },
+    {
+      "id": "debug-x15",
+      "lesson": "debug-3",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "Clicking Save does something odd, and the developer doesn't know which handler runs. Which two dev tools features help find the handler code? (Choose 2)",
+      "options": [
+        "Pause on uncaught exceptions in the Sources panel",
+        "Network throttling in the Network panel",
+        "An event listener breakpoint for `click` in Sources",
+        "The Event Listeners pane for the button in Elements",
+        "Wrapping the click handler call in `console.time()` and `timeEnd()`"
+      ],
+      "answer": [
+        2,
+        3
+      ],
+      "explain": "An event listener breakpoint pauses inside the handler when the event fires. The Elements panel's Event Listeners pane lists the handlers attached to a node.",
+      "wrong": [
+        "Nothing is throwing, so it never pauses.",
+        "That slows requests; it doesn't point to code.",
+        "",
+        "",
+        "That measures time, and you'd need to know the handler already."
+      ],
+      "source": "Chrome DevTools: Pause your code with breakpoints"
+    },
+    {
+      "id": "debug-x16",
+      "lesson": "debug-3",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A developer uses `console.assert` to guard input. What is printed?",
+      "code": "function setAge(age) {\n  console.assert(age >= 0, 'age must be positive');\n  return age;\n}\nconsole.log(setAge(-5));",
+      "lang": "js",
+      "options": [
+        "`Assertion failed: age must be positive`, and nothing else",
+        "Only `-5`, because the assertion passes",
+        "`Assertion failed: age must be positive`, then `-5`",
+        "An uncaught `Error: age must be positive`"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "A failed `console.assert` only prints an error line. The code goes on, so `setAge` still returns -5. Use a real check with `throw` to stop bad input.",
+      "wrong": [
+        "The function keeps running and returns -5.",
+        "-5 is not >= 0, so the assertion fails.",
+        "",
+        "`console.assert` never throws."
+      ],
+      "source": "MDN: console: assert() static method"
+    },
+    {
+      "id": "debug-x17",
+      "lesson": "debug-3",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "With dev tools open, a developer wants the code to pause on a line only when `qty < 0`. Which two work? (Choose 2)",
+      "options": [
+        "A logpoint on the line that logs `qty < 0`",
+        "`console.assert(qty >= 0, 'negative');` just above the line",
+        "A watch expression `qty < 0`",
+        "A conditional breakpoint on the line, with `qty < 0`",
+        "`if (qty < 0) debugger;` just above the line"
+      ],
+      "answer": [
+        3,
+        4
+      ],
+      "explain": "A conditional breakpoint pauses only when its expression is true. A `debugger` statement inside an `if` does the same in code, as long as dev tools are open.",
+      "wrong": [
+        "A logpoint logs; it never pauses.",
+        "A failed assertion only prints a message.",
+        "Watch shows a value while paused; it doesn't cause a pause.",
+        "",
+        ""
+      ],
+      "source": "Chrome DevTools: Pause your code with breakpoints"
+    }
+  ]
+}
