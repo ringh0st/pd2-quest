@@ -6,6 +6,7 @@ import { sfx } from '../audio/sfx.js';
 import { haptic } from '../audio/haptics.js';
 import { NAV_ICONS, PlayGlyph } from './icons/NavIcons.jsx';
 import { useReducedMotion, useCalm } from '../hooks/useMotionPrefs.js';
+import { track } from '../lib/track.js';
 
 const ITEMS = [
   ['/', 'home', 'Home'],
@@ -24,6 +25,8 @@ export function BottomNav({ path, dueCards }) {
   const active = (to) => (to === '/' ? path === '/' : path.startsWith(to) || (to === '/map' && /^\/(world|lesson|play|learn|section|placement)/.test(path)));
   return (
     <nav className="bottom-nav" aria-label="Main">
+      {/* On laptops the bar becomes a sidebar (desktop.css), headed by the exam you are studying */}
+      <span className="nav-brand" aria-hidden="true">{track.name}</span>
       {ITEMS.map(([to, icon, label, center]) => {
         const on = active(to);
         if (center) {

@@ -1,0 +1,66 @@
+/* Laptop and desktop layout (from 960px wide). Phones and tablets keep the layout in global.css untouched.
+   - The bottom tab bar becomes a left sidebar, headed by the exam's name.
+   - Pages use the extra width: dashboards up to 880px, study screens (lessons, questions) a calm 760px column.
+   - Text is one step larger, for reading at arm's length. Everything else (components, colours, motion) is shared. */
+.nav-brand { display: none; }
+
+@media (min-width: 960px) {
+  :root {
+    --side-w: 232px;
+    --fs-body: calc(18px * var(--text-scale));
+    --fs-small: calc(15.5px * var(--text-scale));
+  }
+
+  /* ---- page area ---- */
+  .app { scroll-padding-bottom: 24px; }
+  .app.with-nav { padding-left: var(--side-w); }
+  .app > * { max-width: 880px; }
+  .app > .screen.focus, .app > .screen.study { max-width: 760px; }
+  .screen { padding: 32px 32px 48px; gap: 22px; }
+  .screen.focus { padding-bottom: 24px; }
+  .topbar h1 { font-size: calc(26px * var(--text-scale)); }
+
+  /* ---- sidebar ---- */
+  .bottom-nav {
+    top: 0; bottom: 0; left: 0; transform: none;
+    width: var(--side-w); max-width: none; height: 100%;
+    padding: 28px 14px; border-top: 0; border-right: 1px solid var(--hairline); border-radius: 0;
+    box-shadow: none;
+    grid-template-columns: minmax(0, 1fr); grid-auto-rows: min-content; align-content: start; gap: 6px;
+  }
+  .nav-brand {
+    display: block; padding: 0 14px 18px; font-weight: 800; color: var(--text);
+    font-size: calc(20px * var(--text-scale));
+  }
+  .nav-item {
+    grid-auto-flow: column; justify-content: start; place-items: center start; gap: 14px;
+    min-height: 52px; padding: 0 14px; font-size: calc(16px * var(--text-scale));
+  }
+  .nav-pill { inset: 0; }
+  .nav-badge { position: static; margin-left: auto; }
+  /* Play: the same row as the others, its round tile kept small (no raised panel on a sidebar) */
+  .nav-center::before { display: none; }
+  .nav-center.on { background: var(--primary-soft); }
+  .nav-center-tile { width: 32px; height: 32px; margin: 0; font-size: 18px; box-shadow: none; }
+
+  /* ---- floating things are centred on the page area, not the whole window ---- */
+  body:has(.app.with-nav) .update-banner { bottom: 24px; margin-left: calc(var(--side-w) / 2); }
+  body:has(.app.with-nav) .sheet { margin-left: calc(var(--side-w) / 2); }
+}
+
+/* Keyboard hints show only where there is a keyboard and a mouse (a laptop), never on touch screens */
+.hint-keys, .key-hint { display: none; }
+@media (hover: hover) and (pointer: fine) {
+  .hint-touch { display: none; }
+  .hint-keys { display: inline; }
+  .key-hint { display: block; }
+}
+
+/* Study screens read one more step larger on a laptop */
+@media (min-width: 960px) {
+  .screen.focus, .screen.study {
+    --fs-body: calc(19px * var(--text-scale));
+    --fs-small: calc(16px * var(--text-scale));
+    font-size: var(--fs-body);
+  }
+}

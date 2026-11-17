@@ -150,7 +150,7 @@ export default function App() {
     <MotionConfig reducedMotion={reduced ? 'always' : 'never'}>
       <FeedbackProvider>
         <a href="#main" className="sr-only skip-link">Skip to content</a>
-        <div className="app">
+        <div className={`app${!focus && onboarded ? ' with-nav' : ''}`}>
           <ErrorBoundary key={route.path}>
             <Suspense fallback={<main className="screen" id="main" aria-busy="true"><p className="sr-only">Loading…</p></main>}>
               <Screen route={route} />

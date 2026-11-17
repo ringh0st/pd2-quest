@@ -7,6 +7,7 @@ import '@fontsource/lexend/700.css';
 import '@fontsource/jetbrains-mono/400.css';
 import './styles/tokens.css';
 import './styles/global.css';
+import './styles/desktop.css';
 import App from './App.jsx';
 import { ErrorBoundary } from './components/ErrorBoundary.jsx';
 import { initInstallCapture } from './lib/install.js';

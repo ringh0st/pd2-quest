@@ -2,6 +2,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { QuestionView } from './QuestionView.jsx';
+import { onControl, useShortcuts } from '../hooks/useShortcuts.js';
 import { Rich } from '../lib/rich.jsx';
 import { answerQuestion, earn, getState } from '../state/store.js';
 import { answerXp, comboMultiplier } from '../engine/xp.js';
@@ -163,6 +164,16 @@ export function PracticeRunner({ questions, onDone, onExit, topRight, requeue = 
     setPop(null);
   };
 
+  // Laptop keys: Enter presses the main button (Check, or "Sure" when asked how sure; then Continue).
+  // A focused button or link keeps Enter for itself.
+  useShortcuts((e) => {
+    if (e.key !== 'Enter' || onControl(e)) return false;
+    if (revealed) { next(); return true; }
+    if (chosen.length !== need) return false;
+    if (askConfidence) check('sure'); else check();
+    return true;
+  });
+
   const progress = (idx + (revealed ? 1 : 0)) / queue.length;
   const sec = sectionById[q.section];
 
@@ -267,6 +278,7 @@ export function PracticeRunner({ questions, onDone, onExit, topRight, requeue = 
         )}
       </AnimatePresence>
 
+      <p className="key-hint small muted center">Keys: A–E to pick · Enter to check{askConfidence ? ' (as Sure)' : ''}, then to go on</p>
       <div style={{ flex: 1 }} />
       <div className="sticky-actions">
           <AnimatePresence>

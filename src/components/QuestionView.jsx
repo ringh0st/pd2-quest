@@ -9,6 +9,7 @@ import { useReducedMotion } from '../hooks/useMotionPrefs.js';
 import { Icon } from './icons/Icon.jsx';
 import { SpeakButton } from './SpeakButton.jsx';
 import { cleanQuestion, questionSpeech } from '../lib/speechText.js';
+import { useShortcuts } from '../hooks/useShortcuts.js';
 import { useEffect, useRef } from 'react';
 import { useCalm } from '../hooks/useMotionPrefs.js';
 
@@ -42,6 +43,14 @@ export function QuestionView({ question, chosen, onToggle, revealed, shake = 0, 
   }, [shake, reduced, calm, animateLabel, labelRef]);
   const multi = question.answer.length > 1;
   const correct = new Set(question.answer);
+  // Laptop keys: A–E or 1–5 pick an option (the same as tapping it)
+  useShortcuts((e) => {
+    const k = e.key.toLowerCase();
+    const i = /^[1-6]$/.test(k) ? Number(k) - 1 : 'abcdef'.indexOf(k);
+    if (revealed || i < 0 || i >= question.options.length || hidden.includes(i)) return false;
+    sfx.select(); haptic('light'); onToggle(i, multi);
+    return true;
+  });
 
   return (
     <div className="stack">

@@ -22,6 +22,7 @@ import { saveRun, loadRun, clearRun, questionsFor } from '../state/runSession.js
 import { useStudyScreen } from '../hooks/useStudyScreen.js';
 import { SpeakButton } from '../components/SpeakButton.jsx';
 import { cardSpeech, termSpeech } from '../lib/speechText.js';
+import { useShortcuts } from '../hooks/useShortcuts.js';
 
 const KIND_LABEL = {
   text: '', code: 'Code', list: '',
@@ -86,6 +87,14 @@ export function Lesson({ id }) {
   const matcher = useMemo(() => termMatcher(lesson?.terms), [lesson]);
   const measureRef = useRef(null);
   const tallest = useTallest(measureRef, [lesson?.id, phase]);
+  // Laptop keys: ← and → move between cards (set below, once `move` exists)
+  const keyMove = useRef(null);
+  useShortcuts((e) => {
+    const d = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0;
+    if (!d || !keyMove.current) return false;
+    keyMove.current(d);
+    return true;
+  }, phase === 'cards');
 
   if (!lesson) return <main className="screen"><p>Lesson not found.</p></main>;
   const sec = sectionById[lesson.section];
@@ -107,6 +116,7 @@ export function Lesson({ id }) {
     setDir(d); setI(n); setTerm(null);
     saveRun(lesson.id, { phase: 'cards', i: n });
   };
+  keyMove.current = move;
 
   const finish = (result) => {
     clearRun(lesson.id);
@@ -212,7 +222,7 @@ export function Lesson({ id }) {
       </div>
       {/* Right under the card, so opening a word's meaning below never moves them */}
       <div className="dots" aria-hidden="true">{cards.map((_, k) => <span key={k} className={k === i ? 'on' : ''} />)}</div>
-      <p className="small muted center">Swipe or tap the buttons</p>
+      <p className="small muted center"><span className="hint-touch">Swipe or tap the buttons</span><span className="hint-keys">Use the ← → keys or the buttons</span></p>
 
       {matcher && (
         <section id="term-panel" className="term-panel" aria-live="polite" aria-label="What this word means">
