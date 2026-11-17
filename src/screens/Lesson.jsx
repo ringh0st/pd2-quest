@@ -1,6 +1,6 @@
 // Lesson: swipe through 4-7 tiny cards, then 2-3 check questions, then a celebration.
-import { useMemo, useState } from 'react';
-import { AnimatePresence, motion } from 'motion/react';
+import { useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { motion } from 'motion/react';
 import { lessonById, sectionById, questionById } from '../data/index.js';
 import { completeLesson, earn, getState, saveStars, checkBadges } from '../state/store.js';
 import { XP } from '../engine/xp.js';
@@ -38,6 +38,39 @@ function cardLabel(card) {
   return { label: KIND_LABEL[card.type] || '', title: t || null };
 }
 
+/** The texts on a card that can hold key terms, in the order the card shows them. */
+const cardTextsOf = (card) => [card.type !== 'code' ? card.body : null, ...(card.items ?? []), card.type === 'code' ? card.body : null];
+
+/** What a lesson card shows. `glossary(owner)` marks key terms in each text; `tools` sits in the corner. */
+function CardContent({ card, glossary, tools }) {
+  const last = cardTextsOf(card).length - 1;
+  return (
+    <>
+      {cardLabel(card).label && <div className="kind">{cardLabel(card).label}</div>}
+      <div className="lesson-card-tools">{tools}</div>
+      {cardLabel(card).title && <h2><Rich text={cardLabel(card).title} /></h2>}
+      {card.body && card.type !== 'code' && <p><Rich text={card.body} glossary={glossary(0)} /></p>}
+      {card.type === 'list' && <ul>{card.items.map((it, k) => <li key={k}><Rich text={it} glossary={glossary(1 + k)} /></li>)}</ul>}
+      {card.type === 'code' && <><CodeBlock code={card.code} lang={card.lang} />{card.body && <p className="small"><Rich text={card.body} glossary={glossary(last)} /></p>}</>}
+    </>
+  );
+}
+
+/** The height of the tallest card copy inside `ref`, kept up to date as fonts load or the screen turns. */
+function useTallest(ref, deps) {
+  const [tallest, setTallest] = useState(0);
+  useLayoutEffect(() => {
+    const box = ref.current;
+    if (!box) return undefined;
+    const measure = () => setTallest(box.offsetHeight);
+    measure();
+    const watcher = new ResizeObserver(measure);
+    watcher.observe(box);
+    return () => watcher.disconnect();
+  }, deps); // eslint-disable-line react-hooks/exhaustive-deps
+  return tallest;
+}
+
 export function Lesson({ id }) {
   useStudyScreen();
   const lesson = lessonById[id];
@@ -51,6 +84,8 @@ export function Lesson({ id }) {
   const reduced = useReducedMotion();
   const [term, setTerm] = useState(null); // index into lesson.terms, shown under the card
   const matcher = useMemo(() => termMatcher(lesson?.terms), [lesson]);
+  const measureRef = useRef(null);
+  const tallest = useTallest(measureRef, [lesson?.id, phase]);
 
   if (!lesson) return <main className="screen"><p>Lesson not found.</p></main>;
   const sec = sectionById[lesson.section];
@@ -112,7 +147,7 @@ export function Lesson({ id }) {
     );
   }
 
-  const cardTexts = [card.type !== 'code' ? card.body : null, ...(card.items ?? []), card.type === 'code' ? card.body : null];
+  const cardTexts = cardTextsOf(card);
   const claims = matcher ? firstMentions(cardTexts, matcher) : new Map();
   const pickTerm = (k) => {
     sfx.tap(); haptic('light'); setTerm(k);
@@ -120,6 +155,12 @@ export function Lesson({ id }) {
     if (k !== null) requestAnimationFrame(() => document.getElementById('term-panel')?.scrollIntoView({ block: 'nearest', behavior: reduced ? 'auto' : 'smooth' }));
   };
   const glossary = (owner) => (matcher ? { matcher, claims, owner, active: term, onTerm: pickTerm } : undefined);
+  // The measuring copies mark the same key terms (same widths), but nothing in them can be tapped.
+  const measureGlossary = (c) => {
+    if (!matcher) return () => undefined;
+    const measureClaims = firstMentions(cardTextsOf(c), matcher);
+    return (owner) => ({ matcher, claims: measureClaims, owner, active: null, onTerm: () => {} });
+  };
   const shownTerm = term !== null && claims.has(term) ? lesson.terms[term] : null;
 
   return (
@@ -144,35 +185,34 @@ export function Lesson({ id }) {
         </a>
       </div>
 
-      <div className="lesson-stage" aria-live="polite">
-        <AnimatePresence mode="popLayout" initial={false} custom={dir}>
-          <motion.article
-            key={i}
-            className={`lesson-card is-${card.type}`}
-            custom={dir}
-            initial={reduced ? { opacity: 0 } : { opacity: 0, x: dir * 80, rotate: dir * 3 }}
-            animate={{ opacity: 1, x: 0, rotate: 0 }}
-            exit={reduced ? { opacity: 0 } : { opacity: 0, x: dir * -80, rotate: dir * -3 }}
-            transition={{ type: 'spring', stiffness: 380, damping: 32 }}
-            drag={reduced ? false : 'x'}
-            dragConstraints={{ left: 0, right: 0 }}
-            dragElastic={0.6}
-            onDragEnd={(_, info) => { if (info.offset.x < -70) move(1); else if (info.offset.x > 70) move(-1); }}
-          >
-            {cardLabel(card).label && <div className="kind">{cardLabel(card).label}</div>}
-            <div className="lesson-card-tools">
-              <SpeakButton
-                label="Read this card aloud"
-                text={cardSpeech(card)}
-              />
-            </div>
-            {cardLabel(card).title && <h2><Rich text={cardLabel(card).title} /></h2>}
-            {card.body && card.type !== 'code' && <p><Rich text={card.body} glossary={glossary(0)} /></p>}
-            {card.type === 'list' && <ul>{card.items.map((it, k) => <li key={k}><Rich text={it} glossary={glossary(1 + k)} /></li>)}</ul>}
-            {card.type === 'code' && <><CodeBlock code={card.code} lang={card.lang} />{card.body && <p className="small"><Rich text={card.body} glossary={glossary(cardTexts.length - 1)} /></p>}</>}
-          </motion.article>
-        </AnimatePresence>
+      <div className="lesson-stage" aria-live="polite" style={tallest ? { minHeight: tallest } : undefined}>
+        {/* Only the new card animates in; the old one leaves at once. (An exit animation overlapping the new card
+            could flash the old card back for a frame on a phone, which read as a shake.) */}
+        <motion.article
+          key={i}
+          className={`lesson-card is-${card.type}`}
+          initial={reduced ? { opacity: 0 } : { opacity: 0, x: dir * 60 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={reduced ? { duration: 0.15 } : { type: 'spring', stiffness: 420, damping: 36 }}
+          drag={reduced ? false : 'x'}
+          dragConstraints={{ left: 0, right: 0 }}
+          dragElastic={0.6}
+          onDragEnd={(_, info) => { if (info.offset.x < -70) move(1); else if (info.offset.x > 70) move(-1); }}
+        >
+          <CardContent card={card} glossary={glossary} tools={<SpeakButton label="Read this card aloud" text={cardSpeech(card)} />} />
+        </motion.article>
+        {/* Invisible copies of every card: the stage keeps the tallest one's height, so moving between cards never makes the page jump. */}
+        <div className="lesson-measure" ref={measureRef} aria-hidden="true" inert>
+          {cards.map((c, k) => (
+            <article key={k} className={`lesson-card is-${c.type}`}>
+              <CardContent card={c} glossary={measureGlossary(c)} tools={<span className="speak-btn" />} />
+            </article>
+          ))}
+        </div>
       </div>
+      {/* Right under the card, so opening a word's meaning below never moves them */}
+      <div className="dots" aria-hidden="true">{cards.map((_, k) => <span key={k} className={k === i ? 'on' : ''} />)}</div>
+      <p className="small muted center">Swipe or tap the buttons</p>
 
       {matcher && (
         <section id="term-panel" className="term-panel" aria-live="polite" aria-label="What this word means">
@@ -192,8 +232,6 @@ export function Lesson({ id }) {
         </section>
       )}
 
-      <div className="dots" aria-hidden="true">{cards.map((_, k) => <span key={k} className={k === i ? 'on' : ''} />)}</div>
-      <p className="small muted center">Swipe or tap the buttons</p>
       <div className="sticky-actions" style={{ gridTemplateColumns: '1fr 2fr' }}>
         <button className="btn" onClick={() => move(-1)} disabled={i === 0}><Icon name="back" /> Back</button>
         <button className="btn primary" onClick={() => move(1)}>{i + 1 >= cards.length

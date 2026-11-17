@@ -234,7 +234,11 @@ a.card:not(.section-card):not(.stat):not(.row):not(.stack-s) { display: block; }
 .path-node:nth-child(4n) { margin-left: 28px; }
 
 /* ---------- lesson cards ---------- */
+/* The stage keeps the height of the lesson's tallest card (measured on invisible copies, Lesson.jsx), so moving
+   between short and long cards never makes the page jump. Every card fills that height. */
 .lesson-stage { position: relative; flex: 1; display: grid; grid-template-columns: minmax(0, 1fr); min-height: 340px; }
+.lesson-stage > .lesson-card { align-self: stretch; align-content: start; }
+.lesson-measure { position: absolute; inset: 0 0 auto; display: grid; grid-template-columns: minmax(0, 1fr); visibility: hidden; pointer-events: none; }
 .lesson-card {
   grid-area: 1 / 1;
   min-width: 0;
