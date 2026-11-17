@@ -8,6 +8,7 @@ import 'prismjs/components/prism-apex.js';
 import 'prismjs/components/prism-javascript.js';
 import 'prismjs/components/prism-markup.js';
 import 'prismjs/components/prism-bash.js';
+import 'prismjs/components/prism-json.js';
 
 // Salesforce formulas: FUNCTION( calls, `Field__c` / `Account.Name` / `$User.Id` references, "text" literals.
 Prism.languages.formula = {
@@ -21,8 +22,8 @@ Prism.languages.formula = {
   punctuation: /[(),]/,
 };
 
-const ALIAS = { formula: 'formula', apex: 'apex', soql: 'sql', sosl: 'sql', sql: 'sql', js: 'javascript', javascript: 'javascript', html: 'markup', xml: 'markup', markup: 'markup', bash: 'bash', sh: 'bash', shell: 'bash' };
-export const LANG_LABEL = { apex: 'Apex', soql: 'SOQL', sosl: 'SOSL', sql: 'SQL', js: 'JavaScript', javascript: 'JavaScript', html: 'HTML', xml: 'XML', markup: 'HTML', bash: 'Terminal', sh: 'Terminal', text: 'Text', formula: 'Formula' };
+const ALIAS = { formula: 'formula', apex: 'apex', soql: 'sql', sosl: 'sql', sql: 'sql', js: 'javascript', javascript: 'javascript', html: 'markup', xml: 'markup', markup: 'markup', bash: 'bash', sh: 'bash', shell: 'bash', json: 'json' };
+export const LANG_LABEL = { apex: 'Apex', soql: 'SOQL', sosl: 'SOSL', sql: 'SQL', js: 'JavaScript', javascript: 'JavaScript', html: 'HTML', xml: 'XML', markup: 'HTML', bash: 'Terminal', sh: 'Terminal', text: 'Text', formula: 'Formula', json: 'JSON' };
 
 /** Prism token stream for `code` in `lang` (plain strings when the language is unknown). */
 export function highlight(code, lang = 'apex') {

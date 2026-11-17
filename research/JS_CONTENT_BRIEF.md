@@ -25,7 +25,7 @@ same plain-language style, same fairness checks. The learner has ADHD; everythin
 
 This exam is about the **JavaScript language, the browser, Node.js and Jest**, not Salesforce features. The real exam is
 full of short code snippets: "What is logged?", "Which two lines make this work?", "What is the value of x?".
-- About **45% of questions** include a snippet (`"code"` with `"lang": "js"`; `"html"` for markup, `"bash"` for
+- About **45% of questions** include a snippet (`"code"` with `"lang": "js"`; `"html"` for markup, `"json"` for package.json and other JSON, `"bash"` for
   npm/node commands). Always set `lang`; never leave it out (the app's default is Apex).
 - Snippets are short (ideally ≤ 12 lines), valid, and their output must be exactly what a modern engine prints for the
   exam's era. Run every snippet you write with Node (`node -e` or a scratch file outside the repo) and check the key

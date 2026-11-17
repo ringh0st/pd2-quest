@@ -1,0 +1,1899 @@
+{
+  "id": "server",
+  "title": "Server Side JavaScript",
+  "weight": 8,
+  "summary": "Node.js on the server: one busy thread that never waits, modules that load once, the node and npm commands, core modules and frameworks, and package.json versions you can trust.",
+  "lessons": [
+    {
+      "id": "server-1",
+      "title": "Node.js: what it is and how modules load",
+      "minutes": 4,
+      "objective": "Given a scenario and requirements, infer which Node.js implementation is a good solution.",
+      "cards": [
+        {
+          "type": "text",
+          "title": "In plain words",
+          "body": "**Node.js** runs JavaScript outside the browser, on a server or your laptop. Your code runs on one main thread. Slow jobs, like reading a file or calling a database, are handed to the system. Node serves other work while it waits. That is **non-blocking I/O**."
+        },
+        {
+          "type": "tip",
+          "title": "Think of it like…",
+          "body": "One waiter in a busy café. They take an order, pass it to the kitchen, and serve the next table while it cooks. Where it stops: if the waiter has to chop vegetables themselves (heavy math), every table waits."
+        },
+        {
+          "type": "text",
+          "title": "Good fit, bad fit",
+          "body": "Node shines at **I/O-heavy** work: APIs, chat, streaming, lots of small requests. Long math on the main thread blocks the **event loop**, the loop that runs the next ready job. Move CPU-heavy work to **worker threads** or a **child process**."
+        },
+        {
+          "type": "list",
+          "title": "Not a browser",
+          "items": [
+            "No `window`, no `document`, no DOM",
+            "`globalThis` (also called `global`) is the global object",
+            "`process` holds `argv`, `env` and `exit()`",
+            "`Buffer` holds raw bytes, like file data"
+          ]
+        },
+        {
+          "type": "code",
+          "title": "CommonJS",
+          "lang": "js",
+          "code": "// math.js\nexports.add = (a, b) => a + b;\n\n// app.js\nconst { add } = require('./math');\nconsole.log(add(2, 3)); // 5",
+          "body": "**CommonJS** is Node's original module system. `require()` loads a file and returns its `module.exports`. `exports.add` adds to that same object."
+        },
+        {
+          "type": "text",
+          "title": "Loaded once",
+          "body": "Node **caches** a module after the first `require()`. Its top-level code runs once. Every later `require()` of the same file gets the very same object back. Change it in one file, and every file sees the change."
+        },
+        {
+          "type": "text",
+          "title": "ES modules in Node",
+          "body": "**ES modules** use `import` and `export`. Node loads a file that way when it ends in `.mjs`, or ends in `.js` under `\"type\": \"module\"` in package.json. `.cjs` always means CommonJS. ES modules have no `require` or `__dirname`; use `import.meta.url`. Relative imports need the full name: `./math.js`."
+        },
+        {
+          "type": "trap",
+          "body": "`exports = { add }` exports nothing. It only points the local name at a new object. `require()` still returns `module.exports`, which stays empty. To replace the whole export, write `module.exports = { add }`."
+        },
+        {
+          "type": "tip",
+          "title": "Remember it",
+          "body": "**\"One waiter, many tables.\"** Node never waits, so don't make it cook. For modules: change `module.exports`, never reassign `exports`."
+        }
+      ],
+      "check": [
+        "server-q1",
+        "server-q2",
+        "server-x1"
+      ],
+      "terms": [
+        {
+          "term": "Node.js",
+          "match": [
+            "Node"
+          ],
+          "say": "A program that runs JavaScript outside a web browser. People use it to build servers and command-line tools."
+        },
+        {
+          "term": "non-blocking I/O",
+          "say": "Asking for slow input or output, like a file, and not standing still while it comes. Node does other work and picks up the answer later."
+        },
+        {
+          "term": "event loop",
+          "say": "The loop inside Node that keeps picking the next ready job and running it. If one job takes too long, everything else waits."
+        },
+        {
+          "term": "worker threads",
+          "match": [
+            "worker thread"
+          ],
+          "say": "Extra helpers inside one Node program. Each runs JavaScript on its own, so heavy math there does not freeze the main thread."
+        },
+        {
+          "term": "child process",
+          "say": "A separate program that Node starts and talks to. Heavy work there runs beside Node instead of blocking it."
+        },
+        {
+          "term": "globalThis",
+          "say": "The name for the global object that works everywhere. In a browser it is the window; in Node it is the object also called global."
+        },
+        {
+          "term": "process",
+          "say": "Node's object about the running program. It holds the command-line words, the environment settings, and a way to stop the program."
+        },
+        {
+          "term": "CommonJS",
+          "say": "Node's older way to share code between files. One file sets module.exports, and another file gets it back with require()."
+        },
+        {
+          "term": "module.exports",
+          "say": "The object a CommonJS file hands to whoever calls require() on it. Whatever you put there is what other files get."
+        },
+        {
+          "term": "ES modules",
+          "match": [
+            "ES module"
+          ],
+          "say": "The standard JavaScript way to share code between files, using import and export. Browsers and Node both understand it."
+        }
+      ]
+    },
+    {
+      "id": "server-2",
+      "title": "Node and npm on the command line",
+      "minutes": 3,
+      "objective": "Given a scenario and requirements, infer which Node.js CLI command is a good solution.",
+      "cards": [
+        {
+          "type": "text",
+          "title": "In plain words",
+          "body": "You run Node and its tools from a terminal. `node` runs JavaScript files and quick snippets. **npm**, the Node package manager, installs packages and runs your project's scripts. **npx** runs a command that comes from a package. If the package isn't installed, it offers to fetch it."
+        },
+        {
+          "type": "tip",
+          "title": "Think of it like…",
+          "body": "A kitchen. `node` is the stove: it cooks what you hand it. npm is the grocery service and the shopping list. npx borrows a gadget for one recipe. Where it stops: npx keeps a cached copy, so the gadget is not fully gone afterwards."
+        },
+        {
+          "type": "list",
+          "title": "Running code with node",
+          "items": [
+            "`node app.js` runs a file",
+            "`node -e \"code\"` runs a snippet; it prints only what you log",
+            "`node -p \"1 + 1\"` runs it and prints the result",
+            "`node` alone opens the **REPL**, a live prompt",
+            "`node -r dotenv/config app.js` loads a module first"
+          ]
+        },
+        {
+          "type": "code",
+          "title": "Debugging",
+          "lang": "bash",
+          "code": "node --inspect app.js      # run; a debugger can attach\nnode --inspect-brk app.js  # also pause before line 1\nnode inspect app.js        # built-in terminal debugger",
+          "body": "`--inspect` lets a debugger such as Chrome DevTools attach (open `chrome://inspect`). `--inspect-brk` also pauses before your code starts, so you can set breakpoints first."
+        },
+        {
+          "type": "list",
+          "title": "Everyday npm",
+          "items": [
+            "`npm init -y` makes package.json with default answers",
+            "`npm install lodash` adds a dependency",
+            "`npm install -D jest` adds a **devDependency**",
+            "`npm install -g` installs a tool for the whole machine",
+            "`npm ci` installs exactly what the **lock file** says"
+          ]
+        },
+        {
+          "type": "code",
+          "title": "Scripts",
+          "lang": "bash",
+          "code": "npm run build   # runs \"build\" from \"scripts\"\nnpm test        # \"test\" needs no \"run\"\nnpm start       # neither does \"start\"\nnpx eslint .    # run a package's command",
+          "body": "`npm run <name>` runs any script in package.json. Only `test`, `start`, `stop` and `restart` have shortcuts without `run`."
+        },
+        {
+          "type": "trap",
+          "body": "\"`npm test` works, so `npm deploy` will too.\" No. A custom script always needs `npm run deploy`. Another classic: `node -e \"1 + 1\"` prints nothing. Use `-p` to print the result."
+        },
+        {
+          "type": "tip",
+          "title": "Remember it",
+          "body": "**\"-e evals, -p prints, -brk brakes.\"** And: `test` and `start` skip `run`; every other script says `npm run`."
+        }
+      ],
+      "check": [
+        "server-q9",
+        "server-q10",
+        "server-x6"
+      ],
+      "terms": [
+        {
+          "term": "npm",
+          "say": "The tool that comes with Node for getting packages. It downloads code other people shared and runs the scripts in your project."
+        },
+        {
+          "term": "npx",
+          "say": "A helper that runs a command from a package. If the package is not in your project, it can fetch it first."
+        },
+        {
+          "term": "REPL",
+          "say": "A live prompt where you type JavaScript and see the answer right away. It stands for Read, Eval, Print, Loop."
+        },
+        {
+          "term": "--inspect",
+          "say": "A Node flag that opens a door for a debugger. Then a tool like Chrome DevTools can pause and look inside your program."
+        },
+        {
+          "term": "--inspect-brk",
+          "say": "Like --inspect, but Node also pauses before your first line runs. That gives you time to set breakpoints."
+        },
+        {
+          "term": "npm init",
+          "match": [
+            "npm init -y"
+          ],
+          "say": "The command that creates a new package.json file. With -y it uses the default answers and asks you nothing."
+        },
+        {
+          "term": "devDependency",
+          "say": "A package you need only while building or testing, like a test tool. People who install your package do not get it."
+        },
+        {
+          "term": "npm ci",
+          "say": "An install command for build servers. It installs exactly what the lock file lists, and stops with an error if the files disagree."
+        },
+        {
+          "term": "lock file",
+          "say": "The file package-lock.json. It writes down the exact version of every package installed, so every install can match."
+        },
+        {
+          "term": "npm run",
+          "match": [
+            "npm run <name>"
+          ],
+          "say": "The command that runs a script listed in package.json, by its name. For example, npm run build."
+        }
+      ]
+    },
+    {
+      "id": "server-3",
+      "title": "Core modules and popular frameworks",
+      "minutes": 4,
+      "objective": "Know the core Node.js modules and given requirements, infer which Node.js library/framework is a good solution.",
+      "cards": [
+        {
+          "type": "text",
+          "title": "In plain words",
+          "body": "Node ships with **core modules**: built-in tools you load without installing anything. You can add the `node:` prefix, like `require('node:fs')`, to show it is built in. For bigger apps, people add a **framework** from npm, such as Express."
+        },
+        {
+          "type": "tip",
+          "title": "Think of it like…",
+          "body": "A new kitchen comes with a stove, a sink and knives: the core modules. A framework is a meal-kit service that also tells you how to lay out the meal. Where it stops: you can cook without a kit, and many apps use only core modules."
+        },
+        {
+          "type": "list",
+          "title": "Core modules to know",
+          "items": [
+            "`fs`: read and write files",
+            "`http` and `https`: make a server or send a request",
+            "`path`: build file paths safely on any system",
+            "`events`: the `EventEmitter` class",
+            "`stream`: move data piece by piece",
+            "`util`: helpers like `promisify`",
+            "`os`, `url`, `crypto`, `child_process`"
+          ]
+        },
+        {
+          "type": "code",
+          "title": "Three ways to read a file",
+          "lang": "js",
+          "code": "const fs = require('node:fs');\nconst fsp = require('node:fs/promises');\n\nconst a = fs.readFileSync('a.txt', 'utf8'); // blocks\nfs.readFile('a.txt', 'utf8', (err, b) => {}); // callback\nfsp.readFile('a.txt', 'utf8').then((c) => {}); // promise",
+          "body": "A **sync** call blocks the event loop: nothing else runs until it finishes. Fine in a start-up script, bad in a busy server. Callbacks get the **error first**, then the data."
+        },
+        {
+          "type": "code",
+          "title": "Events",
+          "lang": "js",
+          "code": "const EventEmitter = require('node:events');\nconst bell = new EventEmitter();\nbell.on('ring', (who) => console.log('hi', who));\nbell.once('ring', () => console.log('first only'));\nbell.emit('ring', 'Ann'); // hi Ann, first only\nbell.emit('ring', 'Bo');  // hi Bo",
+          "body": "An **EventEmitter** calls its listeners **synchronously**, in the order they were added. `once` listens one time. Emitting `'error'` with no listener throws."
+        },
+        {
+          "type": "text",
+          "title": "Streams",
+          "body": "A **stream** moves data in small chunks instead of all at once. There are four kinds: Readable, Writable, Duplex and Transform. Connect them with `pipe()` or `stream.pipeline()`. `pipeline` also passes on errors and cleans up. Streams keep memory low, even for huge files."
+        },
+        {
+          "type": "list",
+          "title": "Frameworks: pick by need",
+          "items": [
+            "**Express**: minimal, routes plus **middleware**",
+            "**Koa**: small, built on `async` middleware",
+            "**Fastify**: minimal and fast, with JSON schemas",
+            "**NestJS**: structured, TypeScript, for big teams",
+            "**Next.js**: React pages rendered on the server"
+          ]
+        },
+        {
+          "type": "trap",
+          "body": "Calling `readFileSync` on a huge file inside a request handler. Every other user waits until it finishes, and the whole file sits in memory. Use the async API, or a stream for big files."
+        },
+        {
+          "type": "tip",
+          "title": "Remember it",
+          "body": "**\"Sync stops the shop.\"** In a server, use callbacks, promises or streams. And `emit` is a phone call, not a letter: listeners run right away."
+        }
+      ],
+      "check": [
+        "server-q18",
+        "server-q19",
+        "server-x10"
+      ],
+      "terms": [
+        {
+          "term": "core modules",
+          "match": [
+            "core module"
+          ],
+          "say": "Tools that come built into Node, like fs and http. You can use them without installing anything."
+        },
+        {
+          "term": "fs",
+          "say": "Node's built-in file system module. It reads, writes and deletes files and folders."
+        },
+        {
+          "term": "path",
+          "say": "A built-in module that joins and splits file paths correctly, on Windows and on Linux alike."
+        },
+        {
+          "term": "EventEmitter",
+          "say": "A Node object that shouts named events. Other code listens for a name, and its function runs when that event is shouted."
+        },
+        {
+          "term": "promisify",
+          "say": "A helper from util. It wraps an old callback-style function so it returns a promise instead, and you can await it."
+        },
+        {
+          "term": "synchronously",
+          "say": "Right now, in order, before the next line runs. Nothing else happens until it is done."
+        },
+        {
+          "term": "stream",
+          "match": [
+            "streams"
+          ],
+          "say": "A way to move data in small pieces, like water through a pipe, instead of carrying it all at once in one bucket."
+        },
+        {
+          "term": "pipeline",
+          "match": [
+            "stream.pipeline()"
+          ],
+          "say": "A helper that connects streams in a row. If one breaks, it tells you and closes the others."
+        },
+        {
+          "term": "Express",
+          "say": "A popular, small Node framework for web servers and APIs. You add routes and middleware to handle requests."
+        },
+        {
+          "term": "middleware",
+          "say": "Small functions that a request passes through, one after another, before the answer goes back. Each can check, change or stop it."
+        }
+      ]
+    },
+    {
+      "id": "server-4",
+      "title": "npm packages: package.json, versions and the lock file",
+      "minutes": 4,
+      "objective": "Given a scenario and requirements, distinguish which Node.Js Package Management solution is the most fitting.",
+      "cards": [
+        {
+          "type": "text",
+          "title": "In plain words",
+          "body": "Every Node project has a **package.json**: its ID card and shopping list. It names the project, lists the packages it needs and holds its scripts. npm reads it and installs those packages into `node_modules`. Another file, **package-lock.json**, records the exact versions that were installed."
+        },
+        {
+          "type": "tip",
+          "title": "Think of it like…",
+          "body": "package.json is a recipe: \"eggs, any brand from this year\". The lock file is last week's receipt: these exact eggs. Shop from the receipt and every kitchen cooks the same meal. Where it stops: npm rewrites the receipt for you when you add a package."
+        },
+        {
+          "type": "list",
+          "title": "Three kinds of dependencies",
+          "items": [
+            "**dependencies**: needed while the app runs (`express`)",
+            "**devDependencies**: needed only to build or test (`jest`, `eslint`)",
+            "**peerDependencies**: a plugin names the host package it works with",
+            "When others install your package, they do not get your devDependencies"
+          ]
+        },
+        {
+          "type": "code",
+          "title": "A package.json",
+          "lang": "json",
+          "code": "{\n  \"name\": \"shop-api\",\n  \"version\": \"1.4.0\",\n  \"private\": true,\n  \"main\": \"index.js\",\n  \"scripts\": { \"pretest\": \"eslint .\", \"test\": \"jest\" },\n  \"dependencies\": { \"express\": \"^4.18.1\" },\n  \"devDependencies\": { \"jest\": \"~28.1.0\" }\n}",
+          "body": "`\"private\": true` blocks publishing by mistake. `main` is the entry file. `pretest` runs by itself before `test`. `name` and `version` are required only to publish."
+        },
+        {
+          "type": "list",
+          "title": "Version ranges",
+          "items": [
+            "**Semver**: MAJOR.MINOR.PATCH; a new major may break you",
+            "`^4.18.1`: 4.18.1 or newer, below 5.0.0",
+            "`~28.1.0`: patches only, so 28.1.x",
+            "`4.18.1`: exactly that version",
+            "With a leading 0, `^0.2.3` stays below 0.3.0"
+          ]
+        },
+        {
+          "type": "text",
+          "title": "The lock file",
+          "body": "**package-lock.json** pins the exact version of every package, even the packages your packages use. **Commit it.** `npm ci` installs exactly from it. It deletes `node_modules` first, never changes either file, and fails if the two files disagree. That makes it right for build servers."
+        },
+        {
+          "type": "text",
+          "title": "Staying safe",
+          "body": "`npm audit` checks your packages against a list of known security problems. `npm audit fix` moves them to safe versions where your ranges allow. `npm outdated` shows which packages have newer versions."
+        },
+        {
+          "type": "trap",
+          "body": "\"`^1.2.3` means exactly 1.2.3.\" No: the **caret** allows any newer 1.x.x. Another trap: putting Jest in `dependencies`. Test tools belong in `devDependencies`."
+        },
+        {
+          "type": "tip",
+          "title": "Remember it",
+          "body": "**\"Caret keeps the major. Tilde keeps the minor.\"** The ^ hat lets minor and patch move; the ~ wave lets only the patch drift. And build servers use `npm ci`."
+        }
+      ],
+      "check": [
+        "server-q28",
+        "server-q29",
+        "server-x15"
+      ],
+      "terms": [
+        {
+          "term": "package.json",
+          "say": "A project's ID card. It lists the name, the packages the project needs, and its scripts."
+        },
+        {
+          "term": "package-lock.json",
+          "say": "A file npm writes that lists the exact version of every installed package. Share it so everyone installs the very same ones."
+        },
+        {
+          "term": "node_modules",
+          "say": "The folder where npm puts the packages it downloads. You never edit it by hand, and you do not commit it."
+        },
+        {
+          "term": "dependencies",
+          "say": "The packages your app needs while it runs. Anyone who installs your app gets them too."
+        },
+        {
+          "term": "devDependencies",
+          "say": "Packages you need only while building or testing, like Jest. They are not installed for people who use your package."
+        },
+        {
+          "term": "peerDependencies",
+          "say": "A note from a plugin saying: I work with this host package, and I will use your copy of it."
+        },
+        {
+          "term": "Semver",
+          "say": "Short for semantic versioning. A version has three numbers: major, minor and patch. A new major can break things."
+        },
+        {
+          "term": "caret",
+          "say": "The ^ sign before a version. It allows newer minor and patch versions, but never a new major one."
+        },
+        {
+          "term": "npm ci",
+          "say": "A strict install for build servers. It wipes node_modules and installs exactly what the lock file says."
+        },
+        {
+          "term": "npm audit",
+          "say": "A command that checks your packages against a list of known security holes and reports what it finds."
+        }
+      ]
+    }
+  ],
+  "flashcards": [
+    {
+      "id": "server-f1",
+      "front": "What kind of work is Node.js good at, and what kind is it bad at?",
+      "back": "Good: I/O-heavy work like APIs, chat and many small requests. Bad: long CPU-heavy math on the main thread. Move that to worker threads or a child process."
+    },
+    {
+      "id": "server-f2",
+      "front": "Why does `exports = { add }` export nothing?",
+      "back": "It only points the local `exports` name at a new object. `require()` returns `module.exports`, which stays empty. Use `module.exports = { add }` instead."
+    },
+    {
+      "id": "server-f3",
+      "front": "What happens when two files `require()` the same module?",
+      "back": "The module runs once and is cached. Both files get the very same object, so a change made by one is seen by the other."
+    },
+    {
+      "id": "server-f4",
+      "front": "How does Node know a file is an ES module?",
+      "back": "It ends in `.mjs`, or ends in `.js` with `\"type\": \"module\"` in the nearest package.json. `.cjs` always means CommonJS."
+    },
+    {
+      "id": "server-f5",
+      "front": "What is the difference between `node -e` and `node -p`?",
+      "back": "`node -e` runs code and prints only what you log. `node -p` runs code and prints the result for you."
+    },
+    {
+      "id": "server-f6",
+      "front": "When do you use `--inspect-brk` instead of `--inspect`?",
+      "back": "When the bug happens right at the start. `--inspect-brk` pauses before your first line, so you can set breakpoints first."
+    },
+    {
+      "id": "server-f7",
+      "front": "Which npm scripts can you run without `run`?",
+      "back": "`test`, `start`, `stop` and `restart`. Every other script needs `npm run <name>`, like `npm run build`."
+    },
+    {
+      "id": "server-f8",
+      "front": "What does `npx` do?",
+      "back": "It runs a command from a package. It uses the copy in your project if there is one. If not, it asks, then fetches the package."
+    },
+    {
+      "id": "server-f9",
+      "front": "Why are sync calls like `readFileSync` risky in a server?",
+      "back": "They block the event loop. No other request is served until the call finishes. Use callbacks, promises or streams instead."
+    },
+    {
+      "id": "server-f10",
+      "front": "When does an `EventEmitter` run its listeners?",
+      "back": "Right away, inside `emit()`, one after another in the order they were added. Emitting `'error'` with no listener throws."
+    },
+    {
+      "id": "server-f11",
+      "front": "Why use a stream for a big file?",
+      "back": "A stream moves the file in small chunks, so memory stays low. `stream.pipeline()` connects streams and handles errors and cleanup."
+    },
+    {
+      "id": "server-f12",
+      "front": "Which framework fits which need?",
+      "back": "Express or Koa: minimal, with middleware. Fastify: minimal and fast. NestJS: structured and TypeScript-first. Next.js: React pages rendered on the server."
+    },
+    {
+      "id": "server-f13",
+      "front": "What is the difference between `dependencies` and `devDependencies`?",
+      "back": "`dependencies` are needed while the app runs. `devDependencies` are only for building and testing, like Jest, and are not installed for people who use your package."
+    },
+    {
+      "id": "server-f14",
+      "front": "What does `^1.4.2` allow? And `~1.4.2`?",
+      "back": "`^1.4.2`: 1.4.2 up to, but not including, 2.0.0. `~1.4.2`: 1.4.2 up to, but not including, 1.5.0."
+    },
+    {
+      "id": "server-f15",
+      "front": "Why commit `package-lock.json`?",
+      "back": "It pins the exact version of every package. With it, `npm ci` gives every machine the same install."
+    },
+    {
+      "id": "server-f16",
+      "front": "What does `npm ci` do differently from `npm install`?",
+      "back": "It needs a lock file, deletes `node_modules` first, installs exactly what the lock says, never changes either file, and fails if they disagree."
+    }
+  ],
+  "questions": [
+    {
+      "id": "server-q1",
+      "lesson": "server-1",
+      "difficulty": 1,
+      "q": "How does Node.js handle many requests at the same time?",
+      "options": [
+        "It starts a new operating system thread for each incoming request",
+        "It runs JavaScript on one thread and hands slow I/O to the system",
+        "It finishes each request fully before it reads the next one",
+        "It runs each request inside its own copy of the V8 engine"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "Node runs your JavaScript on one main thread. Slow I/O, like files and networks, is handed off, and the event loop picks up the results later.",
+      "wrong": [
+        "Node does not make a thread per request; one thread serves them all.",
+        "",
+        "Node starts other requests while one waits on I/O.",
+        "All requests share one engine and one main thread."
+      ],
+      "source": "Node.js docs: The Node.js Event Loop"
+    },
+    {
+      "id": "server-q2",
+      "lesson": "server-1",
+      "difficulty": 1,
+      "q": "Which of these is a global you can use in Node.js but not in a browser page?",
+      "options": [
+        "`document`",
+        "`window`",
+        "`alert`",
+        "`process`"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "Node has no page, so it has no DOM objects. It gives you `process` instead, with `argv`, `env` and `exit()`.",
+      "wrong": [
+        "`document` is the browser page; Node has no DOM.",
+        "`window` exists only in browsers; Node uses `globalThis`.",
+        "`alert` is a browser pop-up; Node has no page to show it on.",
+        ""
+      ],
+      "source": "Node.js docs: Process"
+    },
+    {
+      "id": "server-q3",
+      "lesson": "server-1",
+      "difficulty": 2,
+      "q": "Both files are in the same folder. What does `node app.js` log?",
+      "code": "// counter.js\nlet count = 0;\nmodule.exports = () => ++count;\n\n// app.js\nconst a = require('./counter');\nconst b = require('./counter');\na();\na();\nconsole.log(b());",
+      "lang": "js",
+      "options": [
+        "1",
+        "2",
+        "3",
+        "A `ReferenceError`"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "A module is cached after its first `require()`, so its code runs once. `a` and `b` are the same function sharing one `count`, so the third call returns 3.",
+      "wrong": [
+        "That would need a fresh `count` for `b`, but the module is cached.",
+        "Two calls happened before `b()`, so it adds one more.",
+        "",
+        "`count` is in scope for the function the module exports."
+      ],
+      "source": "Node.js docs: Modules: CommonJS modules"
+    },
+    {
+      "id": "server-q4",
+      "lesson": "server-1",
+      "difficulty": 2,
+      "q": "What does `node app.js` log?",
+      "code": "// greet.js\nexports = { hello: () => 'hi' };\n\n// app.js\nconst greet = require('./greet');\nconsole.log(typeof greet.hello);",
+      "lang": "js",
+      "options": [
+        "`'undefined'`",
+        "`'function'`",
+        "`'object'`",
+        "A `TypeError` is thrown"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "Assigning to `exports` only rebinds a local name. `require()` returns `module.exports`, which is still an empty object, so `greet.hello` is `undefined`.",
+      "wrong": [
+        "",
+        "The function was never put on `module.exports`.",
+        "`typeof` an arrow function would be `'function'`, but here nothing was exported.",
+        "Reading a missing property gives `undefined`; it does not throw."
+      ],
+      "source": "Node.js docs: Modules: CommonJS modules"
+    },
+    {
+      "id": "server-q5",
+      "lesson": "server-1",
+      "difficulty": 2,
+      "q": "A Node.js API also resizes large photos on each upload. Under load, all other requests stall while a photo is processed. What is the best fix?",
+      "options": [
+        "Wrap the resize code in an `async` function",
+        "Start the resize code with `setTimeout(fn, 0)`",
+        "Run the resize code in a `Worker` from `worker_threads`",
+        "Call the resize code inside `Promise.resolve().then()`"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "Heavy CPU work blocks the one main thread, however you schedule it. A worker thread runs it in parallel, so the event loop stays free.",
+      "wrong": [
+        "An `async` function still runs its sync math on the main thread.",
+        "The delay only moves the blocking to a moment later.",
+        "",
+        "A promise callback still runs on the main thread and blocks it."
+      ],
+      "source": "Node.js docs: Worker threads"
+    },
+    {
+      "id": "server-q6",
+      "lesson": "server-1",
+      "difficulty": 2,
+      "q": "The file `paths.mjs` holds this one line. What happens when it runs with Node.js?",
+      "code": "console.log(__dirname);",
+      "lang": "js",
+      "options": [
+        "It prints the folder that holds the file",
+        "It prints `undefined`",
+        "It throws a `ReferenceError`",
+        "It prints `.`"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "A `.mjs` file is an ES module, and ES modules have no `__dirname`. Reading an undeclared name throws a `ReferenceError`; build the path from `import.meta.url` instead.",
+      "wrong": [
+        "That is what a CommonJS file would print.",
+        "The name is not declared at all, so it throws instead.",
+        "",
+        "No such variable exists in ES modules, so nothing is printed."
+      ],
+      "source": "Node.js docs: Modules: ECMAScript modules"
+    },
+    {
+      "id": "server-q7",
+      "lesson": "server-1",
+      "difficulty": 2,
+      "q": "A developer on Node.js 16 wants to use `import` and `export` in a project file. Which two approaches make Node.js load the file as an ES module? (Choose 2)",
+      "options": [
+        "Add `\"type\": \"module\"` to the nearest package.json",
+        "Give the file the `.cjs` extension",
+        "Give the file the `.mjs` extension",
+        "Put `'use strict'` at the top of the file",
+        "Set `\"main\"` to the file in package.json"
+      ],
+      "answer": [
+        0,
+        2
+      ],
+      "explain": "Node picks the module system from the file extension and the nearest package.json. `.mjs`, or `.js` under `\"type\": \"module\"`, means ES module.",
+      "wrong": [
+        "",
+        "`.cjs` forces CommonJS, the opposite.",
+        "",
+        "Strict mode does not change the module system.",
+        "`main` only names the entry file; it does not set the module type."
+      ],
+      "source": "Node.js docs: Modules: Packages"
+    },
+    {
+      "id": "server-q8",
+      "lesson": "server-1",
+      "difficulty": 2,
+      "q": "In an ES module, which line loads the local file `utils.js` from the same folder?",
+      "options": [
+        "`import { sum } from './utils.js';`",
+        "`import { sum } from './utils';`",
+        "`import { sum } from 'utils';`",
+        "`import { sum } = require('./utils');`"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "ES modules in Node need the full file name in relative imports. Leaving off `.js` gives a \"module not found\" error.",
+      "wrong": [
+        "",
+        "Node does not guess the extension for ES module imports.",
+        "A bare name looks in `node_modules`, not in this folder.",
+        "This mixes two syntaxes and is not valid JavaScript."
+      ],
+      "source": "Node.js docs: Modules: ECMAScript modules"
+    },
+    {
+      "id": "server-x1",
+      "lesson": "server-1",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A Node.js service gets thousands of small requests a second. Each one reads a row from a database and returns it as JSON. A teammate wants to start a new thread per request \"so the database calls don't block\". What should the lead say?",
+      "options": [
+        "Good idea: Node serves one request until its database call returns",
+        "Better: switch the database driver to sync calls so each one finishes fast",
+        "Better: use `cluster` to start one new process for every request",
+        "Not needed: Node waits on the database without blocking its one thread"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "Database calls are I/O, and Node waits on I/O without blocking. One thread can serve thousands of requests that mostly wait, which is exactly what Node is good at.",
+      "wrong": [
+        "Node serves other requests while each database call is in flight.",
+        "Sync calls would block the event loop and make it far worse.",
+        "`cluster` runs a few workers, about one per CPU core, not one per request.",
+        ""
+      ],
+      "source": "Node.js docs: The Node.js Event Loop"
+    },
+    {
+      "id": "server-x2",
+      "lesson": "server-1",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "All three files are in one folder. What does `node main.js` log?",
+      "code": "// config.js\nmodule.exports = { level: 'info' };\n\n// a.js\nconst cfg = require('./config');\ncfg.level = 'debug';\n\n// main.js\nrequire('./a');\nconst cfg = require('./config');\nconsole.log(cfg.level);",
+      "lang": "js",
+      "options": [
+        "`'info'`",
+        "`'debug'`",
+        "`undefined`",
+        "A `SyntaxError`, because `cfg` is declared twice"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "Modules are cached, so every `require('./config')` returns the same object. `a.js` changed it first, so `main.js` sees `'debug'`.",
+      "wrong": [
+        "The module does not reload; it returns the object `a.js` already changed.",
+        "",
+        "The object is exported, so `level` is there.",
+        "Each file has its own scope, so the two `cfg` names never clash."
+      ],
+      "source": "Node.js docs: Modules: CommonJS modules"
+    },
+    {
+      "id": "server-x3",
+      "lesson": "server-1",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "Which two statements about CommonJS modules in Node.js are true? (Choose 2)",
+      "options": [
+        "`exports = { x: 1 }` replaces the object that `require()` returns",
+        "`exports.x = 1` adds `x` to the object that `require()` returns",
+        "A module's top-level code runs again on every `require()` call",
+        "`require()` loads the file synchronously and returns `module.exports`",
+        "`require()` returns a promise that resolves to the module"
+      ],
+      "answer": [
+        1,
+        3
+      ],
+      "explain": "`exports` starts as a shortcut to `module.exports`, so adding properties works. `require()` is synchronous and returns `module.exports`, cached after the first load.",
+      "wrong": [
+        "Reassigning `exports` only rebinds the local name.",
+        "",
+        "The module is cached, so its code runs once.",
+        "",
+        "That describes dynamic `import()`, not `require()`."
+      ],
+      "source": "Node.js docs: Modules: CommonJS modules"
+    },
+    {
+      "id": "server-x4",
+      "lesson": "server-1",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "What does `node app.js` log?",
+      "code": "// shapes.js\nmodule.exports = { area: (r) => 3 * r * r };\nexports.name = 'shapes';\n\n// app.js\nconst s = require('./shapes');\nconsole.log(s.name, s.area(1));",
+      "lang": "js",
+      "options": [
+        "`undefined 3`",
+        "`shapes 3`",
+        "`shapes undefined`",
+        "A `TypeError` is thrown"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "Assigning `module.exports` breaks its link to `exports`. The later `exports.name` goes onto the old object, which nobody returns, so `s.name` is `undefined`.",
+      "wrong": [
+        "",
+        "`name` was added to the old object, not the exported one.",
+        "`area` is on the exported object, so it returns 3.",
+        "Both reads are safe; a missing property is just `undefined`."
+      ],
+      "source": "Node.js docs: Modules: CommonJS modules"
+    },
+    {
+      "id": "server-x5",
+      "lesson": "server-1",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A developer copies this CommonJS file into a project whose package.json has `\"type\": \"module\"`. It now fails on its first line. Which change makes it work as an ES module?",
+      "code": "const path = require('node:path');\nconst dataDir = path.join(__dirname, 'data');",
+      "lang": "js",
+      "options": [
+        "Use `import path from 'node:path'` and keep `__dirname` as it is",
+        "Use `import path from 'node:path'` and build the folder from `import.meta.url`",
+        "Keep `require()` and add `'use strict'` as the first line",
+        "Keep both lines and rename the file to end in `.mjs`"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "ES modules have neither `require` nor `__dirname`. Import the module, and get the folder from `import.meta.url`, for example with `fileURLToPath`.",
+      "wrong": [
+        "`__dirname` does not exist in ES modules either.",
+        "",
+        "Strict mode does not bring `require` back.",
+        "`.mjs` is also an ES module, so both lines still fail."
+      ],
+      "source": "Node.js docs: Modules: ECMAScript modules"
+    },
+    {
+      "id": "server-q9",
+      "lesson": "server-2",
+      "difficulty": 1,
+      "q": "Which command prints `1024` without any `console.log` in the code?",
+      "options": [
+        "`node -e \"2 ** 10\"`",
+        "`node -r \"2 ** 10\"`",
+        "`node --inspect \"2 ** 10\"`",
+        "`node -p \"2 ** 10\"`"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "`-p` (print) runs the code and prints the result. `-e` (eval) runs it but prints only what the code logs.",
+      "wrong": [
+        "`-e` runs it silently; nothing is logged.",
+        "`-r` preloads a module by name, so this fails.",
+        "`--inspect` turns on the debugger and expects a file.",
+        ""
+      ],
+      "source": "Node.js docs: Command-line API"
+    },
+    {
+      "id": "server-q10",
+      "lesson": "server-2",
+      "difficulty": 1,
+      "q": "A developer wants a new package.json with every default answer, without being asked any questions. Which command does that?",
+      "options": [
+        "`npm install -y`",
+        "`npm start --defaults`",
+        "`npm init -y`",
+        "`npm ci --init`"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "`npm init` creates package.json. The `-y` (yes) flag accepts every default.",
+      "wrong": [
+        "`npm install` installs packages; it does not create package.json from defaults.",
+        "`npm start` runs the start script.",
+        "",
+        "`npm ci` needs an existing lock file and creates nothing."
+      ],
+      "source": "npm Docs: npm-init"
+    },
+    {
+      "id": "server-q11",
+      "lesson": "server-2",
+      "difficulty": 2,
+      "q": "A bug shows up in the first lines of a Node.js script, before a developer can set any breakpoint in Chrome DevTools. Which command should they start the script with?",
+      "options": [
+        "`node --inspect app.js`",
+        "`node --inspect-brk app.js`",
+        "`node -e app.js`",
+        "`node --check app.js`"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "`--inspect-brk` opens the debugger and pauses before the first line of your code. You get time to set breakpoints.",
+      "wrong": [
+        "`--inspect` starts running at once, so the first lines finish before you attach.",
+        "",
+        "`-e` treats `app.js` as code to run, not a file.",
+        "`--check` only checks the syntax; it never runs or debugs the code."
+      ],
+      "source": "Node.js docs: Debugger"
+    },
+    {
+      "id": "server-q12",
+      "lesson": "server-2",
+      "difficulty": 2,
+      "q": "A package.json has these scripts. Which two commands run one of them? (Choose 2)",
+      "code": "\"scripts\": {\n  \"start\": \"node server.js\",\n  \"lint\": \"eslint .\"\n}",
+      "lang": "js",
+      "options": [
+        "`npm lint`",
+        "`node lint`",
+        "`npm start`",
+        "`npx run lint`",
+        "`npm run lint`"
+      ],
+      "answer": [
+        2,
+        4
+      ],
+      "explain": "`npm run <name>` runs any script. `start` also has a shortcut, so `npm start` works without `run`.",
+      "wrong": [
+        "There is no `npm lint` command; custom scripts need `run`.",
+        "`node` looks for a file named `lint`; it does not read scripts.",
+        "",
+        "`npx` would look for a package called `run`.",
+        ""
+      ],
+      "source": "npm Docs: npm-run-script"
+    },
+    {
+      "id": "server-q13",
+      "lesson": "server-2",
+      "difficulty": 2,
+      "q": "A build server must install exactly the versions in `package-lock.json`, and stop with an error if it does not match `package.json`. Which command fits?",
+      "options": [
+        "`npm install`",
+        "`npm update`",
+        "`npm install --save-exact`",
+        "`npm ci`"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "`npm ci` installs exactly from the lock file. If the lock and package.json disagree, it fails instead of fixing the lock.",
+      "wrong": [
+        "`npm install` may update the lock file to fit package.json.",
+        "`npm update` moves packages to newer versions.",
+        "`--save-exact` only changes how new ranges are written.",
+        ""
+      ],
+      "source": "npm Docs: npm-ci"
+    },
+    {
+      "id": "server-q14",
+      "lesson": "server-2",
+      "difficulty": 2,
+      "q": "A developer runs `node greet.js Ana`. What does it log?",
+      "code": "// greet.js\nconsole.log(process.argv.length, process.argv[2]);",
+      "lang": "js",
+      "options": [
+        "`1 Ana`",
+        "`2 Ana`",
+        "`3 Ana`",
+        "`3 undefined`"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "`process.argv` starts with the path to `node` and the path to the script. Your own words start at index 2.",
+      "wrong": [
+        "The array also holds the node path and the script path.",
+        "There are three items: node, the script, and `Ana`.",
+        "",
+        "Index 2 holds the first word you typed, `Ana`."
+      ],
+      "source": "Node.js docs: Process"
+    },
+    {
+      "id": "server-q15",
+      "lesson": "server-2",
+      "difficulty": 2,
+      "q": "ESLint is installed in a project's `devDependencies`. There is no script for it. Which command runs the project's ESLint?",
+      "options": [
+        "`npx eslint .`",
+        "`node eslint .`",
+        "`npm eslint .`",
+        "`npm run eslint .`"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "`npx` runs a command from a package. It uses the copy in the project's `node_modules` first.",
+      "wrong": [
+        "",
+        "`node` looks for a file named `eslint`.",
+        "`eslint` is not an npm command.",
+        "`npm run` needs a script called `eslint`, and there is none."
+      ],
+      "source": "npm Docs: npx"
+    },
+    {
+      "id": "server-q16",
+      "lesson": "server-2",
+      "difficulty": 2,
+      "q": "Which two commands add `jest` to `devDependencies`? (Choose 2)",
+      "options": [
+        "`npm install jest --save-dev`",
+        "`npm install -g jest`",
+        "`npm install jest`",
+        "`npm install -D jest`",
+        "`npm ci jest`"
+      ],
+      "answer": [
+        0,
+        3
+      ],
+      "explain": "`--save-dev`, or its short form `-D`, saves the package under `devDependencies`.",
+      "wrong": [
+        "",
+        "`-g` installs a global tool and does not touch package.json.",
+        "With no flag, npm saves it to `dependencies`.",
+        "",
+        "`npm ci` installs a whole project and takes no package name."
+      ],
+      "source": "npm Docs: npm-install"
+    },
+    {
+      "id": "server-q17",
+      "lesson": "server-2",
+      "difficulty": 1,
+      "q": "A developer types `node` with no file name and presses Enter. What happens?",
+      "options": [
+        "Node runs `index.js` in the current folder",
+        "Node prints its help text and exits",
+        "An interactive prompt, the REPL, opens",
+        "Node runs the `start` script from package.json"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "With no file, `node` opens the REPL. You type JavaScript and see each result right away.",
+      "wrong": [
+        "Node never picks a file by itself.",
+        "Help needs `node --help`.",
+        "",
+        "Scripts run through npm, not `node`."
+      ],
+      "source": "Node.js docs: REPL"
+    },
+    {
+      "id": "server-x6",
+      "lesson": "server-2",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "Which two commands print `2` in the terminal? (Choose 2)",
+      "options": [
+        "`node -e \"1 + 1\"`",
+        "`node -p \"1 + 1\"`",
+        "`node -c \"1 + 1\"`",
+        "`node -r \"1 + 1\"`",
+        "`node -e \"console.log(1 + 1)\"`"
+      ],
+      "answer": [
+        1,
+        4
+      ],
+      "explain": "`-p` prints the result of the code. `-e` prints only what the code itself logs.",
+      "wrong": [
+        "`-e` runs the sum but prints nothing.",
+        "",
+        "`-c` checks the syntax of a file; it treats the text as a file name.",
+        "`-r` tries to preload a module named `1 + 1` and fails.",
+        ""
+      ],
+      "source": "Node.js docs: Command-line API"
+    },
+    {
+      "id": "server-x7",
+      "lesson": "server-2",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A developer starts an app on a remote test server with the command below. From their own laptop, Chrome DevTools cannot connect to it. What is the most likely reason?",
+      "code": "node --inspect app.js\n# Debugger listening on ws://127.0.0.1:9229/...",
+      "lang": "bash",
+      "options": [
+        "`--inspect` works only together with `--inspect-brk`",
+        "Chrome DevTools can debug browser tabs, never Node",
+        "The inspector listens on `127.0.0.1`, so only that machine can reach it",
+        "`--inspect` needs `node inspect` running on the laptop as well"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "By default the inspector listens on `127.0.0.1:9229`, the server's own local address. Reach it safely through an SSH tunnel; opening it to the network is risky.",
+      "wrong": [
+        "`--inspect` works alone; `-brk` only adds a pause at the start.",
+        "DevTools attaches to Node through `chrome://inspect`.",
+        "",
+        "`node inspect` is a separate terminal debugger, not a client for DevTools."
+      ],
+      "source": "Node.js docs: Debugger"
+    },
+    {
+      "id": "server-x8",
+      "lesson": "server-2",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A developer wants `.env` values loaded before `app.js` runs, without editing `app.js`. The `dotenv` package is installed. Which command does this?",
+      "options": [
+        "`node -r dotenv/config app.js`",
+        "`node app.js -r dotenv/config`",
+        "`node -e dotenv/config app.js`",
+        "`node --inspect=dotenv app.js`"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "`-r` (`--require`) preloads a module before the main script. `dotenv/config` reads `.env` into `process.env` as it loads.",
+      "wrong": [
+        "",
+        "Flags after the file name go to the script in `process.argv`, not to Node.",
+        "`-e` runs its text as code, and this text is not valid code.",
+        "`--inspect` sets a debugger host, not a module to load."
+      ],
+      "source": "Node.js docs: Command-line API"
+    },
+    {
+      "id": "server-x9",
+      "lesson": "server-2",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A project uses Jest 28 from its `devDependencies`. A new developer also has Jest 29 installed globally. They want to run the project's own Jest 28 without a script. Which command does that?",
+      "options": [
+        "`jest`",
+        "`npm jest`",
+        "`node jest`",
+        "`npx jest`"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "`npx` looks in the project's `node_modules/.bin` first, so it runs the local Jest 28. Typing `jest` alone finds the global one on the PATH.",
+      "wrong": [
+        "The shell finds the global Jest 29 first.",
+        "`jest` is not an npm command.",
+        "`node` looks for a file named `jest` in this folder.",
+        ""
+      ],
+      "source": "npm Docs: npx"
+    },
+    {
+      "id": "server-q18",
+      "lesson": "server-3",
+      "difficulty": 1,
+      "q": "Which core module builds file paths that work on both Windows and Linux?",
+      "options": [
+        "`fs`",
+        "`path`",
+        "`os`",
+        "`util`"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "`path` joins and resolves paths with the right separator for the system.",
+      "wrong": [
+        "`fs` reads and writes files; it does not build paths.",
+        "",
+        "`os` reports facts about the machine.",
+        "`util` holds general helpers like `promisify`."
+      ],
+      "source": "Node.js docs: Path"
+    },
+    {
+      "id": "server-q19",
+      "lesson": "server-3",
+      "difficulty": 1,
+      "q": "Which core module gives you the `EventEmitter` class?",
+      "options": [
+        "`events`",
+        "`stream`",
+        "`util`",
+        "`http`"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "`EventEmitter` comes from `events`. Many other core objects, like streams and servers, are built on it.",
+      "wrong": [
+        "",
+        "Streams use `EventEmitter`, but the class lives in `events`.",
+        "`util` holds helpers like `promisify`.",
+        "`http` servers emit events, but the class is not defined there."
+      ],
+      "source": "Node.js docs: Events"
+    },
+    {
+      "id": "server-q20",
+      "lesson": "server-3",
+      "difficulty": 2,
+      "q": "On Linux, what does this code log?",
+      "code": "const path = require('node:path');\nconsole.log(path.join('/srv', 'app', '../logs', 'today.txt'));",
+      "lang": "js",
+      "options": [
+        "`/srv/app/../logs/today.txt`",
+        "`/srv/logs/today.txt`",
+        "`/logs/today.txt`",
+        "`srv/app/logs/today.txt`"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "`path.join` glues the parts with `/` and then tidies the result. `..` steps back out of `app`, leaving `/srv/logs/today.txt`.",
+      "wrong": [
+        "`join` tidies the path, so `..` is resolved.",
+        "",
+        "`..` goes up one folder only, out of `app`.",
+        "The leading `/` stays, and `..` removes `app`."
+      ],
+      "source": "Node.js docs: Path"
+    },
+    {
+      "id": "server-q21",
+      "lesson": "server-3",
+      "difficulty": 2,
+      "q": "What does this code log?",
+      "code": "const EventEmitter = require('node:events');\nconst e = new EventEmitter();\ne.on('go', () => console.log('A'));\nconsole.log('B');\ne.emit('go');\nconsole.log('C');",
+      "lang": "js",
+      "options": [
+        "A B C",
+        "B C A",
+        "A C B",
+        "B A C"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "`emit()` calls its listeners synchronously, right away. So `A` logs between `B` and `C`.",
+      "wrong": [
+        "The listener runs only when `emit()` is called, after `B`.",
+        "`emit()` is not queued for later; it runs before `C`.",
+        "Nothing logs `A` before `B` runs.",
+        ""
+      ],
+      "source": "Node.js docs: Events"
+    },
+    {
+      "id": "server-q22",
+      "lesson": "server-3",
+      "difficulty": 2,
+      "q": "Many users download a 1 GB video at once. With this code, the server runs out of memory. What is the best fix?",
+      "code": "fs.readFile('movie.mp4', (err, data) => {\n  res.end(data);\n});",
+      "lang": "js",
+      "options": [
+        "Use `fs.readFileSync` so the read finishes first",
+        "Raise the http server's timeout to give it time",
+        "Pipe `fs.createReadStream()` into the response",
+        "Read it with `fs/promises` and `await` the result"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "A stream sends the file in small chunks, so the whole file never sits in memory. `pipe` also slows down when the client is slow.",
+      "wrong": [
+        "It still loads the whole file, and it also blocks the event loop.",
+        "Time is not the problem; memory is.",
+        "",
+        "The promise API still loads the whole file into memory."
+      ],
+      "source": "Node.js docs: Stream"
+    },
+    {
+      "id": "server-q23",
+      "lesson": "server-3",
+      "difficulty": 2,
+      "q": "An old library has `getUser(id, (err, user) => {})`. A developer wants to use `await` with it. Which core helper turns it into a function that returns a promise?",
+      "code": "const { promisify } = require('node:util');",
+      "lang": "js",
+      "options": [
+        "`Promise.resolve(getUser)`",
+        "`promisify(getUser)`",
+        "`events.once(getUser)`",
+        "`new Promise(getUser)`"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "`util.promisify` wraps a function whose callback gets the error first. The new function returns a promise you can `await`.",
+      "wrong": [
+        "That makes a promise holding the function itself, not its result.",
+        "",
+        "`events.once` waits for an event from an emitter, not a callback.",
+        "`new Promise` would call `getUser` with `resolve` and `reject` as `id` and the callback."
+      ],
+      "source": "Node.js docs: Util"
+    },
+    {
+      "id": "server-q24",
+      "lesson": "server-3",
+      "difficulty": 2,
+      "q": "A startup needs a small REST API. They want a framework that imposes little structure and adds features through middleware. Which two fit best? (Choose 2)",
+      "options": [
+        "Express",
+        "NestJS",
+        "Next.js",
+        "Angular",
+        "Koa"
+      ],
+      "answer": [
+        0,
+        4
+      ],
+      "explain": "Express and Koa are minimal server frameworks. You build them up with middleware, one small function per step.",
+      "wrong": [
+        "",
+        "NestJS gives a strict structure with modules and dependency injection.",
+        "Next.js is for React apps rendered on the server.",
+        "Angular is a front-end framework that runs in the browser.",
+        ""
+      ],
+      "source": "Express docs: Using middleware"
+    },
+    {
+      "id": "server-q25",
+      "lesson": "server-3",
+      "difficulty": 2,
+      "q": "A large team wants a structured, TypeScript-first Node.js server with modules and dependency injection. Which framework fits best?",
+      "options": [
+        "Express",
+        "Koa",
+        "Socket.IO",
+        "NestJS"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "NestJS is built with TypeScript and organizes an app into modules, controllers and services with dependency injection.",
+      "wrong": [
+        "Express is minimal and leaves the structure to you.",
+        "Koa is a small middleware core with no set structure.",
+        "Socket.IO adds real-time messages; it is not an app framework.",
+        ""
+      ],
+      "source": "NestJS docs: Introduction"
+    },
+    {
+      "id": "server-q26",
+      "lesson": "server-3",
+      "difficulty": 2,
+      "q": "A Node.js step must read text in and write it out in upper case, so it can sit between two others in a pipe. Which stream type is made for this?",
+      "options": [
+        "Transform",
+        "Readable",
+        "Writable",
+        "A plain `EventEmitter`"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "A Transform stream is both readable and writable, and its output is computed from its input. That is exactly a filter in a pipe.",
+      "wrong": [
+        "",
+        "A Readable stream only produces data.",
+        "A Writable stream only takes data in.",
+        "An emitter sends events but has no stream methods like `pipe`."
+      ],
+      "source": "Node.js docs: Stream"
+    },
+    {
+      "id": "server-q27",
+      "lesson": "server-3",
+      "difficulty": 2,
+      "q": "A Node.js script must run the system command `git rev-parse HEAD` and read what it prints. Which core module does that?",
+      "options": [
+        "`os`",
+        "`worker_threads`",
+        "`child_process`",
+        "`process`"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "`child_process` starts other programs, for example with `exec` or `spawn`, and gives you their output.",
+      "wrong": [
+        "`os` reports machine facts like CPUs and memory.",
+        "Worker threads run JavaScript, not system commands.",
+        "",
+        "`process` describes the current program; it does not start others."
+      ],
+      "source": "Node.js docs: Child process"
+    },
+    {
+      "id": "server-x10",
+      "lesson": "server-3",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "What happens when this script runs?",
+      "code": "const EventEmitter = require('node:events');\nconst job = new EventEmitter();\njob.on('done', () => console.log('done'));\njob.emit('error', new Error('disk full'));\nconsole.log('after');",
+      "lang": "js",
+      "options": [
+        "It logs `after`, and the error is ignored",
+        "It logs `done`, then `after`",
+        "The error is thrown, and `after` never logs",
+        "It logs `after`, then reports the error"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "An `'error'` event with no `'error'` listener is thrown. Here nothing catches it, so the script stops before `after`.",
+      "wrong": [
+        "Node never ignores an `'error'` event without a listener.",
+        "The `'done'` listener only runs for `'done'` events.",
+        "",
+        "`emit` is synchronous, so the throw happens at once."
+      ],
+      "source": "Node.js docs: Events"
+    },
+    {
+      "id": "server-x11",
+      "lesson": "server-3",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "What does this code log?",
+      "code": "const EventEmitter = require('node:events');\nconst e = new EventEmitter();\nlet n = 0;\ne.once('tick', () => n++);\ne.on('tick', () => n += 10);\ne.emit('tick');\ne.emit('tick');\nconsole.log(n);",
+      "lang": "js",
+      "options": [
+        "11",
+        "20",
+        "21",
+        "22"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "The `once` listener runs on the first `tick` only. The `on` listener runs both times: 1 + 10 + 10 = 21.",
+      "wrong": [
+        "The `on` listener also runs on the second `tick`.",
+        "The `once` listener did run once, adding 1.",
+        "",
+        "`once` removes itself after the first call."
+      ],
+      "source": "Node.js docs: Events"
+    },
+    {
+      "id": "server-x12",
+      "lesson": "server-3",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "Every request to this server reads a large report from disk. Under load, the whole server freezes. Which two changes keep it responsive? (Choose 2)",
+      "code": "http.createServer((req, res) => {\n  const data = fs.readFileSync('report.csv');\n  res.end(data);\n}).listen(3000);",
+      "lang": "js",
+      "options": [
+        "Wrap the handler body in a `try...catch` block",
+        "Use `fs.createReadStream('report.csv').pipe(res)`",
+        "Use `fs.readFile` and call `res.end(data)` in its callback",
+        "Make the handler an `async` function and keep the rest",
+        "Call `res.end()` first, then read the file"
+      ],
+      "answer": [
+        1,
+        2
+      ],
+      "explain": "`readFileSync` blocks the event loop for every request. A stream or the callback API reads without blocking, so other requests keep flowing.",
+      "wrong": [
+        "Catching errors does not stop the blocking.",
+        "",
+        "",
+        "The sync read inside still blocks, even in an `async` function.",
+        "The response would end before any data is sent."
+      ],
+      "source": "Node.js docs: File system"
+    },
+    {
+      "id": "server-x13",
+      "lesson": "server-3",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "A developer zips uploads with `src.pipe(gzip).pipe(dest)`. When `src` fails halfway, the error goes unhandled and `dest` stays open. Which change fixes both problems?",
+      "code": "const { pipeline } = require('node:stream');",
+      "lang": "js",
+      "options": [
+        "Use `pipeline(src, gzip, dest, callback)`",
+        "Add `dest.on('error', handler)` and keep the `pipe` chain",
+        "Read with `fs.readFileSync` and zip with `zlib.gzipSync`",
+        "Give `src` a much larger `highWaterMark`"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "`pipe()` does not pass errors along or close the other streams. `stream.pipeline()` passes on any error to its callback and destroys every stream in the chain.",
+      "wrong": [
+        "",
+        "The error comes from `src`, and `pipe` still leaves `dest` open.",
+        "Sync calls block the event loop and load the whole file.",
+        "A bigger buffer changes speed, not error handling."
+      ],
+      "source": "Node.js docs: Stream"
+    },
+    {
+      "id": "server-x14",
+      "lesson": "server-3",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "The file `missing.txt` does not exist. What does this code log?",
+      "code": "const fs = require('node:fs');\nfs.readFile('missing.txt', 'utf8', (err, text) => {\n  console.log(err ? err.code : text);\n});\nconsole.log('reading');",
+      "lang": "js",
+      "options": [
+        "`ENOENT`, then `reading`",
+        "`reading`, then `undefined`",
+        "An uncaught error stops it before anything logs",
+        "`reading`, then `ENOENT`"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "`readFile` is async, so `reading` logs first. Its callback gets the error first; a missing file has code `ENOENT`.",
+      "wrong": [
+        "The callback runs only after the read finishes, later.",
+        "The error is passed in `err`, so the code is logged.",
+        "The callback API passes errors in; it does not throw them.",
+        ""
+      ],
+      "source": "Node.js docs: File system"
+    },
+    {
+      "id": "server-q28",
+      "lesson": "server-4",
+      "difficulty": 1,
+      "q": "Where should a test tool like Jest go in package.json?",
+      "options": [
+        "`dependencies`",
+        "`devDependencies`",
+        "`peerDependencies`",
+        "`scripts`"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "Tools used only to build or test belong in `devDependencies`. The running app does not need them.",
+      "wrong": [
+        "`dependencies` are for code the app needs while it runs.",
+        "",
+        "`peerDependencies` are for plugins naming a host package.",
+        "`scripts` holds commands, like `\"test\": \"jest\"`, not packages."
+      ],
+      "source": "npm Docs: package.json"
+    },
+    {
+      "id": "server-q29",
+      "lesson": "server-4",
+      "difficulty": 1,
+      "q": "Which file records the exact version of every installed package, including the packages your packages use?",
+      "options": [
+        "`package-lock.json`",
+        "`package.json`",
+        "`node_modules/.bin`",
+        "`.npmrc`"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "`package-lock.json` pins the exact version of every package in the tree. package.json holds only ranges for direct dependencies.",
+      "wrong": [
+        "",
+        "package.json holds ranges, and only for your direct dependencies.",
+        "That folder holds runnable commands from packages.",
+        "`.npmrc` holds npm settings, like the registry."
+      ],
+      "source": "npm Docs: package-lock.json"
+    },
+    {
+      "id": "server-q30",
+      "lesson": "server-4",
+      "difficulty": 1,
+      "q": "Which command lists known security vulnerabilities in a project's packages?",
+      "options": [
+        "`npm outdated`",
+        "`npm audit`",
+        "`npm doctor`",
+        "`npm ls`"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "`npm audit` checks your packages against a database of known security problems.",
+      "wrong": [
+        "`npm outdated` lists newer versions, not security problems.",
+        "",
+        "`npm doctor` checks that npm itself is set up well.",
+        "`npm ls` prints the installed package tree."
+      ],
+      "source": "npm Docs: npm-audit"
+    },
+    {
+      "id": "server-q31",
+      "lesson": "server-4",
+      "difficulty": 2,
+      "q": "package.json has this line, and there is no lock file. Which version can a fresh `npm install` choose?",
+      "code": "\"express\": \"^4.17.1\"",
+      "lang": "js",
+      "options": [
+        "3.9.9",
+        "4.17.0",
+        "4.18.2",
+        "5.0.0"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "The caret allows newer minor and patch versions, but not a new major. So `^4.17.1` means 4.17.1 or newer, below 5.0.0.",
+      "wrong": [
+        "A lower major is never allowed.",
+        "4.17.0 is below the minimum, 4.17.1.",
+        "",
+        "5.0.0 is a new major, which the caret blocks."
+      ],
+      "source": "npm Docs: About semantic versioning"
+    },
+    {
+      "id": "server-q32",
+      "lesson": "server-4",
+      "difficulty": 2,
+      "q": "package.json lists this range. Which two versions satisfy it? (Choose 2)",
+      "code": "\"chalk\": \"~2.4.1\"",
+      "lang": "js",
+      "options": [
+        "2.4.0",
+        "2.4.1",
+        "2.4.9",
+        "2.5.0",
+        "3.0.0"
+      ],
+      "answer": [
+        1,
+        2
+      ],
+      "explain": "The tilde allows only patch updates. `~2.4.1` means 2.4.1 or newer, below 2.5.0.",
+      "wrong": [
+        "2.4.0 is below the minimum, 2.4.1.",
+        "",
+        "",
+        "A new minor version is outside a tilde range.",
+        "A new major is outside a tilde range."
+      ],
+      "source": "npm Docs: About semantic versioning"
+    },
+    {
+      "id": "server-q33",
+      "lesson": "server-4",
+      "difficulty": 2,
+      "q": "A team keeps an internal app in a repository next to their published packages. They want npm to refuse if someone runs `npm publish` on the app by mistake. What should they add to its package.json?",
+      "options": [
+        "`\"license\": \"UNLICENSED\"`",
+        "`\"version\": \"0.0.0\"`",
+        "`\"main\": \"\"`",
+        "`\"private\": true`"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "With `\"private\": true`, npm refuses to publish the package.",
+      "wrong": [
+        "A license only states usage rights; publishing still works.",
+        "Any valid version can still be published.",
+        "An empty entry file does not block publishing.",
+        ""
+      ],
+      "source": "npm Docs: package.json"
+    },
+    {
+      "id": "server-q34",
+      "lesson": "server-4",
+      "difficulty": 2,
+      "q": "A developer publishes a plugin for ESLint. The plugin must use the ESLint the host project already has, not bring its own copy. Where should `eslint` go in the plugin's package.json?",
+      "options": [
+        "`dependencies`",
+        "`optionalDependencies`",
+        "`peerDependencies`",
+        "`bundleDependencies`"
+      ],
+      "answer": [
+        2
+      ],
+      "explain": "`peerDependencies` says which host package, and which versions, the plugin works with. The host project provides it.",
+      "wrong": [
+        "That would give the plugin its own copy of ESLint.",
+        "Optional ones are skipped if they fail; the plugin still gets its own copy.",
+        "",
+        "Bundled ones ship inside the plugin, its own copy again."
+      ],
+      "source": "npm Docs: package.json"
+    },
+    {
+      "id": "server-q35",
+      "lesson": "server-4",
+      "difficulty": 2,
+      "q": "A package.json has these scripts. A developer runs `npm test`. What runs, in order?",
+      "code": "\"scripts\": {\n  \"pretest\": \"npm run lint\",\n  \"test\": \"jest\",\n  \"posttest\": \"echo done\",\n  \"lint\": \"eslint .\"\n}",
+      "lang": "js",
+      "options": [
+        "Only `jest`",
+        "lint, then `jest`, then `echo done`",
+        "`jest`, then lint, then `echo done`",
+        "lint and `jest` at the same time, then `echo done`"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "npm runs `pre<name>` before a script and `post<name>` after it. So `pretest`, `test` and `posttest` run in that order.",
+      "wrong": [
+        "`pretest` and `posttest` run by themselves around `test`.",
+        "",
+        "`pre` scripts run before, not after.",
+        "The scripts run one after another, not at once."
+      ],
+      "source": "npm Docs: scripts"
+    },
+    {
+      "id": "server-q36",
+      "lesson": "server-4",
+      "difficulty": 2,
+      "q": "A private app's package.json has no `name` and no `version`. What happens when a developer runs `npm install`?",
+      "code": "{\n  \"private\": true,\n  \"dependencies\": { \"express\": \"^4.18.1\" }\n}",
+      "lang": "json",
+      "options": [
+        "npm stops and asks for a name",
+        "npm fails until both fields are added",
+        "npm installs only if `version` is added",
+        "npm installs the packages normally"
+      ],
+      "answer": [
+        3
+      ],
+      "explain": "`name` and `version` are required only to publish. A package that is never published can leave them out.",
+      "wrong": [
+        "npm does not ask; that is `npm init`.",
+        "The fields are optional unless you publish.",
+        "`version` is optional too unless you publish.",
+        ""
+      ],
+      "source": "npm Docs: package.json"
+    },
+    {
+      "id": "server-x15",
+      "lesson": "server-4",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "package.json lists this range. The registry has 0.3.2, 0.3.9 and 0.4.0. On a fresh install with no lock file, which version does npm pick?",
+      "code": "\"tiny-lib\": \"^0.3.2\"",
+      "lang": "js",
+      "options": [
+        "0.3.2",
+        "0.3.9",
+        "0.4.0",
+        "None; npm refuses ranges below 1.0.0"
+      ],
+      "answer": [
+        1
+      ],
+      "explain": "Below 1.0.0, the caret keeps the minor number too: `^0.3.2` means below 0.4.0. npm picks the newest match, 0.3.9.",
+      "wrong": [
+        "npm picks the newest version that matches, not the lowest.",
+        "",
+        "With a leading 0, a minor bump counts as breaking, so the caret blocks it.",
+        "Ranges work fine for 0.x versions."
+      ],
+      "source": "npm Docs: About semantic versioning"
+    },
+    {
+      "id": "server-x16",
+      "lesson": "server-4",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "Builds pass on a developer laptop but fail on the build server, which gets a different version of a nested package. The team commits package.json, but `package-lock.json` is in `.gitignore`. Which two changes make builds repeatable? (Choose 2)",
+      "options": [
+        "Run `npm update` before every build",
+        "Change every range in package.json to `*`",
+        "Commit `package-lock.json`",
+        "Run `npm ci` on the build server",
+        "Delete `node_modules` on the laptop only"
+      ],
+      "answer": [
+        2,
+        3
+      ],
+      "explain": "The lock file pins every package, nested ones too, so it must be committed. `npm ci` then installs exactly from it.",
+      "wrong": [
+        "Updating pulls newer versions, the opposite of repeatable.",
+        "`*` accepts any version, so builds would vary more.",
+        "",
+        "",
+        "The build server would still resolve its own versions."
+      ],
+      "source": "npm Docs: package-lock.json"
+    },
+    {
+      "id": "server-x17",
+      "lesson": "server-4",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "The server code uses `express` and `dayjs`; only the tests use `jest`. Production installs skip `devDependencies`, and the server crashes with \"Cannot find module 'dayjs'\". What is the fix?",
+      "code": "{\n  \"dependencies\": { \"express\": \"^4.18.1\" },\n  \"devDependencies\": {\n    \"dayjs\": \"^1.11.0\",\n    \"jest\": \"^28.1.0\"\n  }\n}",
+      "lang": "json",
+      "options": [
+        "Move `dayjs` to `dependencies`",
+        "Move `jest` to `dependencies`",
+        "Move `express` to `devDependencies`",
+        "Run `npm audit fix` on the server"
+      ],
+      "answer": [
+        0
+      ],
+      "explain": "Code the app needs while it runs belongs in `dependencies`. `dayjs` was in `devDependencies`, so production skipped it.",
+      "wrong": [
+        "",
+        "Jest is only for tests, so it stays in `devDependencies`.",
+        "Then production would skip `express` too.",
+        "`npm audit fix` fixes security problems, not missing packages."
+      ],
+      "source": "npm Docs: package.json"
+    },
+    {
+      "id": "server-x18",
+      "lesson": "server-4",
+      "difficulty": 3,
+      "pack": "hard",
+      "q": "Which two statements about `npm ci` are true? (Choose 2)",
+      "options": [
+        "It updates package-lock.json to match package.json",
+        "It can add one new package, like `npm ci lodash`",
+        "It works the same with no lock file at all",
+        "It deletes `node_modules` before it installs",
+        "It fails when package-lock.json and package.json disagree"
+      ],
+      "answer": [
+        3,
+        4
+      ],
+      "explain": "`npm ci` starts clean by removing `node_modules`. It never writes to package.json or the lock file, so a mismatch is an error.",
+      "wrong": [
+        "`npm ci` never writes to the lock file.",
+        "It installs whole projects only; use `npm install` to add a package.",
+        "It needs an existing lock file.",
+        "",
+        ""
+      ],
+      "source": "npm Docs: npm-ci"
+    }
+  ]
+}
