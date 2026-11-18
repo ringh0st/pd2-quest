@@ -8,5 +8,5 @@ export const hasBackend = () => Boolean(SUPABASE_URL && SUPABASE_KEY);
 
 // Turn on once the Google provider is enabled in Supabase (Authentication → Sign In / Providers → Google),
 // so the button never leads to an error page.
-export const GOOGLE_SIGN_IN = false;
+export const GOOGLE_SIGN_IN = true;
 export const hasSignIn = () => hasBackend() && GOOGLE_SIGN_IN;
