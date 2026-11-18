@@ -4,24 +4,11 @@ import { useCallback, useEffect, useState } from 'react';
 import { useStore } from '../state/store.js';
 import { Icon } from '../components/icons/Icon.jsx';
 import { Segmented, Switch } from '../components/Controls.jsx';
-import { fetchTop, fetchMyStatus, setShownOnTop, claimPrizes, periodEnds, sendPoints, guestsCantJoin, TOP_PRIZES, MAX_POINTS_PER_DAY } from '../lib/topList.js';
+import { fetchTop, fetchMyStatus, setShownOnTop, claimPrizes, periodEnds, sendPoints, guestsCantJoin, rememberMyPlace, timeLeft, TOP_PRIZES, MAX_POINTS_PER_DAY } from '../lib/topList.js';
 import { sfx } from '../audio/sfx.js';
+import { TopPlace } from '../components/game/TopPlace.jsx';
 
 const KINDS = [['week', 'This week'], ['month', 'This month']];
-const MEDAL = ['gold', 'silver', 'bronze'];
-
-function endsIn(date) {
-  const ms = date - Date.now();
-  const days = Math.floor(ms / 86400000);
-  const hours = Math.max(1, Math.floor((ms % 86400000) / 3600000));
-  return days >= 1 ? `${days} day${days === 1 ? '' : 's'} ${hours} h` : `${hours} hour${hours === 1 ? '' : 's'}`;
-}
-
-function Place({ n }) {
-  return n <= 3
-    ? <span className={`top-medal ${MEDAL[n - 1]}`}><Icon name="medal" /><span className="top-medal-n">{n}</span><span className="sr-only">Place {n}</span></span>
-    : <span className="top-place"><span className="sr-only">Place </span>{n}</span>;
-}
 
 export function Top() {
   const name = useStore((s) => s.name);
@@ -37,6 +24,7 @@ export function Top() {
       await sendPoints();
       const [list, status] = await Promise.all([fetchTop(kind), fetchMyStatus()]);
       setRows(list); setMe(status);
+      if (kind === 'week') rememberMyPlace(list.find((r) => r.me));
       if (guestsCantJoin() && !status) setFailed('guests');
     } catch (e) {
       setRows([]); setMe(null);
@@ -63,10 +51,10 @@ export function Top() {
       <section className="card stack-s top-prizes" aria-label="Prizes">
         <div className="top-prize-row">
           {TOP_PRIZES.map((coins, k) => (
-            <span key={k} className="top-prize"><Place n={k + 1} /><span className="top-prize-coins"><Icon name="coin" /> {coins}</span></span>
+            <span key={k} className="top-prize"><TopPlace n={k + 1} /><span className="top-prize-coins"><Icon name="coin" /> {coins}</span></span>
           ))}
         </div>
-        <p className="small muted center">Top 3 win coins when the {kind} ends · <Icon name="timer" /> {endsIn(ends)} left</p>
+        <p className="small muted center">Top 3 win coins when the {kind} ends · <Icon name="timer" /> {timeLeft(ends)} left</p>
       </section>
 
       {rows === null && <div className="stack" aria-busy="true" aria-label="Loading the list">{[0, 1, 2, 3].map((k) => <div key={k} className="card top-skeleton" />)}</div>}
@@ -81,7 +69,7 @@ export function Top() {
             <ol className="list-plain top-list">
               {rows.map((r) => (
                 <li key={`${r.place}-${r.name}`} className={`top-row${r.me ? ' me' : ''}${r.place <= 3 ? ' podium' : ''}`}>
-                  <Place n={r.place} />
+                  <TopPlace n={r.place} />
                   <span className="grow top-name">{r.name}{r.me && <span className="top-you"> (you)</span>}</span>
                   <span className="top-points"><strong>{r.points}</strong> <span className="small muted">XP</span></span>
                   {r.prize > 0 && <span className="top-row-prize" title={`${r.prize} coins if this holds`}><Icon name="coin" /> {r.prize}<span className="sr-only"> coins</span></span>}

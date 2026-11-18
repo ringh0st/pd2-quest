@@ -102,6 +102,14 @@ export async function setShownOnTop(shown) {
   return data;
 }
 
+/** "3 days 4 h" / "5 hours" until `date`. */
+export function timeLeft(date, now = Date.now()) {
+  const ms = date - now;
+  const days = Math.floor(ms / 86400000);
+  const hours = Math.max(1, Math.floor((ms % 86400000) / 3600000));
+  return days >= 1 ? `${days} day${days === 1 ? '' : 's'} ${hours} h` : `${hours} hour${hours === 1 ? '' : 's'}`;
+}
+
 /** When the current week (next Monday, UTC) and month (the 1st, UTC) end. */
 export function periodEnds(now = new Date()) {
   const d = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
@@ -109,6 +117,18 @@ export function periodEnds(now = new Date()) {
   week.setUTCDate(d.getUTCDate() + ((8 - (d.getUTCDay() || 7)) % 7 || 7));
   const month = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1));
   return { week, month };
+}
+
+// Your place this week, remembered from the last time the list was opened (for the Home card; no network needed)
+const MINE_KEY = 'devquest.top.mine';
+export function rememberMyPlace(row) {
+  try { localStorage.setItem(MINE_KEY, JSON.stringify(row ? { place: row.place, points: row.points, week: periodEnds().week.toISOString() } : null)); } catch { /* storage blocked */ }
+}
+export function lastMyPlace() {
+  try {
+    const v = JSON.parse(localStorage.getItem(MINE_KEY) || 'null');
+    return v && v.week === periodEnds().week.toISOString() ? v : null; // a new week starts fresh
+  } catch { return null; }
 }
 
 /** Call once at app start. */

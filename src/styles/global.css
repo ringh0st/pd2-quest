@@ -1595,3 +1595,30 @@ body:has(.app.with-nav) .review-bar.above-nav { margin-left: 0; }
 .replies-more { justify-self: center; }
 .replies-more .flip-up { transform: rotate(180deg); }
 .reply-item:focus { outline: none; } .reply-item:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+
+/* ===== Home: Top players card (stands out: gold, medals, prizes) ===== */
+.top-promo {
+  display: grid; gap: 12px; text-decoration: none; color: inherit;
+  background: linear-gradient(135deg, color-mix(in srgb, var(--gold) 34%, var(--surface)), color-mix(in srgb, var(--gold) 12%, var(--surface)));
+  box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--gold) 70%, transparent), var(--shadow-1, 0 2px 8px rgb(0 0 0 / 0.08));
+}
+.top-promo-head { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.top-promo-trophy {
+  display: grid; place-items: center; width: 52px; height: 52px; flex: none; border-radius: 16px;
+  background: var(--gold); color: #5A3B00; box-shadow: 0 3px 0 var(--gold-ledge);
+}
+.top-promo-trophy .icon { width: 28px; height: 28px; }
+.top-promo-title { display: block; font-size: calc(19px * var(--text-scale)); }
+.top-promo-sub { display: block; font-size: var(--fs-small); color: var(--text); overflow-wrap: anywhere; }
+.top-promo-sub .icon { color: var(--gold-text); }
+.top-promo-prizes { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+.top-promo-prize {
+  display: inline-flex; align-items: center; justify-content: center; gap: 4px; padding: 6px 4px; border-radius: 12px;
+  background: color-mix(in srgb, var(--surface) 75%, transparent); font-weight: 800; font-size: var(--fs-small); white-space: nowrap;
+}
+.top-promo-prize > .icon { color: var(--gold-text); }
+.top-medal.s { width: 26px; height: 26px; }
+.top-medal.s .icon { display: none; }
+.top-medal.s .top-medal-n { font-size: 13px; }
+
+.top-promo-sub .nowrap { white-space: nowrap; }
