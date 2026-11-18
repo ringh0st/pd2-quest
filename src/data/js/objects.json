@@ -13,33 +13,38 @@
         {
           "type": "text",
           "title": "In plain words",
-          "body": "A **function** is a named set of steps you can run again and again. JavaScript gives you three ways to write one: a **function declaration**, a **function expression** and an **arrow function**. All three run code. They differ in when they exist and in what `this` means inside them."
+          "body": "A **function** is a named set of steps you can run again and again. You run (\"call\") it with parentheses, like `add(2, 3)`. JavaScript gives you three ways to write one: a **function declaration**, a **function expression** and an **arrow function**. They differ in when you can call them and in a few hidden extras."
         },
         {
           "type": "tip",
           "title": "Think of it like…",
-          "body": "Three recipes for a kitchen wall. A declaration is pinned up before cooking starts, so you can use it any time. An expression is pinned only when you reach that step. Where it stops: an arrow is a recipe with no cook of its own. It borrows `this` from the room it was written in."
+          "body": "Three ways to put a recipe on the kitchen wall. A declaration is pinned up before cooking starts, so you can use it any time. An expression is pinned only when you reach that step. An arrow is a short note, pinned just as late. Where it stops: arrows also lack some extras, shown below."
         },
         {
           "type": "code",
           "title": "Three ways to write it",
           "lang": "js",
           "code": "function add(a, b) { return a + b; }          // declaration\nconst sub = function (a, b) { return a - b; }; // expression\nconst mul = (a, b) => a * b;                   // arrow",
-          "body": "An arrow with one expression and no braces returns it by itself. That is an **implicit return**. Add curly braces and you need `return` again."
+          "body": "All three take `a` and `b` and give back one value. `=>` points from the inputs to the result, so `mul(2, 3)` gives `6`. With no curly braces, an arrow returns its one expression by itself. That is an **implicit return**. Add braces and you need `return` again."
         },
         {
           "type": "text",
-          "title": "When can you call it?",
-          "body": "**Hoisting** means JavaScript sets up declarations before it runs the code. A function declaration is hoisted with its body, so you can call it above its line. A function expression follows its variable. With `var`, the variable starts as `undefined`, so an early call throws `TypeError`. With `let` or `const`, it throws `ReferenceError`."
+          "title": "Declarations are ready early",
+          "body": "**Hoisting** means JavaScript sets up declarations before it runs any line. A function declaration is set up with its whole body. So you can call `add(2, 3)` on a line above `function add`, and it still gives `5`."
+        },
+        {
+          "type": "text",
+          "title": "Expressions wait for their line",
+          "body": "A function expression lives in a variable: a named box made with `var`, `let` or `const`. The box is empty until its line runs. A `var` starts as `undefined`, and calling `undefined` throws `TypeError`. A `let` or `const` name is locked until its line, so an early call throws `ReferenceError`."
         },
         {
           "type": "list",
           "title": "What arrows don't have",
           "items": [
-            "No own `this`: it comes from the code around the arrow",
-            "No own `arguments` object",
-            "Can't be used with `new`: that throws `TypeError`",
-            "So they are a poor fit for an object **method** that needs `this`"
+            "No own `this` (the object a function works for). An arrow uses the `this` of the code around it",
+            "No own `arguments` (a list of all values passed in)",
+            "Can't be used with `new`, the keyword that builds objects: it throws `TypeError`",
+            "So it's a poor fit for an object **method**: a function stored on an object, like `cart.total()`"
           ]
         },
         {
@@ -47,7 +52,7 @@
           "title": "Returning an object from an arrow",
           "lang": "js",
           "code": "const bad = () => { id: 1 };    // returns undefined\nconst good = () => ({ id: 1 }); // returns { id: 1 }",
-          "body": "Wrap the object in parentheses. Without them, the braces are read as a function body, not an object."
+          "body": "`bad()` gives `undefined`, because its braces are read as a function body, not an object. `good()` gives `{ id: 1 }`. So wrap the object in parentheses."
         },
         {
           "type": "trap",
@@ -93,6 +98,14 @@
           "say": "A short way to write a function with =>. It has no this of its own, so it uses the one from the code around it."
         },
         {
+          "term": "=>",
+          "say": "The arrow sign in an arrow function. The inputs go on its left and the result on its right, like (a, b) => a * b."
+        },
+        {
+          "term": "return",
+          "say": "The word that ends a function and hands a value back. A function with return 5 gives back 5."
+        },
+        {
           "term": "implicit return",
           "match": [
             "implicit"
@@ -107,6 +120,22 @@
           "say": "JavaScript sets up declarations before running the code. It is as if they were lifted to the top of their scope."
         },
         {
+          "term": "var",
+          "say": "The oldest way to make a variable. It is set up early and holds undefined until its line runs."
+        },
+        {
+          "term": "let",
+          "say": "Makes a variable you can give a new value later. The name is locked until its line runs."
+        },
+        {
+          "term": "const",
+          "say": "Makes a variable you can't point at a new value later. The name is locked until its line runs."
+        },
+        {
+          "term": "undefined",
+          "say": "The value a variable has when nothing has been put in it yet."
+        },
+        {
           "term": "TypeError",
           "say": "The error you get when a value is the wrong kind for what you do, like calling something that is not a function."
         },
@@ -115,8 +144,16 @@
           "say": "The error you get when you use a variable name that doesn't exist yet, or isn't ready to use yet."
         },
         {
+          "term": "this",
+          "say": "A hidden value inside a regular function. It points at the object the function is working for, like cart in cart.total()."
+        },
+        {
           "term": "arguments",
           "say": "A list-like object that regular functions get. It holds every value passed in. Arrow functions don't get their own."
+        },
+        {
+          "term": "new",
+          "say": "A keyword that builds a fresh object from a function or a class, like new Date(). Arrow functions can't be used with it."
         },
         {
           "term": "method",
@@ -136,7 +173,7 @@
         {
           "type": "text",
           "title": "In plain words",
-          "body": "**Parameters** are the named slots in a function's definition. **Arguments** are the real values you pass in when you call it. JavaScript is relaxed about the count. Pass fewer and the missing ones are `undefined`. Pass more and the extras are ignored, unless you collect them."
+          "body": "**Parameters** are the named slots in a function's definition. **Arguments** are the real values you pass in when you call it. In `greet('Ann')`, `'Ann'` is an argument. JavaScript is relaxed about the count. Pass fewer and the missing ones are `undefined`. Pass more and the extras are ignored, unless you collect them."
         },
         {
           "type": "tip",
@@ -148,24 +185,24 @@
           "title": "Default parameters",
           "lang": "js",
           "code": "function greet(name = 'friend') {\n  return 'Hi ' + name;\n}\ngreet();          // 'Hi friend'\ngreet(undefined); // 'Hi friend'\ngreet(null);      // 'Hi null'",
-          "body": "A **default parameter** is used only when the value is `undefined`. `null`, `0` and `''` are real values, so they stay."
+          "body": "A **default parameter** is a backup value written with `=`. It is used only when the value is `undefined`, given or missing. So the first two calls give `'Hi friend'`. `null` is a real value, so `greet(null)` gives `'Hi null'`. The same goes for `0` and `''`."
         },
         {
           "type": "code",
           "title": "Rest parameters",
           "lang": "js",
           "code": "function total(label, ...nums) {\n  return label + nums.reduce((s, n) => s + n, 0);\n}\ntotal('Sum: ', 1, 2, 3); // 'Sum: 6'",
-          "body": "A **rest parameter** gathers the leftover values into a real array. It must be the last parameter, and only one is allowed."
+          "body": "A **rest parameter** (three dots before the last name) gathers the leftover values into a real array. Here `nums` is `[1, 2, 3]`. Then `reduce()` adds them up, so the call gives `'Sum: 6'`. Rest must be the last parameter, and only one is allowed."
         },
         {
           "type": "text",
           "title": "Spread is the reverse",
-          "body": "**Spread syntax** uses the same three dots to unpack. `Math.max(...[3, 9, 4])` passes 3, 9 and 4 as separate values. It also works inside array literals like `[...a, ...b]` and object literals like `{ ...obj }`."
+          "body": "**Spread syntax** uses the same three dots to unpack. `Math.max()` gives the biggest number you pass it. `Math.max(...[3, 9, 4])` passes 3, 9 and 4 as separate values, so it gives `9`. In an **array literal**, `[...a, ...b]` joins two arrays. `{ ...obj }` copies an object's properties."
         },
         {
           "type": "text",
           "title": "The old arguments object",
-          "body": "Regular functions also get `arguments`. It is an **array-like** object holding every value passed in. It has `length` and numbered indexes, but no array methods like `map`. Arrow functions don't have their own. In new code, prefer a rest parameter."
+          "body": "Regular functions also get `arguments`. It is an **array-like** object holding every value passed in. It has `length` (how many values) and numbered slots, like `arguments[0]`. But it has no array methods, such as `map()`. Arrow functions don't have their own. In new code, prefer a rest parameter."
         },
         {
           "type": "trap",
@@ -221,12 +258,48 @@
           "say": "Three dots that unpack an array or object into separate values, for a call or a new array or object."
         },
         {
+          "term": "array literal",
+          "match": [
+            "array literals"
+          ],
+          "say": "An array written straight out in square brackets, like [1, 2, 3]."
+        },
+        {
           "term": "array-like",
           "say": "Something with a length and numbered slots, like an array, but without array methods such as map or filter."
         },
         {
           "term": "undefined",
           "say": "The value a variable or parameter has when nothing was given to it."
+        },
+        {
+          "term": "null",
+          "say": "A value that means \"empty, on purpose\". It counts as a real value, so it doesn't use the default."
+        },
+        {
+          "term": "reduce()",
+          "match": [
+            "reduce"
+          ],
+          "say": "Walks through an array and folds all its items into one value, like adding them up. [1, 2, 3] can become 6."
+        },
+        {
+          "term": "Math.max()",
+          "match": [
+            "Math.max"
+          ],
+          "say": "Gives back the biggest of the numbers you pass in. Math.max(3, 9, 4) gives 9."
+        },
+        {
+          "term": "length",
+          "say": "How many items something holds. A list of three values has length 3."
+        },
+        {
+          "term": "map()",
+          "match": [
+            "map"
+          ],
+          "say": "Makes a new array by changing each item with a function you give it. Doubling 1 and 2 gives 2 and 4."
         },
         {
           "term": "SyntaxError",
@@ -248,26 +321,33 @@
         {
           "type": "tip",
           "title": "Think of it like…",
-          "body": "A delivery app. You hand the driver a note: \"when you arrive, ring twice.\" The note is the callback. The driver decides when to use it. Where it stops: some callbacks run right away, like in `map`. Others run later, like in `setTimeout`."
+          "body": "A delivery app. You hand the driver a note: \"when you arrive, ring twice.\" The note is the callback. The driver decides when to use it. Where it stops: some callbacks run right away, like the one you give `map()`. Others run later, like the one you give `setTimeout()`."
         },
         {
           "type": "code",
-          "title": "Array helpers take callbacks",
+          "title": "map and filter take callbacks",
           "lang": "js",
-          "code": "const prices = [10, 25, 40];\nconst doubled = prices.map((p) => p * 2);        // [20, 50, 80]\nconst cheap = prices.filter((p) => p < 30);       // [10, 25]\nconst sum = prices.reduce((acc, p) => acc + p, 0); // 75",
-          "body": "`map` changes each item, `filter` keeps some, and `reduce` folds them all into one value. Each one calls your callback for you."
+          "code": "const prices = [10, 25, 40];\nconst doubled = prices.map((p) => p * 2);  // [20, 50, 80]\nconst cheap = prices.filter((p) => p < 30); // [10, 25]",
+          "body": "`map()` calls your callback once per item and builds a new array from the answers. `filter()` keeps only the items where your callback returns `true`. Neither one changes `prices`."
+        },
+        {
+          "type": "code",
+          "title": "reduce folds a list into one value",
+          "lang": "js",
+          "code": "const prices = [10, 25, 40];\nconst sum = prices.reduce((acc, p) => acc + p, 0); // 75",
+          "body": "`reduce()` also calls your callback once per item. `acc` is the running total, and it starts at `0`, the last value you pass. Each round returns `acc + p`, which becomes the next `acc`: 10, then 35, then `75`."
         },
         {
           "type": "code",
           "title": "Functions that return functions",
           "lang": "js",
           "code": "function multiplier(factor) {\n  return (n) => n * factor;\n}\nconst double = multiplier(2);\ndouble(5); // 10",
-          "body": "A **factory function** returns a new function. `double` still knows `factor` after `multiplier` has finished. Chaining calls like `add(1)(2)` is called **currying**."
+          "body": "A **factory function** returns a new function. `multiplier(2)` returns an arrow that multiplies by 2, so `double(5)` gives `10`. `double` still knows `factor` after `multiplier` has finished. Calling in a chain, like `add(1)(2)`, is called **currying**."
         },
         {
           "type": "text",
           "title": "Pass it, don't call it",
-          "body": "Pass `save`, not `save()`. The parentheses run it now and pass its **return value** instead. With timers: `setTimeout(save, 1000)` runs `save` later. `setTimeout(save(), 1000)` runs it at once."
+          "body": "Pass `save`, not `save()`. The parentheses run it now and pass its **return value** instead. `setTimeout()` calls a function after a delay in milliseconds. So `setTimeout(save, 1000)` runs `save` one second later. `setTimeout(save(), 1000)` runs it at once."
         },
         {
           "type": "text",
@@ -276,7 +356,7 @@
         },
         {
           "type": "trap",
-          "body": "`['1', '2', '3'].map(parseInt)` gives `[1, NaN, NaN]`. `map` passes three values: the item, its index and the array. `parseInt` reads the index as its **radix** (number base). Write `map((s) => parseInt(s, 10))` or `map(Number)`."
+          "body": "`['1', '2', '3'].map(parseInt)` gives `[1, NaN, NaN]`. `NaN` means \"not a number\". `parseInt()` turns text into a whole number. Its second value is the **radix** (number base). But `map` passes the item, its index and the array. So the index becomes the radix. Use `map((s) => parseInt(s, 10))` or `map(Number)`."
         },
         {
           "type": "tip",
@@ -309,6 +389,34 @@
           "say": "A function you hand to another function, so that function can call it for you, now or later."
         },
         {
+          "term": "map()",
+          "match": [
+            "map"
+          ],
+          "say": "Makes a new array by running your function on each item. [10, 25] doubled becomes [20, 50]. The old array stays the same."
+        },
+        {
+          "term": "filter()",
+          "match": [
+            "filter"
+          ],
+          "say": "Makes a new array with only the items your function says yes to. Keeping numbers under 30 from [10, 40] gives [10]."
+        },
+        {
+          "term": "reduce()",
+          "match": [
+            "reduce"
+          ],
+          "say": "Walks through an array and folds all items into one value, like a running total. [10, 25, 40] added up gives 75."
+        },
+        {
+          "term": "setTimeout()",
+          "match": [
+            "setTimeout"
+          ],
+          "say": "Runs a function later, after a wait in milliseconds. 1000 milliseconds is one second."
+        },
+        {
           "term": "factory function",
           "say": "A function that builds and returns something new each time, like a fresh function or object."
         },
@@ -332,8 +440,19 @@
           "say": "Changes a function makes outside itself, like editing a shared variable or writing to the console."
         },
         {
+          "term": "parseInt()",
+          "match": [
+            "parseInt"
+          ],
+          "say": "Reads text and turns it into a whole number. '42' becomes 42. A second value can set the number base."
+        },
+        {
           "term": "radix",
           "say": "The number base used to read digits. Radix 10 is normal counting; radix 2 is binary."
+        },
+        {
+          "term": "NaN",
+          "say": "Short for \"Not a Number\". It is the result when a math step can't make a real number, like reading 'cat' as a number."
         }
       ]
     },
@@ -346,7 +465,7 @@
         {
           "type": "text",
           "title": "In plain words",
-          "body": "`this` is a hidden value every regular function gets. It points at the object the function is working for right now. The rule: `this` is set by **how a function is called**, not where it was written. The same function can get a different `this` on each call."
+          "body": "Inside a regular function, `this` is a hidden value. It points at the object the function is working for right now. The rule: `this` is set by **how a function is called**, not where it was written. So one function can get a different `this` on each call."
         },
         {
           "type": "tip",
@@ -354,12 +473,19 @@
           "body": "The word \"me\" on a name badge. Whoever wears the badge right now is \"me\". Hand the badge to someone else and \"me\" changes. Where it stops: an arrow function has no badge. It uses the `this` of the code around it."
         },
         {
+          "type": "code",
+          "title": "Step 1: a method call",
+          "lang": "js",
+          "code": "const ann = {\n  name: 'Ann',\n  hi() { return 'Hi, ' + this.name; },\n};\nann.hi(); // 'Hi, Ann'",
+          "body": "`hi` is a **method**: a function stored on an object. In `ann.hi()`, the object before the dot is `ann`. So inside `hi`, `this` is `ann`, and `this.name` is `'Ann'`."
+        },
+        {
           "type": "list",
           "title": "The rules, in order",
           "items": [
-            "`obj.fn()`: `this` is `obj`, the object before the dot",
-            "Plain call `fn()`: `undefined` in **strict mode**, the **global object** in sloppy mode",
-            "`new Fn()`: `this` is the brand-new object",
+            "`obj.fn()`: `obj`, the object before the dot",
+            "Plain call `fn()`, no dot: `undefined` in **strict mode** (stricter rules, set by `'use strict'` and always on in classes and modules). In sloppy mode, the **global object**",
+            "`new Fn()`: the object `new` just built",
             "`call()`, `apply()` or `bind()`: whatever you pass first",
             "Arrow function: no own `this`; it uses the outer one"
           ]
@@ -368,20 +494,22 @@
           "type": "code",
           "title": "The lost method",
           "lang": "js",
-          "code": "class Timer {\n  constructor() { this.ticks = 0; }\n  tick() { this.ticks++; }\n}\nconst t = new Timer();\nconst fn = t.tick;\nfn(); // TypeError: this is undefined",
-          "body": "Copy a **method** out of its object and the dot is gone. Class bodies are always strict, so `this` is `undefined` and the call throws `TypeError`."
+          "code": "'use strict';\nconst timer = {\n  ticks: 0,\n  tick() { this.ticks++; },\n};\nconst fn = timer.tick;\nfn(); // TypeError: this is undefined",
+          "body": "Copy a **method** out of its object and the dot is gone. In strict mode, `this` is then `undefined`, so `this.ticks` throws `TypeError`. Class bodies are always strict, so a copied class method fails the same way."
         },
         {
           "type": "code",
-          "title": "Setting this yourself",
+          "title": "call and apply: run it now",
           "lang": "js",
-          "code": "function intro(greeting, mark) {\n  return greeting + ', ' + this.name + mark;\n}\nconst ann = { name: 'Ann' };\nintro.call(ann, 'Hi', '!');    // 'Hi, Ann!'\nintro.apply(ann, ['Hi', '!']); // 'Hi, Ann!'\nconst hiAnn = intro.bind(ann, 'Hi');\nhiAnn('?');                    // 'Hi, Ann?'",
-          "body": "`call()` runs now with values one by one. `apply()` runs now with an array. `bind()` runs nothing. It returns a **bound function** with `this` and any first values locked in."
+          "code": "function intro(greeting, mark) {\n  return greeting + ', ' + this.name + mark;\n}\nconst ann = { name: 'Ann' };\nintro.call(ann, 'Hi', '!');    // 'Hi, Ann!'\nintro.apply(ann, ['Hi', '!']); // 'Hi, Ann!'",
+          "body": "`call()` runs the function now. Its first value becomes `this`, and the rest are passed one by one. `apply()` does the same, but takes the rest in one array. Both give `'Hi, Ann!'` here."
         },
         {
-          "type": "text",
-          "title": "Bound for good",
-          "body": "A bound function keeps its `this` for good. Calling it with `call()` or `apply()`, or binding it again, won't change `this`. Only `new` ignores the bound `this`. Arrows ignore all three: their `this` never changes."
+          "type": "code",
+          "title": "bind: lock it for later",
+          "lang": "js",
+          "code": "const hiAnn = intro.bind(ann, 'Hi'); // intro, ann from above\nhiAnn('?');                          // 'Hi, Ann?'\nhiAnn.call({ name: 'Bo' }, '?');     // still 'Hi, Ann?'",
+          "body": "`bind()` runs nothing. It returns a **bound function** with `this` and any first values locked in. Even `call()` can't change that `this`, as the last line shows. Only `new` ignores it. Arrows ignore all three: their `this` never changes."
         },
         {
           "type": "trap",
@@ -404,8 +532,16 @@
           "say": "A hidden value inside a regular function. It points at the object the function was called on, and it is set fresh on every call."
         },
         {
+          "term": "method",
+          "say": "A function stored as a property of an object. You call it with a dot, like cart.total()."
+        },
+        {
           "term": "strict mode",
           "say": "A safer mode of JavaScript, turned on with 'use strict', in classes and in modules. Silent mistakes become errors."
+        },
+        {
+          "term": "'use strict'",
+          "say": "A line at the top of a file or function that switches on strict mode."
         },
         {
           "term": "global object",
@@ -414,6 +550,14 @@
         {
           "term": "sloppy mode",
           "say": "Normal, non-strict JavaScript. It forgives some mistakes quietly instead of throwing errors."
+        },
+        {
+          "term": "new",
+          "say": "A keyword that builds a fresh object from a function or a class. Inside that function, this is the fresh object."
+        },
+        {
+          "term": "TypeError",
+          "say": "The error you get when a value is the wrong kind for what you do, like reading a property of undefined."
         },
         {
           "term": "call()",
@@ -430,10 +574,6 @@
         {
           "term": "bound function",
           "say": "The new function bind() returns. Its this stays fixed, even if you try call() or apply() on it later."
-        },
-        {
-          "term": "method",
-          "say": "A function stored as a property of an object. You call it with a dot, like cart.total()."
         }
       ]
     },
@@ -446,7 +586,7 @@
         {
           "type": "text",
           "title": "In plain words",
-          "body": "An **object** is a bag of named values called **properties**. Each property has a **key** (its name) and a value. You build most objects with an **object literal**: curly braces holding `key: value` pairs."
+          "body": "An **object** is a bag of named values called **properties**. Each property has a **key** (its name) and a value. You build most objects with an **object literal**: curly braces holding `key: value` pairs. With `const user = { name: 'Ivy' }`, both `user.name` and `user['name']` give `'Ivy'`."
         },
         {
           "type": "tip",
@@ -458,29 +598,36 @@
           "title": "Literal shortcuts",
           "lang": "js",
           "code": "const field = 'color';\nconst size = 'M';\nconst shirt = {\n  size,              // same as size: size\n  [field]: 'teal',   // computed key\n  label() { return this.size; },\n};\nshirt['color'];      // 'teal'",
-          "body": "Shorthand reuses a variable's name as the key. A **computed key** in square brackets uses a value as the name. Use **bracket notation** for dynamic keys or keys like `'first-name'`."
+          "body": "Shorthand `size` reuses the variable's name as the key. A **computed key** in square brackets uses a value as the name: `[field]` becomes `color`. So `shirt['color']` is `'teal'`. Use **bracket notation** for keys held in a variable or keys like `'first-name'`."
         },
         {
           "type": "code",
-          "title": "Destructuring",
+          "title": "Destructuring an object",
           "lang": "js",
-          "code": "const user = { id: 7, name: 'Ivy', role: 'admin' };\nconst { name: who, plan = 'free', ...rest } = user;\n// who = 'Ivy', plan = 'free', rest = { id: 7, role: 'admin' }\nconst [first, , third] = ['a', 'b', 'c'];\n// first = 'a', third = 'c'",
-          "body": "**Destructuring** unpacks values into variables. `name: who` renames. `= 'free'` is a default for `undefined`. `...rest` collects what's left. An empty comma skips an array item."
+          "code": "const user = { id: 7, name: 'Ivy', role: 'admin' };\nconst { name: who, plan = 'free', ...rest } = user;\n// who = 'Ivy', plan = 'free', rest = { id: 7, role: 'admin' }",
+          "body": "**Destructuring** copies values out into variables in one line. `name: who` reads `name` and stores it in `who`. `plan = 'free'` is a default, used because `plan` is `undefined`. `...rest` collects what's left into a new object."
+        },
+        {
+          "type": "code",
+          "title": "Destructuring an array",
+          "lang": "js",
+          "code": "const [first, , third] = ['a', 'b', 'c'];\n// first = 'a', third = 'c'",
+          "body": "Arrays destructure by position, in square brackets. The empty slot between two commas skips `'b'`. So `first` is `'a'` and `third` is `'c'`."
         },
         {
           "type": "code",
           "title": "Getters and setters",
           "lang": "js",
           "code": "const temp = {\n  celsius: 20,\n  get fahrenheit() { return this.celsius * 9 / 5 + 32; },\n  set fahrenheit(f) { this.celsius = (f - 32) * 5 / 9; },\n};\ntemp.fahrenheit;       // 68\ntemp.fahrenheit = 212; // celsius becomes 100",
-          "body": "A **getter** runs when you read a property. A **setter** runs when you assign one. You use them like plain properties, with no parentheses."
+          "body": "A **getter** (`get`) runs when you read a property. A **setter** (`set`) runs when you assign one. You use them like plain properties, with no parentheses. Reading gives `68`. Assigning `212` runs the setter, so `celsius` becomes `100`."
         },
         {
           "type": "list",
           "title": "Walking through an object",
           "items": [
-            "`Object.keys`, `Object.values`, `Object.entries`: own enumerable string keys, as arrays",
-            "`for...in`: also walks **inherited** enumerable keys",
-            "`for...of` needs an **iterable**; a plain object isn't one, so it throws `TypeError`",
+            "`Object.keys()`, `Object.values()`, `Object.entries()`: own **enumerable** (normal, listed) keys, values or `[key, value]` pairs, as arrays",
+            "`for...in`: walks keys, including ones **inherited** from a parent object",
+            "`for...of` needs an **iterable**, like an array. A plain object isn't one, so it throws `TypeError`",
             "Own or inherited? `Object.hasOwn(obj, key)` (newer, ES2022) or `obj.hasOwnProperty(key)`"
           ]
         },
@@ -552,8 +699,57 @@
           "say": "A hidden function that runs when you assign to a property. It decides what to do with the new value."
         },
         {
+          "term": "Object.keys()",
+          "match": [
+            "Object.keys"
+          ],
+          "say": "Gives an array of an object's own property names. For { a: 1, b: 2 } you get ['a', 'b']."
+        },
+        {
+          "term": "Object.values()",
+          "match": [
+            "Object.values"
+          ],
+          "say": "Gives an array of an object's own values. For { a: 1, b: 2 } you get [1, 2]."
+        },
+        {
+          "term": "Object.entries()",
+          "match": [
+            "Object.entries"
+          ],
+          "say": "Gives an array of [name, value] pairs. For { a: 1 } you get [['a', 1]]."
+        },
+        {
+          "term": "enumerable",
+          "say": "A setting on a property that says whether loops and Object.keys list it. Normal properties are enumerable."
+        },
+        {
+          "term": "for...in",
+          "say": "A loop that visits an object's listed (enumerable) property names one by one, including ones it inherits."
+        },
+        {
+          "term": "for...of",
+          "say": "A loop that visits the values of an array, string, Map or Set one by one. Plain objects don't work with it."
+        },
+        {
           "term": "iterable",
           "say": "Something for...of can walk through one item at a time, like an array, a string, a Map or a Set."
+        },
+        {
+          "term": "Object.hasOwn()",
+          "match": [
+            "Object.hasOwn",
+            "Object.hasOwn(obj, key)"
+          ],
+          "say": "Checks if an object holds a property itself, not borrowed from a parent. Gives true or false. Added in 2022."
+        },
+        {
+          "term": "hasOwnProperty()",
+          "match": [
+            "hasOwnProperty",
+            "obj.hasOwnProperty(key)"
+          ],
+          "say": "The older way to check if an object holds a property itself. obj.hasOwnProperty('a') gives true or false."
         }
       ]
     },
@@ -578,20 +774,20 @@
           "title": "Same object or not?",
           "lang": "js",
           "code": "const a = { x: 1 };\nconst b = { x: 1 };\nconst c = a;\na === b; // false: two objects\na === c; // true: same object\nc.x = 9;\na.x;     // 9",
-          "body": "`===` on objects checks **identity**: same object, not same contents. `Object.is` is like `===`, except `NaN` equals `NaN` and `0` differs from `-0`."
+          "body": "`===` (strict equals) on objects checks **identity**: the same object, not the same contents. `c` is another name for `a`, so changing `c.x` changes `a.x`. `Object.is()` is like `===`, except `NaN` equals `NaN` and `0` differs from `-0`."
         },
         {
           "type": "code",
           "title": "Shallow copies share the inside",
           "lang": "js",
           "code": "const order = { id: 1, items: ['pen'] };\nconst copy = { ...order };  // or Object.assign({}, order)\ncopy.id = 2;                // order.id stays 1\ncopy.items.push('ink');     // order.items changes too!",
-          "body": "Spread and `Object.assign` copy only the top level. Nested objects and arrays are still shared."
+          "body": "Spread and `Object.assign()` copy only the top level. `copy.id` is its own value. But `copy.items` is the same array as `order.items`. So `push()`, which adds an item to the end, changes both."
         },
         {
           "type": "list",
           "title": "Deep copy options",
           "items": [
-            "`JSON.parse(JSON.stringify(obj))`: the classic deep copy for plain data. It drops functions and `undefined`, and turns Dates into strings.",
+            "`JSON.parse(JSON.stringify(obj))`: the classic copy for plain data. `JSON.stringify()` turns it into text, and `JSON.parse()` builds it back. It drops functions and `undefined`, and turns Dates into strings.",
             "`structuredClone(obj)` (new in 2022): a real **deep copy** that keeps Dates, Maps and Sets. It throws `DataCloneError` on functions and DOM nodes."
           ]
         },
@@ -603,7 +799,7 @@
         {
           "type": "text",
           "title": "Fine-grained control",
-          "body": "`Object.defineProperty(obj, 'id', { value: 7 })` adds a property with settings. Here `writable`, `enumerable` and `configurable` all default to `false`. So `id` can't change, is not **enumerable** (it won't show in `Object.keys`) and can't be deleted."
+          "body": "`Object.defineProperty()` adds one property with settings, like `Object.defineProperty(obj, 'id', { value: 7 })`. Any setting you leave out (`writable`, `enumerable`, `configurable`) defaults to `false`. So `id` can't change, is not **enumerable** (it won't show in `Object.keys`) and can't be deleted."
         },
         {
           "type": "trap",
@@ -626,8 +822,23 @@
           "say": "A pointer to an object. Copying a variable copies the pointer, so both point at the same object."
         },
         {
+          "term": "===",
+          "say": "Strict equals. For objects it is true only when both sides are the very same object, not two look-alikes."
+        },
+        {
           "term": "identity",
           "say": "Whether two values are the very same object, not just objects that look alike."
+        },
+        {
+          "term": "Object.is()",
+          "match": [
+            "Object.is"
+          ],
+          "say": "Checks if two values are the same, like ===. But it says NaN equals NaN, and 0 is not the same as -0."
+        },
+        {
+          "term": "NaN",
+          "say": "Short for \"Not a Number\". It is the odd value that is never === to itself."
         },
         {
           "term": "shallow copy",
@@ -637,8 +848,36 @@
           "say": "A new object with the same top-level values. Anything nested inside is shared with the original."
         },
         {
+          "term": "Object.assign()",
+          "match": [
+            "Object.assign"
+          ],
+          "say": "Copies the properties of one object into another. Object.assign({}, a) makes a shallow copy of a."
+        },
+        {
+          "term": "push()",
+          "match": [
+            "push"
+          ],
+          "say": "Adds an item to the end of an array. ['pen'] with push('ink') becomes ['pen', 'ink']."
+        },
+        {
           "term": "deep copy",
           "say": "A copy where every nested object is copied too, so nothing is shared with the original."
+        },
+        {
+          "term": "JSON.stringify()",
+          "match": [
+            "JSON.stringify"
+          ],
+          "say": "Turns data into text in JSON format. { a: 1 } becomes the text {\"a\":1}."
+        },
+        {
+          "term": "JSON.parse()",
+          "match": [
+            "JSON.parse"
+          ],
+          "say": "Turns JSON text back into data. The text {\"a\":1} becomes the object { a: 1 }."
         },
         {
           "term": "structuredClone",
@@ -653,15 +892,35 @@
         },
         {
           "term": "Object.freeze",
+          "match": [
+            "Object.freeze()"
+          ],
           "say": "Locks an object's top level. No properties can be added, removed or changed."
         },
         {
           "term": "Object.seal",
+          "match": [
+            "Object.seal()"
+          ],
           "say": "Locks an object's list of properties. You can't add or remove any, but you can still change values."
+        },
+        {
+          "term": "Object.preventExtensions",
+          "match": [
+            "Object.preventExtensions()"
+          ],
+          "say": "Stops new properties being added to an object. You can still change or delete the ones it has."
         },
         {
           "term": "strict mode",
           "say": "A safer mode of JavaScript. Here, a blocked change to a frozen object throws an error instead of failing quietly."
+        },
+        {
+          "term": "Object.defineProperty()",
+          "match": [
+            "Object.defineProperty"
+          ],
+          "say": "Adds or changes one property with exact settings, like whether it can be changed or listed."
         },
         {
           "term": "enumerable",
@@ -678,7 +937,7 @@
         {
           "type": "text",
           "title": "In plain words",
-          "body": "Every object has a hidden link to another object, its **prototype**. Read a property the object doesn't have, and JavaScript looks in the prototype. Then in that one's prototype, and so on. That path is the **prototype chain**. It ends at `null`. This is how many objects share one copy of a method."
+          "body": "Every object has a hidden link to one other object, its **prototype**. Read a property the object doesn't have, and JavaScript follows the link and looks there. This is how many objects share one copy of a method, instead of each holding its own."
         },
         {
           "type": "tip",
@@ -686,18 +945,23 @@
           "body": "Asking around the family. You don't own a ladder, so you ask your parent, then your grandparent. The first one who has a ladder lends it. Where it stops: once you buy your own ladder, you use yours and never ask. That is **shadowing**."
         },
         {
+          "type": "text",
+          "title": "The prototype chain",
+          "body": "A prototype is an object too, so it has its own prototype, and so on. That line of links is the **prototype chain**. A read climbs it until it finds the property. The chain ends at `null` (\"nothing here\"). If no object on the way has the property, you get `undefined`."
+        },
+        {
           "type": "code",
           "title": "Object.create sets the link",
           "lang": "js",
           "code": "const animal = { speak() { return 'some sound'; } };\nconst dog = Object.create(animal);\ndog.name = 'Rex';\ndog.speak();                           // 'some sound'\nObject.getPrototypeOf(dog) === animal; // true\nObject.hasOwn(dog, 'speak');           // false",
-          "body": "`Object.create(proto)` makes a new object whose prototype is `proto`. `Object.getPrototypeOf` reads the link."
+          "body": "`Object.create(proto)` makes an empty object whose prototype is `proto`. `dog` has no `speak` of its own, so the call finds it on `animal`. `Object.getPrototypeOf()` reads the link. `Object.hasOwn()` gives `false`, because `speak` isn't stored on `dog` itself."
         },
         {
           "type": "code",
           "title": "Constructor functions",
           "lang": "js",
-          "code": "function Car(make) { this.make = make; }\nCar.prototype.honk = function () {\n  return this.make + ' beep';\n};\nconst c = new Car('Kia');\nc.honk();                                   // 'Kia beep'\nObject.getPrototypeOf(c) === Car.prototype; // true",
-          "body": "A **constructor function** called with `new` builds an object. Its prototype is the function's `prototype` property. Methods put there are shared by every **instance**."
+          "code": "function Car(make) { this.make = make; }\nCar.prototype.honk = function () {\n  return this.make + ' beep';\n};\nconst c = new Car('Kia');\nc.honk();                                   // 'Kia beep'\nObject.getPrototypeOf(c) === Car.prototype; // true\nc instanceof Car;                           // true",
+          "body": "A **constructor function** is a regular function meant for `new`. Methods put on its `prototype` property are shared by every **instance** (object it builds). So `c.honk()` finds `honk` there. `instanceof` checks whether `Car.prototype` is on the chain of `c`."
         },
         {
           "type": "list",
@@ -710,13 +974,15 @@
           ]
         },
         {
-          "type": "text",
+          "type": "code",
           "title": "Reads climb, writes stay",
-          "body": "`x instanceof Car` checks whether `Car.prototype` appears anywhere on the prototype chain of `x`. Reads walk the chain, but a plain assignment like `dog.speak = …` creates an own property on `dog`. It shadows the one on the prototype."
+          "lang": "js",
+          "code": "dog.speak = () => 'woof'; // dog and animal from above\ndog.speak();              // 'woof'\nanimal.speak();           // 'some sound'",
+          "body": "Reads walk the chain, but a plain assignment doesn't. `dog.speak = …` creates an own property on `dog`. It **shadows** the one on the prototype. `animal.speak` stays unchanged."
         },
         {
           "type": "trap",
-          "body": "Mixing up `Car.prototype` with the prototype of `Car`. `Car.prototype` is what **instances** get. The prototype of `Car` itself is `Function.prototype`. Also, `__proto__` is an old accessor; use `Object.getPrototypeOf`."
+          "body": "Mixing up `Car.prototype` with the prototype of `Car`. `Car.prototype` is what **instances** get. The prototype of `Car` itself is `Function.prototype`. Also, `__proto__` is an old way to reach the link; use `Object.getPrototypeOf`."
         },
         {
           "type": "tip",
@@ -735,6 +1001,13 @@
           "say": "A backup object linked to an object. If the object lacks a property, JavaScript looks in its prototype."
         },
         {
+          "term": "shadowing",
+          "match": [
+            "shadows"
+          ],
+          "say": "When an object has its own property with the same name as one on its prototype. Its own one wins."
+        },
+        {
           "term": "prototype chain",
           "say": "The line of linked prototypes JavaScript walks, one by one, when looking up a property. It ends at null."
         },
@@ -743,26 +1016,38 @@
           "say": "A value that means \"nothing here, on purpose\". The prototype chain stops when it reaches it."
         },
         {
-          "term": "shadowing",
-          "match": [
-            "shadows"
-          ],
-          "say": "When an object has its own property with the same name as one on its prototype. Its own one wins."
+          "term": "undefined",
+          "say": "The value you get when you read a property that no object on the chain has."
         },
         {
           "term": "Object.create",
           "match": [
-            "Object.create(proto)"
+            "Object.create(proto)",
+            "Object.create()"
           ],
           "say": "Makes a new, empty object and sets its prototype to the object you pass in."
         },
         {
           "term": "Object.getPrototypeOf",
+          "match": [
+            "Object.getPrototypeOf()"
+          ],
           "say": "Tells you which object is the prototype of the object you pass in."
+        },
+        {
+          "term": "Object.hasOwn()",
+          "match": [
+            "Object.hasOwn"
+          ],
+          "say": "Checks if an object holds a property itself, not borrowed through its prototype. Gives true or false."
         },
         {
           "term": "constructor function",
           "say": "A regular function meant to be called with new. It fills in a fresh object through this."
+        },
+        {
+          "term": "new",
+          "say": "A keyword that builds a fresh object from a function or a class and links it to that function's prototype property."
         },
         {
           "term": "instance",
@@ -774,6 +1059,14 @@
         {
           "term": "instanceof",
           "say": "An operator that checks whether a constructor's prototype is somewhere on an object's prototype chain."
+        },
+        {
+          "term": "Function.prototype",
+          "say": "The shared prototype of every function. Methods like call and bind live there."
+        },
+        {
+          "term": "__proto__",
+          "say": "An old, built-in way to read or set an object's prototype. Modern code uses Object.getPrototypeOf instead."
         }
       ]
     },
@@ -786,7 +1079,7 @@
         {
           "type": "text",
           "title": "In plain words",
-          "body": "A **class** is a blueprint for objects. It bundles a **constructor** (setup code that runs on `new`) with shared methods. Under the hood, classes are still functions and prototypes: `typeof` a class is `'function'`. The syntax is just cleaner and stricter."
+          "body": "A **class** is a blueprint for objects. It bundles a **constructor** (setup code that runs on `new`) with shared methods. Under the hood, classes are still functions and prototypes. So `typeof`, which names a value's kind, gives `'function'` for a class. The syntax is just cleaner and stricter."
         },
         {
           "type": "tip",
@@ -795,23 +1088,30 @@
         },
         {
           "type": "code",
-          "title": "A class with fields",
+          "title": "A first class",
           "lang": "js",
-          "code": "class Account {\n  static count = 0;\n  #balance = 0;\n  constructor(owner) {\n    this.owner = owner;\n    Account.count++;\n  }\n  deposit(n) { this.#balance += n; return this.#balance; }\n  get balance() { return this.#balance; }\n}",
-          "body": "`#balance` is a **private field**: only code inside the class can reach it. `static count` lives on `Account`, not on instances. Both are ES2022."
+          "code": "class Cat {\n  constructor(name) { this.name = name; }\n  speak() { return this.name + ' says meow'; }\n}\nconst tom = new Cat('Tom');\ntom.speak(); // 'Tom says meow'",
+          "body": "`new Cat('Tom')` builds an object and runs `constructor` with `this` set to it. So `this.name` becomes `'Tom'`. `speak` is stored once on the prototype and shared by every Cat **instance**."
+        },
+        {
+          "type": "code",
+          "title": "Static and private fields",
+          "lang": "js",
+          "code": "class Account {\n  static count = 0;\n  #balance = 0;\n  constructor(owner) {\n    this.owner = owner;\n    Account.count++;\n  }\n  deposit(n) { this.#balance += n; return this.#balance; }\n  get balance() { return this.#balance; }\n}\nconst a = new Account('Ann');\na.deposit(5); // 5\nAccount.count; // 1",
+          "body": "`#balance` is a **private field**: only code inside the class can reach it. `static count` lives on `Account` itself, not on instances. So `Account.count` is `1`, but `a.count` is `undefined`. Both features are ES2022."
         },
         {
           "type": "code",
           "title": "Inheritance with extends",
           "lang": "js",
           "code": "class Animal {\n  constructor(name) { this.name = name; }\n  speak() { return this.name + ' makes a sound'; }\n}\nclass Dog extends Animal {\n  constructor(name) { super(name); this.tricks = []; }\n  speak() { return super.speak() + ' and barks'; }\n}\nnew Dog('Rex').speak(); // 'Rex makes a sound and barks'",
-          "body": "`extends` sets up inheritance. A subclass constructor must call `super()` before it touches `this`. `super.speak()` calls the parent's version."
+          "body": "`extends` makes `Dog` a child class of `Animal`. A child constructor must call `super()`, which runs the parent's constructor, before it touches `this`. `super.speak()` calls the parent's version. Then `Dog` adds `' and barks'`."
         },
         {
           "type": "list",
           "title": "Class rules the exam loves",
           "items": [
-            "A class can't be used above its line: it has a **temporal dead zone**, like `let`",
+            "A class can't be used above its line: it has a **temporal dead zone** (a locked stretch), like `let`",
             "Class bodies always run in **strict mode**",
             "Calling a class without `new` throws `TypeError`",
             "A subclass with no constructor passes all its values to the parent's",
@@ -821,7 +1121,7 @@
         {
           "type": "text",
           "title": "Privacy before #",
-          "body": "Private `#` fields arrived in ES2022. Writing `obj.#balance` outside the class is a `SyntaxError`, found before any code runs. Older code hid data in **closures** or a `WeakMap`. The `_balance` naming habit hides nothing."
+          "body": "Private `#` fields arrived in ES2022. Writing `obj.#balance` outside the class is a `SyntaxError`, found before any code runs. Older code hid data in **closures** (functions that keep private variables) or a `WeakMap`. The `_balance` naming habit hides nothing."
         },
         {
           "type": "trap",
@@ -849,6 +1149,14 @@
         {
           "term": "constructor",
           "say": "The setup function inside a class. It runs once each time you make a new object with new."
+        },
+        {
+          "term": "new",
+          "say": "The keyword that builds an object from a class, like new Cat('Tom'). Calling a class without it throws an error."
+        },
+        {
+          "term": "typeof",
+          "say": "An operator that names the kind of a value as text. typeof 5 gives 'number', and typeof a class gives 'function'."
         },
         {
           "term": "instance",
@@ -879,6 +1187,14 @@
         {
           "term": "temporal dead zone",
           "say": "The stretch of code before a let, const or class line. Touching the name there throws an error."
+        },
+        {
+          "term": "strict mode",
+          "say": "A stricter set of JavaScript rules. Class code always uses it, so silent mistakes become errors."
+        },
+        {
+          "term": "ReferenceError",
+          "say": "The error for using a name that isn't ready yet, like a class above its line or this before super()."
         },
         {
           "term": "closures",
@@ -914,24 +1230,30 @@
           "title": "Named exports",
           "lang": "js",
           "code": "// math.js\nexport const PI = 3.14;\nexport function area(r) { return PI * r * r; }\n\n// app.js\nimport { area, PI as pi } from './math.js';\nimport * as math from './math.js';",
-          "body": "**Named exports** are imported by their exact names, in braces. `as` renames. `import * as math` gathers everything into one **namespace object**."
+          "body": "**Named exports** are imported by their exact names, in braces. `as` renames: in `app.js`, `PI` is called `pi`. `import * as math` gathers everything into one **namespace object**, so `math.area` and `math.PI` work too."
         },
         {
           "type": "code",
           "title": "The default export",
           "lang": "js",
           "code": "// logger.js\nexport default function log(msg) { console.log(msg); }\nexport const level = 'info';\n\n// app.js\nimport writeLog, { level } from './logger.js';",
-          "body": "A module can have one **default export**. Import it with no braces, under any name you like. Default and named imports can share one line."
+          "body": "A module can have one **default export**. Import it with no braces, under any name you like: here `writeLog`. Default and named imports can share one line. (`console.log()` just prints the message.)"
         },
         {
           "type": "list",
-          "title": "Module rules",
+          "title": "How modules behave",
           "items": [
             "Imports are **live bindings**: you see the exporter's updates, but assigning to an import throws `TypeError`",
-            "Imports are hoisted: they load before the module's own code runs",
-            "Modules always use **strict mode** and run only once, however many files import them",
-            "Browser: `<script type=\"module\">`, which is deferred by default",
-            "Node.js: `.mjs` files, or `\"type\": \"module\"` in `package.json`"
+            "Imports are hoisted: imported files load and run before the module's own code",
+            "Modules always use **strict mode** and run only once, however many files import them"
+          ]
+        },
+        {
+          "type": "list",
+          "title": "Turning modules on",
+          "items": [
+            "Browser: `<script type=\"module\">`. It is deferred by default: it runs after the page's HTML is read",
+            "Node.js: `.mjs` files, or `\"type\": \"module\"` in `package.json` (the project's settings file)"
           ]
         },
         {
@@ -939,7 +1261,7 @@
           "title": "Load it only when needed",
           "lang": "js",
           "code": "button.addEventListener('click', async () => {\n  const { openChart } = await import('./chart.js');\n  openChart();\n});",
-          "body": "**Dynamic import** with `import()` loads a module on demand. It returns a **promise** (a value that arrives later) for the namespace. It works in classic scripts too."
+          "body": "`addEventListener()` runs the arrow on each click. **Dynamic import** with `import()` loads the module only then. It returns a **promise** (a value that arrives later) for the namespace object. `await` waits for it, inside an `async` function. `import()` works in classic scripts too."
         },
         {
           "type": "trap",
@@ -994,6 +1316,13 @@
           "say": "The one main thing a module exports. You import it without braces and can call it anything."
         },
         {
+          "term": "console.log()",
+          "match": [
+            "console.log"
+          ],
+          "say": "Prints a message or value to the console, the developer's text window. console.log('hi') shows hi."
+        },
+        {
           "term": "live binding",
           "match": [
             "live bindings"
@@ -1005,12 +1334,35 @@
           "say": "A safer mode of JavaScript. Modules always use it, so silent mistakes become errors."
         },
         {
+          "term": "package.json",
+          "say": "The settings file of a Node.js project. It lists the project's name, scripts and the packages it needs."
+        },
+        {
+          "term": "addEventListener()",
+          "match": [
+            "addEventListener"
+          ],
+          "say": "Tells a page element to run a function when something happens to it, like a click."
+        },
+        {
           "term": "dynamic import",
           "say": "Loading a module later with import(), for example on a click. It gives back a promise."
         },
         {
+          "term": "import()",
+          "say": "The function-like form of import. It loads a module when that line runs and gives back a promise."
+        },
+        {
           "term": "promise",
           "say": "An object that stands for a value that isn't ready yet. You wait for it with await or then."
+        },
+        {
+          "term": "await",
+          "say": "Pauses an async function until a promise is ready, then gives you its value."
+        },
+        {
+          "term": "async",
+          "say": "A word in front of a function that lets it use await. Such a function always gives back a promise."
         }
       ]
     },
@@ -1035,26 +1387,33 @@
           "title": "var vs let",
           "lang": "js",
           "code": "function demo() {\n  if (true) {\n    var a = 1;\n    let b = 2;\n  }\n  console.log(a); // 1\n  console.log(b); // ReferenceError\n}",
-          "body": "`var` is **function-scoped**: it is visible in the whole function. `let` and `const` are **block-scoped**: they live only inside their curly braces."
+          "body": "`var` is **function-scoped**: it is visible in the whole function, so `console.log()` prints `1` for `a`. `let` and `const` are **block-scoped**: they live only inside their curly braces. So reading `b` outside them throws `ReferenceError`."
+        },
+        {
+          "type": "code",
+          "title": "Hoisting: var starts empty",
+          "lang": "js",
+          "code": "function demo() {\n  console.log(early); // undefined\n  var early = 1;\n  console.log(early); // 1\n}",
+          "body": "All declarations are **hoisted**: set up before the code runs. A `var` is set up holding `undefined`. So reading it above its line gives `undefined`, not an error. It gets `1` only when its line runs."
         },
         {
           "type": "text",
-          "title": "Hoisting and the TDZ",
-          "body": "All declarations are **hoisted**, but not the same way. A `var` starts as `undefined`, so reading it early gives `undefined`. `let`, `const` and `class` are set up but locked. The **temporal dead zone** (TDZ) runs from the start of the block to the declaration line. Touching the name there, even with `typeof`, throws `ReferenceError`."
+          "title": "The TDZ: let waits locked",
+          "body": "`let`, `const` and `class` are hoisted too, but locked. The **temporal dead zone** (TDZ) runs from the start of the block to the declaration line. Touching the name there, even with `typeof`, throws `ReferenceError`. Once the line runs, the name works normally."
         },
         {
           "type": "code",
           "title": "Closures remember",
           "lang": "js",
           "code": "function makeCounter() {\n  let count = 0;\n  return () => ++count;\n}\nconst next = makeCounter();\nnext(); // 1\nnext(); // 2",
-          "body": "A **closure** is a function plus the variables from where it was made. `count` stays alive and private after `makeCounter` returns. Each call to `makeCounter` makes a fresh `count`."
+          "body": "A **closure** is a function plus the variables from where it was made. The returned arrow keeps `count`, so `count` stays alive and private after `makeCounter` returns. `++count` adds one, then gives the new value: `1`, then `2`. Each call to `makeCounter` makes a fresh `count`."
         },
         {
           "type": "code",
           "title": "The loop trap",
           "lang": "js",
           "code": "for (var i = 0; i < 3; i++) {\n  setTimeout(() => console.log(i));\n} // logs 3, 3, 3\nfor (let j = 0; j < 3; j++) {\n  setTimeout(() => console.log(j));\n} // logs 0, 1, 2",
-          "body": "With `var` there is one `i` for the whole loop, and every callback reads it after the loop ends. `let` makes a new **binding** for each round."
+          "body": "`setTimeout()` runs each callback later, after the loop has finished. With `var` there is one `i` for the whole loop, so every callback reads its final value, `3`. `let` makes a new **binding** (a fresh `j`) for each round."
         },
         {
           "type": "trap",
@@ -1093,6 +1452,13 @@
           "say": "Visible only inside the nearest pair of curly braces. let, const and class work like this."
         },
         {
+          "term": "console.log()",
+          "match": [
+            "console.log"
+          ],
+          "say": "Prints a value to the console, the developer's text window. console.log(1) shows 1."
+        },
+        {
           "term": "hoisted",
           "match": [
             "hoisting"
@@ -1100,11 +1466,19 @@
           "say": "Set up by JavaScript before the code runs, as if moved to the top of its scope."
         },
         {
+          "term": "undefined",
+          "say": "The value a variable has when nothing has been put in it yet. A hoisted var holds it until its line runs."
+        },
+        {
           "term": "temporal dead zone",
           "match": [
             "TDZ"
           ],
           "say": "The part of a scope before a let, const or class line. Touching the name there throws ReferenceError."
+        },
+        {
+          "term": "typeof",
+          "say": "An operator that names a value's kind as text, like 'number'. For a name never declared it gives 'undefined'."
         },
         {
           "term": "ReferenceError",
@@ -1116,6 +1490,13 @@
             "closures"
           ],
           "say": "A function together with the variables around where it was made. It keeps them alive for later."
+        },
+        {
+          "term": "setTimeout()",
+          "match": [
+            "setTimeout"
+          ],
+          "say": "Runs a function later, after the code running now has finished and the wait is over."
         },
         {
           "term": "binding",
@@ -1132,7 +1513,7 @@
     },
     {
       "id": "objects-f2",
-      "front": "What don't arrow functions have?",
+      "front": "What can't an arrow function do that a regular function can?",
       "back": "Their own `this`, their own `arguments`, and the ability to be called with `new` (that throws `TypeError`). `this` comes from the surrounding code."
     },
     {
@@ -1148,12 +1529,12 @@
     {
       "id": "objects-f5",
       "front": "What is the difference between rest and spread?",
-      "back": "Both use three dots. **Rest** in a parameter list gathers extra values into a real array. **Spread** in a call or literal unpacks an iterable or object."
+      "back": "Both use three dots. **Rest** in a parameter list gathers extra values into a real array. **Spread** in a call or a literal unpacks an array or object into separate values."
     },
     {
       "id": "objects-f6",
       "front": "What is the `arguments` object?",
-      "back": "An array-like object in regular functions holding every value passed in. It has `length` but no array methods. Arrow functions don't have their own."
+      "back": "A list-like object in regular functions holding every value passed in. It has `length` and numbered slots, but no array methods like `map`. Arrow functions don't have their own."
     },
     {
       "id": "objects-f7",
@@ -1168,7 +1549,7 @@
     {
       "id": "objects-f9",
       "front": "What is a higher-order function?",
-      "back": "A function that takes a function as a value or returns one, like `map`, `filter` or a factory such as `multiplier(2)`."
+      "back": "A function that takes a function as a value or returns one. Examples: `map`, `filter`, or a factory like `multiplier(2)` that returns a new function."
     },
     {
       "id": "objects-f10",
@@ -1192,13 +1573,13 @@
     },
     {
       "id": "objects-f14",
-      "front": "How do you rename and default while destructuring?",
+      "front": "How do you rename a value and give it a backup while destructuring?",
       "back": "`const { name: who = 'guest' } = user;` reads `name`, stores it in `who`, and uses `'guest'` if it is `undefined`."
     },
     {
       "id": "objects-f15",
       "front": "What is the difference between `for...in` and `for...of`?",
-      "back": "`for...in` loops over enumerable keys, inherited ones included. `for...of` loops over the values of an iterable. A plain object isn't iterable."
+      "back": "`for...in` loops over property names, inherited ones included. `for...of` loops over the values of something you can step through, like an array. A plain object doesn't work with `for...of`."
     },
     {
       "id": "objects-f16",
@@ -1213,17 +1594,17 @@
     {
       "id": "objects-f18",
       "front": "Why is `{ a: 1 } === { a: 1 }` false?",
-      "back": "Objects compare by reference. These are two different objects, even with the same contents."
+      "back": "`===` on objects asks \"is it the very same object?\" These are two different objects, even with the same contents."
     },
     {
       "id": "objects-f19",
-      "front": "What is the prototype chain?",
-      "back": "The line of linked objects JavaScript searches when a property is missing on an object. It ends at `null`."
+      "front": "Where does JavaScript look when an object doesn't have a property?",
+      "back": "Up the prototype chain: the object's prototype, then that one's prototype, and so on. The chain ends at `null`. If nobody has it, you get `undefined`."
     },
     {
       "id": "objects-f20",
       "front": "What does `x instanceof C` check?",
-      "back": "Whether `C.prototype` is somewhere on the prototype chain of `x`."
+      "back": "Whether `C.prototype` is somewhere on the prototype chain of `x`. For an object made with `new C()`, it is `true`."
     },
     {
       "id": "objects-f21",
@@ -1253,12 +1634,12 @@
     {
       "id": "objects-f26",
       "front": "Can you reassign an imported variable?",
-      "back": "No. Imports are read-only live bindings, so assigning throws `TypeError`. You do see changes the exporting module makes."
+      "back": "No. Imports are read-only, so assigning throws `TypeError`. But they stay connected (live bindings): you do see changes the exporting module makes."
     },
     {
       "id": "objects-f27",
       "front": "What does dynamic `import()` return?",
-      "back": "A promise for the module's namespace object. Use it to load code on demand. It works in classic scripts too."
+      "back": "A promise for an object holding all the module's exports (the namespace object). Use it to load code only when needed. It works in classic scripts too."
     },
     {
       "id": "objects-f28",
@@ -1268,7 +1649,7 @@
     {
       "id": "objects-f29",
       "front": "What is a closure?",
-      "back": "A function plus the variables from where it was made. It keeps them alive after the outer function returns."
+      "back": "A function plus the variables from where it was made. It keeps them alive after the outer function returns, like a counter that remembers its `count`."
     },
     {
       "id": "objects-f30",
@@ -1423,8 +1804,8 @@
       "wrong": [
         "To return an object, wrap it in parentheses: `({ name: name })`.",
         "",
-        "`name:` is read as a label, and nothing is returned.",
-        "The code is valid: a label followed by an expression."
+        "Inside braces, `name:` is read as a label (a name for a line), not a key, so nothing is returned.",
+        "The code is valid: JavaScript reads `name:` as a line label, followed by the expression `name`."
       ],
       "source": "MDN: Arrow function expressions"
     },
@@ -1494,7 +1875,7 @@
         0,
         3
       ],
-      "explain": "Declarations are hoisted with their body. A named function expression's name exists inside the function, which is handy for recursion.",
+      "explain": "Declarations are hoisted with their body. A named function expression's name exists inside the function, which is handy for recursion (a function calling itself).",
       "wrong": [
         "",
         "The `var` is `undefined` until its line, so the call throws `TypeError`.",
@@ -1672,9 +2053,9 @@
         3,
         4
       ],
-      "explain": "Regular functions and classes are constructors. Arrows, shorthand methods and `async` functions are not, so `new` throws `TypeError`.",
+      "explain": "Regular functions and classes can build objects with `new`. Arrows, shorthand methods and `async` functions can't, so `new` throws `TypeError`.",
       "wrong": [
-        "Arrows have no `prototype` and can't be constructors.",
+        "Arrows can't build objects, so `new` on one throws `TypeError`.",
         "Shorthand methods are not constructors; `new` throws `TypeError`.",
         "`async` functions can't be used with `new`.",
         "",
@@ -1948,7 +2329,7 @@
       ],
       "explain": "Defaults run left to right. In `f()`, the default for `a` reads `b` before `b` exists, so it throws. In `f(1)`, that default never runs.",
       "wrong": [
-        "`b` is in its dead zone, so reading it throws instead of giving `undefined`.",
+        "`b` isn't ready yet (it is in its temporal dead zone), so reading it throws instead of giving `undefined`.",
         "",
         "`a` can't see a value for `b` yet; it throws.",
         "`f(1)` passes `a`, so the default `b` is never read early."
@@ -1969,7 +2350,7 @@
       "answer": [
         2
       ],
-      "explain": "Spread in a call unpacks an iterable into separate arguments.",
+      "explain": "Three dots in a call unpack the array, so each item becomes its own argument.",
       "wrong": [
         "This passes one argument: the whole array.",
         "This sets `this` to the array and passes nothing.",
@@ -2123,7 +2504,7 @@
       "answer": [
         3
       ],
-      "explain": "`map` passes the index as the second value, and `parseInt` reads it as the radix. Radix 0 means base 10, but base 1 is invalid and `'3'` isn't a base-2 digit.",
+      "explain": "`map` passes the index as the second value, and `parseInt` reads it as the radix (number base). Radix 0 means base 10, but base 1 is invalid and `'3'` isn't a base-2 digit.",
       "wrong": [
         "That needs `parseInt(s, 10)` or `Number`.",
         "`parseInt` returns numbers, not strings.",
@@ -2478,7 +2859,7 @@
       "wrong": [
         "`map` makes true/false values, so this counts the evens instead.",
         "",
-        "`n % 2` is truthy for odd numbers, so this sums the odds.",
+        "`n % 2` is not 0 for odd numbers, which counts as true, so this sums the odds.",
         "",
         "`forEach` returns `undefined`, which has no `reduce`."
       ],
@@ -2850,7 +3231,7 @@
       "answer": [
         1
       ],
-      "explain": "A regular function used as a DOM listener gets the element as `this`. `button.count` is `undefined`, and `undefined + 1` is `NaN`.",
+      "explain": "When the button calls a regular-function listener, `this` is the button, not the `Counter`. `button.count` is `undefined`, and `undefined + 1` is `NaN`.",
       "wrong": [
         "Any function can be a listener; the problem is `this`.",
         "",
@@ -3000,7 +3381,7 @@
       "answer": [
         0
       ],
-      "explain": "`for...in` walks enumerable keys up the prototype chain. `Object.keys` lists only the object's own keys.",
+      "explain": "`for...in` visits the object's own keys and also the listed (enumerable) keys it inherits through its prototype. `Object.keys` lists only the object's own keys.",
       "wrong": [
         "",
         "`for...in` also visits inherited keys.",
@@ -3025,7 +3406,7 @@
       "answer": [
         2
       ],
-      "explain": "`for...of` needs an iterable. Plain objects aren't iterable, so it throws.",
+      "explain": "`for...of` only works on things you can step through one by one (iterables), like arrays and strings. A plain object isn't one, so it throws `TypeError`.",
       "wrong": [
         "Keys come from `for...in` or `Object.keys`.",
         "Values come from `Object.values(prices)`.",
@@ -3303,7 +3684,7 @@
       "answer": [
         3
       ],
-      "explain": "Objects compare by reference, with both `===` and `==`. These are two separate objects, so both checks are false.",
+      "explain": "`===` and `==` on objects both ask \"is it the very same object?\" These are two separate objects, so both checks are false.",
       "wrong": [
         "Same contents don't make two objects equal.",
         "`==` also compares objects by reference.",
@@ -3456,7 +3837,7 @@
       "answer": [
         3
       ],
-      "explain": "`defineProperty` makes properties non-writable and non-enumerable by default. So `id` stays 42 and is hidden from `Object.keys`.",
+      "explain": "`defineProperty` settings you leave out default to `false`. So `id` can't be changed (it stays 42) and is hidden from `Object.keys`.",
       "wrong": [
         "`writable` defaults to `false`, and `id` is hidden.",
         "`enumerable` defaults to `false`, so `id` isn't listed.",
@@ -3481,7 +3862,7 @@
         1,
         2
       ],
-      "explain": "Spread and `Object.assign` copy own enumerable properties into a new object.",
+      "explain": "Spread and `Object.assign` copy the object's own listed (enumerable) properties into a new object.",
       "wrong": [
         "That is the same object, not a copy.",
         "",
@@ -3734,7 +4115,7 @@
       "answer": [
         0
       ],
-      "explain": "Assigning `obj.greet` creates an own property that shadows the prototype's. The prototype keeps its own method.",
+      "explain": "Assigning `obj.greet` creates the object's own property, which hides (shadows) the prototype's. The prototype keeps its own method.",
       "wrong": [
         "",
         "The prototype's method is unchanged.",
@@ -4058,7 +4439,7 @@
         1,
         3
       ],
-      "explain": "Lookups climb the chain to `null`, and an own property shadows one further up.",
+      "explain": "A lookup climbs the chain until it reaches `null`. An object's own property hides (shadows) one with the same name further up.",
       "wrong": [
         "Assigning a plain value creates an own property instead.",
         "",
@@ -4140,8 +4521,8 @@
       "wrong": [
         "Unlike function declarations, classes can't be used early.",
         "",
-        "The name is in the dead zone, which gives `ReferenceError`.",
-        "The code parses fine; it fails when it runs."
+        "The class is locked until its line (the temporal dead zone), which gives `ReferenceError`.",
+        "The code is written correctly; it fails only when it runs."
       ],
       "source": "MDN: Classes"
     },
@@ -4165,7 +4546,7 @@
       "wrong": [
         "The error comes before `super()` is reached.",
         "The error is a `ReferenceError`, and it happens before `super()`.",
-        "It parses fine; the check happens when the code runs.",
+        "The code is written correctly; the check happens when it runs.",
         ""
       ],
       "source": "MDN: super"
@@ -4258,10 +4639,10 @@
       "answer": [
         2
       ],
-      "explain": "Using `#coins` outside the class is an early `SyntaxError`. The whole script fails to start.",
+      "explain": "Using `#coins` outside the class is a `SyntaxError`, found while the code is read. So the whole script fails before any line runs.",
       "wrong": [
         "Private fields can't be read from outside.",
-        "It doesn't quietly give `undefined`; the script won't parse.",
+        "It doesn't quietly give `undefined`; the script can't even start.",
         "",
         "The error comes before running, not on that line."
       ],
@@ -4639,7 +5020,7 @@
       ],
       "explain": "Only module scripts can use `import` and `export`. Mark them with `type=\"module\"`.",
       "wrong": [
-        "`defer` changes timing but keeps it a classic script.",
+        "`defer` only delays running; the file is still a classic script, so `import` fails.",
         "That is a classic script, so `import` is a `SyntaxError`.",
         "",
         "`async` changes timing, not the script type."
@@ -4665,7 +5046,7 @@
         "Strict mode doesn't turn a file into a module.",
         "There is no `--modules` flag.",
         "",
-        "`.cjs` forces CommonJS, which uses `require`."
+        "`.cjs` forces CommonJS, Node's older module style that uses `require`."
       ],
       "source": "Node.js docs: Modules: ECMAScript modules"
     },
@@ -4690,7 +5071,7 @@
       "wrong": [
         "",
         "",
-        "Static `import` is allowed only at the top level of a module.",
+        "A plain `import` statement is allowed only at the top level of a module, not inside a function.",
         "It returns a promise for the whole namespace object.",
         "`import()` works anywhere, inside functions too."
       ],
@@ -4713,7 +5094,7 @@
       "answer": [
         0
       ],
-      "explain": "Imports are hoisted. Imported modules run before any code in the importing module.",
+      "explain": "Imports are handled first, before the file's own code. So imported modules run before any code in the importing module.",
       "wrong": [
         "",
         "`a.js` runs first, even though the import is written lower.",
@@ -4814,7 +5195,7 @@
       "wrong": [
         "A module runs only once.",
         "Module top-level variables stay inside the module.",
-        "Module scripts are deferred until the HTML is parsed.",
+        "Module scripts wait until the page's HTML has been read.",
         ""
       ],
       "source": "MDN: JavaScript modules"
@@ -4862,11 +5243,11 @@
       "answer": [
         3
       ],
-      "explain": "Braces ask for a named export. `shapes.js` has only a default export, so linking fails before any code runs.",
+      "explain": "Braces ask for a named export. `shapes.js` has only a default export, so loading fails with an error before any code runs.",
       "wrong": [
         "Braces never match the default export.",
         "A missing named export is an error, not `undefined`.",
-        "The error comes while linking, before the code runs.",
+        "The error comes while the modules are being connected, before the code runs.",
         ""
       ],
       "source": "MDN: import"
@@ -4970,8 +5351,8 @@
       ],
       "explain": "The inner `let x` is hoisted to the top of `show`, but locked. Reading it before its line throws `ReferenceError`.",
       "wrong": [
-        "The inner `x` shadows the outer one in the whole function.",
-        "`let` isn't set to `undefined`; it is in the dead zone.",
+        "The inner `x` hides (shadows) the outer one in the whole function.",
+        "`let` isn't set to `undefined`; it is locked (in the temporal dead zone) until its line.",
         "The log runs before `'inner'` is assigned.",
         ""
       ],
@@ -4993,7 +5374,7 @@
       "answer": [
         0
       ],
-      "explain": "The inner `var x` is hoisted to the top of `show` with the value `undefined`. It shadows the outer `x`.",
+      "explain": "The inner `var x` is hoisted to the top of `show` with the value `undefined`. It hides (shadows) the outer `x`.",
       "wrong": [
         "",
         "The local `x` hides the outer one.",
@@ -5067,9 +5448,9 @@
       "answer": [
         2
       ],
-      "explain": "`typeof` on a name never declared gives `'undefined'`. On a `let` still in its dead zone, it throws `ReferenceError`.",
+      "explain": "`typeof` on a name never declared gives `'undefined'`. On a `let` still locked before its line (the temporal dead zone), it throws `ReferenceError`.",
       "wrong": [
-        "`later` is declared below, so it is in the dead zone.",
+        "`later` is declared below, so it is still locked when `typeof` reads it.",
         "`typeof ghost` is safe, because `ghost` was never declared.",
         "",
         "`later` has no value yet when `typeof` runs."
@@ -5198,7 +5579,7 @@
       ],
       "explain": "`var` is function-scoped, so the inner `type` is hoisted to the top of `check`. It is never assigned, so it stays `undefined`.",
       "wrong": [
-        "The local `type` shadows the global one in the whole function.",
+        "The local `type` hides (shadows) the global one in the whole function.",
         "",
         "The `if (false)` body never runs.",
         "The hoisted `var` exists, so the name is found."
