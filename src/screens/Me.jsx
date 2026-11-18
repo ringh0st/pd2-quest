@@ -49,6 +49,8 @@ export function Me() {
         <a className="icon-btn" href="#/settings" aria-label="Settings" onClick={() => sfx.tap()}><Icon name="settings" /></a>
       </div>
 
+      <RepliesCard />
+
       <section className="hero me-hero" aria-label="Level">
         <ProgressRing value={lv.progress} size={96} stroke={11} color="var(--gold-meter)" label={`Level ${lv.level}, ${Math.round(lv.progress * 100)}% to next`}>
           <div><div style={{ fontSize: 'calc(13px * var(--text-scale))', fontWeight: 700 }} className="muted">LEVEL</div><div style={{ fontSize: 30, fontWeight: 700 }}>{lv.level}</div></div>
@@ -134,7 +136,6 @@ export function Me() {
       </section>
 
       <AccountCard />
-      <RepliesCard />
 
       <nav className="me-links" aria-label="More">
         <a className="btn" href="#/shop" onClick={() => sfx.tap()}><Icon name="shirt" /> Shop</a>

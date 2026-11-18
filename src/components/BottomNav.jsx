@@ -9,6 +9,8 @@ import { useReducedMotion, useCalm } from '../hooks/useMotionPrefs.js';
 import { track } from '../lib/track.js';
 import { useAuth } from '../hooks/useAuth.js';
 import { useNewFeedbackCount } from '../hooks/useNewFeedbackCount.js';
+import { useSyncExternalStore } from 'react';
+import { unreadReplies, subscribeReplies } from '../lib/feedbackReplies.js';
 
 const ITEMS = [
   ['/', 'home', 'Home'],
@@ -28,6 +30,7 @@ export function BottomNav({ path, dueCards }) {
   const still = reduced || calm;
   const { admin } = useAuth();
   const newReports = useNewFeedbackCount(admin);
+  const replies = useSyncExternalStore(subscribeReplies, unreadReplies, unreadReplies);
   const items = admin ? [...ITEMS, ADMIN_ITEM] : ITEMS;
   const active = (to) => (to === '/' ? path === '/' : path.startsWith(to) || (to === '/map' && /^\/(world|lesson|play|learn|section|placement)/.test(path)));
   return (
@@ -56,6 +59,7 @@ export function BottomNav({ path, dueCards }) {
             <span className="nav-icon" aria-hidden="true">{(() => { const C = NAV_ICONS[icon]; return <C on={on} />; })()}</span>
             <span>{label}</span>
             {to === '/cards' && dueCards > 0 && <span className="nav-badge"><span aria-hidden="true">{dueCards > 99 ? '99+' : dueCards}</span><span className="sr-only">, {dueCards} due</span></span>}
+            {to === '/me' && replies > 0 && <span className="nav-badge"><span aria-hidden="true">{replies > 9 ? '9+' : replies}</span><span className="sr-only">, {replies} new {replies === 1 ? 'reply' : 'replies'}</span></span>}
             {to === '/inbox' && newReports > 0 && <span className="nav-badge"><span aria-hidden="true">{newReports > 99 ? '99+' : newReports}</span><span className="sr-only">, {newReports} new</span></span>}
           </a>
         );

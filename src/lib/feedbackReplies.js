@@ -11,6 +11,13 @@ const read = (k) => { try { return localStorage.getItem(k); } catch { return nul
 const seen = () => { try { return new Set(JSON.parse(read(SEEN) || '[]')); } catch { return new Set(); } };
 const stamp = (r) => `${r.id}|${r.replied_at}`;
 
+// How many replies haven't been read yet (the Me tab's badge)
+const listeners = new Set();
+let unread = 0;
+const setUnread = (n) => { if (n !== unread) { unread = n; listeners.forEach((l) => l()); } };
+export const unreadReplies = () => unread;
+export function subscribeReplies(fn) { listeners.add(fn); return () => listeners.delete(fn); }
+
 export const canHaveReplies = () => hasBackend() && (!!read(REPORTER) || !!authSnapshot().user);
 
 /** Replies to this device's (or account's) reports, newest first. */
@@ -31,14 +38,31 @@ export function markRepliesSeen(rows) {
   const set = seen();
   rows.forEach((r) => set.add(stamp(r)));
   try { localStorage.setItem(SEEN, JSON.stringify([...set].slice(-200))); } catch { /* storage blocked */ }
+  setUnread(0);
 }
 
-/** Call once at app start. */
+const RECHECK_MS = 5 * 60 * 1000;
+let lastCheck = 0;
+let celebrated = new Set();
+
+/** Looks for new replies: updates the badge, and celebrates each new one once. */
+async function checkReplies() {
+  lastCheck = Date.now();
+  try {
+    const fresh = (await fetchReplies()).filter((r) => isNewReply(r));
+    setUnread(fresh.length);
+    const unseenHere = fresh.filter((r) => !celebrated.has(stamp(r)));
+    if (unseenHere.length) {
+      celebrated = new Set([...celebrated, ...unseenHere.map(stamp)]);
+      pushEvent({ type: 'reply', count: unseenHere.length });
+    }
+  } catch { /* offline: next time */ }
+}
+
+/** Call once at app start: checks soon after opening, then each time the app comes back (at most every 5 min). */
 export function startReplyCheck() {
-  setTimeout(async () => {
-    try {
-      const fresh = (await fetchReplies()).filter((r) => isNewReply(r));
-      if (fresh.length) pushEvent({ type: 'reply', count: fresh.length });
-    } catch { /* offline: next time */ }
-  }, 5000);
+  setTimeout(checkReplies, 5000);
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible' && Date.now() - lastCheck > RECHECK_MS) checkReplies();
+  });
 }
