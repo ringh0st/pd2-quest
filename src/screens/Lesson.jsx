@@ -10,6 +10,7 @@ import { Rich } from '../lib/rich.jsx';
 import { termMatcher, firstMentions } from '../lib/terms.js';
 import { go } from '../hooks/useRoute.js';
 import { useReducedMotion } from '../hooks/useMotionPrefs.js';
+import { useSwipe } from '../hooks/useSwipe.js';
 import { sfx } from '../audio/sfx.js';
 import { haptic } from '../audio/haptics.js';
 import { badgeContext } from '../state/selectors.js';
@@ -103,6 +104,8 @@ export function Lesson({ id, startCard }) {
     return true;
   }, phase === 'cards');
 
+  // Reduce motion turns off the card's drag animation; swiping (finger or mouse) still moves between cards
+  const swipe = useSwipe((d) => keyMove.current?.(d), reduced);
   if (!lesson) return <main className="screen"><p>Lesson not found.</p></main>;
   const sec = sectionById[lesson.section];
   const cards = lesson.cards;
@@ -216,6 +219,7 @@ export function Lesson({ id, startCard }) {
           dragConstraints={{ left: 0, right: 0 }}
           dragElastic={0.6}
           onDragEnd={(_, info) => { if (info.offset.x < -70) move(1); else if (info.offset.x > 70) move(-1); }}
+          {...swipe}
         >
           <CardContent card={card} glossary={glossary} tools={<><SpeakButton label="Read this card aloud" text={cardSpeech(card)} /><FeedbackButton kind="card" where={{ id: lesson.id, card: i }} label="Report a problem with this card" /></>} />
         </motion.article>
@@ -230,7 +234,7 @@ export function Lesson({ id, startCard }) {
       </div>
       {/* Right under the card, so opening a word's meaning below never moves them */}
       <div className="dots" aria-hidden="true">{cards.map((_, k) => <span key={k} className={k === i ? 'on' : ''} />)}</div>
-      <p className="small muted center"><span className="hint-touch">Swipe or tap the buttons</span><span className="hint-keys">Use the ← → keys or the buttons</span></p>
+      <p className="small muted center"><span className="hint-touch">Swipe or tap the buttons</span><span className="hint-keys">Drag the card with the mouse, or use the ← → keys or the buttons</span></p>
 
       {matcher && (
         <section id="term-panel" className="term-panel" aria-live="polite" aria-label="What this word means">

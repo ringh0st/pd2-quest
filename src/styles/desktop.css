@@ -54,6 +54,10 @@
   .hint-touch { display: none; }
   .hint-keys { display: inline; }
   .key-hint { display: block; }
+  /* the lesson card can be dragged sideways with the mouse: the cursor says so */
+  .lesson-stage > .lesson-card { cursor: grab; }
+  .lesson-stage > .lesson-card:active { cursor: grabbing; }
+  .lesson-stage > .lesson-card :is(button, a, input, textarea) { cursor: pointer; }
 }
 
 /* Study screens read one more step larger on a laptop */
