@@ -15,6 +15,7 @@
 // rename or a new domain is one edit. Usage: node scripts/build-site.mjs [outDir=dist]
 import { mkdirSync, readFileSync, writeFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
+import { ownerTags } from './ownerTags.mjs';
 
 const root = new URL('..', import.meta.url).pathname;
 const outDir = join(root, process.argv[2] || 'dist');
@@ -60,7 +61,7 @@ details{margin-top:10px}summary{cursor:pointer;font-weight:700;color:var(--prima
 .note{font-size:14px;color:var(--muted)}footer{margin-top:40px;border-top:1px solid var(--line);padding:18px 0 34px;font-size:14px;color:var(--muted)}
 .box{background:var(--soft);border-radius:16px;padding:14px 18px;margin:18px 0}`;
 
-function page({ path, title, description, crumbs = [], body, cta, jsonLd = [] }) {
+function page({ path, title, description, crumbs = [], body, cta, jsonLd = [], noindex = false }) {
   const canonical = url(path);
   const crumbLd = crumbs.length ? [{
     '@context': 'https://schema.org', '@type': 'BreadcrumbList',
@@ -71,10 +72,11 @@ function page({ path, title, description, crumbs = [], body, cta, jsonLd = [] })
   return `<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>${esc(fullTitle)}</title><meta name="description" content="${esc(description)}">
-<link rel="canonical" href="${esc(canonical)}"><link rel="icon" type="image/svg+xml" href="${esc(url('icon.svg'))}">
+${noindex ? '<meta name="robots" content="noindex">' : `<link rel="canonical" href="${esc(canonical)}">`}<link rel="icon" type="image/svg+xml" href="${esc(url('icon.svg'))}">
 <meta property="og:type" content="article"><meta property="og:site_name" content="${esc(site.name)}"><meta property="og:title" content="${esc(fullTitle)}">
 <meta property="og:description" content="${esc(description)}"><meta property="og:url" content="${esc(canonical)}"><meta property="og:image" content="${esc(url('og.png'))}">
 <meta name="twitter:card" content="summary_large_image">
+${ownerTags(site).join('\n')}
 ${ld}
 <style>${CSS}</style></head><body>
 <header><div class="in"><a class="brand" href="${esc(url('guides/'))}">${esc(site.name)}</a><span class="grow"></span><a class="cta" href="${esc(cta || BASE)}">Open the app</a></div></header>
@@ -244,9 +246,10 @@ trust('about/', `About ${site.name}`, clip(`${site.name} is a free, independent,
 <h2>Not affiliated with Salesforce</h2><p>${esc(site.name)} is an independent project by ${esc(site.studio)}. It is not affiliated with, sponsored by or endorsed by Salesforce, Inc. Salesforce, Trailhead, Agentforce and the certification names are trademarks of Salesforce, Inc. and are used only to say which exams this app helps you prepare for.</p>
 <h2>Found a mistake?</h2><p>${esc(site.contactNote)} Every report goes to the person who fixes the content, with the exact card or question it is about.</p>`);
 trust('privacy/', 'Privacy', clip(`${site.name} has no accounts and no tracking. Your progress stays on your device. Feedback you choose to send is stored securely.`), `
-<p class="lead">Short version: no account, no ads, no tracking cookies. Your progress stays on your device.</p>
+<p class="lead">Short version: no account, no ads, no cookies. Your progress stays on your device.</p>
 <h2>What stays on your device</h2><p>Your progress, settings, notes and streaks are saved in your browser’s storage on your device only. We never receive them. Clearing your browser data or removing the app deletes them; use Settings → Save backup to keep a copy.</p>
 <h2>Feedback you send</h2><p>If you use “Report a problem” or “Send feedback”, we receive what you write, what you were looking at (for example a lesson card or a question id), the app version, your device type and screen size, and a random id for your device (so several reports from one device can be grouped; it says nothing about who you are). An email address is sent only if you type one in, and is used only to reply to you. Feedback is stored with our database provider (Supabase) and is readable only by us.</p>
+${site.cloudflareAnalyticsToken ? `<h2>Visit counts</h2><p>We count visits with Cloudflare Web Analytics, which uses no cookies, does not track you across sites and does not identify you. It tells us things like how many people opened a page and which country and kind of device they used.</p>` : ''}
 <h2>Read-aloud</h2><p>The natural voice plays recorded audio files from this website. The device voice uses your phone’s own speech feature. Neither sends us anything.</p>
 <h2>Your rights</h2><p>You can ask us to delete feedback you sent: send a note through the app saying which report, and include the email you used if any. ${esc(site.name)} is not intended for children under 13.</p>
 <p class="note">Last updated ${TODAY}.</p>`);
@@ -256,6 +259,14 @@ trust('terms/', 'Terms of use', clip(`Terms for using ${site.name}: a free study
 <h2>Your use</h2><p>The lessons and questions are original work by ${esc(site.studio)}. You may use them for your own study. Please don’t copy them in bulk or republish them. Don’t submit real exam content through feedback: sharing exam questions breaks Salesforce’s certification agreement.</p>
 <h2>Independent</h2><p>${esc(site.name)} is not affiliated with, sponsored by or endorsed by Salesforce, Inc. Salesforce and related marks belong to Salesforce, Inc.</p>
 <p class="note">Last updated ${TODAY}.</p>`);
+
+// GitHub Pages shows this for any address that doesn't exist (not in the sitemap)
+writeFileSync(join(outDir, '404.html'), page({
+  path: '404.html', title: 'Page not found', noindex: true,
+  description: `This page doesn’t exist. Open ${site.name} or browse the study guides.`,
+  body: `<h1>This page wandered off</h1><p class="lead">The address may be old or mistyped. Nothing is lost: your progress lives in the app on your device.</p>
+<ul class="links"><li><a href="${esc(BASE)}">Open ${esc(site.name)}</a></li><li><a href="${esc(url('guides/'))}">Browse the study guides</a></li></ul>`,
+}));
 
 // ---------- write ----------
 for (const p of pages) {

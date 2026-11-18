@@ -2,6 +2,7 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
 import { readFileSync } from 'node:fs';
+import { ownerTags } from './scripts/ownerTags.mjs';
 
 const { version } = JSON.parse(readFileSync('./package.json', 'utf8'));
 // Name, address and wording live in site.json (one place to rename the app or move it to a new domain)
@@ -24,6 +25,7 @@ function siteHead() {
     `<meta property="og:image" content="${SITE_URL}og.png" />`,
     `<meta name="twitter:card" content="summary_large_image" />`,
     ...ld.map((o) => `<script type="application/ld+json">${JSON.stringify(o)}</script>`),
+    ...ownerTags(site),
   ].join('\n    ');
   return {
     name: 'site-head',

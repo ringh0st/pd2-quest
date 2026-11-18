@@ -16,6 +16,8 @@ import { ThemeToggle } from '../components/ThemeToggle.jsx';
 import { Icon } from '../components/icons/Icon.jsx';
 import { BadgeMedal } from '../components/art/BadgeMedal.jsx';
 import { FeedbackButton } from '../components/FeedbackButton.jsx';
+import { ShareApp } from '../components/ShareApp.jsx';
+import { guidesUrl, INFO_LINKS } from '../lib/siteLinks.js';
 
 function lastDays(n) {
   const out = [];
@@ -133,6 +135,11 @@ export function Me() {
         <a className="btn" href="#/settings" onClick={() => sfx.tap()}><Icon name="settings" /> Settings</a>
       </nav>
       <FeedbackButton kind="app" where={{ route: '/me' }} variant="row" label="Send feedback or an idea" />
+      <ShareApp className="btn me-share" />
+      <p className="me-info small muted">
+        <a href={guidesUrl()} target="_blank" rel="noopener">Study guide on the web</a>
+        {INFO_LINKS.map((l) => <a key={l.id} href={l.href} target="_blank" rel="noopener">{l.label}</a>)}
+      </p>
     </main>
   );
 }
