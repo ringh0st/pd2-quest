@@ -54,7 +54,7 @@ header{border-bottom:1px solid var(--line);background:var(--surface)}header .in{
 h1{font-size:30px;line-height:1.2;margin:10px 0 6px}h2{font-size:22px;margin:28px 0 8px}h3{font-size:18px;margin:18px 0 6px}
 .lead{color:var(--muted);margin-top:0}.card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:16px 18px;margin:12px 0}
 .kind{font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
-code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;background:var(--code);padding:1px 5px;border-radius:6px;font-size:.92em}
+code,pre{font-variant-ligatures:none;font-feature-settings:'liga' 0,'calt' 0}code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;background:var(--code);padding:1px 5px;border-radius:6px;font-size:.92em}
 pre{background:var(--code);padding:12px 14px;border-radius:12px;overflow:auto}pre code{background:none;padding:0}
 ul.links{padding-left:18px}ul.links li{margin:6px 0}dl dt{font-weight:800;margin-top:12px}dl dd{margin:2px 0 0}
 details{margin-top:10px}summary{cursor:pointer;font-weight:700;color:var(--primary)}.ok{font-weight:800}

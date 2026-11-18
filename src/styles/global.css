@@ -262,6 +262,11 @@ a.card:not(.section-card):not(.stat):not(.row):not(.stack-s) { display: block; }
 .dots span { width: 8px; height: 8px; border-radius: 4px; background: var(--surface-3); transition: width var(--dur-quick) var(--ease), background var(--dur-quick); }
 .dots span.on { width: 22px; background: var(--primary); }
 
+/* code: no ligatures, so === stays three = signs and => stays two characters, exactly as you would type them */
+code, pre, kbd, samp, .code, .inline-code, .opt-code, .code-lang, .pg-editor-colors, .pg-editor-input, .pg-key, .pg-lines, .pg-console-title {
+  font-variant-ligatures: none; font-feature-settings: 'liga' 0, 'calt' 0;
+}
+
 /* code */
 .code {
   margin: 0;
@@ -1428,7 +1433,7 @@ input, textarea, select { font-family: inherit; }
 .pg-editor { position: relative; border-radius: var(--radius-s); background: var(--code-bg); }
 .pg-editor-colors, .pg-editor-input {
   margin: 0; padding: 12px 14px; border: 0;
-  font-family: var(--font-code); font-size: var(--fs-code); line-height: 1.55; letter-spacing: normal; tab-size: 2; font-variant-ligatures: none;
+  font-family: var(--font-code); font-size: var(--fs-code); line-height: 1.55; letter-spacing: normal; tab-size: 2;
   white-space: pre-wrap; overflow-wrap: anywhere; word-break: normal;
 }
 .pg-editor-colors.code { background: var(--code-bg); overflow: hidden; min-height: calc(6 * 1.55em + 24px); }
@@ -1445,7 +1450,7 @@ input, textarea, select { font-family: inherit; }
 .pg-keys::-webkit-scrollbar { display: none; }
 .pg-key {
   flex: none; min-width: 44px; min-height: 40px; padding: 0 10px; border: 0; border-radius: 10px;
-  background: var(--surface-2); color: var(--text); font-family: var(--font-code); font-size: var(--fs-code); font-weight: 700; font-variant-ligatures: none;
+  background: var(--surface-2); color: var(--text); font-family: var(--font-code); font-size: var(--fs-code); font-weight: 700;
   box-shadow: 0 2px 0 var(--surface-3);
 }
 .pg-key:active { transform: translateY(2px); box-shadow: none; }
