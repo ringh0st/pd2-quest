@@ -13,43 +13,50 @@
         {
           "type": "text",
           "title": "In plain words",
-          "body": "An **error** stops your code in its tracks. Error handling lets you plan for that. Put risky code in a `try` block. If something goes wrong, the `catch` block runs instead of the program crashing. The `finally` block runs either way, so it's the spot for cleanup."
+          "body": "An **error** stops your code in its tracks. Error handling lets you plan for that. Put risky code in a `try` block (code inside curly braces `{ }`). If something goes wrong there, the `catch` block runs instead of the program crashing. The `finally` block runs either way, so it's the spot for cleanup."
         },
         {
           "type": "tip",
           "title": "Think of it like…",
-          "body": "A trapeze act. The `try` is the jump, the `catch` is the safety net, and `finally` is the bow at the end, fall or no fall. Where it stops: the net only catches falls during this jump. An error thrown later, in a callback, misses it."
+          "body": "A trapeze act. The `try` is the jump, the `catch` is the safety net, and `finally` is the bow at the end, fall or no fall. Where it stops: the net only catches falls during this jump. An error thrown later, in a **callback** (a function handed over to run later), misses it."
         },
         {
           "type": "code",
           "title": "The three parts",
           "lang": "js",
           "code": "try {\n  const data = JSON.parse(text);\n  show(data);\n} catch (error) {\n  showMessage('That file looks broken.');\n} finally {\n  hideSpinner();\n}",
-          "body": "If `JSON.parse` throws, the rest of `try` is skipped and `catch` runs. `hideSpinner()` runs in every case."
+          "body": "`JSON.parse()` turns text into data. If the text is broken, it throws. Then `show(data)` is skipped and `catch` runs. `hideSpinner()` runs in every case. (`show`, `showMessage` and `hideSpinner` stand for your own app's functions.)"
         },
         {
           "type": "list",
           "title": "Rules to know",
           "items": [
-            "`try` needs a `catch`, a `finally`, or both. A bare `try` is a `SyntaxError`.",
-            "Each part must be a block in curly braces.",
-            "The **catch binding** is optional: `catch { }` works when you don't need the error.",
+            "`try` needs a `catch`, a `finally`, or both. A bare `try` is a `SyntaxError` (code JavaScript can't read).",
+            "Each part needs its own curly braces.",
+            "The **catch binding** is the name in `catch (error)`, holding the error. It's optional: `catch { }` works when you don't need the error.",
             "The binding (like `error`) only exists inside its `catch` block."
           ]
         },
         {
           "type": "text",
           "title": "throw",
-          "body": "**`throw`** raises an error yourself. The function stops at once, and JavaScript jumps to the nearest `catch`. You can throw any value, even a string. Throw an `Error` object anyway. It carries a `name`, a `message` and a **stack trace** (the list of calls that led here)."
+          "body": "`throw` raises an error on purpose. The function stops at once, and JavaScript jumps to the nearest `catch`. You can throw any value, even a string. Throw an `Error` object anyway. It carries a `name`, a `message` and a **stack trace** (the list of calls that led here)."
+        },
+        {
+          "type": "code",
+          "title": "Throwing your own error",
+          "lang": "js",
+          "code": "function withdraw(balance, amount) {\n  if (amount > balance) {\n    throw new Error('Not enough money');\n  }\n  return balance - amount;\n}\ntry {\n  withdraw(10, 50);\n} catch (e) {\n  console.log(e.name, e.message);\n}",
+          "body": "`new` makes a fresh object, so `new Error('Not enough money')` is an error with that `message`. 50 is more than 10, so `throw` runs and `catch` gets the error. `console.log()` prints its `name` and `message`: this logs `Error Not enough money`."
         },
         {
           "type": "text",
           "title": "finally gets the last word",
-          "body": "`finally` runs before control leaves, even after a `return`. A `return` in `try` waits until `finally` is done. If `finally` has its own `return`, that value **wins**. It even swallows a thrown error. So keep `finally` for cleanup only."
+          "body": "`finally` runs before the code moves on, even after a `return` (which hands a value back from a function). A `return` in `try` waits until `finally` is done. If `finally` has its own `return`, that value **wins**: `try` returns 1, `finally` returns 2, you get 2. It even swallows a thrown error. Keep `finally` for cleanup only."
         },
         {
           "type": "trap",
-          "body": "\"My `try` wraps `setTimeout`, so its errors are caught.\" Wrong. The callback runs later, after `try` has finished. The same goes for a promise you don't `await`. Put the `try` inside the callback, or `await` the promise inside an `async` function."
+          "body": "\"My `try` wraps `setTimeout`, so its errors are caught.\" Wrong. `setTimeout` runs its callback later, after `try` has finished. A promise you don't `await` fails later too. Fix: put the `try` inside the callback, or `await` the promise inside an `async` function."
         },
         {
           "type": "tip",
@@ -102,6 +109,43 @@
         {
           "term": "await",
           "say": "A keyword that pauses an async function until a promise settles. If the promise rejects, await throws, so a try around it catches the error."
+        },
+        {
+          "term": "JSON.parse()",
+          "match": [
+            "JSON.parse"
+          ],
+          "say": "Turns JSON text into real data. The text {\"a\": 1} becomes an object whose a is 1. Broken text makes it throw a SyntaxError."
+        },
+        {
+          "term": "new",
+          "say": "Makes a fresh object from a class. new Error('Oops') makes a new error object whose message is 'Oops'."
+        },
+        {
+          "term": "message",
+          "say": "The text inside an error that says what went wrong. new Error('Oops') has the message 'Oops'."
+        },
+        {
+          "term": "console.log()",
+          "match": [
+            "console.log"
+          ],
+          "say": "Prints values to the console so you can see them. console.log(2 + 2) prints 4."
+        },
+        {
+          "term": "return",
+          "say": "Ends a function and hands a value back to the code that called it. A function that does return 5 gives back 5."
+        },
+        {
+          "term": "setTimeout()",
+          "match": [
+            "setTimeout"
+          ],
+          "say": "Runs a function later, after a wait in milliseconds. setTimeout(sayHi, 1000) runs sayHi after about one second. The rest of your code keeps going meanwhile."
+        },
+        {
+          "term": "async",
+          "say": "A word you put before a function so it can use await inside. An async function always gives back a promise."
         }
       ]
     },
@@ -119,15 +163,15 @@
         {
           "type": "tip",
           "title": "Think of it like…",
-          "body": "Warning lights on a car dashboard. Fuel, oil and engine each get their own light, so you know what to fix. Where it stops: every light here is still an `Error`. `TypeError` and the others all extend `Error`, so `instanceof Error` is true for all of them."
+          "body": "Warning lights on a car dashboard. Fuel, oil and engine each get their own light, so you know what to fix. Where it stops: these aren't separate systems. Every error type here is a special kind of `Error`. So a check for `Error` matches all of them."
         },
         {
           "type": "list",
           "title": "The big four",
           "items": [
             "`ReferenceError`: a name that doesn't exist, or a `let`/`const` used before its line (the TDZ).",
-            "`TypeError`: the wrong kind of value, like calling `undefined` or reading a property of `null`. Assigning to a `const` too.",
-            "`SyntaxError`: code or text that can't be parsed, including bad input to `JSON.parse`.",
+            "`TypeError`: the wrong kind of value, like calling `undefined` or reading a property of `null`. Changing a `const` too.",
+            "`SyntaxError`: code or text that can't be read, including bad input to `JSON.parse`.",
             "`RangeError`: a value outside the allowed range, like `new Array(-1)`."
           ]
         },
@@ -135,7 +179,7 @@
           "type": "list",
           "title": "And the rarer ones",
           "items": [
-            "`URIError`: bad input to `decodeURI` or `decodeURIComponent`.",
+            "`URIError`: broken web-address codes given to `decodeURI` or `decodeURIComponent`, like a lone `%`.",
             "`EvalError`: about `eval()`. You almost never see it.",
             "`AggregateError`: many errors in one, with an `errors` list. `Promise.any` rejects with it when every promise fails."
           ]
@@ -145,23 +189,23 @@
           "title": "Catch only what you expect",
           "lang": "js",
           "code": "try {\n  saveOrder(order);\n} catch (e) {\n  if (e instanceof TypeError) {\n    showMessage('Order data is incomplete.');\n  } else {\n    throw e;\n  }\n}",
-          "body": "**`instanceof`** checks the error's type. Handle the one you planned for, and **rethrow** everything else so it isn't silently lost."
+          "body": "`instanceof` asks what type a value is: `e instanceof TypeError` is `true` when `e` is a `TypeError`. Handle the error you planned for. **Rethrow** the rest with `throw e`, so it isn't silently lost."
         },
         {
           "type": "code",
           "title": "Your own error type",
           "lang": "js",
           "code": "class ValidationError extends Error {\n  constructor(message) {\n    super(message);\n    this.name = 'ValidationError';\n  }\n}",
-          "body": "A **custom error** extends `Error`. `super(message)` sets the `message`. Set `name` yourself, or it stays `'Error'`."
+          "body": "A **custom error** is your own error type. `extends` makes a class that builds on `Error`. In the constructor (setup code for each new object), `super(message)` lets `Error` store the `message`. Set `name` yourself, or it stays `'Error'`. Here, `new ValidationError('Bad email').name` is `'ValidationError'`."
         },
         {
           "type": "text",
           "title": "Keep the original",
-          "body": "Wrapping a low-level error in a friendlier one? Pass the original as the **cause**: `new Error('Save failed', { cause: err })`. This is ES2022, brand new when the exam was written. Older code keeps the original on a property of its own."
+          "body": "Turning a technical error into a friendlier one? Pass the original as the **cause**: `new Error('Save failed', { cause: err })`. Later, `e.cause` gives back the original error. This is ES2022, brand new when the exam was written. Older code keeps the original on a property of its own."
         },
         {
           "type": "trap",
-          "body": "Checking `e instanceof Error` first matches every built-in error, because every built-in error extends `Error`. Put specific checks like `TypeError` first. And there's no `catch (TypeError e)` in JavaScript. That's Java. Use one `catch`, then `if` checks."
+          "body": "Checking `e instanceof Error` first matches every built-in error, because they all extend `Error`. The first `if` that's true wins, so put specific checks like `TypeError` first. And there's no `catch (TypeError e)` in JavaScript. That's Java. Use one `catch`, then `if` checks."
         },
         {
           "type": "tip",
@@ -217,6 +261,53 @@
             "temporal dead zone"
           ],
           "say": "The temporal dead zone: the part of a block before a let or const line runs. Touching the variable there throws a ReferenceError."
+        },
+        {
+          "term": "let",
+          "match": [
+            "const"
+          ],
+          "say": "let and const make variables. A let variable can get a new value later. A const can't: trying throws a TypeError."
+        },
+        {
+          "term": "undefined",
+          "say": "The value of something that was never given a value, like a missing property. Trying to call it like a function throws a TypeError."
+        },
+        {
+          "term": "null",
+          "say": "A value that means empty on purpose. Reading a property of null, like null.x, throws a TypeError."
+        },
+        {
+          "term": "JSON.parse()",
+          "match": [
+            "JSON.parse"
+          ],
+          "say": "Turns JSON text into real data. The text {\"a\": 1} becomes an object whose a is 1. Broken text makes it throw a SyntaxError."
+        },
+        {
+          "term": "decodeURI",
+          "match": [
+            "decodeURIComponent"
+          ],
+          "say": "decodeURI and decodeURIComponent turn web-address codes back into text: 'a%20b' becomes 'a b'. A broken code, like a lone %, throws a URIError."
+        },
+        {
+          "term": "Promise.any()",
+          "match": [
+            "Promise.any"
+          ],
+          "say": "Takes several promises and gives the first one that succeeds. If they all fail, it fails with an AggregateError that holds every reason."
+        },
+        {
+          "term": "extends",
+          "say": "Makes a class that builds on another one. class ValidationError extends Error makes a new kind of Error that keeps everything Error has."
+        },
+        {
+          "term": "super()",
+          "match": [
+            "super(message)"
+          ],
+          "say": "Inside a constructor, it runs the parent class's setup first. In a class that extends Error, super(message) lets Error store the message."
         }
       ]
     },
@@ -240,10 +331,10 @@
           "type": "list",
           "title": "Console methods",
           "items": [
-            "`log`, `info`, `debug`, `warn`, `error`: print at **log levels** (like info, warning, error) you can filter.",
+            "`console.log()` prints a value. `info`, `debug`, `warn` and `error` print too, each at a **log level** (info, warning, error) you can filter.",
             "`console.table(rows)`: an array or object as a table.",
-            "`console.time('x')` then `console.timeEnd('x')`: how long it took. Same label!",
-            "`console.count('x')`: how many times this ran.",
+            "`console.time('x')`, later `console.timeEnd('x')`: how long it took. Same label!",
+            "`console.count('x')`: how many times this line ran.",
             "`console.group()` and `groupEnd()`: indent related lines.",
             "`console.trace()`: the call stack that led here."
           ]
@@ -253,12 +344,12 @@
           "title": "console.assert only logs",
           "lang": "js",
           "code": "console.assert(qty >= 0, 'qty is negative');\nconsole.log('still running');",
-          "body": "**`console.assert`** prints an error only when the condition is false. It never throws, so the code keeps running. That's why it isn't a real check."
+          "body": "`console.assert` prints an error only when the condition is false. It never throws, so the code keeps running. If `qty` is -3, you see `Assertion failed: qty is negative`, then `still running`. That's why it isn't a real check."
         },
         {
           "type": "text",
           "title": "Breakpoints",
-          "body": "Click a line number in the **Sources** panel to set a breakpoint. The code pauses before that line runs. While paused, the **Scope** pane shows local and closure variables. The **Call Stack** pane shows how you got here. **Watch** tracks any expression you type."
+          "body": "Click a line number in the **Sources** panel to set a breakpoint. The code pauses before that line runs. While paused, the **Scope** pane shows the variables this code can use: local ones and closure ones (from outer functions). The **Call Stack** pane shows how you got here. **Watch** tracks any expression you type."
         },
         {
           "type": "list",
@@ -266,16 +357,16 @@
           "items": [
             "**Conditional**: pauses only when your expression is true.",
             "**Logpoint**: logs a message without pausing or editing code.",
-            "**DOM change**: in Elements, Break on subtree, attribute or node removal.",
+            "**DOM change**: when the page changes. In Elements: Break on subtree, attribute or node removal.",
             "**Event listener**: pauses in the handler for an event like `click`.",
             "**XHR/fetch**: pauses when a request URL contains your text.",
-            "**Exceptions**: pause on caught or uncaught exceptions."
+            "**Exceptions**: pause on thrown errors, caught or uncaught."
           ]
         },
         {
           "type": "text",
           "title": "Stepping and debugger",
-          "body": "Paused? **Step over** runs the current line, including any function it calls. **Step into** goes inside the called function. **Step out** finishes this function and pauses back in the caller. The **`debugger`** statement pauses like a breakpoint, but only when dev tools are open."
+          "body": "Paused? **Step over** runs the current line, including any function it calls. **Step into** goes inside the called function. **Step out** finishes this function and pauses back in the caller. The `debugger` statement pauses like a breakpoint, but only when dev tools are open."
         },
         {
           "type": "trap",
@@ -318,7 +409,8 @@
         {
           "term": "console.time",
           "match": [
-            "console.time('x')"
+            "console.time('x')",
+            "console.timeEnd('x')"
           ],
           "say": "Starts a named stopwatch. console.timeEnd with the same name stops it and prints how many milliseconds passed."
         },
@@ -341,6 +433,51 @@
         {
           "term": "step into",
           "say": "A debugger button. On a line that calls a function, it moves inside that function and pauses there."
+        },
+        {
+          "term": "console.log()",
+          "match": [
+            "console.log"
+          ],
+          "say": "Prints values to the console so you can see them. console.log(2 + 2) prints 4."
+        },
+        {
+          "term": "console.count()",
+          "match": [
+            "console.count('x')",
+            "console.count"
+          ],
+          "say": "Counts how many times it has run with a label, and prints it. Calling console.count('x') twice prints x: 1, then x: 2."
+        },
+        {
+          "term": "console.group()",
+          "match": [
+            "groupEnd()"
+          ],
+          "say": "Starts an indented group: lines printed after it are pushed to the right. console.groupEnd() ends the group."
+        },
+        {
+          "term": "console.trace()",
+          "say": "Prints the call stack: the chain of function calls that led to this line. It doesn't pause anything."
+        },
+        {
+          "term": "dev tools",
+          "match": [
+            "DevTools"
+          ],
+          "say": "The browser's built-in tools for developers: the console, the debugger, the page's elements and more. In Chrome, right-click the page and pick Inspect to open them."
+        },
+        {
+          "term": "DOM",
+          "say": "The page as a tree of objects that JavaScript can read and change. Each tag on the page, like a button, is a node in that tree."
+        },
+        {
+          "term": "step over",
+          "say": "A debugger button. It runs the current line, including any function that line calls, then pauses on the next line."
+        },
+        {
+          "term": "step out",
+          "say": "A debugger button. It finishes the current function, then pauses back in the code that called it."
         }
       ]
     }
@@ -349,12 +486,12 @@
     {
       "id": "debug-f1",
       "front": "When does a `finally` block run?",
-      "back": "Every time, before control leaves the `try` statement: after success, after a caught error, even after a `return`. A `return` inside `finally` overrides the earlier one."
+      "back": "Every time, before the code moves on: after success, after a caught error, even after a `return`. A `return` inside `finally` replaces the earlier one."
     },
     {
       "id": "debug-f2",
-      "front": "What must a `try` block be paired with?",
-      "back": "A `catch`, a `finally`, or both. A bare `try` is a `SyntaxError`. Each part must be a block in braces."
+      "front": "What must come after a `try` block?",
+      "back": "A `catch`, a `finally`, or both. A bare `try` is a `SyntaxError`. Each part must be a block in curly braces."
     },
     {
       "id": "debug-f3",
@@ -368,7 +505,7 @@
     },
     {
       "id": "debug-f5",
-      "front": "Which error comes from using a `let` variable before its line?",
+      "front": "Which error do you get for using a `let` variable before its line runs?",
       "back": "`ReferenceError`. The variable is in the temporal dead zone (TDZ) until its declaration runs."
     },
     {
@@ -378,13 +515,13 @@
     },
     {
       "id": "debug-f7",
-      "front": "How do you handle only one error type in `catch`?",
-      "back": "Check it with `if (e instanceof TypeError)`, handle it, and `throw e` for everything else. Check specific types before `Error`."
+      "front": "How do you handle just one error type in `catch` and pass the rest on?",
+      "back": "Check it with `if (e instanceof TypeError)` and handle it. Use `throw e` for everything else. Put specific checks before a check for `Error`."
     },
     {
       "id": "debug-f8",
-      "front": "What is `name` on `class MyError extends Error {}`?",
-      "back": "`'Error'`, inherited from `Error.prototype`. Set `this.name = 'MyError'` in the constructor to change it."
+      "front": "A class extends `Error` but never sets `name`. What is its `name`?",
+      "back": "`'Error'`. It inherits that `name` from `Error.prototype`. To change it, set `this.name = 'MyError'` in the constructor."
     },
     {
       "id": "debug-f9",
@@ -403,7 +540,7 @@
     },
     {
       "id": "debug-f12",
-      "front": "What is the difference between step over, step into and step out?",
+      "front": "What do step over, step into and step out do?",
       "back": "Over runs the current line, calls included. Into goes inside the called function. Out finishes this function and pauses in the caller."
     }
   ],
@@ -422,7 +559,7 @@
       "answer": [
         0
       ],
-      "explain": "`finally` always runs before control leaves the `try` statement. It runs after success, after a caught error, and even after a `return`.",
+      "explain": "`finally` always runs before the code leaves the `try` statement. It runs after success, after a caught error, and even after a `return`.",
       "wrong": [
         "",
         "It also runs when nothing is thrown.",
@@ -594,7 +731,7 @@
       "answer": [
         2
       ],
-      "explain": "An inner `try` with no `catch` runs its `finally`, then the error moves out. The nearest enclosing `catch` handles it.",
+      "explain": "An inner `try` with no `catch` runs its `finally`, then the error moves outward. The nearest `catch` around it handles the error.",
       "wrong": [
         "The inner `finally` runs before control moves out to the outer `catch`.",
         "The error keeps going after `finally` and reaches the outer `catch`.",
@@ -619,7 +756,7 @@
         1,
         3
       ],
-      "explain": "`finally` always runs before control leaves, even after a `return`. If `finally` itself returns, that value overrides the earlier one.",
+      "explain": "`finally` always runs before the code moves on, even after a `return`. If `finally` itself returns, that value replaces the earlier one.",
       "wrong": [
         "It runs every time, handled or not.",
         "",
@@ -646,7 +783,7 @@
       "explain": "`JSON.parse` throws a `SyntaxError` on bad text. Only a `try...catch` can turn that throw into a normal return value.",
       "wrong": [
         "Bad text that isn't empty still reaches `JSON.parse` and throws.",
-        "A reviver changes values after parsing. Bad text still throws.",
+        "A reviver (the second argument) only changes values after parsing. Bad text still throws.",
         "`??` only helps with `null` or `undefined`. It can't stop a throw.",
         ""
       ],
@@ -666,12 +803,12 @@
       "answer": [
         0
       ],
-      "explain": "`throw` ends the current block at once. Control moves to the nearest enclosing `catch`, running any `finally` blocks on the way. With no `catch` at all, the error is uncaught.",
+      "explain": "`throw` ends the current block at once. JavaScript jumps to the nearest `catch` around it, running any `finally` blocks on the way. With no `catch` at all, the error is uncaught.",
       "wrong": [
         "",
         "Nothing after `throw` in that block runs.",
         "Code never restarts on its own after a throw.",
-        "Without a `catch`, the error goes up the call chain."
+        "Without a `catch`, the error moves up to the code that called the function."
       ],
       "source": "MDN: throw"
     },
@@ -744,7 +881,7 @@
       "answer": [
         3
       ],
-      "explain": "A control-flow statement in `finally` overrides the pending one. Here `return 'done'` replaces the throw, so the error silently disappears. That's why `finally` should only clean up.",
+      "explain": "A `return` in `finally` replaces whatever was about to happen. Here `return 'done'` replaces the throw, so the error silently disappears. That's why `finally` should only clean up.",
       "wrong": [
         "A function can't both return and throw. The `return` wins.",
         "`finally` runs before the error leaves, and its `return` replaces the throw.",
@@ -825,7 +962,7 @@
       "answer": [
         1
       ],
-      "explain": "`finally` runs whenever control leaves the `try` block, also through `continue`. So `fin` logs on all 3 turns, while `try` skips turn 1.",
+      "explain": "`finally` runs whenever the code leaves the `try` block, also through `continue` (skip to the next turn). So `fin` logs on all 3 turns, while `try` skips turn 1.",
       "wrong": [
         "`finally` still runs when `continue` leaves the `try` block.",
         "",
@@ -903,7 +1040,7 @@
         "",
         "-1 is the right type (a number). Its value is out of range.",
         "No name is missing here.",
-        "That's only for bad input to the URI decode functions."
+        "That's only for broken web-address codes given to `decodeURI` or `decodeURIComponent`."
       ],
       "source": "MDN: RangeError"
     },
@@ -944,7 +1081,7 @@
       "answer": [
         2
       ],
-      "explain": "`URIError` is for bad input to the URI functions. A lone `%` isn't a valid escape, so `decodeURIComponent` throws.",
+      "explain": "`URIError` is for broken web-address codes. A lone `%` isn't a valid code, so `decodeURIComponent` throws.",
       "wrong": [
         "Encoding a space is fine; it returns `'a%20b'`.",
         "Bad JSON throws a `SyntaxError`.",
@@ -969,11 +1106,11 @@
       "answer": [
         3
       ],
-      "explain": "A subclass inherits `name` from `Error.prototype`, which is `'Error'`, unless the class sets it. And every subclass instance is also an `instanceof Error`.",
+      "explain": "A class that extends `Error` inherits `name` from `Error.prototype`, which is `'Error'`, unless the class sets its own. And every object it makes is also `instanceof Error`.",
       "wrong": [
         "The class never sets `name`, so it inherits `'Error'`.",
         "`name` isn't set, and the class does extend `Error`.",
-        "A subclass of `Error` is still an `instanceof Error`.",
+        "A class that extends `Error` still makes objects that are `instanceof Error`.",
         ""
       ],
       "source": "MDN: Error"
@@ -1098,9 +1235,9 @@
       "answer": [
         3
       ],
-      "explain": "The inner `let x` belongs to the whole block, so it hides the outer `x` from the first line. Before its declaration runs, it's in the TDZ, so reading it throws a `ReferenceError`.",
+      "explain": "The inner `let x` belongs to the whole block, so it hides the outer `x` there, even on the first line. Before its line runs, it's in the TDZ, so reading it throws a `ReferenceError`.",
       "wrong": [
-        "The inner `let x` shadows the outer one for the whole block.",
+        "The inner `let x` hides the outer one for the whole block.",
         "The inner `x` gets 2 only after its line runs.",
         "`let` variables aren't set to `undefined` early; that's `var`.",
         ""
@@ -1251,7 +1388,7 @@
       ],
       "explain": "`console.assert` prints an error message only when its condition is false. It never throws, so the code keeps running.",
       "wrong": [
-        "`console.assert` never throws; that's Node's separate `assert` module.",
+        "`console.assert` never throws. Throwing is what Node's separate `assert` module does.",
         "There is no setting to switch it on; it always checks.",
         "It prints when the condition is false, and stays quiet when true.",
         ""
@@ -1393,7 +1530,7 @@
       "answer": [
         1
       ],
-      "explain": "A DOM change breakpoint pauses on the code that changes a node. Node removal fires when the selected element is removed.",
+      "explain": "A DOM change breakpoint pauses on the code that changes part of the page. Node removal fires when the selected element is removed.",
       "wrong": [
         "The removal may not come from a click at all.",
         "",
@@ -1492,7 +1629,7 @@
       "explain": "The error is caught, so only Pause on caught exceptions stops there. DevTools then pauses on the line that throws.",
       "wrong": [
         "",
-        "The library catches the error, so it's never uncaught.",
+        "The helper catches the error, so it's never uncaught.",
         "That logs after the fact and never pauses.",
         "A caught exception fires no `error` event."
       ],

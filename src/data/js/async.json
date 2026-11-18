@@ -13,7 +13,7 @@
         {
           "type": "text",
           "title": "In plain words",
-          "body": "JavaScript runs **one job at a time** on one **thread** (one line of work). Slow work, like a timer, a network call or reading a file, does not block it. The engine hands that work off and keeps going. When it finishes, a **callback** (a function you passed in, to be called later) waits in line to run."
+          "body": "Some work takes time: a timer, loading data from the internet, reading a file. JavaScript runs **one job at a time** on one **thread** (one line of work). If it stood still and waited, the whole page would freeze. So it starts the slow work, keeps going, and handles the result later. That is **asynchronous** (async) code."
         },
         {
           "type": "tip",
@@ -21,32 +21,41 @@
           "body": "A café with one barista. She starts your coffee machine, then serves the next person while it brews. When it beeps, your name goes on a list. Where it stops: she never drops an order halfway to grab a ready coffee. Each job finishes first. That rule is called **run-to-completion**."
         },
         {
-          "type": "text",
-          "title": "Sync and async",
-          "body": "**Synchronous** code runs line by line. Each line waits for the one before. **Asynchronous** code starts now and finishes later. `setTimeout`, `fetch`, real user clicks and Node's `fs.readFile` are asynchronous. The lines after them run first, before their callbacks."
+          "type": "code",
+          "title": "Sync: one line after another",
+          "lang": "js",
+          "code": "console.log('wash');\nconsole.log('dry');\nconsole.log('fold');\n// wash, dry, fold",
+          "body": "`console.log()` prints what you give it. This is **synchronous** code: each line waits for the one before. So it logs wash, then dry, then fold."
+        },
+        {
+          "type": "code",
+          "title": "Hand over a function",
+          "lang": "js",
+          "code": "const sayHi = () => console.log('hi');\nsetTimeout(sayHi, 1000);\n// about 1 second later: hi",
+          "body": "`=>` makes an **arrow function**, a short way to write a function. `sayHi` is a **callback**: a function you hand to another function, so it can call yours later. `setTimeout()` calls it after 1000 milliseconds (1 second)."
         },
         {
           "type": "code",
           "title": "Later means later",
           "lang": "js",
           "code": "console.log('1');\nsetTimeout(() => console.log('2'), 0);\nconsole.log('3');\n// 1, 3, 2",
-          "body": "The timer callback waits until the current code is done, even with a 0 ms delay."
+          "body": "This logs 1, 3, 2. The timer callback waits until the current code is done, even with a 0 ms delay. `fetch()`, real user clicks and Node's file reads also finish later like this."
         },
         {
           "type": "code",
           "title": "Node style: error first",
           "lang": "js",
           "code": "fs.readFile('a.txt', 'utf8', (err, data) => {\n  if (err) return console.error(err);\n  console.log(data);\n});",
-          "body": "This is an **error-first callback**. The first argument is the error, or `null` when all went well. The result comes second. Check `err` first."
+          "body": "In Node.js, `fs.readFile()` reads a file, then calls your callback. It is an **error-first callback**. The first argument is the error, or `null` when all went well. The file's text comes second. So check `err` first, and stop if it is set."
         },
         {
           "type": "text",
           "title": "Callback hell",
-          "body": "Say each step needs the result of the step before. Then callbacks nest inside callbacks. The code drifts to the right, and you must check errors at every level. People call this **callback hell**. Promises and `async`/`await` were made to flatten it."
+          "body": "Say each step needs the result of the step before. Then callbacks nest inside callbacks. The code drifts to the right, and you must check errors at every level. People call this **callback hell**. Promises and `async`/`await` (the next lessons) were made to flatten it."
         },
         {
           "type": "trap",
-          "body": "\"Wrap the call in `try...catch` to catch its errors.\" Not with callbacks. The `try` block has already finished when the callback runs later. An error thrown inside the callback is not caught there. Handle errors inside the callback, or switch to promises."
+          "body": "\"Wrap the call in `try...catch` to catch its errors.\" Not with callbacks. `try...catch` only catches errors thrown while its block runs. That block has already finished when the callback runs later. Handle errors inside the callback, or switch to promises."
         },
         {
           "type": "tip",
@@ -65,12 +74,22 @@
           "say": "One line of work a computer does, step by step. Your JavaScript code runs on one main thread, so it does one thing at a time."
         },
         {
-          "term": "callback",
-          "say": "A function you hand to another function, so it can call yours later. Like leaving your phone number so the shop can ring you when the order is ready."
+          "term": "Asynchronous",
+          "match": [
+            "async"
+          ],
+          "say": "Work that starts now and finishes later. Your code keeps going, and a callback or promise handles the result when it is ready."
         },
         {
           "term": "run-to-completion",
           "say": "The rule that a piece of JavaScript finishes before anything else starts. Nothing jumps in halfway, not even a timer that is due."
+        },
+        {
+          "term": "console.log()",
+          "match": [
+            "console.log"
+          ],
+          "say": "Prints a value so you can see it, in the browser console or the terminal. console.log('hi') shows hi."
         },
         {
           "term": "Synchronous",
@@ -80,19 +99,44 @@
           "say": "Code that runs in order, one line after another. Each line waits until the line before it is done."
         },
         {
-          "term": "Asynchronous",
+          "term": "arrow function",
           "match": [
-            "async"
+            "=>"
           ],
-          "say": "Work that starts now and finishes later. Your code keeps going, and a callback or promise handles the result when it is ready."
+          "say": "A short way to write a function. () => console.log('hi') is a function with no inputs that prints hi when it is called."
         },
         {
-          "term": "setTimeout",
-          "say": "A built-in function that runs a callback after at least some number of milliseconds. It never runs it before the current code is finished."
+          "term": "callback",
+          "say": "A function you hand to another function, so it can call yours later. Like leaving your phone number so the shop can ring you when the order is ready."
+        },
+        {
+          "term": "setTimeout()",
+          "match": [
+            "setTimeout"
+          ],
+          "say": "Runs a function after a wait, given in milliseconds (1000 is one second). The wait is a minimum: it never runs before the current code is finished."
+        },
+        {
+          "term": "fetch()",
+          "match": [
+            "fetch"
+          ],
+          "say": "Asks a web server for data, like a page or a list of users. The answer arrives later, not right away."
+        },
+        {
+          "term": "fs.readFile()",
+          "match": [
+            "fs.readFile"
+          ],
+          "say": "A Node.js function that reads a file from the computer's disk. When it is done, it calls your callback with an error or the file's contents."
         },
         {
           "term": "error-first callback",
           "say": "Node's callback style. The first thing passed in is the error, or null if all went well. The result comes second."
+        },
+        {
+          "term": "null",
+          "say": "A special value that means 'nothing here on purpose'. In an error-first callback, an error of null means no error happened."
         },
         {
           "term": "callback hell",
@@ -113,7 +157,7 @@
         {
           "type": "text",
           "title": "In plain words",
-          "body": "A **promise** is an object that stands for a result that is not ready yet. Functions like `fetch` hand you one right away. Later it gets a value, or an error. You attach a **handler** (a function to run when it is ready) with `then`."
+          "body": "A **promise** is an object that stands for a result that is not ready yet. `fetch()` hands you one right away. Later the promise gets a value, or an error. You attach a **handler** (a function to run when it is ready) with `then()`. For example, `fetch(url).then(show)` runs `show` once the answer arrives."
         },
         {
           "type": "tip",
@@ -135,28 +179,37 @@
           "title": "Make one",
           "lang": "js",
           "code": "const p = new Promise((resolve, reject) => {\n  setTimeout(() => resolve(42), 100);\n});\np.then((v) => console.log(v)); // 42",
-          "body": "The **executor** (the function you pass to `new Promise`) runs at once. Call `resolve(value)` to fulfill it or `reject(reason)` to reject it."
+          "body": "`new Promise` builds a promise. The **executor** (the function you pass to it) runs at once and gets two functions. Call `resolve(value)` to fulfill the promise, or `reject(reason)` to reject it. Here `resolve(42)` runs after 100 ms, so this logs 42."
         },
         {
-          "type": "text",
+          "type": "code",
           "title": "Chains",
-          "body": "`then` always returns a **new promise**. What your handler returns feeds the next `then`. Return a promise, and the chain waits for it. A thrown error skips ahead to the next `catch`. `catch(fn)` is the same as `then(undefined, fn)`."
+          "lang": "js",
+          "code": "Promise.resolve(2)\n  .then((n) => n * 10)\n  .then((n) => console.log(n)); // 20",
+          "body": "`Promise.resolve()` makes a promise that is already fulfilled, here with 2. `then()` always returns a **new promise**. What your handler returns feeds the next `then()`. So 2 becomes 20, and this logs 20. If a handler returns a promise, the chain waits for it."
+        },
+        {
+          "type": "code",
+          "title": "Errors: catch",
+          "lang": "js",
+          "code": "Promise.reject(new Error('oops'))\n  .then(() => console.log('skipped'))\n  .catch((err) => console.log(err.message)); // oops",
+          "body": "`Promise.reject()` makes a promise that has already failed. `new Error()` makes an error object with a message. A rejection or a thrown error skips every `then()` until the next `catch()`. So this logs oops, not skipped. `catch(fn)` is the same as `then(undefined, fn)`."
         },
         {
           "type": "code",
           "title": "finally",
           "lang": "js",
           "code": "getUser()\n  .then((user) => show(user))\n  .catch((err) => showError(err))\n  .finally(() => hideSpinner());",
-          "body": "`finally` runs either way, and its callback gets no argument. It passes the earlier value or error along unchanged, unless it throws or returns a rejected promise."
+          "body": "`finally()` runs either way, and its callback gets no argument. It is for cleanup, like hiding a spinner. It passes the earlier value or error along unchanged, unless it throws or returns a rejected promise."
         },
         {
           "type": "trap",
-          "body": "\"`then` runs right away if the promise is already fulfilled.\" No. A `then` handler **always runs later**, as a **microtask** (a small job that waits until the current code is done). Handlers added after the promise settles still run. Also: forget to `return` in `then`, and the next step gets `undefined`."
+          "body": "\"`then()` runs right away if the promise is already fulfilled.\" No. A `then()` handler **always runs later**, as a **microtask** (a small job that waits until the current code is done). Handlers added after the promise settles still run. Also: forget to `return` in `then()`, and the next step gets `undefined`."
         },
         {
           "type": "tip",
           "title": "Remember it",
-          "body": "**Pending first, settled once, set in stone.** `then` for good news, `catch` for bad news, `finally` for both."
+          "body": "**Pending first, settled once, set in stone.** `then()` for good news, `catch()` for bad news, `finally()` for both."
         }
       ],
       "check": [
@@ -170,8 +223,22 @@
           "say": "An object that stands for a result you will get later. It ends up either with a value or with an error."
         },
         {
+          "term": "fetch()",
+          "match": [
+            "fetch"
+          ],
+          "say": "Asks a web server for data. It gives you a promise right away, and the answer arrives later."
+        },
+        {
           "term": "handler",
           "say": "A function you give a promise or an event, so it can run when something happens. With promises, you attach it with then or catch."
+        },
+        {
+          "term": "then()",
+          "match": [
+            "then(undefined, fn)"
+          ],
+          "say": "Adds a handler to a promise. It runs later with the promise's value. Then gives back a new promise, so you can chain more steps."
         },
         {
           "term": "pending",
@@ -190,6 +257,10 @@
           "say": "Done waiting: either fulfilled or rejected. Once a promise is settled, it can never change again."
         },
         {
+          "term": "new Promise",
+          "say": "Builds a new promise. You pass it a function that does the work and calls resolve or reject when it is done."
+        },
+        {
           "term": "executor",
           "say": "The function you pass to new Promise. It runs right away and gets two functions, resolve and reject, to finish the promise."
         },
@@ -199,6 +270,33 @@
             "resolve(value)"
           ],
           "say": "The function you call inside a new promise to say the work is done. The value you pass becomes the promise result."
+        },
+        {
+          "term": "reject(reason)",
+          "say": "The function you call inside a new promise to say the work failed. The reason, usually an Error, goes to the catch handlers."
+        },
+        {
+          "term": "Promise.resolve()",
+          "say": "Makes a promise that is already fulfilled. Promise.resolve(2) is a finished promise holding 2."
+        },
+        {
+          "term": "Promise.reject()",
+          "say": "Makes a promise that has already failed, with the reason you give it. Its catch handlers will run."
+        },
+        {
+          "term": "new Error()",
+          "say": "Makes an error object. new Error('oops') holds the message oops, which you can read later as err.message."
+        },
+        {
+          "term": "catch()",
+          "match": [
+            "catch(fn)"
+          ],
+          "say": "Adds a handler that runs only when a promise fails. It gets the error. It is short for then with no success handler."
+        },
+        {
+          "term": "finally()",
+          "say": "Adds a handler that runs when a promise is done, good or bad. It gets nothing passed in, and it is used for cleanup."
         },
         {
           "term": "microtask",
@@ -215,7 +313,7 @@
         {
           "type": "text",
           "title": "In plain words",
-          "body": "Often you start several async jobs at once. The **promise combinators** wait on a whole group and give back one promise. Pick the one that fits: you need every result, every outcome, the first success, or the first to finish."
+          "body": "Often you start several async jobs at once. The **promise combinators** take an array (a list) of promises and give back one promise for the whole group. Pick the one that fits: you need every result, every outcome, the first success, or the first to finish."
         },
         {
           "type": "tip",
@@ -226,18 +324,18 @@
           "type": "list",
           "title": "The four",
           "items": [
-            "`Promise.all`: fulfills with an array of values in **input order**. It rejects as soon as one rejects.",
-            "`Promise.allSettled`: always fulfills, with one `{ status, value }` or `{ status, reason }` object per input.",
-            "`Promise.any`: fulfills with the first success. It rejects with an `AggregateError` only if all of them reject.",
-            "`Promise.race`: settles the same way as the first one to settle."
+            "`Promise.all()`: fulfills with an array of values in **input order**. Rejects as soon as one rejects.",
+            "`Promise.allSettled()`: always fulfills, with one `{ status, value }` or `{ status, reason }` object per input.",
+            "`Promise.any()`: fulfills with the first success. Rejects with an `AggregateError` (a list of errors) only if all reject.",
+            "`Promise.race()`: settles like the first one to settle."
           ]
         },
         {
           "type": "code",
-          "title": "Two requests at once",
+          "title": "Two at once",
           "lang": "js",
-          "code": "const [user, orders] = await Promise.all([\n  getUser(id),\n  getOrders(id),\n]);",
-          "body": "Both requests run at the same time. The results come back in the order you listed them, not the order they finished."
+          "code": "const slow = new Promise((resolve) => setTimeout(() => resolve('slow'), 200));\nconst fast = new Promise((resolve) => setTimeout(() => resolve('fast'), 50));\nPromise.all([slow, fast]).then((values) => console.log(values));\n// [ 'slow', 'fast' ]",
+          "body": "Both timers run at the same time, so this takes about 200 ms, not 250. `fast` finishes first, but the array keeps the **input order**: the order you listed them. So it logs slow, then fast."
         },
         {
           "type": "text",
@@ -268,19 +366,36 @@
           "say": "Helpers like Promise.all that take a list of promises and give back one promise for the whole group."
         },
         {
-          "term": "Promise.all",
+          "term": "array",
+          "say": "A list of values in order, written with square brackets. [1, 2, 3] is an array of three numbers."
+        },
+        {
+          "term": "Promise.all()",
+          "match": [
+            "Promise.all"
+          ],
           "say": "Waits for every promise in a list. You get all the values in a list, or the first error if any one fails."
         },
         {
-          "term": "Promise.allSettled",
+          "term": "Promise.allSettled()",
+          "match": [
+            "Promise.allSettled",
+            "allSettled"
+          ],
           "say": "Waits for every promise, win or lose. You always get a report: one object per promise saying fulfilled or rejected."
         },
         {
-          "term": "Promise.any",
+          "term": "Promise.any()",
+          "match": [
+            "Promise.any"
+          ],
           "say": "Gives you the first promise that succeeds. It only fails if every single one fails."
         },
         {
-          "term": "Promise.race",
+          "term": "Promise.race()",
+          "match": [
+            "Promise.race"
+          ],
           "say": "Copies whichever promise finishes first, whether it succeeded or failed."
         },
         {
@@ -323,26 +438,33 @@
         {
           "type": "text",
           "title": "The rules",
-          "body": "An `async` function **always returns a promise**. Return a value, and the promise fulfills with it. Throw, and the promise rejects. `await` pauses that function until a promise settles, then hands you its value. If the promise rejects, `await` throws the error right there."
+          "body": "Put `async` before a function, and it **always returns a promise**. Return a value, and the promise fulfills with it. Throw, and the promise rejects. Inside it, `await` pauses that function until a promise settles, then hands you its value. If the promise rejects, `await` throws the error right there."
+        },
+        {
+          "type": "code",
+          "title": "Wrap and unwrap",
+          "lang": "js",
+          "code": "async function getNumber() {\n  return 7;\n}\nasync function main() {\n  const n = await getNumber();\n  console.log(n + 1); // 8\n}\nmain();",
+          "body": "`getNumber()` gives back a promise holding 7. `await` unwraps it, so `n` is the number 7. This logs 8."
         },
         {
           "type": "code",
           "title": "Catch with try",
           "lang": "js",
           "code": "async function load(id) {\n  try {\n    const res = await fetch(`/api/users/${id}`);\n    return await res.json();\n  } catch (err) {\n    console.error('Load failed', err);\n  }\n}",
-          "body": "Wrap `await` in `try...catch` to handle a rejected promise like any thrown error."
+          "body": "`fetch()` asks the server for the user, and `res.json()` reads the answer as data. Both give promises, so each gets `await`. If either one rejects, `await` throws, and `try...catch` handles it like any other error."
         },
         {
           "type": "text",
           "title": "Where await works",
-          "body": "`await` works inside an `async` function, or at the **top level of a module** (ES2022). In a normal function it is a `SyntaxError`. An `async` callback inside `forEach` does not make `forEach` wait. Use a `for...of` loop instead."
+          "body": "`await` works inside an `async` function, or at the **top level of a module** (outside any function, in a module file; ES2022). In a normal function it is a `SyntaxError`. Also, `forEach()` never waits: an `async` callback inside it does not pause the loop. Use a `for...of` loop instead."
         },
         {
           "type": "code",
           "title": "One by one, or together",
           "lang": "js",
           "code": "// one after another: about 2 s\nconst a = await wait(1000, 'a');\nconst b = await wait(1000, 'b');\n// together: about 1 s\nconst [c, d] = await Promise.all([\n  wait(1000, 'c'),\n  wait(1000, 'd'),\n]);",
-          "body": "Each `await` waits for the one before. To run jobs **in parallel**, start them all, then `await Promise.all`."
+          "body": "Here `wait(ms, value)` is a helper that fulfills with `value` after `ms`. Each `await` waits for the one before, so the first part takes about 2 s. To run jobs **in parallel**, start them all, then `await` them together with `Promise.all()`. That part takes about 1 s."
         },
         {
           "type": "trap",
@@ -369,6 +491,21 @@
           "say": "Pauses an async function until a promise is done, then gives you its value. Other code keeps running while it waits."
         },
         {
+          "term": "fetch()",
+          "match": [
+            "fetch"
+          ],
+          "say": "Asks a web server for data. It gives you a promise right away, and the answer arrives later."
+        },
+        {
+          "term": "res.json()",
+          "say": "Reads the body of a server's answer and turns its JSON text into data. It also gives back a promise, so you await it."
+        },
+        {
+          "term": "try...catch",
+          "say": "A block that catches errors thrown inside it. With await, a rejected promise counts as a thrown error, so catch gets it."
+        },
+        {
           "term": "top level of a module",
           "say": "Code in a module file that is not inside any function. Since ES2022 you can use await there."
         },
@@ -377,7 +514,10 @@
           "say": "An error for code the engine cannot even read, like a word in the wrong place. The code never starts running."
         },
         {
-          "term": "forEach",
+          "term": "forEach()",
+          "match": [
+            "forEach"
+          ],
           "say": "An array method that calls a function once per item. It never waits for promises, so it does not work with await."
         },
         {
@@ -392,12 +532,15 @@
           "say": "At the same time, side by side. Start several jobs, then wait for all of them together."
         },
         {
-          "term": "unhandled rejection",
-          "say": "A promise that failed while nobody was listening with catch or await. Browsers log it, and Node.js stops the program by default."
+          "term": "Promise.all()",
+          "match": [
+            "Promise.all"
+          ],
+          "say": "Waits for every promise in a list. You get all the values in a list, or the first error if any one fails."
         },
         {
-          "term": "try...catch",
-          "say": "A block that catches errors thrown inside it. With await, a rejected promise counts as a thrown error, so catch gets it."
+          "term": "unhandled rejection",
+          "say": "A promise that failed while nobody was listening with catch or await. Browsers log it, and Node.js stops the program by default."
         }
       ]
     },
@@ -410,7 +553,7 @@
         {
           "type": "text",
           "title": "In plain words",
-          "body": "The **event loop** decides what runs next. JavaScript has a **call stack** (the functions running right now) and queues of waiting callbacks. When the stack is empty, the loop picks the next waiting job. Which queue it picks from decides what you see logged."
+          "body": "The **event loop** decides what runs next. JavaScript has a **call stack** (the functions running right now) and queues (waiting lines) of callbacks. When the stack is empty, the loop picks the next waiting job. Which queue it picks from decides what you see logged."
         },
         {
           "type": "tip",
@@ -421,8 +564,8 @@
           "type": "list",
           "title": "Two queues",
           "items": [
-            "**Tasks** (also called macrotasks): `setTimeout` and `setInterval` callbacks, events like clicks, I/O callbacks",
-            "**Microtasks**: promise handlers (`then`, `catch`, `finally`), code after `await`, `queueMicrotask` callbacks, `MutationObserver` callbacks"
+            "**Tasks** (also called macrotasks): `setTimeout()` and `setInterval()` callbacks, events like clicks, and I/O callbacks (I/O means input and output, like files and the network)",
+            "**Microtasks**: promise handlers (`then()`, `catch()`, `finally()`), code after `await`, `queueMicrotask()` callbacks, `MutationObserver` callbacks"
           ]
         },
         {
@@ -440,12 +583,12 @@
           "title": "See it",
           "lang": "js",
           "code": "setTimeout(() => console.log('timeout'), 0);\nPromise.resolve().then(() => console.log('promise'));\nconsole.log('sync');\n// sync, promise, timeout",
-          "body": "Sync code first, then the microtask, then the timer task, even though the timer was set first."
+          "body": "This logs sync, promise, timeout. Sync code goes first, then the microtask, then the timer task, even though the timer was set first. `Promise.resolve()` makes an already fulfilled promise, so its `then()` handler is queued at once."
         },
         {
           "type": "text",
           "title": "Watch events live",
-          "body": "The exam guide says **event monitor** but never explains it. The closest real tool is Chrome DevTools. In its console, `monitorEvents(object, events)` logs each matching event as it happens. Try `monitorEvents($0, 'click')`, where `$0` is the element you selected. `unmonitorEvents(object)` stops it. No code changes needed."
+          "body": "The exam guide says **event monitor** but never explains it. The closest real tool is Chrome DevTools, the developer tools built into Chrome. In its console, `monitorEvents()` logs each matching event as it happens. Try `monitorEvents($0, 'click')`. `$0` is the element you selected in the Elements panel. `unmonitorEvents()` stops it. No code changes needed."
         },
         {
           "type": "trap",
@@ -487,23 +630,61 @@
           "say": "Small jobs, like promise handlers. They all run as soon as the current code ends, before any timer or click."
         },
         {
-          "term": "setInterval",
-          "say": "A built-in function that runs a callback again and again, waiting at least the given milliseconds between runs."
+          "term": "setTimeout()",
+          "match": [
+            "setTimeout",
+            "setTimeout(fn, 0)"
+          ],
+          "say": "Runs a function once after a wait, given in milliseconds. Its callback is a task, so it waits for the current code and all microtasks."
         },
         {
-          "term": "queueMicrotask",
-          "say": "A built-in function that adds your callback to the microtask line, the same line promise handlers use."
+          "term": "setInterval()",
+          "match": [
+            "setInterval"
+          ],
+          "say": "Runs a function again and again, waiting at least the given milliseconds between runs, until you stop it."
+        },
+        {
+          "term": "I/O",
+          "say": "Short for input and output: reading or writing files, or talking over the network. It is slow, so JavaScript waits for it without stopping."
+        },
+        {
+          "term": "queueMicrotask()",
+          "match": [
+            "queueMicrotask"
+          ],
+          "say": "Adds your function to the microtask line, the same line promise handlers use."
         },
         {
           "term": "MutationObserver",
           "say": "A browser tool that tells you when part of the page changes. Its callback runs as a microtask."
         },
         {
-          "term": "monitorEvents",
+          "term": "Promise.resolve()",
+          "say": "Makes a promise that is already fulfilled. Its then handlers still wait, as microtasks."
+        },
+        {
+          "term": "event monitor",
+          "say": "The exam guide's name for watching events as they happen. In Chrome DevTools you do it with monitorEvents."
+        },
+        {
+          "term": "monitorEvents()",
           "match": [
+            "monitorEvents",
             "monitorEvents(object, events)"
           ],
           "say": "A Chrome DevTools console helper. It prints each event of the kinds you name on an element, until you stop it. It works only in the console, not in page code."
+        },
+        {
+          "term": "$0",
+          "say": "In the Chrome DevTools console, the element you last picked in the Elements panel."
+        },
+        {
+          "term": "unmonitorEvents()",
+          "match": [
+            "unmonitorEvents"
+          ],
+          "say": "A Chrome DevTools console helper that stops the logging monitorEvents started on an element."
         },
         {
           "term": "starve",
@@ -542,19 +723,24 @@
           "title": "The loop trap",
           "lang": "js",
           "code": "for (var i = 0; i < 3; i++) {\n  setTimeout(() => console.log(i), 0);\n}\n// 3, 3, 3   (with let: 0, 1, 2)",
-          "body": "`var` makes one shared `i`, and it is already 3 when the timers run. `let` makes a fresh `i` for each turn, so each callback keeps its own."
+          "body": "`var` and `let` both make variables. `var` makes one shared `i`, and it is already 3 when the timers run. So this logs 3, 3, 3. `let` makes a fresh `i` for each turn, so each callback keeps its own: 0, 1, 2."
         },
         {
           "type": "code",
           "title": "Executor is sync",
           "lang": "js",
           "code": "console.log('A');\nsetTimeout(() => console.log('B'), 0);\nnew Promise((res) => {\n  console.log('C');\n  res();\n}).then(() => console.log('D'));\nconsole.log('E');\n// A, C, E, D, B",
-          "body": "C is inside the executor, so it is sync. D is a microtask. B is a task, so it comes last."
+          "body": "This logs A, C, E, D, B. C is inside the executor, so it is sync. D is a `then()` handler, so it is a microtask. B is a timer task, so it comes last."
         },
         {
           "type": "text",
-          "title": "Node.js extras",
-          "body": "In a **CommonJS** Node script, `process.nextTick` callbacks run before promise handlers. In an ES module, promise handlers go first. `setImmediate` runs in the **check phase**, after I/O. From the main script, `setTimeout(0)` vs `setImmediate` has no fixed order. Inside an I/O callback, `setImmediate` always goes first."
+          "title": "Node.js: nextTick",
+          "body": "Node has its own extra queue. In a **CommonJS** script (a file that uses `require()`), `process.nextTick()` callbacks run before promise handlers. In an **ES module** (a file that uses `import`), promise handlers go first."
+        },
+        {
+          "type": "text",
+          "title": "Node.js: setImmediate",
+          "body": "`setImmediate()` runs a callback in the **check phase**, the step right after Node handles finished I/O (files, network). From the main script, `setTimeout(0)` vs `setImmediate()` has no fixed order. Inside an I/O callback, `setImmediate()` always goes first."
         },
         {
           "type": "trap",
@@ -581,8 +767,19 @@
           "say": "A bigger waiting job, like a timer callback. One runs, then all the microtasks run, then the next task."
         },
         {
+          "term": "new Promise",
+          "say": "Builds a new promise. The function you pass in runs right away."
+        },
+        {
           "term": "executor",
           "say": "The function you pass to new Promise. It runs right away, during the normal code, not later."
+        },
+        {
+          "term": "setTimeout(fn, 0)",
+          "match": [
+            "setTimeout(0)"
+          ],
+          "say": "Asks to run fn after 0 milliseconds. It still waits until the current code and all microtasks are done."
         },
         {
           "term": "minimum delay",
@@ -593,11 +790,37 @@
           "say": "The old way to make a variable. In a loop there is only one var variable, shared by every turn."
         },
         {
-          "term": "process.nextTick",
+          "term": "let",
+          "say": "The modern way to make a variable that can change. In a for loop, each turn gets its own fresh copy."
+        },
+        {
+          "term": "then()",
+          "say": "Adds a handler to a promise. It runs later, as a microtask, with the promise's value."
+        },
+        {
+          "term": "CommonJS",
+          "say": "The classic Node.js module style, with require and module.exports. Node.js treats a .js file this way by default."
+        },
+        {
+          "term": "require()",
+          "say": "Node's classic way to load a module or another file, like require('fs'). Files that use it are CommonJS."
+        },
+        {
+          "term": "process.nextTick()",
+          "match": [
+            "process.nextTick"
+          ],
           "say": "A Node.js function that runs a callback as soon as the current code ends, even before promise handlers in a CommonJS script."
         },
         {
-          "term": "setImmediate",
+          "term": "ES module",
+          "say": "The standard JavaScript module style, with import and export. In Node.js, .mjs files are ES modules."
+        },
+        {
+          "term": "setImmediate()",
+          "match": [
+            "setImmediate"
+          ],
           "say": "A Node.js function that runs a callback in the check phase, right after Node looks for finished I/O."
         },
         {
@@ -605,8 +828,8 @@
           "say": "A step of the Node.js event loop that comes right after waiting for I/O. setImmediate callbacks run here."
         },
         {
-          "term": "CommonJS",
-          "say": "The classic Node.js module style, with require and module.exports. Node.js treats a .js file this way by default."
+          "term": "I/O",
+          "say": "Short for input and output: reading or writing files, or talking over the network."
         }
       ]
     }
@@ -615,7 +838,7 @@
     {
       "id": "async-f1",
       "front": "What does single-threaded mean for JavaScript?",
-      "back": "Your code runs one piece at a time on one main thread. Slow work like timers and I/O happens outside it, and the callback waits in a queue."
+      "back": "Your code runs one piece at a time on one main thread. Slow work like timers, network calls and file reads happens outside it. When it is done, its callback waits in line."
     },
     {
       "id": "async-f2",
@@ -634,12 +857,12 @@
     },
     {
       "id": "async-f5",
-      "front": "What does `then` return?",
+      "front": "What do you get back when you call `then` on a promise?",
       "back": "A new promise. It fulfills with what the handler returns. If the handler returns a promise, it waits for it. If the handler throws, it rejects."
     },
     {
       "id": "async-f6",
-      "front": "What does `finally` pass down the chain?",
+      "front": "After `finally`, what does the next step in the chain get?",
       "back": "The earlier value or error, unchanged. Its callback gets no argument. Only a throw (or a rejected promise) inside `finally` changes the result."
     },
     {
@@ -649,17 +872,17 @@
     },
     {
       "id": "async-f8",
-      "front": "`Promise.all` vs `Promise.allSettled`?",
-      "back": "`all` gives the values in input order, or rejects on the first rejection. `allSettled` always fulfills, with a `{ status, value }` or `{ status, reason }` object for each input."
+      "front": "When do you pick `Promise.all` and when `Promise.allSettled`?",
+      "back": "`all` gives every value in input order, but rejects as soon as one rejects. `allSettled` always fulfills, with a `{ status, value }` or `{ status, reason }` report for each input."
     },
     {
       "id": "async-f9",
-      "front": "`Promise.any` vs `Promise.race`?",
-      "back": "`any` takes the first success and rejects with an `AggregateError` only if all fail. `race` copies the first to settle, even a rejection."
+      "front": "How is `Promise.any` different from `Promise.race`?",
+      "back": "`any` takes the first success. It rejects with an `AggregateError` only if all fail. `race` copies the first one to settle, even a rejection."
     },
     {
       "id": "async-f10",
-      "front": "What do the combinators do with an empty array?",
+      "front": "What do `all`, `allSettled`, `any` and `race` do with an empty array?",
       "back": "`all` and `allSettled` fulfill with `[]`. `any` rejects with an `AggregateError`. `race` stays pending forever."
     },
     {
@@ -684,7 +907,7 @@
     },
     {
       "id": "async-f15",
-      "front": "Name three sources of microtasks.",
+      "front": "Which callbacks run as microtasks?",
       "back": "Promise handlers (`then`, `catch`, `finally`), code after `await`, and `queueMicrotask`. `MutationObserver` callbacks too."
     },
     {
@@ -704,7 +927,7 @@
     },
     {
       "id": "async-f19",
-      "front": "`setTimeout(fn, 0)` or `setImmediate(fn)`: which runs first in Node?",
+      "front": "In Node, which runs first: `setTimeout(fn, 0)` or `setImmediate(fn)`?",
       "back": "From the main script, the order is not fixed. Inside an I/O callback, `setImmediate` always runs first."
     }
   ],
@@ -723,7 +946,7 @@
       "answer": [
         3
       ],
-      "explain": "One thread means one piece of your JavaScript runs at a time. Slow work like timers and I/O is handed off, and its callback waits its turn.",
+      "explain": "One thread means one piece of your JavaScript runs at a time. Slow work like timers, network calls and file reads is handed off. When it is done, its callback waits its turn.",
       "wrong": [
         "Many requests can be in flight; only your own code runs one piece at a time.",
         "Code keeps running; timer callbacks wait in a queue until later.",
@@ -771,7 +994,7 @@
       "answer": [
         0
       ],
-      "explain": "Node reserves the first callback argument for an error. It is `null` or `undefined` when the operation worked, and the result follows.",
+      "explain": "Node keeps the first callback argument for an error. It is `null` or `undefined` when the work went well, and the result comes next.",
       "wrong": [
         "",
         "Node puts the error first and the result second, not the other way round.",
@@ -849,7 +1072,7 @@
       ],
       "explain": "Timers and Node's callback I/O are asynchronous: their callbacks run later. Array methods and `JSON.parse` are synchronous.",
       "wrong": [
-        "`map` calls `fn` for each item right away, before it returns.",
+        "`map` calls `fn` for each item right away, before it returns, so nothing is left for later.",
         "",
         "`JSON.parse` does its work at once and returns the result.",
         "",
@@ -929,7 +1152,7 @@
         "The callback runs later, and the read error is passed in, not thrown.",
         "`fs.readFile` takes one callback; the error is its first argument.",
         "",
-        "`fs` is not an event emitter; callback errors arrive as `err`."
+        "`fs.readFile` does not send an `'error'` event; the error arrives as `err`, the first callback argument."
       ],
       "source": "Node.js docs: Errors"
     },
@@ -950,7 +1173,7 @@
       "answer": [
         3
       ],
-      "explain": "An API should be always sync or always async. The cached path calls `cb` at once, so defer it with `queueMicrotask` or `process.nextTick`.",
+      "explain": "A function that takes a callback should always call it later, or always call it at once, never a mix. The cached path calls `cb` at once. Push that call to later with `queueMicrotask` or `process.nextTick`.",
       "wrong": [
         "A `WeakMap` can't take strings as keys, and memory isn't the issue.",
         "`await` on a non-promise call changes nothing about the callback.",
@@ -1121,7 +1344,7 @@
       "answer": [
         0
       ],
-      "explain": "The next `then` gets whatever the handler returns. An arrow function with braces and no `return` returns `undefined`.",
+      "explain": "The next `then` gets whatever the handler returns. An arrow function with curly braces `{ }` and no `return` gives back `undefined`.",
       "wrong": [
         "",
         "The first handler works out `n * 2` but never returns it.",
@@ -1801,9 +2024,9 @@
       "answer": [
         2
       ],
-      "explain": "`await` is only allowed in `async` functions and at the top level of modules. Here the whole script fails to parse.",
+      "explain": "`await` is only allowed in `async` functions and at the top level of modules. Here the engine can't even read the script, so none of it runs.",
       "wrong": [
-        "The code never runs; it fails to parse.",
+        "The code never runs; the engine rejects it before it starts.",
         "`await` doesn't change the function; you must write `async`.",
         "",
         "Only the `async` keyword makes a function return a promise."
@@ -2115,7 +2338,7 @@
         "Timer callbacks are tasks, not microtasks.",
         "",
         "Interval callbacks are tasks too.",
-        "It runs before the next repaint, not as a microtask."
+        "Its callback runs just before the next screen redraw, not as a microtask."
       ],
       "source": "MDN: Window: queueMicrotask() method"
     },
@@ -2158,7 +2381,7 @@
       "answer": [
         3
       ],
-      "explain": "The call stack holds the functions running now. When it is empty, the event loop takes the next waiting callback.",
+      "explain": "The call stack holds the functions running right now. When it is empty, the event loop takes the next waiting callback from a queue.",
       "wrong": [
         "That is the task or microtask queue.",
         "Promises are not tracked on the call stack.",
@@ -2233,7 +2456,7 @@
       "answer": [
         2
       ],
-      "explain": "The loop empties the whole microtask queue, even new arrivals, before any task or repaint. Endless microtasks starve the page.",
+      "explain": "The loop empties the whole microtask queue, even new arrivals, before any task or screen redraw. Endless microtasks starve the page: nothing else ever gets a turn.",
       "wrong": [
         "The microtask queue must be empty before anything else runs.",
         "Timers are tasks; they wait until the microtask queue is empty.",
@@ -2258,7 +2481,7 @@
         1,
         3
       ],
-      "explain": "Timers and events from the user queue tasks. Promise handlers, `queueMicrotask` and `MutationObserver` queue microtasks.",
+      "explain": "Timers and user events add tasks. Promise handlers, `queueMicrotask` and `MutationObserver` add microtasks.",
       "wrong": [
         "Promise handlers are microtasks.",
         "",
@@ -2462,7 +2685,7 @@
       "answer": [
         0
       ],
-      "explain": "The delay is a minimum, not a promise. The callback is a task, so it waits for the current code and all microtasks.",
+      "explain": "The delay is a minimum, not an exact time. The callback is a task, so it waits for the current code and all microtasks.",
       "wrong": [
         "",
         "Timer callbacks always wait for the current code to end.",
@@ -2615,10 +2838,10 @@
       "answer": [
         0
       ],
-      "explain": "After an I/O callback, the loop reaches the check phase before the timers phase. So `setImmediate` always runs first here.",
+      "explain": "Inside an I/O callback (here, after a file read), Node's loop reaches the check phase before it gets back to timers. So `setImmediate` always runs first here.",
       "wrong": [
         "",
-        "Inside an I/O callback, the check phase comes before the next timers phase.",
+        "Inside an I/O callback, the check phase (where `setImmediate` runs) comes before the next timers step.",
         "That is only true in the main module, not inside an I/O callback.",
         "The timer still runs, in the next loop turn."
       ],
@@ -2641,10 +2864,10 @@
         2,
         4
       ],
-      "explain": "From the main module, the order depends on how fast the process starts. Inside an I/O callback, the check phase always comes first.",
+      "explain": "From the main script, the order depends on how fast the process starts, so it is not fixed. Inside an I/O callback, the check phase always comes first, so `setImmediate` wins.",
       "wrong": [
         "Promise microtasks run before the loop reaches the check phase.",
-        "In the main module the order depends on process timing.",
+        "From the main script the order is not fixed; it depends on timing.",
         "",
         "Next-tick callbacks run before the loop moves on.",
         ""

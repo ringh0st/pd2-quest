@@ -13,33 +13,43 @@
         {
           "type": "text",
           "title": "In plain words",
-          "body": "The **DOM** (Document Object Model) is the browser's live tree of your page. Every tag becomes an object that JavaScript can read and change. Before you change something, you have to find it. The `document` object gives you the search tools."
+          "body": "A web page starts as HTML: text full of **tags** like `<p>` and `<button>`. The browser reads it and builds the **DOM** (Document Object Model), a live tree of objects. Each tag becomes an **element**: an object JavaScript can read and change. Before you change something, you have to find it."
+        },
+        {
+          "type": "text",
+          "title": "Nodes and the document",
+          "body": "Every box in the tree is a **node**. Tags become element nodes, and the words between tags become text nodes. So every element is a node, but not every node is an element. At the very top sits `document`, the object for the whole page. It holds the search tools."
         },
         {
           "type": "tip",
           "title": "Think of it like…",
-          "body": "A big family tree on a wall. Each person is a box with a parent and children. You can find someone by name tag, by group, or by a description. Where it stops: change a box in the DOM and the page on screen changes too. A wall chart never redraws itself."
+          "body": "A big family tree on a wall. Each person is a box with a parent and kids. You can find someone by name tag, by group, or by a description. Where it stops: change a box in the DOM and the page on screen changes too. A wall chart never redraws itself."
         },
         {
           "type": "code",
           "title": "One, the first, or all",
           "lang": "js",
           "code": "const form = document.getElementById('signup'); // one or null\nconst first = document.querySelector('.item');    // first match or null\nconst all = document.querySelectorAll('li.item'); // a list, maybe empty\nconst row = button.closest('tr');                 // nearest ancestor match",
-          "body": "`getElementById` and `querySelector` give one element or `null`. `querySelectorAll` gives a `NodeList`, empty when nothing matches. `closest` walks up from an element, starting with the element itself."
+          "body": "Most finders take a **CSS selector**, the pattern CSS uses: `'.item'` means class `item`. `getElementById` and `querySelector` give one element, or `null` (JavaScript's \"nothing here\" value). `querySelectorAll` gives a `NodeList`, empty when nothing matches. `closest` climbs up through the parents, starting with the element itself."
         },
         {
           "type": "text",
           "title": "Live or snapshot?",
-          "body": "`querySelectorAll` returns a **static** `NodeList`: a snapshot taken once. `getElementsByClassName` and `children` return a **live** `HTMLCollection`. It updates by itself when matching elements come or go. A `NodeList` has `forEach`. An `HTMLCollection` doesn't, so use `Array.from()` or `for...of`."
+          "body": "`querySelectorAll` returns a **static** `NodeList`: a snapshot taken once. Later changes to the page don't show up in it. `getElementsByClassName` (find by class name) and `children` (an element's child elements) return a **live** `HTMLCollection`. It updates by itself when matching elements come or go."
+        },
+        {
+          "type": "text",
+          "title": "Looping over the list",
+          "body": "A `NodeList` has `forEach()`, which runs a function once for each item. An `HTMLCollection` doesn't. Calling `forEach` on it throws a `TypeError`: the error for using a value the wrong way. Turn it into a real array with `Array.from()` first. Or loop with `for...of`, which works on both kinds of list."
         },
         {
           "type": "text",
           "title": "Wait for the page",
-          "body": "Code can only find elements that already exist. `DOMContentLoaded` fires once the HTML is parsed and **deferred** scripts have run. It doesn't wait for images or stylesheets. The `load` event on `window` waits for everything. A script with `defer` or `type=\"module\"` runs after parsing too."
+          "body": "Code can only find elements the browser has already built. The `DOMContentLoaded` event (a signal from the browser) fires once the HTML is **parsed** (read into the tree) and **deferred** scripts have run. It doesn't wait for images or stylesheets. The `load` event on `window` waits for everything. Scripts with `defer` or `type=\"module\"` also run after parsing."
         },
         {
           "type": "trap",
-          "body": "`getElementById('#signup')` finds nothing: it takes a plain id, with no `#`. It returns `null`, and the next line throws a `TypeError` when it reads a property of `null`. Also, an empty `NodeList` is still an object, so `if (list)` is always true. Check `list.length`."
+          "body": "`getElementById('#signup')` finds nothing: it takes a plain id, with no `#`. It returns `null`, so the next line throws a `TypeError` when it reads a property of `null`. Also, an empty `NodeList` is still an object, and every object counts as true in an `if`. So `if (list)` always passes. Check `list.length`, the number of items."
         },
         {
           "type": "tip",
@@ -98,6 +108,52 @@
             "defer"
           ],
           "say": "A script marked to wait. It downloads while the page is read, then runs after the HTML is parsed, in order."
+        },
+        {
+          "term": "element",
+          "say": "One tag of the page turned into an object, like a button or a paragraph. JavaScript can read it and change it."
+        },
+        {
+          "term": "node",
+          "say": "Any box in the page tree. Elements are nodes, and so are the bits of text between tags. Every element is a node, but not every node is an element."
+        },
+        {
+          "term": "null",
+          "say": "JavaScript's value for \"nothing here\". Finders give null when no element matches. Reading a property of null throws an error."
+        },
+        {
+          "term": "TypeError",
+          "say": "The error JavaScript throws when a value is used the wrong way. Reading a property of null, or calling something that isn't a function, throws one."
+        },
+        {
+          "term": "getElementsByClassName",
+          "say": "Finds every element with a given class name, like card. It gives a live list that updates by itself when the page changes."
+        },
+        {
+          "term": "children",
+          "say": "An element's child elements, as a live list. Add or remove a child, and the list changes by itself."
+        },
+        {
+          "term": "forEach()",
+          "match": [
+            "forEach"
+          ],
+          "say": "Runs a function once for each item in a list. Arrays and NodeLists have it. An HTMLCollection does not."
+        },
+        {
+          "term": "Array.from()",
+          "match": [
+            "Array.from"
+          ],
+          "say": "Makes a real array out of a list-like thing, such as an HTMLCollection. Then you can use array tools like forEach and map."
+        },
+        {
+          "term": "for...of",
+          "say": "A loop that walks through a list one item at a time. It works on arrays, NodeLists and HTMLCollections alike."
+        },
+        {
+          "term": "load",
+          "say": "An event that fires on window when the whole page is ready, images and stylesheets included. It comes after DOMContentLoaded."
         }
       ]
     },
@@ -110,7 +166,7 @@
         {
           "type": "text",
           "title": "In plain words",
-          "body": "Once you have an element, you can change its text, classes and attributes, or add new elements. Some tools treat your string as **plain text**. Others read it as HTML and build real tags from it. Picking the wrong one can let an attacker run code on your page."
+          "body": "Once you have an element, you can change it. You can set its text, its CSS classes (style labels like `active`) and its **attributes** (settings inside a tag, like `id` or `href`). You can also build new elements. Some tools treat your string as **plain text**. Others read it as HTML and build real tags from it."
         },
         {
           "type": "tip",
@@ -120,29 +176,36 @@
         {
           "type": "text",
           "title": "Text or HTML?",
-          "body": "`textContent` sets plain text, so `<b>` shows as the characters `<b>`. Reading it returns all text, even hidden text. `innerText` reads only the text a user can see. `innerHTML` parses the string as HTML. With user input, that is an **XSS** hole (cross-site scripting: someone else's script runs in your page)."
+          "body": "`textContent` sets plain text, so `<b>` shows as the characters `<b>`. Reading it returns all text, even hidden text. `innerText` reads only the text a user can see. `innerHTML` parses the string as HTML and builds real tags. With user input, that is an **XSS** hole (cross-site scripting: someone else's script runs in your page)."
         },
         {
           "type": "code",
           "title": "Build, then attach",
           "lang": "js",
           "code": "const li = document.createElement('li');\nli.textContent = userName;      // safe: plain text\nli.classList.add('member');\nli.dataset.userId = '42';       // data-user-id=\"42\"\nlist.append(li, ' (new)');      // nodes or strings",
-          "body": "`createElement` makes an element that is not on the page yet. `append` adds nodes or strings and returns `undefined`. `appendChild` takes one node and returns it."
+          "body": "`createElement` makes a new `li` that is not on the page yet. The next three lines fill it in. Then `append` puts it at the end of `list`, with the text `' (new)'` right after it. `append` takes nodes or strings and returns `undefined` (no value). `appendChild` takes one node and returns it."
         },
         {
           "type": "list",
-          "title": "Handy tools",
+          "title": "Classes and data",
           "items": [
-            "`classList` has `add`, `remove` and `toggle`; `toggle` returns `true` if the class is now on",
-            "`dataset`: `data-order-count` becomes `dataset.orderCount`, always a **string**",
-            "`setAttribute(name, value)` and `getAttribute(name)` work for any attribute",
-            "`insertAdjacentHTML` parses an HTML string and puts it at one of four spots",
-            "`remove()` takes an element off the page"
+            "`classList` holds the element's CSS classes: `li.classList.add('on')` adds one, and `remove` takes one off",
+            "`toggle` adds a class if it is missing and removes it if it is there. It returns `true` if the class is now on",
+            "`dataset` reads and writes `data-` attributes: `data-order-count` becomes `dataset.orderCount`. The value is always a **string**"
+          ]
+        },
+        {
+          "type": "list",
+          "title": "Attributes and more",
+          "items": [
+            "`setAttribute()` sets any attribute and `getAttribute()` reads one: after `a.setAttribute('href', '/home')`, `a.getAttribute('href')` gives `'/home'`",
+            "`insertAdjacentHTML` parses an HTML string, like `innerHTML`. It puts the new tags at one of four spots: before, after, or inside at the start or end",
+            "`remove()` takes an element off the page: `li.remove()`"
           ]
         },
         {
           "type": "trap",
-          "body": "\"Scripts added with `innerHTML` don't run, so it's safe.\" Wrong. A `<script>` tag added that way stays asleep, but `<img src=x onerror=...>` runs. Put untrusted text in with `textContent`. Also: appending an element that is already on the page **moves** it. It does not copy it."
+          "body": "\"Scripts added with `innerHTML` don't run, so it's safe.\" Wrong. A `<script>` tag added that way stays asleep. But in `<img src=x onerror=...>`, the image fails to load, so its `onerror` code runs. Put untrusted text in with `textContent`. Also: appending an element that is already on the page **moves** it. It does not copy it."
         },
         {
           "type": "tip",
@@ -198,6 +261,50 @@
         {
           "term": "insertAdjacentHTML",
           "say": "Turns an HTML string into elements and puts them at one spot: before, inside at the start, inside at the end, or after an element."
+        },
+        {
+          "term": "attributes",
+          "match": [
+            "attribute"
+          ],
+          "say": "Settings written inside a tag, like id=\"menu\" or href=\"/home\". JavaScript can read and change them."
+        },
+        {
+          "term": "string",
+          "match": [
+            "strings"
+          ],
+          "say": "A piece of text in JavaScript, written in quotes, like 'hi' or '42'. The quotes make '42' text, not a number."
+        },
+        {
+          "term": "undefined",
+          "say": "JavaScript's value for \"no value\". A function that gives nothing back returns undefined."
+        },
+        {
+          "term": "toggle",
+          "say": "Flips a class: adds it if it is missing, removes it if it is there. It gives back true if the class is on afterwards, false if not."
+        },
+        {
+          "term": "setAttribute()",
+          "match": [
+            "setAttribute"
+          ],
+          "say": "Sets an attribute on an element. setAttribute('href', '/home') gives a link the address /home."
+        },
+        {
+          "term": "getAttribute()",
+          "match": [
+            "getAttribute"
+          ],
+          "say": "Reads an attribute's value as a string. If the element has no such attribute, you get null."
+        },
+        {
+          "term": "remove()",
+          "say": "Takes an element off the page. After li.remove(), that li is no longer shown, but your variable still holds it."
+        },
+        {
+          "term": "onerror",
+          "say": "An attribute that holds code to run when something fails to load, like a broken image. It runs even when added with innerHTML."
         }
       ]
     },
@@ -210,7 +317,7 @@
         {
           "type": "text",
           "title": "In plain words",
-          "body": "An **event** is a signal that something happened: a click, a key press, a form submit. A **listener** is a function you ask the browser to run when that event happens. You attach it with `addEventListener`. The browser hands it an event object full of details."
+          "body": "An **event** is the browser telling you something happened: a click, a key press, a form submit. A **listener** is a **function** (a set of steps you can run later) that the browser runs when that event happens. You attach it with `addEventListener`. The browser hands it an event object full of details."
         },
         {
           "type": "tip",
@@ -222,15 +329,21 @@
           "title": "Add and remove",
           "lang": "js",
           "code": "function onSave(event) {\n  console.log(this === event.currentTarget); // true\n}\nbtn.addEventListener('click', onSave);\nbtn.addEventListener('click', onSave);    // ignored: same function\nbtn.removeEventListener('click', onSave); // needs the same function",
-          "body": "Adding the **same** function twice for the same type does nothing. To remove it with `removeEventListener`, pass that same function again. In a regular function, `this` is the element. An arrow function keeps the outer `this`."
+          "body": "`addEventListener` takes the event type, like `'click'`, and the function. Adding the **same** function twice for the same type does nothing. To remove it with `removeEventListener`, pass that same function again. So after the last line, a click on `btn` runs nothing."
+        },
+        {
+          "type": "text",
+          "title": "Which element is this?",
+          "body": "`this` is a special word for the object the code runs for. In a regular `function` listener, `this` is the element the listener sits on: `event.currentTarget`. So a click before the removal makes `console.log()` print `true`. An **arrow function** (`() => {}`) is a short way to write a function. It keeps the `this` of the code around it."
         },
         {
           "type": "list",
           "title": "The options object",
           "items": [
+            "A third argument can hold settings: `btn.addEventListener('click', fn, { once: true })`",
             "`once: true` removes the listener after its first run",
             "`capture: true` runs it on the way down (next lesson)",
-            "`passive: true` promises not to call `preventDefault()`; if it does, the call is ignored, so scrolling stays smooth",
+            "`passive: true` promises not to cancel the event; a `preventDefault()` call is ignored, so scrolling stays smooth",
             "`signal`: pass an `AbortController` signal; calling `abort()` removes the listener"
           ]
         },
@@ -306,6 +419,33 @@
             "capture: true"
           ],
           "say": "An option that runs the listener while the event travels down toward the clicked element, before it bubbles back up."
+        },
+        {
+          "term": "function",
+          "say": "A set of steps with a name that you can run whenever you want. A listener is a function the browser runs for you."
+        },
+        {
+          "term": "this",
+          "say": "A special word that points to the object the code is running for. In a regular-function listener, it is the element the listener sits on."
+        },
+        {
+          "term": "arrow function",
+          "say": "A short way to write a function, like () => save(). It has no this of its own, so it uses the this of the code around it."
+        },
+        {
+          "term": "console.log()",
+          "match": [
+            "console.log"
+          ],
+          "say": "Prints a value to the browser's Console so you can see it. console.log(1 + 1) prints 2."
+        },
+        {
+          "term": "signal",
+          "say": "The part of an AbortController you hand to a listener or a request. When abort() is called, everything holding that signal stops."
+        },
+        {
+          "term": "abort()",
+          "say": "The AbortController method that pulls the plug. Listeners added with its signal are removed, and requests using it are canceled."
         }
       ]
     },
@@ -318,19 +458,19 @@
         {
           "type": "text",
           "title": "In plain words",
-          "body": "Click a button inside a card inside a page, and you clicked all three. So the event takes a trip. It travels down from `window` to the button (**capture phase**), reaches the button (**target phase**), then travels back up (**bubble phase**). Listeners along the path run as it passes."
+          "body": "Click a button inside a card inside a page, and you clicked all three. So the event takes a trip. It travels down from `window`, the top object of the browser tab, to the button (**capture phase**). It reaches the button (**target phase**). Then it travels back up (**bubble phase**). Listeners along the path run as it passes."
         },
         {
           "type": "tip",
           "title": "Think of it like…",
-          "body": "A parcel delivered to a flat. It passes the city, the street and the building on the way in, and the empty box goes back out the same way. Where it stops: not every event comes back out. Some, like `focus`, don't bubble at all."
+          "body": "A parcel delivered to a flat. It passes the city, the street and the building on the way in, and the empty box goes back out the same way. Where it stops: not every event comes back out. Some, like `focus` (a text box getting the cursor), don't bubble at all."
         },
         {
           "type": "code",
           "title": "Who runs first?",
           "lang": "js",
           "code": "outer.addEventListener('click', () => log('outer down'), true);\nouter.addEventListener('click', () => log('outer up'));\ninner.addEventListener('click', () => log('inner'));\n// click inner: outer down, inner, outer up",
-          "body": "Capture listeners on ancestors run on the way down. Then the target's listeners. Then **bubbling** listeners on the way back up. With no options, `addEventListener` listens in the bubble phase."
+          "body": "Capture listeners on **ancestors** (parent, grandparent and up) run on the way down. Then the target's own listeners. Then **bubbling** listeners on the way back up. The `true` in the first line means \"listen in the capture phase\". With no options, `addEventListener` listens in the bubble phase. Here `log` stands for any function that records text."
         },
         {
           "type": "list",
@@ -344,7 +484,7 @@
         {
           "type": "text",
           "title": "Reading the trip",
-          "body": "`event.eventPhase` says where the trip is: 1 capturing, 2 at the target, 3 bubbling. `event.bubbles` says if this event bubbles at all. `event.defaultPrevented` says if a listener called `preventDefault()`. That only works when the event is **cancelable**."
+          "body": "`event.eventPhase` is a number that says where the trip is: 1 capturing, 2 at the target, 3 bubbling. `event.bubbles` is `true` if this kind of event bubbles at all. `event.defaultPrevented` is `true` if a listener called `preventDefault()`. That only happens on a **cancelable** event; on other events it stays `false`."
         },
         {
           "type": "trap",
@@ -409,6 +549,35 @@
         {
           "term": "cancelable",
           "say": "Says whether an event's default action may be stopped. If it isn't cancelable, preventDefault() does nothing."
+        },
+        {
+          "term": "focus",
+          "say": "An event that fires when an element, like a text box, gets the keyboard cursor. It does not bubble up to the parents."
+        },
+        {
+          "term": "ancestors",
+          "match": [
+            "ancestor"
+          ],
+          "say": "Every element above another in the page tree: its parent, its parent's parent, and so on up to the top."
+        },
+        {
+          "term": "preventDefault()",
+          "match": [
+            "preventDefault"
+          ],
+          "say": "Tells the browser not to do its normal job for this event, like following a link or sending a form. The event still travels on."
+        },
+        {
+          "term": "event.bubbles",
+          "say": "True or false: does this kind of event travel back up through the parents? A click does. A focus event does not."
+        },
+        {
+          "term": "event.defaultPrevented",
+          "match": [
+            "defaultPrevented"
+          ],
+          "say": "True when a listener canceled the event's default action with preventDefault(). It stays false on events that can't be canceled."
         }
       ]
     },
@@ -433,18 +602,18 @@
           "title": "One listener, many buttons",
           "lang": "js",
           "code": "list.addEventListener('click', (event) => {\n  const btn = event.target.closest('button.delete');\n  if (!btn) return;            // the click was elsewhere\n  removeRow(btn.dataset.id);\n});",
-          "body": "`event.target` is what was actually clicked, maybe a tiny icon inside the button. `closest()` climbs up to the button you want. `event.currentTarget` is `list`, where the listener sits."
+          "body": "`event.target` is what was actually clicked, maybe a tiny icon inside the button. `closest()` climbs up to the delete button. `!` means \"not\", so `if (!btn)` is true when no button was found, and `return` stops the listener there. `event.currentTarget` is `list`, where the listener sits. `removeRow` stands for your own code."
         },
         {
           "type": "trap",
-          "body": "\"`event.target` is the element with the listener.\" No, that is `currentTarget`. And `currentTarget` is only set while listeners run. Keep the event and read it later, say after an `await`, and `currentTarget` is `null`."
+          "body": "\"`event.target` is the element with the listener.\" No, that is `currentTarget`. And `currentTarget` is only set while listeners run. Keep the event and read it later, say after an `await` (a pause until slow work is done), and `currentTarget` is `null`."
         },
         {
           "type": "code",
           "title": "Your own events",
           "lang": "js",
           "code": "const evt = new CustomEvent('cart-change', {\n  detail: { count: 3 }, // your data\n  bubbles: true,        // default: false\n  composed: true        // may leave a shadow DOM\n});\ncard.dispatchEvent(evt);",
-          "body": "A `CustomEvent` carries your data in `detail`. It does **not** bubble unless you set `bubbles: true`. Add `composed: true` so it can also cross out of a **shadow DOM**, which matters in Lightning Web Components."
+          "body": "A `CustomEvent` is an event you make yourself with `new`. It carries your data in `detail`. It does **not** bubble unless you set `bubbles: true`. Add `composed: true` so it can also cross out of a **shadow DOM** (a component's private inner tree). That matters in Lightning Web Components. `dispatchEvent()` fires it on `card`."
         },
         {
           "type": "text",
@@ -514,6 +683,25 @@
             "dispatchEvent"
           ],
           "say": "Fires an event on an element. All its listeners run right away, before the next line of your code."
+        },
+        {
+          "term": "!",
+          "say": "Means \"not\". It flips true to false and false to true. !btn is true when btn is null, so nothing was found."
+        },
+        {
+          "term": "return",
+          "say": "Ends a function right away. Any code after it in that function is skipped."
+        },
+        {
+          "term": "await",
+          "say": "Pauses an async function until slow work, like a server call, is done. Then the function carries on. Other code can run during the pause."
+        },
+        {
+          "term": "preventDefault()",
+          "match": [
+            "preventDefault"
+          ],
+          "say": "Tells the browser not to do its normal job for this event, like following a link or sending a form."
         }
       ]
     },
@@ -526,37 +714,42 @@
         {
           "type": "text",
           "title": "In plain words",
-          "body": "The browser gives JavaScript extra tools that aren't part of the language. You can save data on the device, change the address bar, ask a server for data and run code later. These are **Web APIs**. Some, like the DOM and `history`, don't exist in Node.js."
+          "body": "The browser gives JavaScript extra tools that aren't part of the language itself. You can save data on the device, change the address bar, ask a server for data and run code later. These are **Web APIs**. Some, like the DOM and `history`, don't exist in Node.js, which runs JavaScript outside the browser."
         },
         {
           "type": "tip",
           "title": "Think of it like…",
-          "body": "A hotel. `localStorage` is a locker that keeps your things until you empty it. `sessionStorage` is the room safe: it empties when you check out (close the tab). Where it stops: both only take paper notes (strings), so you fold objects into JSON first."
+          "body": "A hotel. `localStorage` is a locker that keeps your things until you empty it. `sessionStorage` is the room safe: it empties when you check out (close the tab). Where it stops: both only take paper notes (strings). So turn an object into text with `JSON.stringify()` first, and back with `JSON.parse()`."
         },
         {
           "type": "text",
           "title": "Storage",
-          "body": "`localStorage` keeps data per **origin** (scheme, host and port), with no expiry. `sessionStorage` is per origin and per tab: it survives a reload but clears when the tab closes. Both store **strings** only. `setItem('n', 5)` stores `'5'`, and an object becomes `'[object Object]'`. A missing key gives `null`."
+          "body": "`localStorage` keeps data per **origin** (scheme, host and port), with no expiry. `sessionStorage` is per origin and per tab: it survives a reload but clears when the tab closes. Both store **strings** only. `setItem()` saves: `setItem('n', 5)` stores `'5'`, and an object becomes `'[object Object]'`. `getItem()` reads; a missing key gives `null`."
         },
         {
           "type": "text",
           "title": "History and location",
-          "body": "`history.pushState()` changes the address bar without loading a page. `replaceState()` swaps the current entry instead of adding one. Neither fires **`popstate`**; that fires on back and forward. `location.assign(url)` or setting `location.href` really loads a page. `navigator` describes the browser."
+          "body": "`history.pushState()` changes the address bar without loading a page. `replaceState()` swaps the current entry instead of adding one. Neither fires **`popstate`**; that fires on Back and Forward. `location.assign(url)` or setting `location.href` really loads a page. `navigator` describes the browser, like its language."
+        },
+        {
+          "type": "text",
+          "title": "Waiting for an answer",
+          "body": "`fetch()` asks a server for data. The answer takes time, so you get a **promise** right away: an object that will hold the result later. A promise **fulfills** when the result arrives, or **rejects** when something fails. `await` waits for the promise and hands you its value."
         },
         {
           "type": "code",
           "title": "Fetch: check ok",
           "lang": "js",
           "code": "const res = await fetch('/api/items');\nif (!res.ok) {                  // status 200-299?\n  throw new Error(`HTTP ${res.status}`);\n}\nconst items = await res.json();",
-          "body": "`fetch()` returns a promise for a response. It rejects only when the request fails, like a network error or an abort. A 404 or 500 still **fulfills**, so check `res.ok`. Cancel a request with an `AbortController` signal."
+          "body": "`fetch()` rejects only when the request fails, like a network error or an abort. A 404 or 500 still fulfills. So check `res.ok`: it is `true` only for status 200-299. Here a 404 makes the code throw its own error, \"HTTP 404\". If all is well, `res.json()` reads the body as data. Cancel a request with an `AbortController` signal."
         },
         {
           "type": "list",
           "title": "Timers",
           "items": [
-            "`setTimeout` runs once later; `setInterval` repeats; both return an id for `clearTimeout` / `clearInterval`",
+            "`setTimeout` runs a function once, after a delay; `setInterval` repeats it. Both return an id for `clearTimeout` or `clearInterval`",
             "The delay is a **minimum**: busy code, deep nesting and background tabs make it later",
-            "`requestAnimationFrame` runs your code just before the next repaint: best for animation",
+            "`requestAnimationFrame` runs code right before the next screen draw: best for animation",
             "**Debounce**: wait until calls stop (search box). **Throttle**: at most once per period (scroll)"
           ]
         },
@@ -621,6 +814,61 @@
         {
           "term": "Throttle",
           "say": "Letting a function run at most once in each time slot, however often it is called. Handy for scroll events."
+        },
+        {
+          "term": "JSON.stringify()",
+          "match": [
+            "JSON.stringify"
+          ],
+          "say": "Turns an object into a string of JSON text. { a: 1 } becomes '{\"a\":1}', which storage can keep."
+        },
+        {
+          "term": "JSON.parse()",
+          "match": [
+            "JSON.parse"
+          ],
+          "say": "Turns JSON text back into a real object. '{\"a\":1}' becomes { a: 1 } again."
+        },
+        {
+          "term": "setItem()",
+          "match": [
+            "setItem"
+          ],
+          "say": "Saves a value under a key name in storage. The value is turned into a string first, so 5 is saved as '5'."
+        },
+        {
+          "term": "getItem()",
+          "match": [
+            "getItem"
+          ],
+          "say": "Reads the value saved under a key name. You always get a string back, or null if nothing was saved there."
+        },
+        {
+          "term": "promise",
+          "say": "An object that stands for an answer that is not ready yet. Later it fulfills with a value, or rejects with an error."
+        },
+        {
+          "term": "await",
+          "say": "Waits for a promise to settle, then gives you its value. If the promise rejects, await throws the error instead."
+        },
+        {
+          "term": "res.ok",
+          "say": "True when the server answered with a success status, 200 to 299. False for answers like 404 or 500."
+        },
+        {
+          "term": "setTimeout",
+          "say": "Runs a function once after a delay in milliseconds. setTimeout(fn, 1000) runs fn after at least 1 second. It returns an id."
+        },
+        {
+          "term": "setInterval",
+          "say": "Runs a function again and again, with a delay between runs. It keeps going until you stop it with clearInterval."
+        },
+        {
+          "term": "clearTimeout",
+          "match": [
+            "clearInterval"
+          ],
+          "say": "Stops a timer before it runs again. Give it the id the timer returned: clearTimeout for setTimeout, clearInterval for setInterval."
         }
       ]
     },
@@ -646,7 +894,7 @@
           "items": [
             "**Elements**: live DOM and CSS, an Event Listeners pane, DOM change breakpoints",
             "**Console**: run code, read logs and errors",
-            "**Sources**: breakpoints, stepping, Scope, Call Stack and **Watch**",
+            "**Sources**: **breakpoints** (pause points), stepping line by line, Scope (variables in reach), Call Stack (who called whom) and **Watch**",
             "**Network**: each request's status, headers, response and timing",
             "**Performance** and **Memory**: slow frames, CPU time, heap snapshots",
             "**Application**: storage and cookies"
@@ -657,21 +905,21 @@
           "title": "Console shortcuts",
           "lang": "js",
           "code": "$0                    // element picked in Elements\n$('.cart')            // like document.querySelector\n$$('li')              // like querySelectorAll, as an array\ngetEventListeners($0) // listeners on that element\nmonitorEvents(window, 'resize') // log each resize",
-          "body": "These **Console Utilities** only work when typed into the Console. Your page's own scripts can't call them."
+          "body": "These **Console Utilities** only work when typed into the Console. Your page's own scripts can't call them. `$()` works like `document.querySelector()`. `$$()` finds every match and gives a real array. `getEventListeners()` lists the listeners on an element."
         },
         {
           "type": "text",
           "title": "Smarter breakpoints",
-          "body": "You can pause on more than a line. An **event listener breakpoint** pauses when, say, any `click` listener runs. An XHR/fetch breakpoint pauses when a request URL contains some text. A DOM change breakpoint pauses on code that edits a node. A **logpoint** logs a message without pausing."
+          "body": "You can pause on more than a line. An **event listener breakpoint** pauses when, say, any `click` listener runs. An XHR/fetch breakpoint pauses when a request URL contains some text (XHR is the older way to request data). A DOM change breakpoint pauses on code that edits a node. A **logpoint** logs a message without pausing."
         },
         {
           "type": "text",
           "title": "Network and memory",
-          "body": "Each Network row is one request: method, status, type, size and time. **Throttling** fakes a slow connection. \"Disable cache\" acts like a first-time visitor. \"Preserve log\" keeps rows across page loads. In Memory, a **heap snapshot** shows what JavaScript still holds, like detached DOM nodes that leak."
+          "body": "Each Network row is one request: method, status, type, size and time. **Throttling** fakes a slow connection. \"Disable cache\" acts like a first-time visitor. \"Preserve log\" keeps rows across page loads. In Memory, a **heap snapshot** shows what JavaScript still holds, like detached DOM nodes (off the page but still kept) that leak."
         },
         {
           "type": "trap",
-          "body": "\"Fix it in Elements and you're done.\" Edits there live only in this tab, and a reload throws them away. Fix your source files. Also, `$0` and `monitorEvents` exist only in the Console. Called in page code, they throw a `ReferenceError`."
+          "body": "\"Fix it in Elements and you're done.\" Edits there live only in this tab, and a reload throws them away. Fix your source files. Also, `$0` and `monitorEvents` exist only in the Console. Called in page code, they throw a `ReferenceError`: the error for a name that doesn't exist."
         },
         {
           "type": "tip",
@@ -727,6 +975,36 @@
         {
           "term": "heap snapshot",
           "say": "A picture of everything JavaScript holds in memory at one moment. It helps you find objects that should have been freed."
+        },
+        {
+          "term": "breakpoints",
+          "match": [
+            "breakpoint"
+          ],
+          "say": "Markers that pause your code at a chosen spot. While it is paused, you can look at every value and step ahead one line at a time."
+        },
+        {
+          "term": "$()",
+          "say": "A Console shortcut that finds the first element matching a selector, like document.querySelector. $('.cart') finds the first element with the class cart."
+        },
+        {
+          "term": "$$()",
+          "say": "A Console shortcut that finds every element matching a selector and gives them back as a real array. $$('li') gives all li elements."
+        },
+        {
+          "term": "getEventListeners()",
+          "match": [
+            "getEventListeners"
+          ],
+          "say": "A Console command that lists the listeners on an element, grouped by event type, like click. It works only in the Console."
+        },
+        {
+          "term": "ReferenceError",
+          "say": "The error JavaScript throws when you use a name that doesn't exist, like a variable nobody made."
+        },
+        {
+          "term": "Throttling",
+          "say": "A Network panel setting that fakes a slow connection, like a weak phone signal, so you can see how the page feels."
         }
       ]
     }
@@ -740,7 +1018,7 @@
     {
       "id": "browser-f2",
       "front": "What is the difference between `querySelectorAll` and `getElementsByClassName`?",
-      "back": "`querySelectorAll` returns a static `NodeList`, a snapshot. `getElementsByClassName` returns a live `HTMLCollection` that updates by itself."
+      "back": "`querySelectorAll` returns a static `NodeList`: a snapshot that never changes. `getElementsByClassName` returns a live `HTMLCollection` that updates by itself."
     },
     {
       "id": "browser-f3",
@@ -750,7 +1028,7 @@
     {
       "id": "browser-f4",
       "front": "When does `DOMContentLoaded` fire, compared with `load`?",
-      "back": "`DOMContentLoaded` fires when the HTML is parsed and deferred scripts have run. `load` waits for images and stylesheets too."
+      "back": "`DOMContentLoaded` fires when the HTML is read into the DOM and deferred scripts have run. `load` waits for images and stylesheets too."
     },
     {
       "id": "browser-f5",
@@ -769,8 +1047,8 @@
     },
     {
       "id": "browser-f8",
-      "front": "How does `dataset` name a `data-user-id` attribute?",
-      "back": "As `dataset.userId`: dashes become camelCase. Values are always strings."
+      "front": "How do you read a `data-user-id` attribute with `dataset`?",
+      "back": "Use `dataset.userId`. The `data-` part goes, and each dash plus letter becomes a capital letter (camelCase). The value is always a string."
     },
     {
       "id": "browser-f9",
@@ -785,12 +1063,12 @@
     {
       "id": "browser-f11",
       "front": "What do the `once`, `passive` and `signal` options do?",
-      "back": "`once` removes the listener after one run. `passive` makes `preventDefault()` ignored. `signal` removes it when its `AbortController` aborts."
+      "back": "`once` removes the listener after one run. `passive` promises not to cancel, so `preventDefault()` is ignored. `signal` removes it when its `AbortController` calls `abort()`."
     },
     {
       "id": "browser-f12",
-      "front": "What is `this` inside an event listener?",
-      "back": "In a regular function, the element the listener is on (`currentTarget`). An arrow function keeps the outer `this`."
+      "front": "What does `this` point to inside an event listener?",
+      "back": "In a regular function: the element the listener is on (`currentTarget`). An arrow function has no `this` of its own, so it keeps the outer one."
     },
     {
       "id": "browser-f13",
@@ -815,12 +1093,12 @@
     {
       "id": "browser-f17",
       "front": "What is the difference between `event.target` and `event.currentTarget`?",
-      "back": "`target` is where the event happened. `currentTarget` is the element whose listener is running, and it is `null` after dispatch ends."
+      "back": "`target` is where the event happened, like the clicked icon. `currentTarget` is the element whose listener is running. It is `null` once the event is finished."
     },
     {
       "id": "browser-f18",
       "front": "How do you send data with a custom event, and does it bubble?",
-      "back": "Put the data in `detail`: `new CustomEvent('pick', { detail })`. It doesn't bubble unless you set `bubbles: true`."
+      "back": "Put it in `detail`: `new CustomEvent('pick', { detail: { id: 7 } })`. It doesn't bubble unless you also set `bubbles: true`."
     },
     {
       "id": "browser-f19",
@@ -835,7 +1113,7 @@
     {
       "id": "browser-f21",
       "front": "Does `fetch()` reject on a 404 or 500?",
-      "back": "No. It fulfills with `ok` set to `false`. It rejects only on network failure or an abort. Check `response.ok`."
+      "back": "No. The promise still fulfills (succeeds), with `ok` set to `false`. It rejects only on a network failure or an abort. So check `response.ok`."
     },
     {
       "id": "browser-f22",
@@ -1073,7 +1351,7 @@
         1,
         3
       ],
-      "explain": "A `NodeList` has `forEach` but no `map`. Turn it into an array first, with `Array.from` (which can map as it copies) or with spread syntax.",
+      "explain": "A `NodeList` has `forEach` but no `map`. Make a real array first. `Array.from` copies the list and can map each item as it goes. Spread syntax, `[...list]`, also copies it into an array.",
       "wrong": [
         "A `NodeList` has no `map` method, so this throws a `TypeError`.",
         "",
@@ -1100,12 +1378,12 @@
       "answer": [
         2
       ],
-      "explain": "`querySelectorAll` always returns a `NodeList`, empty when nothing matches. Every object is truthy, so the `if` passes and the length is 0. Test `rows.length` instead.",
+      "explain": "`querySelectorAll` always returns a `NodeList`, empty when nothing matches. Every object counts as true in an `if` (it is truthy), so the `if` passes and the length is 0. Test `rows.length` instead.",
       "wrong": [
         "`querySelectorAll` never returns `null`; only the single finders do.",
         "An empty `NodeList` still has a `length` of 0.",
         "",
-        "Objects are truthy even when empty, so the `if` passes."
+        "Objects count as true (truthy) even when empty, so the `if` passes."
       ],
       "source": "MDN: Document: querySelectorAll() method"
     },
@@ -1181,7 +1459,7 @@
       "answer": [
         1
       ],
-      "explain": "The `HTMLCollection` is live, so each removed class shrinks it while the index still moves up. Two passes run, the loop stops at `i = 2`, and 2 items are left.",
+      "explain": "The `HTMLCollection` is live. Removing the class takes that item out of the list at once, while `i` still moves up. So the loop skips every other item: two passes run, it stops at `i = 2`, and 2 items are left.",
       "wrong": [
         "That would need every item visited, but the shrinking list makes the loop skip every other one.",
         "",
@@ -1251,7 +1529,7 @@
       "answer": [
         2
       ],
-      "explain": "`dataset` turns the dashed name after `data-` into camelCase. So `data-order-id` is read as `dataset.orderId`.",
+      "explain": "`dataset` drops the `data-` part and turns each dash plus letter into a capital letter (camelCase). So `data-order-id` is read as `dataset.orderId`.",
       "wrong": [
         "Dashed keys aren't used in `dataset`; this returns `undefined`.",
         "The camelCase needs a capital I, so this returns `undefined`.",
@@ -1476,7 +1754,7 @@
       "answer": [
         3
       ],
-      "explain": "A `<script>` added with `innerHTML` doesn't run, but event-handler attributes do. The broken image fires `onerror`, so `steal()` runs. This is XSS.",
+      "explain": "A `<script>` added with `innerHTML` doesn't run, but event-handler attributes like `onerror` do. The image address `x` fails to load, so `onerror` runs `steal()`. This is XSS.",
       "wrong": [
         "Only `<script>` tags stay asleep; attributes like `onerror` still run.",
         "`innerHTML` parses the string as HTML, so it isn't shown as text.",
@@ -1502,7 +1780,7 @@
       "answer": [
         1
       ],
-      "explain": "`innerHTML +=` reads the HTML as a string, adds to it, and parses it all again. Every child is a brand-new element, and listeners aren't part of the HTML.",
+      "explain": "`innerHTML +=` turns the children into an HTML string, adds the new text, and builds everything again from it. The button is now a brand-new element. Listeners aren't part of HTML, so the new button has none.",
       "wrong": [
         "The paragraph comes after the button; it doesn't cover it.",
         "",
@@ -1581,7 +1859,7 @@
       "answer": [
         0
       ],
-      "explain": "`dataset` turns camelCase into dashes: `customerId` becomes `data-customer-id`. In an HTML page, `setAttribute` lowercases the name.",
+      "explain": "`dataset` works the other way too: each capital letter becomes a dash plus a small letter. So `customerId` becomes `data-customer-id`. In an HTML page, `setAttribute` makes the name all lowercase.",
       "wrong": [
         "",
         "`dataset` writes dashed names, and `setAttribute` lowercases.",
@@ -1650,11 +1928,11 @@
       "answer": [
         3
       ],
-      "explain": "For a regular function, `this` is the element the listener is on, the same as `event.currentTarget`. Arrow functions don't get their own `this`.",
+      "explain": "For a regular function, the browser sets `this` to the element the listener is on, the same as `event.currentTarget`. Arrow functions don't get their own `this`.",
       "wrong": [
         "The browser sets `this` to the element for regular functions.",
         "The event object is passed as the first argument, not as `this`.",
-        "The browser binds `this` to the element, even in strict mode.",
+        "The browser sets `this` to the element, even in strict mode.",
         ""
       ],
       "source": "MDN: EventTarget: addEventListener() method"
@@ -1727,7 +2005,7 @@
         0,
         4
       ],
-      "explain": "In a regular-function listener, `this` is the button. An arrow function keeps `this` from `start`, and `bind(this)` fixes it to `counter`.",
+      "explain": "In a regular-function listener, `this` is the button, so `this.count` isn't the counter's count. An arrow function keeps the `this` of `start`, which is `counter`. `.bind(this)` makes a copy of the function with `this` fixed to `counter`.",
       "wrong": [
         "",
         "The phase doesn't change what `this` points to.",
@@ -1804,7 +2082,7 @@
       "answer": [
         0
       ],
-      "explain": "`onSave()` runs right away and returns `undefined`. Passing `undefined` as the listener adds nothing, so clicks do nothing.",
+      "explain": "The `()` after `onSave` calls it right away, so \"saved\" logs once. It returns `undefined`, and passing `undefined` as the listener adds nothing. So the clicks do nothing.",
       "wrong": [
         "",
         "The function was called, not passed, so no listener was added.",
@@ -1907,7 +2185,7 @@
       "answer": [
         2
       ],
-      "explain": "The capture listener counts as a separate one, so there are two. The third call matches the first (same function, not capture), so it is ignored, `once` and all. Two clicks run two listeners each.",
+      "explain": "The capture listener counts as a separate one, so there are two. The third call has the same function and no capture, so it matches the first and is ignored, `once` and all. Two clicks run two listeners each, so `n` is 4.",
       "wrong": [
         "The `once` listener was never added, so nothing drops off after the first click.",
         "The third call is a duplicate and adds nothing.",
@@ -1960,7 +2238,7 @@
       "answer": [
         0
       ],
-      "explain": "`bind()` returns a new function every time. Save the bound function once, for example `this.handler = this.onScroll.bind(this)`, and use it for both calls.",
+      "explain": "`bind()` makes a new function every time it is called, so the removal passes a different function. Save the bound function once, for example `this.handler = this.onScroll.bind(this)`, and use it for both calls.",
       "wrong": [
         "",
         "Any listener can be removed with the same function and `capture` flag.",
@@ -2335,7 +2613,7 @@
       "answer": [
         0
       ],
-      "explain": "`new Event()` doesn't bubble by default. But every event still travels down in the capture phase, so only the capture listener runs.",
+      "explain": "`new Event()` makes an event that doesn't bubble unless you ask. But every event still travels down in the capture phase. So only the capture listener runs.",
       "wrong": [
         "",
         "The capture phase runs even for events that don't bubble.",
@@ -2456,7 +2734,7 @@
       ],
       "explain": "`dispatchEvent()` runs the listeners right away, before it returns. So `B` logs between `A` and `C`.",
       "wrong": [
-        "Dispatching doesn't wait for a later task; listeners run at once.",
+        "Dispatching doesn't wait until later; the listeners run at once.",
         "",
         "The listener runs only when the event is dispatched, after `A`.",
         "The listener is on the same element, so it runs."
@@ -2624,7 +2902,7 @@
       "answer": [
         2
       ],
-      "explain": "`currentTarget` is set only while the event's listeners run. After the `await`, dispatch has finished, so it is `null`. Save it in a variable first.",
+      "explain": "`currentTarget` is set only while the event's listeners run. `await` pauses the function, and when it carries on, the event is finished. So it is `null`. Save it in a variable before the `await`.",
       "wrong": [
         "It would be the form only before the `await`.",
         "The button is the submitter, not `currentTarget`.",
@@ -2822,7 +3100,7 @@
       "answer": [
         3
       ],
-      "explain": "`setItem` turns the value into a string with `String()`. A plain object becomes `'[object Object]'`. Use `JSON.stringify` when you save.",
+      "explain": "`setItem` turns the value into a string with `String()`. A plain object becomes the text `'[object Object]'`. Use `JSON.stringify` to turn it into JSON text when you save.",
       "wrong": [
         "That needs `JSON.stringify`; `setItem` doesn't call it.",
         "Storage can't keep objects, only strings.",
@@ -2847,7 +3125,7 @@
       "answer": [
         0
       ],
-      "explain": "A `fetch` promise rejects only when the request itself fails, like a network error or an abort. A 404 is still a response, so the promise fulfills and `res.status` is 404.",
+      "explain": "A `fetch` promise rejects (fails) only when the request itself fails, like a network error or an abort. A 404 is still an answer from the server. So the promise fulfills (succeeds), and `res.status` is 404.",
       "wrong": [
         "",
         "HTTP error codes don't reject the promise.",
@@ -2968,7 +3246,7 @@
       "answer": [
         2
       ],
-      "explain": "`fetch` fulfills on a 500. The error comes from `res.json()`, which rejects with a `SyntaxError` on HTML. Check `res.ok` first to handle it on purpose.",
+      "explain": "`fetch` fulfills on a 500, because the server did answer. The error comes from `res.json()`: it can't read HTML as JSON, so it rejects with a `SyntaxError`. Check `res.ok` first to handle it on purpose.",
       "wrong": [
         "`fetch` doesn't reject on HTTP error codes.",
         "`json()` parses the body; it doesn't return raw text.",
@@ -2994,11 +3272,11 @@
         1,
         4
       ],
-      "explain": "A timer callback waits for the current code and for queued promise callbacks. The delay is only the shortest wait; it can be longer.",
+      "explain": "A timer's function (its callback) waits until the current code has finished. It also waits for queued promise callbacks. The delay is only the shortest wait; it can be longer.",
       "wrong": [
         "Timer callbacks never run in the middle of the current code.",
         "",
-        "Promise callbacks (microtasks) run before timer callbacks.",
+        "Promise callbacks (microtasks: small jobs that jump the queue) run before timer callbacks.",
         "In the browser it returns a number id, not a promise.",
         ""
       ],
@@ -3047,7 +3325,7 @@
       "answer": [
         2
       ],
-      "explain": "Aborting the signal rejects the `fetch` promise with a `DOMException` named `AbortError`.",
+      "explain": "`abort()` cancels the request, so the `fetch` promise rejects. The error is a `DOMException` (a browser error type) named `AbortError`, and the `catch` logs that name.",
       "wrong": [
         "The request was aborted before it could finish.",
         "An abort gives an `AbortError`, not a network `TypeError`.",
@@ -3316,7 +3594,7 @@
       "answer": [
         3
       ],
-      "explain": "A heap snapshot lists what JavaScript still holds, including detached DOM nodes. Compare snapshots to find the leak.",
+      "explain": "A heap snapshot lists what JavaScript still holds, including detached DOM nodes: nodes taken off the page but still kept in memory. Compare snapshots to find the leak.",
       "wrong": [
         "The waterfall shows requests, not memory.",
         "Storage shows saved data, not objects in memory.",

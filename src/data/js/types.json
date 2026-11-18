@@ -13,7 +13,7 @@
         {
           "type": "text",
           "title": "In plain words",
-          "body": "A **variable** is a name that holds a value. JavaScript gives you three ways to make one: `var`, `let` and `const`. They differ in where the name works, called its **scope**. They also differ in whether you can reassign them, and in what happens if you read them too early."
+          "body": "A **variable** is a name that holds a value. JavaScript gives you three ways to make one: `var`, `let` and `const`. They differ in where the name works, called its **scope**. They also differ in whether you can give the name a new value, and in what happens if you read it too early."
         },
         {
           "type": "tip",
@@ -23,31 +23,31 @@
         {
           "type": "text",
           "title": "Block or function?",
-          "body": "`let` and `const` are **block-scoped**: they live only inside the nearest `{ }`. `var` is **function-scoped**: it ignores `if` and `for` blocks and lives in the whole function. Outside any function, it lives in the whole script."
+          "body": "A **block** is code between curly braces `{ }`, like the body of an `if` or a `for` loop. `let` and `const` are **block-scoped**: they live only inside the nearest `{ }`. `var` is **function-scoped**: it ignores those blocks and lives in the whole function. Outside any function, it lives in the whole script."
         },
         {
           "type": "code",
           "title": "Reading too early",
           "lang": "js",
           "code": "console.log(a); // undefined\nvar a = 1;\n\nconsole.log(b); // ReferenceError\nlet b = 2;",
-          "body": "`var` declarations are **hoisted**: set up before any code runs, holding `undefined`. `let` and `const` wait in the **temporal dead zone** (TDZ) until their line runs. Reading them earlier throws."
+          "body": "`console.log()` prints a value. The first log prints `undefined`, because `var` names are **hoisted**: set up before any code runs, holding `undefined`. `let` and `const` wait in the **temporal dead zone** (TDZ) until their line runs. So the second log throws a `ReferenceError`."
         },
         {
           "type": "code",
           "title": "const locks the name, not the object",
           "lang": "js",
           "code": "const user = { name: 'Ana' };\nuser.name = 'Bo'; // fine\nuser.age = 30;    // fine\nuser = {};        // TypeError",
-          "body": "`const` must get a value right away and can never be **reassigned**. The object it points to can still change."
+          "body": "`const` must get a value right away and can never be **reassigned** (pointed at a new value with `=`). The object it points to can still change. So the two `user.` lines work, but `user = {}` throws a `TypeError`."
         },
         {
-          "type": "list",
-          "title": "More rules",
-          "items": [
-            "Declaring the same `let` or `const` twice in one scope is a `SyntaxError`. `var` allows it.",
-            "`const rate;` with no value is a `SyntaxError`.",
-            "Assigning to a name you never declared creates a **global** variable in sloppy mode.",
-            "In **strict mode** (`'use strict'`), that same assignment throws a `ReferenceError`."
-          ]
+          "type": "text",
+          "title": "Errors before the start",
+          "body": "Declaring the same `let` or `const` twice in one scope is a `SyntaxError`: a grammar mistake, caught before any line runs. `var` allows it. `const rate;` with no value is a `SyntaxError` too."
+        },
+        {
+          "type": "text",
+          "title": "Forgetting the keyword",
+          "body": "Writing `total = 5` with no `let`, `const` or `var` makes a **global** variable in normal **sloppy mode**. In **strict mode** (`'use strict'` at the top), that same line throws a `ReferenceError`."
         },
         {
           "type": "trap",
@@ -74,12 +74,23 @@
           "say": "The part of the code where a name can be used. Outside its scope, the name does not exist."
         },
         {
+          "term": "block",
+          "say": "Code between a pair of curly braces, like the inside of an if or a for loop."
+        },
+        {
           "term": "block-scoped",
           "say": "Lives only inside the nearest pair of curly braces. When the block ends, the name is gone."
         },
         {
           "term": "function-scoped",
           "say": "Lives in the whole function it was made in, even outside the if or for block where you wrote it."
+        },
+        {
+          "term": "console.log()",
+          "match": [
+            "console.log"
+          ],
+          "say": "Prints a value so you can see it, in the browser console or the terminal. console.log(2 + 2) prints 4."
         },
         {
           "term": "hoisted",
@@ -96,15 +107,34 @@
           "say": "The time between the start of a block and the line that declares a let or const. Touching the name then throws an error."
         },
         {
+          "term": "ReferenceError",
+          "say": "The error you get when you use a name JavaScript can't use, like a let before its line, or a name that was never made."
+        },
+        {
           "term": "reassigned",
           "say": "Pointed at a new value with =. A const can never be reassigned. A let can."
+        },
+        {
+          "term": "TypeError",
+          "say": "The error you get when you do something a value doesn't allow, like giving a const a new value."
+        },
+        {
+          "term": "SyntaxError",
+          "say": "The error for code that breaks JavaScript's grammar rules. It is found before any line runs, so nothing runs at all."
         },
         {
           "term": "global",
           "say": "A variable every part of the program can see. Making one by accident is a classic bug."
         },
         {
+          "term": "sloppy mode",
+          "say": "The normal, older rules JavaScript uses when strict mode is off. Some mistakes pass quietly there instead of throwing an error."
+        },
+        {
           "term": "strict mode",
+          "match": [
+            "'use strict'"
+          ],
           "say": "A stricter set of JavaScript rules, switched on with 'use strict'. Mistakes that used to pass quietly now throw errors."
         },
         {
@@ -122,34 +152,39 @@
         {
           "type": "text",
           "title": "In plain words",
-          "body": "Every value has a type. There are seven **primitive** types: string, number, bigint, boolean, undefined, symbol and null. Everything else is an **object**, including arrays and functions. The `typeof` operator tells you the type as a string, like `'number'`."
+          "body": "Every value has a type. There are seven **primitive** (simple, single-value) types: string (text), number, bigint (huge whole numbers), boolean (`true` or `false`), undefined, symbol (a unique ID) and null. Everything else is an **object**, including arrays and functions. The `typeof` operator tells you the type as a string, like `'number'`."
         },
         {
           "type": "tip",
           "title": "Think of it like…",
-          "body": "Primitives are coins: a 5 is a 5, and you can't reshape a coin. Objects are backpacks: you can put things in and take them out. Where it stops: coins come with a free helper, so `'hi'.toUpperCase()` still works on a plain string."
+          "body": "Primitives are coins: a 5 is a 5, and you can't reshape a coin. Objects are backpacks: you can put things in and take them out. Where it stops: coins come with free helpers. A **method** is a function you call with a dot, and `toUpperCase()` works on a plain string: `'hi'.toUpperCase()` gives `'HI'`."
         },
         {
           "type": "text",
           "title": "Primitives never change",
-          "body": "Primitives are **immutable**. No method changes them in place: `s.toUpperCase()` returns a new string and `s` stays the same. Methods work because JavaScript briefly wraps the value in a **wrapper object** (`String`, `Number`, `Boolean`…). `null` and `undefined` have no wrapper, so `null.x` throws a `TypeError`."
+          "body": "Primitives are **immutable**: no method changes them in place. `s.toUpperCase()` returns a new string, and `s` stays the same. Methods work because JavaScript briefly wraps the value in a **wrapper object** (`String`, `Number`, `Boolean`…). `null` and `undefined` have no wrapper, so `null.x` throws a `TypeError`."
         },
         {
           "type": "code",
           "title": "What typeof says",
           "lang": "js",
           "code": "typeof 'hi'          // 'string'\ntypeof 42            // 'number'\ntypeof 10n           // 'bigint'\ntypeof undefined     // 'undefined'\ntypeof Symbol()      // 'symbol'\ntypeof null          // 'object' (old bug)\ntypeof []            // 'object'\ntypeof function(){}  // 'function'",
-          "body": "`typeof` always returns a string. Functions and classes give `'function'`, even though they are objects."
+          "body": "`typeof` always returns a string. Each line's comment shows the result. `Symbol()` makes a new unique value. Functions and classes (blueprints for objects) give `'function'`, even though they are objects. `typeof null` gives `'object'` because of an old bug."
         },
         {
           "type": "text",
           "title": "Check arrays and null the right way",
-          "body": "`typeof []` is `'object'`, so use `Array.isArray(value)`. To find `null`, compare directly: `value === null`. `typeof` on a name that was never declared returns `'undefined'`, with no error. But `typeof` on a `let` or `const` before its line throws."
+          "body": "`typeof []` is `'object'`, so use `Array.isArray(value)`: `Array.isArray([])` is `true` and `Array.isArray({})` is `false`. To find `null`, compare directly: `value === null`. The `===` operator asks \"exactly the same value and type?\""
+        },
+        {
+          "type": "text",
+          "title": "typeof on missing names",
+          "body": "`typeof` on a name that was never declared returns `'undefined'`, with no error. But `typeof` on a `let` or `const` before its line throws a `ReferenceError`, because the name is in its temporal dead zone."
         },
         {
           "type": "text",
           "title": "undefined vs null",
-          "body": "`undefined` means \"no value yet\". You get it from a declared variable with no value, a missing property, or a function with no `return`. `null` means \"empty on purpose\". Your code sets it, and some built-ins return it, like `match()` when nothing matches."
+          "body": "`undefined` means \"no value yet\". You get it from a declared variable with no value, a missing property, or a function with no `return`. `null` means \"empty on purpose\". Your code sets it, and some built-ins return it. For example, `match()` searches text and gives `null` when nothing matches."
         },
         {
           "type": "trap",
@@ -180,6 +215,18 @@
           "say": "An operator that tells you a value's type as a word, like 'string' or 'number'."
         },
         {
+          "term": "method",
+          "say": "A function that belongs to a value. You call it with a dot, like 'hi'.toUpperCase()."
+        },
+        {
+          "term": "toUpperCase()",
+          "match": [
+            "toUpperCase",
+            ".toUpperCase()"
+          ],
+          "say": "Makes every letter in a piece of text a capital letter. 'hi' becomes 'HI'. The original text doesn't change."
+        },
+        {
           "term": "immutable",
           "say": "Can never be changed. To get a different value, you make a new one."
         },
@@ -188,11 +235,22 @@
           "say": "A helper object JavaScript makes for a moment around a primitive, so you can call methods like toUpperCase on it."
         },
         {
+          "term": "Symbol()",
+          "match": [
+            "Symbol"
+          ],
+          "say": "Makes a brand-new unique value, often used as a hidden ID. Two symbols are never equal, even with the same label."
+        },
+        {
           "term": "Array.isArray()",
           "match": [
             "Array.isArray(value)"
           ],
           "say": "Gives true only for real arrays. Use it because typeof says object for arrays."
+        },
+        {
+          "term": "===",
+          "say": "Strict equality: true only when both sides are the same type and the same value. 1 === 1 is true, 1 === '1' is false."
         },
         {
           "term": "null",
@@ -203,8 +261,19 @@
           "say": "The value of something that has no value yet, like a variable you declared but never set."
         },
         {
+          "term": "match()",
+          "match": [
+            "match"
+          ],
+          "say": "Searches a text for a pattern. It gives back what it found, or null when nothing matches."
+        },
+        {
           "term": "TypeError",
           "say": "The error you get when you use a value the wrong way, like reading a property of null."
+        },
+        {
+          "term": "ReferenceError",
+          "say": "The error you get when you use a name JavaScript can't use, like a let before its line runs."
         }
       ]
     },
@@ -217,39 +286,44 @@
         {
           "type": "text",
           "title": "In plain words",
-          "body": "A **string** is text. You can write it in single quotes, double quotes or backticks. Backticks make a **template literal**: text with `${...}` holes for values, and real line breaks. Strings are **immutable**, so every string method returns a new string."
+          "body": "A **string** is text. You can write it in single quotes, double quotes or backticks. Backticks make a **template literal**: text with `${...}` holes for values, and real line breaks. Strings are **immutable**, so every string method returns a new string. Positions in a string start at 0."
         },
         {
           "type": "tip",
           "title": "Think of it like…",
-          "body": "A template literal is a fill-in-the-blanks form. You write the sentence once and leave holes. JavaScript fills each hole when the line runs. Where it stops: a hole takes any expression, like a sum or a function call, not just a name."
+          "body": "A template literal is a fill-in-the-blanks form. You write the sentence once and leave holes. JavaScript fills each hole when the line runs. Where it stops: a hole takes any **expression** (code that gives a value), like a sum or a function call, not just a name."
         },
         {
           "type": "code",
           "title": "Fill the holes",
           "lang": "js",
           "code": "const name = 'Ana';\nconst qty = 3;\nconst msg = `Hi ${name}, you have ${qty * 2} items`;\n// 'Hi Ana, you have 6 items'",
-          "body": "Each `${...}` runs its expression and drops the result into the text. In plain quotes, the same characters would print as they are."
+          "body": "Each `${...}` runs its expression and drops the result into the text. `qty * 2` is 6, so `msg` is `'Hi Ana, you have 6 items'`. In plain quotes, the same characters would print as they are."
         },
         {
           "type": "text",
-          "title": "slice vs substring",
-          "body": "`slice(start, end)` copies from `start` up to, but not including, `end`. Negative numbers count from the end: `'hello'.slice(-3)` is `'llo'`. `substring` treats negatives as 0. It also swaps its two numbers when start is bigger than end."
+          "title": "slice",
+          "body": "`slice()` copies part of a string. `slice(start, end)` copies from `start` up to, but not including, `end`: `'hello'.slice(1, 3)` is `'el'`. Negative numbers count back from the end: `'hello'.slice(-3)` is `'llo'`."
+        },
+        {
+          "type": "text",
+          "title": "substring is different",
+          "body": "`substring()` also copies part of a string, with two differences. It treats negatives as 0: `'hello'.substring(-3)` is `'hello'`. And it swaps its two numbers when start is bigger than end: `'hello'.substring(3, 1)` is `'el'`, while `'hello'.slice(3, 1)` is `''`."
         },
         {
           "type": "text",
           "title": "replace vs replaceAll",
-          "body": "`replace` with a string pattern changes only the **first match**. `replaceAll` changes every match. With a **regular expression** (regex), `replace` needs the `g` flag to change them all. `replaceAll` with a regex that lacks `g` throws a `TypeError`."
+          "body": "`replace()` with a text pattern changes only the **first match**: `'a-b-c'.replace('-', '+')` is `'a+b-c'`. `replaceAll()` changes every match, giving `'a+b+c'`. A **regular expression** (regex) is a search pattern like `/-/g`. With a regex, `replace` needs the `g` flag to change them all. `replaceAll` with a regex lacking `g` throws a `TypeError`."
         },
         {
           "type": "list",
           "title": "Everyday tools",
           "items": [
             "`trim()` removes spaces at both ends",
-            "`padStart(5, '0')` fills the left: `'42'` becomes `'00042'`",
-            "`includes`, `startsWith`, `endsWith` give `true` or `false`",
-            "`split(',')` makes an array; `join(',')` makes a string",
-            "`indexOf` gives a position, or `-1` when missing"
+            "`padStart()` fills the left: `'42'.padStart(5, '0')` is `'00042'`",
+            "`includes()`, `startsWith()`, `endsWith()` give `true` or `false`",
+            "`split()` cuts text into an array (a list): `'a,b'.split(',')` is `['a', 'b']`. `join()` glues it back",
+            "`indexOf()` gives a position: `'hello'.indexOf('l')` is `2`, or `-1` when missing"
           ]
         },
         {
@@ -284,22 +358,40 @@
           "say": "Can never be changed. String methods give you a new string and leave the old one alone."
         },
         {
-          "term": "slice",
-          "match": [
-            "slice(start, end)"
-          ],
-          "say": "Copies part of a string. Negative numbers count back from the end."
+          "term": "expression",
+          "say": "Any bit of code that gives a value, like 2 + 3, a name, or a function call."
         },
         {
-          "term": "substring",
+          "term": "slice()",
+          "match": [
+            "slice",
+            "slice(start, end)"
+          ],
+          "say": "Copies part of a string. Negative numbers count back from the end. 'hello'.slice(1, 3) gives 'el'."
+        },
+        {
+          "term": "substring()",
+          "match": [
+            "substring"
+          ],
           "say": "Copies part of a string, like slice. But it treats negative numbers as 0 and swaps the numbers if they are backwards."
+        },
+        {
+          "term": "replace()",
+          "match": [
+            "replace"
+          ],
+          "say": "Swaps a piece of text for another. With a text pattern, only the first match changes. 'a-b-c' with - swapped for + becomes 'a+b-c'."
         },
         {
           "term": "first match",
           "say": "Only the first place the pattern shows up. Later copies are left alone."
         },
         {
-          "term": "replaceAll",
+          "term": "replaceAll()",
+          "match": [
+            "replaceAll"
+          ],
           "say": "Changes every place a pattern shows up in a string, not just the first one."
         },
         {
@@ -311,11 +403,44 @@
         },
         {
           "term": "trim()",
-          "say": "Removes spaces, tabs and line breaks from both ends of a string."
+          "say": "Removes spaces, tabs and line breaks from both ends of a string. '  hi ' becomes 'hi'."
         },
         {
-          "term": "split(',')",
-          "say": "Cuts a string into an array of pieces at each comma. The pieces don't include the commas."
+          "term": "padStart()",
+          "say": "Adds filler to the left until the text is long enough. '42' padded to 5 with '0' becomes '00042'."
+        },
+        {
+          "term": "includes()",
+          "say": "Tells you true or false: is this piece of text somewhere inside? 'hello' includes 'ell', so it gives true."
+        },
+        {
+          "term": "startsWith()",
+          "match": [
+            "endsWith()"
+          ],
+          "say": "Tells you true or false: does the text begin with this? 'hello' starts with 'he', so it gives true. endsWith() checks the end the same way."
+        },
+        {
+          "term": "split()",
+          "match": [
+            "split",
+            "split(',')"
+          ],
+          "say": "Cuts a string into an array of pieces at each separator. 'a,b' split at the comma gives 'a' and 'b'."
+        },
+        {
+          "term": "join()",
+          "match": [
+            "join"
+          ],
+          "say": "Glues the items of an array into one string, with a separator between them. 'a' and 'b' joined with - give 'a-b'."
+        },
+        {
+          "term": "indexOf()",
+          "match": [
+            "indexOf"
+          ],
+          "say": "Tells you the position where a piece of text first shows up, counting from 0. It gives -1 if it isn't there."
         }
       ]
     },
@@ -328,7 +453,7 @@
         {
           "type": "text",
           "title": "In plain words",
-          "body": "JavaScript has one main **number** type for whole numbers and decimals alike. It stores them as **floating point** values, so some decimals come out slightly off. For huge whole numbers there is **BigInt**. Dates and times live in `Date` objects."
+          "body": "JavaScript has one main **number** type for whole numbers and decimals alike. It stores them as **floating point** values, so some decimals come out slightly off: `0.1 + 0.2` is `0.30000000000000004`. For huge whole numbers there is **BigInt**. Dates and times live in `Date` objects."
         },
         {
           "type": "tip",
@@ -340,22 +465,22 @@
           "title": "NaN is odd",
           "lang": "js",
           "code": "NaN === NaN;          // false\nNumber.isNaN(NaN);    // true\nisNaN('abc');         // true  (converts first)\nNumber.isNaN('abc');  // false (no converting)\n0.1 + 0.2 === 0.3;    // false",
-          "body": "`NaN` means **not a number**. It is the only value not equal to itself, so test it with `Number.isNaN()`."
+          "body": "`NaN` means **not a number**: the result of a failed calculation, like `0 / 0`. It is the only value not equal to itself, so test it with `Number.isNaN()`. The older `isNaN()` converts text to a number first, so `'abc'` counts too."
         },
         {
           "type": "text",
           "title": "Numbers from text",
-          "body": "`parseInt('42px', 10)` reads the leading digits and stops at the first letter: `42`. Always pass the **radix**, the number base (usually 10). `Number('42px')` is stricter and gives `NaN`. `parseFloat('3.5kg')` gives `3.5`."
+          "body": "`parseInt()` reads the whole number at the start of a text and stops at the first non-digit: `parseInt('42px', 10)` is `42`. Always pass the **radix**, the number base (usually 10). `Number()` is stricter: `Number('42px')` is `NaN`. `parseFloat()` keeps decimals: `parseFloat('3.5kg')` is `3.5`."
         },
         {
           "type": "text",
           "title": "Rounding",
-          "body": "`toFixed(2)` rounds to 2 decimals and returns a **string**: `(1.5).toFixed(2)` is `'1.50'`. `Math.round`, `Math.floor`, `Math.ceil` and `Math.max` return numbers. `Math.random()` gives a number from 0 up to, but not including, 1."
+          "body": "`toFixed()` rounds to a number of decimals and returns a **string**: `(1.5).toFixed(2)` is `'1.50'`. `Math` is a built-in toolbox. `Math.round()`, `Math.floor()`, `Math.ceil()` and `Math.max()` return numbers: `Math.round(2.5)` is `3`. `Math.random()` gives a number from 0 up to, but not including, 1."
         },
         {
           "type": "text",
           "title": "BigInt",
-          "body": "`Number.MAX_SAFE_INTEGER` is 9007199254740991 (2^53 − 1). Past it, whole numbers lose precision. A BigInt like `10n` stays exact at any size. You can't mix BigInt and number in math: `10n + 1` throws a `TypeError`. `Math` methods don't take BigInts either."
+          "body": "`Number.MAX_SAFE_INTEGER` is 9007199254740991 (2^53 − 1). Past it, whole numbers lose precision. A BigInt, written with an `n` like `10n`, stays exact at any size. You can't mix BigInt and number in one calculation: `10n + 1` throws a `TypeError`. `Math` methods don't take BigInts either."
         },
         {
           "type": "text",
@@ -402,23 +527,86 @@
           "say": "Gives true only if the value really is NaN. It does not convert text first, unlike the older isNaN()."
         },
         {
+          "term": "isNaN()",
+          "say": "An older check for NaN. It turns the value into a number first, so isNaN('abc') is true even though 'abc' is text."
+        },
+        {
+          "term": "parseInt()",
+          "match": [
+            "parseInt",
+            "parseInt('42px', 10)"
+          ],
+          "say": "Reads the whole number at the start of a text and stops at the first character that is not a digit. '42px' gives 42."
+        },
+        {
           "term": "radix",
           "say": "The number base to read digits in. Base 10 is normal counting. Pass it to parseInt so nothing gets guessed."
         },
         {
-          "term": "parseInt('42px', 10)",
+          "term": "Number()",
+          "say": "Turns a value into a number. The whole text must be a number: '42' gives 42, but '42px' gives NaN."
+        },
+        {
+          "term": "parseFloat()",
           "match": [
-            "parseInt"
+            "parseFloat"
           ],
-          "say": "Reads the whole number at the start of a text and stops at the first character that is not a digit."
+          "say": "Reads a number with decimals from the start of a text and stops at the first part that doesn't fit. '3.5kg' gives 3.5."
+        },
+        {
+          "term": "toFixed()",
+          "match": [
+            "toFixed"
+          ],
+          "say": "Rounds a number to a set number of decimals and gives back text, not a number. 1.5 with 2 decimals becomes '1.50'."
+        },
+        {
+          "term": "Math",
+          "match": [
+            "Math.max()"
+          ],
+          "say": "A built-in toolbox of number helpers, like rounding and random numbers. You use it directly, like Math.max(3, 7), which gives 7."
+        },
+        {
+          "term": "Math.round()",
+          "match": [
+            "Math.floor()",
+            "Math.ceil()"
+          ],
+          "say": "Rounding helpers. Math.round goes to the nearest whole number, Math.floor always goes down, Math.ceil always goes up. 2.5 rounds to 3, floor of 2.9 is 2."
+        },
+        {
+          "term": "Math.random()",
+          "say": "Gives a random decimal from 0 up to, but never reaching, 1. Like 0.42. Multiply it to get bigger random numbers."
+        },
+        {
+          "term": "Date",
+          "match": [
+            "new Date(2022, 0, 31)"
+          ],
+          "say": "A built-in object for a date and time. new Date(2022, 0, 31) makes 31 January 2022."
         },
         {
           "term": "zero-based",
           "say": "Counting starts at 0, not 1. For Date months, January is 0 and December is 11."
         },
         {
+          "term": "getMonth()",
+          "match": [
+            "getDate()"
+          ],
+          "say": "Date reading helpers. getMonth() gives the month from 0 to 11, so March is 2. getDate() gives the day of the month, from 1."
+        },
+        {
           "term": "Date.now()",
           "say": "Gives the current time as the number of milliseconds since the start of 1970, in UTC."
+        },
+        {
+          "term": "toLocaleDateString()",
+          "match": [
+            "Intl.DateTimeFormat"
+          ],
+          "say": "Turns a date into friendly text in the reader's local style, like 6/1/2022 in the US. Intl.DateTimeFormat does the same with more options."
         }
       ]
     },
@@ -431,7 +619,7 @@
         {
           "type": "text",
           "title": "In plain words",
-          "body": "**Type coercion** is JavaScript changing a value's type by itself so an operation can work. It happens with `+`, `-`, `==` and more. It is sometimes handy, but it causes most \"why did that print?\" bugs."
+          "body": "**Type coercion** is JavaScript changing a value's type by itself so an operation can work. It happens with `+`, `-`, `==` and more. For example, `'5' - 2` turns `'5'` into the number 5 and gives `3`. It is sometimes handy, but it causes most \"why did that print?\" bugs."
         },
         {
           "type": "tip",
@@ -441,7 +629,7 @@
         {
           "type": "text",
           "title": "+ loves strings",
-          "body": "`+` first turns both sides into **primitives**. If either side is then a string, it joins them: `1 + '2'` is `'12'`, and `[] + {}` is `'[object Object]'`. Otherwise it adds numbers: `true + 1` is `2`. It works left to right: `1 + 2 + '3'` is `'33'`."
+          "body": "`+` first turns objects into **primitives**. Then, if either side is a string, it joins them: `1 + '2'` is `'12'`. Otherwise it adds numbers: `true + 1` is `2`, since `true` becomes 1. It works left to right: `1 + 2 + '3'` is `'33'`. And `[] + {}` is `'[object Object]'`: `[]` becomes `''`."
         },
         {
           "type": "text",
@@ -453,15 +641,15 @@
           "title": "== vs ===",
           "lang": "js",
           "code": "1 == '1'             // true  (converts)\n1 === '1'            // false (no converting)\nnull == undefined    // true\nnull == 0            // false\nnull >= 0            // true\nObject.is(NaN, NaN)  // true",
-          "body": "**Loose equality** (`==`) converts types first. **Strict equality** (`===`) never converts. `Object.is` works like `===`, except `NaN` equals `NaN` and `0` differs from `-0`."
+          "body": "**Loose equality** (`==`) converts types first, so `1 == '1'` is `true`. **Strict equality** (`===`) never converts, so `1 === '1'` is `false`. `Object.is()` works like `===`, except `NaN` equals `NaN` and `0` differs from `-0` (negative zero)."
         },
         {
           "type": "list",
           "title": "Convert on purpose",
           "items": [
-            "`Number('42')` gives `42`",
-            "`String(42)` gives `'42'`",
-            "`Boolean('')` gives `false`",
+            "`Number()` makes a number: `Number('42')` gives `42`",
+            "`String()` makes a string: `String(42)` gives `'42'`",
+            "`Boolean()` makes `true` or `false`: `Boolean('')` gives `false`",
             "`+'7'` gives `7`: the **unary plus** turns a value into a number"
           ]
         },
@@ -511,8 +699,23 @@
           "say": "Comparing with ===. The values must have the same type and the same value. Nothing is converted."
         },
         {
-          "term": "Object.is",
+          "term": "Object.is()",
+          "match": [
+            "Object.is"
+          ],
           "say": "A way to check if two values are the same. It is like ===, but it says NaN is NaN and keeps 0 and -0 apart."
+        },
+        {
+          "term": "Number()",
+          "say": "Turns a value into a number on purpose. '42' becomes 42, and text that isn't a number becomes NaN."
+        },
+        {
+          "term": "String()",
+          "say": "Turns a value into text on purpose. The number 42 becomes '42'."
+        },
+        {
+          "term": "Boolean()",
+          "say": "Turns a value into true or false on purpose. Empty text gives false; 'hi' gives true."
         },
         {
           "term": "unary plus",
@@ -536,7 +739,7 @@
         {
           "type": "text",
           "title": "In plain words",
-          "body": "When JavaScript needs a yes or no, in an `if`, a loop or after `!`, it turns any value into `true` or `false`. Values that become `false` are **falsy**. All the others are **truthy**."
+          "body": "When JavaScript needs a yes or no, in an `if`, a loop or after `!` (not), it turns any value into `true` or `false`. Values that become `false` are **falsy**. All the others are **truthy**. So `if (0)` skips its block, but `if ('hi')` runs it."
         },
         {
           "type": "tip",
@@ -548,7 +751,7 @@
           "title": "The falsy list",
           "items": [
             "`false`",
-            "`0`, `-0` and `0n`",
+            "`0`, `-0` and `0n` (zero, negative zero, BigInt zero)",
             "`''`, the empty string",
             "`null` and `undefined`",
             "`NaN`",
@@ -558,24 +761,24 @@
         {
           "type": "text",
           "title": "Everything else is truthy",
-          "body": "That includes `[]`, `{}`, `'0'`, `'false'`, a string with one space, and `new Boolean(false)`. Any object is truthy, even an empty one. To check for an empty array, test `arr.length`."
+          "body": "That includes `[]`, `{}`, `'0'`, `'false'`, a string with one space, and `new Boolean(false)`. Any object is truthy, even an empty one. To check for an empty array, test its `length` (its number of items): `arr.length` is `0`, which is falsy."
         },
         {
           "type": "text",
           "title": "|| and && hand back values",
-          "body": "`a || b` returns the first truthy **operand**, or the last one. `a && b` returns the first falsy operand, or the last one. They return the value itself, not a **boolean**. Both **short-circuit**: they stop as soon as the answer is known."
+          "body": "`||` (or) returns the first truthy **operand**, or the last one: `0 || 'hi'` is `'hi'`. `&&` (and) returns the first falsy operand, or the last one: `1 && 0` is `0`. They return the value itself, not a **boolean**. Both **short-circuit**: they stop as soon as the answer is known."
         },
         {
           "type": "code",
           "title": "?? and ?.",
           "lang": "js",
           "code": "const qty = 0;\nqty || 5;   // 5\nqty ?? 5;   // 0\n\nconst user = null;\nuser?.name; // undefined\nuser.name;  // TypeError",
-          "body": "**Nullish coalescing** (`??`) falls back only for `null` or `undefined`, so a real `0` survives. **Optional chaining** (`?.`) stops at `null` or `undefined` and gives `undefined`."
+          "body": "**Nullish coalescing** (`??`) falls back only for `null` or `undefined`, so `qty ?? 5` keeps the real `0`, while `qty || 5` gives `5`. **Optional chaining** (`?.`) stops at `null` or `undefined` and gives `undefined`, instead of throwing a `TypeError`."
         },
         {
           "type": "text",
           "title": "Assign only when needed",
-          "body": "`a ||= b` sets `a` only if `a` is falsy. `a &&= b` sets it only if `a` is truthy. `a ??= b` sets it only if `a` is `null` or `undefined`. Write `!!value` to get a real `true` or `false`."
+          "body": "`||=` sets a value only if the current one is falsy: after `a ||= b`, `a` is `b` when `a` was falsy. `a &&= b` sets it only if `a` is truthy. `a ??= b` sets it only if `a` is `null` or `undefined`. Write `!!value` to get a real `true` or `false`."
         },
         {
           "type": "trap",
@@ -602,12 +805,31 @@
           "say": "A value that counts as \"yes\" in an if. Every value that is not falsy is truthy, even an empty array."
         },
         {
+          "term": "!",
+          "say": "Means \"not\". It flips a value to the opposite true or false: !true is false, and !0 is true."
+        },
+        {
           "term": "document.all",
           "say": "An old browser object kept for very old web pages. It is the one object that counts as falsy."
         },
         {
           "term": "new Boolean(false)",
           "say": "An object that wraps the value false. Because it is an object, it counts as truthy. Avoid it."
+        },
+        {
+          "term": "length",
+          "match": [
+            "arr.length"
+          ],
+          "say": "How many items an array holds, or how many characters a string has. [1, 2].length is 2."
+        },
+        {
+          "term": "||",
+          "say": "Means \"or\". It gives the first truthy value, or the last one if none is truthy. 0 || 'hi' gives 'hi'."
+        },
+        {
+          "term": "&&",
+          "say": "Means \"and\". It gives the first falsy value, or the last one if all are truthy. 1 && 0 gives 0."
         },
         {
           "term": "operand",
@@ -634,6 +856,25 @@
             "?."
           ],
           "say": "The ?. operator. If the value on its left is null or undefined, it stops and gives undefined instead of an error."
+        },
+        {
+          "term": "TypeError",
+          "say": "The error you get when you use a value the wrong way, like reading a property of null."
+        },
+        {
+          "term": "||=",
+          "match": [
+            "&&=",
+            "??="
+          ],
+          "say": "Fills in a value only when the current one is falsy. If count is 0, count ||= 5 makes it 5. &&= and ??= work the same way with their own rules."
+        },
+        {
+          "term": "!!value",
+          "match": [
+            "!!"
+          ],
+          "say": "Two nots in a row. They turn any value into a real true or false: !!'hi' is true, !!'' is false."
         }
       ]
     },
@@ -646,33 +887,40 @@
         {
           "type": "text",
           "title": "In plain words",
-          "body": "An **array** is an ordered list, like `['a', 'b', 'c']`. Positions, called **indexes**, start at 0. Some array methods **mutate**: they change the array itself. Others hand back a new array and leave the original alone. The exam loves asking which is which."
+          "body": "An **array** is an ordered list, like `['a', 'b', 'c']`. Positions, called **indexes**, start at 0, so `arr[0]` is the first item. Some array methods **mutate**: they change the array itself. Others hand back a new array and leave the original alone. The exam loves asking which is which."
         },
         {
           "type": "tip",
           "title": "Think of it like…",
-          "body": "Mutating is writing on the original page. Copying is making a photocopy first and writing on the copy. Where it stops: array copies are **shallow**. Objects inside are shared, not photocopied."
+          "body": "Mutating is writing on the original page. Copying is making a photocopy first and writing on the copy. Where it stops: array copies are **shallow**. Objects inside are shared, not photocopied, so changing one shows up in both lists."
         },
         {
           "type": "list",
           "title": "These change the array",
           "items": [
-            "`push` / `pop`: add or remove at the end",
-            "`unshift` / `shift`: add or remove at the start",
+            "`push()` / `pop()`: add or remove at the end",
+            "`unshift()` / `shift()`: add or remove at the start",
             "`splice(start, count, ...items)`: remove or insert anywhere",
-            "`sort` and `reverse`: reorder in place",
-            "`fill`: overwrite values"
+            "`sort()` and `reverse()`: reorder in place",
+            "`fill()`: overwrite values, like `[1, 2].fill(0)` gives `[0, 0]`"
           ]
+        },
+        {
+          "type": "code",
+          "title": "Add and remove",
+          "lang": "js",
+          "code": "const list = ['a', 'b'];\nlist.push('c');    // 3; list is ['a', 'b', 'c']\nlist.pop();        // 'c'; list is ['a', 'b']\nlist.unshift('z'); // 3; list is ['z', 'a', 'b']\nlist.shift();      // 'z'; list is ['a', 'b']",
+          "body": "Each line changes `list` itself. `push()` and `unshift()` return the new length, here 3. `pop()` and `shift()` return the item they removed."
         },
         {
           "type": "list",
           "title": "These give you something new",
           "items": [
             "`slice(start, end)`: a copy of a part",
-            "`concat`: joins arrays into a new one",
-            "`map` and `filter`: new arrays",
+            "`concat()`: joins arrays into a new one, `[1].concat([2, 3])` gives `[1, 2, 3]`",
+            "`map()` and `filter()`: new arrays",
             "`[...arr]`: a **spread** copy",
-            "`Array.from(x)`: an array from any iterable or array-like value, like a string or a `Set`"
+            "`Array.from(x)`: an array from anything you can loop over, like a string, or from an array-like such as `{ length: 3 }`"
           ]
         },
         {
@@ -680,12 +928,12 @@
           "title": "slice copies, splice cuts",
           "lang": "js",
           "code": "const a = [1, 2, 3, 4];\nconst part = a.slice(1, 3);  // [2, 3]; a unchanged\nconst cut = a.splice(1, 2);  // [2, 3]; a is now [1, 4]",
-          "body": "`slice` copies. `splice` cuts items out of the original and returns the removed ones."
+          "body": "`slice(1, 3)` copies items 1 and 2 and leaves `a` alone. `splice(1, 2)` cuts 2 items out of the original, starting at index 1, and returns the removed ones."
         },
         {
           "type": "text",
           "title": "Finding things",
-          "body": "`includes(x)` gives `true` or `false` and can find `NaN`. `indexOf(x)` gives the position, or `-1`. It uses `===`, so it never finds `NaN`. `at(-1)` reads the last item (new in ES2022); `arr[arr.length - 1]` works everywhere."
+          "body": "`includes(x)` gives `true` or `false` and can find `NaN`. `indexOf(x)` gives the position, or `-1`. It uses `===`, so it never finds `NaN`. `at()` reads from the end with negatives: `at(-1)` is the last item (new in ES2022). `arr[arr.length - 1]` works everywhere."
         },
         {
           "type": "trap",
@@ -723,6 +971,24 @@
           "say": "A copy of only the outer list. Objects inside are shared, so changing one shows up in both lists."
         },
         {
+          "term": "push()",
+          "match": [
+            "push",
+            "pop()",
+            "pop"
+          ],
+          "say": "Adds items to the end of an array and gives back the new length. pop() does the opposite: it removes the last item and gives it back."
+        },
+        {
+          "term": "unshift()",
+          "match": [
+            "unshift",
+            "shift()",
+            "shift"
+          ],
+          "say": "Adds items to the start of an array and gives back the new length. shift() removes the first item and gives it back."
+        },
+        {
           "term": "splice(start, count, ...items)",
           "match": [
             "splice"
@@ -730,11 +996,40 @@
           "say": "Cuts items out of an array, and can put new ones in, right in the original. It returns what it cut out."
         },
         {
+          "term": "sort()",
+          "match": [
+            "sort",
+            "reverse()",
+            "reverse"
+          ],
+          "say": "Puts the items of an array in order, right in the original array. reverse() flips the order, also in place."
+        },
+        {
+          "term": "fill()",
+          "say": "Overwrites items of an array with one value, in the original. [1, 2] filled with 0 becomes [0, 0]."
+        },
+        {
           "term": "slice(start, end)",
           "match": [
             "slice"
           ],
           "say": "Copies part of an array into a new one. The original stays the same."
+        },
+        {
+          "term": "concat()",
+          "match": [
+            "concat"
+          ],
+          "say": "Joins arrays into a brand-new array. [1] joined with [2, 3] gives [1, 2, 3]. The originals stay the same."
+        },
+        {
+          "term": "map()",
+          "match": [
+            "map",
+            "filter()",
+            "filter"
+          ],
+          "say": "map() makes a new array by changing every item. filter() makes a new array with only the items that pass a test."
         },
         {
           "term": "spread",
@@ -745,7 +1040,7 @@
           "match": [
             "Array.from"
           ],
-          "say": "Builds a new array from anything you can loop over, like a string or a Set, or from an array-like value."
+          "say": "Builds a new array from anything you can loop over, like a string, or from an array-like such as { length: 3 }. 'hi' becomes ['h', 'i']."
         },
         {
           "term": "includes(x)",
@@ -760,6 +1055,13 @@
             "indexOf"
           ],
           "say": "Tells you where a value sits in an array, or -1 if it is not there. It can never find NaN."
+        },
+        {
+          "term": "at()",
+          "match": [
+            "at(-1)"
+          ],
+          "say": "Reads one item by position. Negative numbers count from the end, so at(-1) is the last item. It is new in ES2022."
         }
       ]
     },
@@ -775,6 +1077,13 @@
           "body": "Most array work is \"do something with each item\". Array methods do the looping for you. Each one takes a **callback**: a function you pass in, which runs once per item. Pick the method by what you want back."
         },
         {
+          "type": "code",
+          "title": "Arrow functions",
+          "lang": "js",
+          "code": "const double = n => n * 2;\ndouble(4);                  // 8\n[1, 2, 3].map(n => n * 2);  // [2, 4, 6]\nconst add = (a, b) => a + b;\nadd(2, 3);                  // 5",
+          "body": "Callbacks are often **arrow functions**: `n => n * 2` takes `n` and returns `n * 2`, so `double(4)` is 8. Two inputs need brackets: `(a, b) => a + b`. With curly braces around the body, you must write `return` yourself."
+        },
+        {
           "type": "tip",
           "title": "Think of it like…",
           "body": "A factory belt. `map` repaints every box. `filter` lets only some boxes through. `reduce` packs every box into one crate. `find` grabs the first box that fits. Where it stops: `forEach` just walks the belt and hands back nothing."
@@ -783,13 +1092,13 @@
           "type": "list",
           "title": "What each one returns",
           "items": [
-            "`map`: a new array, same length",
-            "`filter`: a new array of the items that pass",
-            "`reduce`: one single value",
-            "`find`: the first match, or `undefined`",
-            "`findIndex`: its index, or `-1`",
-            "`some` / `every`: `true` or `false`",
-            "`forEach`: always `undefined`"
+            "`map()`: a new array, same length",
+            "`filter()`: a new array of the items that pass",
+            "`reduce()`: one single value",
+            "`find()`: the first match, or `undefined`",
+            "`findIndex()`: its index, or `-1`",
+            "`some()` / `every()`: `true` or `false`",
+            "`forEach()`: always `undefined`"
           ]
         },
         {
@@ -797,19 +1106,19 @@
           "title": "reduce",
           "lang": "js",
           "code": "const cart = [{ price: 5 }, { price: 7 }];\ncart.reduce((sum, item) => sum + item.price, 0); // 12\n\n[].reduce((a, b) => a + b);    // TypeError\n[].reduce((a, b) => a + b, 0); // 0",
-          "body": "`reduce` carries an **accumulator**, the running result, from item to item. Always give it a start value. On an empty array with no start value, it throws a `TypeError`."
+          "body": "`reduce` carries an **accumulator**, the running result. Here `sum` starts at `0`, adds 5, then 7, giving 12. Always give it a start value: on an empty array with none, it throws a `TypeError`."
         },
         {
           "type": "code",
           "title": "sort",
           "lang": "js",
           "code": "[1, 10, 2].sort();                 // [1, 10, 2]\n[1, 10, 2].sort((a, b) => a - b);  // [1, 2, 10]\n[1, 10, 2].sort((a, b) => b - a);  // [10, 2, 1]",
-          "body": "By default `sort` compares items as strings, so `'10'` comes before `'2'`. For numbers, pass a **compare function**. A negative result puts `a` first."
+          "body": "By default `sort()` compares items as strings, so `'10'` comes before `'2'`. For numbers, pass a **compare function**. A negative result puts `a` first, so `a - b` sorts low to high and `b - a` sorts high to low."
         },
         {
           "type": "text",
           "title": "forEach can't stop",
-          "body": "There is no `break` in `forEach`, and a `return` only ends that one callback. To stop early, use a `for...of` loop. Or use `some`, `every`, `find` or `findIndex`, which stop by themselves once they know the answer."
+          "body": "`forEach` has no `break` (the word that stops a loop), and a `return` only ends that one callback. To stop early, use a `for...of` loop. Or use `some()`, `every()`, `find()` or `findIndex()`, which stop by themselves once they know the answer."
         },
         {
           "type": "trap",
@@ -832,23 +1141,65 @@
           "say": "A function you hand to another function, so it can call yours later, here once for each item."
         },
         {
-          "term": "map",
+          "term": "arrow functions",
+          "match": [
+            "arrow function",
+            "=>"
+          ],
+          "say": "A short way to write a function with =>. n => n * 2 takes n and gives back n times 2."
+        },
+        {
+          "term": "return",
+          "say": "Hands a value back from a function and ends it. A function without return gives back undefined."
+        },
+        {
+          "term": "map()",
+          "match": [
+            "map"
+          ],
           "say": "Makes a new array by running your function on every item. Same number of items out as in."
         },
         {
-          "term": "filter",
+          "term": "filter()",
+          "match": [
+            "filter"
+          ],
           "say": "Makes a new array with only the items your function says yes to."
         },
         {
-          "term": "reduce",
+          "term": "reduce()",
+          "match": [
+            "reduce"
+          ],
           "say": "Walks through the array and squeezes all the items into one single value, like a total."
         },
         {
-          "term": "find",
+          "term": "find()",
+          "match": [
+            "find"
+          ],
           "say": "Gives the first item your function says yes to, or undefined if none match."
         },
         {
-          "term": "forEach",
+          "term": "findIndex()",
+          "match": [
+            "findIndex"
+          ],
+          "say": "Gives the position of the first item your function says yes to, or -1 if none match."
+        },
+        {
+          "term": "some()",
+          "say": "Tells you true if at least one item passes your test. It stops at the first one that does."
+        },
+        {
+          "term": "every()",
+          "say": "Tells you true only if every item passes your test. It stops at the first one that fails."
+        },
+        {
+          "term": "forEach()",
+          "match": [
+            "forEach"
+          ],
           "say": "Runs your function once for each item. It gives back nothing, and break can't stop it."
         },
         {
@@ -856,16 +1207,23 @@
           "say": "The running result that reduce carries from one item to the next, like a running total."
         },
         {
+          "term": "sort()",
+          "match": [
+            "sort"
+          ],
+          "say": "Puts the items of an array in order, in place. Without a compare function, it compares them as text."
+        },
+        {
           "term": "compare function",
           "say": "A function you give to sort. It gets two items and returns a negative number, zero or a positive number to say which goes first."
         },
         {
-          "term": "for...of",
-          "say": "A loop that walks through each item of an array or other list. You can stop it with break."
+          "term": "break",
+          "say": "A word that stops a loop right away. It works in for and for...of loops, but not inside forEach."
         },
         {
-          "term": "some",
-          "say": "Tells you true if at least one item passes your test. It stops at the first one that does."
+          "term": "for...of",
+          "say": "A loop that walks through each item of an array or other list. You can stop it with break."
         }
       ]
     },
@@ -878,7 +1236,7 @@
         {
           "type": "text",
           "title": "In plain words",
-          "body": "Besides objects and arrays, JavaScript has **collections** built for one job. A **Map** stores key-value pairs, and any value can be a key. A **Set** stores values with no repeats. A **WeakMap** attaches data to objects without keeping those objects alive."
+          "body": "Besides objects and arrays, JavaScript has **collections** built for one job. A **Map** stores key-value pairs: a key (a label) and the value filed under it. Any value can be a key. A **Set** stores values with no repeats. A **WeakMap** attaches data to objects without keeping those objects alive."
         },
         {
           "type": "tip",
@@ -890,19 +1248,19 @@
           "title": "Map",
           "lang": "js",
           "code": "const visits = new Map();\nconst user = { id: 7 };\nvisits.set(user, 3);\nvisits.set('total', 10);\nvisits.get(user);    // 3\nvisits.size;         // 2\nvisits.has('total'); // true",
-          "body": "Keys can be objects, functions, anything. A Map remembers **insertion order**, and `size` is a property, not a method."
+          "body": "`set()` stores a pair, `get()` reads it and `has()` checks for a key. Keys can be objects, functions, anything. A Map remembers **insertion order**, and `size` is a property (no brackets), here `2`."
         },
         {
           "type": "text",
           "title": "Map or plain object?",
-          "body": "Object keys are always strings or symbols: the number `1` becomes `'1'`. A Map keeps the real key. A Map is easy to loop with `for...of`, and its size is ready to read. Plain objects are still best for fixed shapes and for JSON."
+          "body": "Object keys are always strings or symbols: the number `1` becomes `'1'`. A Map keeps the real key. A Map is easy to loop with `for...of`, and its size is ready to read. Plain objects are still best for data with fixed, known keys, and for JSON."
         },
         {
           "type": "code",
           "title": "Set",
           "lang": "js",
           "code": "const tags = ['js', 'css', 'js'];\nconst unique = [...new Set(tags)];\n// ['js', 'css']\n\nconst s = new Set([1, 1, 2]);\ns.add(2).add(3);\ns.size; // 3",
-          "body": "`new Set(array)` drops repeats. Spread it back into an array to **de-duplicate**. Set has `add`, `has`, `delete` and `size`."
+          "body": "`new Set(array)` drops repeats, so spreading it back into an array gives `['js', 'css']`: that is how to **de-duplicate**. `add()` puts in a value and returns the Set, so calls can chain. Set also has `has()`, `delete()` and `size`."
         },
         {
           "type": "text",
@@ -911,7 +1269,7 @@
         },
         {
           "type": "trap",
-          "body": "\"`map.size()` returns the count.\" Wrong. `size` is a property: `map.size`. And `map['key'] = 1` doesn't add an entry. Use `set` to add and `get` to read."
+          "body": "\"`map.size()` returns the count.\" Wrong. `size` is a property: `map.size`. And `map['key'] = 1` doesn't add an entry. Use `set()` to add and `get()` to read."
         },
         {
           "type": "tip",
@@ -935,6 +1293,9 @@
         },
         {
           "term": "Set",
+          "match": [
+            "new Set(array)"
+          ],
           "say": "A list where every value can appear only once. Adding the same value again does nothing."
         },
         {
@@ -942,11 +1303,34 @@
           "say": "Like a Map, but its keys must be objects, and it lets go of an entry when nothing else uses that key object."
         },
         {
+          "term": "set()",
+          "say": "Stores a value under a key in a Map. If the key is already there, the new value replaces the old one."
+        },
+        {
+          "term": "get()",
+          "say": "Reads the value stored under a key in a Map. It gives undefined if the key isn't there."
+        },
+        {
+          "term": "has()",
+          "say": "Tells you true or false: does this Map have this key, or this Set have this value?"
+        },
+        {
+          "term": "add()",
+          "say": "Puts a value into a Set. If the value is already there, nothing changes."
+        },
+        {
+          "term": "delete()",
+          "say": "Removes one key from a Map, or one value from a Set. It gives true if something was removed."
+        },
+        {
           "term": "insertion order",
           "say": "The order you added things in. A Map gives its entries back in that same order."
         },
         {
           "term": "size",
+          "match": [
+            "map.size"
+          ],
           "say": "A property that tells how many entries a Map or Set has. You read it without parentheses."
         },
         {
@@ -976,7 +1360,7 @@
         {
           "type": "text",
           "title": "In plain words",
-          "body": "**JSON** (JavaScript Object Notation) is a text format for sending data, for example in an API response. It looks like a JavaScript object, but it is just a string. `JSON.parse` turns JSON text into values. `JSON.stringify` turns values into JSON text."
+          "body": "**JSON** (JavaScript Object Notation) is a text format for sending data, for example when a server answers a request. It looks like a JavaScript object, but it is just a string. `JSON.parse()` turns JSON text into values. `JSON.stringify()` turns values into JSON text."
         },
         {
           "type": "tip",
@@ -986,21 +1370,21 @@
         {
           "type": "text",
           "title": "JSON rules are strict",
-          "body": "Keys need **double quotes**: `{\"id\": 1}`. Strings use double quotes too. No **trailing commas**, no comments, no `undefined`, no functions. `JSON.parse` on invalid text throws a `SyntaxError`. So wrap it in `try...catch` when the text comes from outside."
+          "body": "Keys need **double quotes**: `{\"id\": 1}`. Strings use double quotes too. No **trailing commas**, no comments, no `undefined`, no functions. `JSON.parse` on invalid text throws a `SyntaxError`. So when the text comes from outside, wrap it in `try...catch`, which catches the error instead of crashing."
         },
         {
           "type": "code",
           "title": "What stringify drops",
           "lang": "js",
           "code": "JSON.stringify({ a: 1, b: undefined, c: () => 1 });\n// '{\"a\":1}'\nJSON.stringify([1, undefined, () => 1]);\n// '[1,null,null]'\nJSON.stringify({ n: 10n }); // TypeError",
-          "body": "In objects, `undefined`, functions and symbols are **left out**. In arrays they become `null`. A BigInt throws."
+          "body": "In objects, `undefined`, functions and symbols are **left out**, so only `a` survives. In arrays they become `null`, so the positions stay the same. A BigInt throws a `TypeError`."
         },
         {
           "type": "code",
           "title": "Pick keys and indent",
           "lang": "js",
           "code": "const user = { name: 'Ana', pin: 1234 };\nJSON.stringify(user, ['name']); // '{\"name\":\"Ana\"}'\nJSON.stringify(user, null, 2);  // pretty, 2-space indent",
-          "body": "The second argument is a **replacer**: an array of keys to keep, or a function. The third adds indentation for humans."
+          "body": "The second argument is a **replacer**: an array of keys to keep, or a function. Here only `name` is kept. The third argument adds line breaks and indentation for humans: 2 spaces before each key."
         },
         {
           "type": "text",
@@ -1028,12 +1412,20 @@
           "say": "A plain text way to write data, like {\"id\": 1}. Programs use it to send data to each other."
         },
         {
-          "term": "JSON.parse",
-          "say": "Reads JSON text and builds real values from it, like objects, arrays and numbers."
+          "term": "JSON.parse()",
+          "match": [
+            "JSON.parse",
+            "parse"
+          ],
+          "say": "Reads JSON text and builds real values from it, like objects, arrays and numbers. The text {\"total\":5} becomes an object whose total is the number 5."
         },
         {
-          "term": "JSON.stringify",
-          "say": "Turns values like objects and arrays into JSON text, so you can send or save them."
+          "term": "JSON.stringify()",
+          "match": [
+            "JSON.stringify",
+            "stringify"
+          ],
+          "say": "Turns values like objects and arrays into JSON text, so you can send or save them. An object whose total is 5 becomes the text {\"total\":5}."
         },
         {
           "term": "double quotes",
@@ -1046,6 +1438,14 @@
         {
           "term": "SyntaxError",
           "say": "The error for text or code that breaks the grammar rules, like JSON with single quotes."
+        },
+        {
+          "term": "try...catch",
+          "say": "Runs code in the try part. If it throws an error, the catch part runs instead of the program crashing."
+        },
+        {
+          "term": "TypeError",
+          "say": "The error you get when a value can't be used that way, like asking stringify to write a BigInt."
         },
         {
           "term": "replacer",
@@ -1085,11 +1485,11 @@
     {
       "id": "types-f4",
       "front": "What happens when you assign to a name you never declared?",
-      "back": "In sloppy mode it quietly creates a global variable. In strict mode it throws a `ReferenceError`."
+      "back": "In normal sloppy mode, it quietly creates a global variable. In strict mode (`'use strict'`), it throws a `ReferenceError`."
     },
     {
       "id": "types-f5",
-      "front": "What are the seven primitive types?",
+      "front": "What are the seven primitive (simple) types?",
       "back": "string, number, bigint, boolean, undefined, symbol and null. Everything else is an object, including arrays and functions."
     },
     {
@@ -1165,7 +1565,7 @@
     {
       "id": "types-f20",
       "front": "What do `||` and `&&` return?",
-      "back": "A value, not always a boolean. `||` returns the first truthy operand, or the last one. `&&` returns the first falsy operand, or the last one."
+      "back": "A value, not always a boolean (`true` or `false`). `||` returns the first truthy value, or the last one. `&&` returns the first falsy value, or the last one."
     },
     {
       "id": "types-f21",
@@ -1185,7 +1585,7 @@
     {
       "id": "types-f24",
       "front": "Why can `includes` find `NaN` but `indexOf` can't?",
-      "back": "`indexOf` compares with `===`, and `NaN === NaN` is false. `includes` uses SameValueZero, which treats `NaN` as equal to itself."
+      "back": "`indexOf` compares with `===`, and `NaN === NaN` is false. `includes` uses a rule called SameValueZero, which treats `NaN` as equal to itself."
     },
     {
       "id": "types-f25",
@@ -1225,7 +1625,7 @@
     {
       "id": "types-f32",
       "front": "What makes a `WeakMap` different from a `Map`?",
-      "back": "Its keys must be objects, held weakly: an entry can vanish once its key object is unused elsewhere. It has no `size` and can't be looped over."
+      "back": "Its keys must be objects, and it doesn't keep them alive: an entry can vanish once nothing else uses its key object. It has no `size` and can't be looped over."
     },
     {
       "id": "types-f33",
@@ -1736,7 +2136,7 @@
       "wrong": [
         "`typeof` never returns `'array'`; arrays give `'object'`.",
         "This is true for plain objects too.",
-        "Both arrays and plain objects are instances of `Object`.",
+        "`instanceof Object` is `true` for arrays and plain objects alike.",
         ""
       ],
       "source": "MDN: Array.isArray()"
@@ -2264,7 +2664,7 @@
       "answer": [
         2
       ],
-      "explain": "A `${...}` hole can hold any expression, including a `? :` choice. Here it adds nothing because `n` is 1.",
+      "explain": "A `${...}` hole can hold any expression, including a `? :` choice (if true, use this, else that). Here it adds an empty string, because `n` is 1.",
       "wrong": [
         "Backticks fill the hole with the value of `n`.",
         "The empty string adds nothing, not quote marks.",
@@ -2290,7 +2690,7 @@
       "answer": [
         0
       ],
-      "explain": "Positions go from 0 to `length - 1`. Past the end, brackets give `undefined` but `charAt` gives an empty string.",
+      "explain": "Positions go from 0 to `length - 1`. Past the end, brackets give `undefined`, but `charAt()`, which reads one character, gives an empty string.",
       "wrong": [
         "",
         "The last letter is at `s.length - 1`, not `s.length`.",
@@ -3673,7 +4073,7 @@
       "answer": [
         3
       ],
-      "explain": "`Array.from` makes one item per character of a string. With `{ length: 3 }` and a map function, it builds `[0, 2, 4]` from the indexes.",
+      "explain": "`Array.from` makes one item per character of a string. `{ length: 3 }` is an array-like with 3 empty slots. The second argument fills each slot from its index `i`, giving `[0, 2, 4]`.",
       "wrong": [
         "A string is iterable, so each letter becomes one item.",
         "Indexes start at 0, so the first item is `0 * 2`.",
@@ -3826,7 +4226,7 @@
       ],
       "explain": "`slice()` with no arguments and `Array.from` both build a new array. For numbers, a shallow copy is a full copy.",
       "wrong": [
-        "This copies the reference, so both names point to one array.",
+        "This copies no items: both names now point to the same array.",
         "`sort` returns the same array, after reordering it.",
         "`fill` overwrites `src` and returns it.",
         "",
@@ -3970,12 +4370,12 @@
       "answer": [
         2
       ],
-      "explain": "With no start value, `reduce` uses the first item as the accumulator. That is an object, and object `+` number joins as text.",
+      "explain": "With no start value, `reduce` uses the first item as the starting total. That item is an object, and `+` turns an object into text, so it joins instead of adding.",
       "wrong": [
         "`+` with an object joins strings; it does not give `NaN`.",
         "Only an empty array with no start value throws.",
         "",
-        "With no start value, the first item, an object, becomes the sum."
+        "With no start value, the first item, an object, becomes the starting total."
       ],
       "source": "MDN: Array.prototype.reduce()"
     },
@@ -4120,7 +4520,7 @@
       "answer": [
         2
       ],
-      "explain": "The default sort compares UTF-16 code units. Every capital letter comes before every lowercase letter.",
+      "explain": "By default, `sort` compares each character's code number. Every capital letter has a smaller code than every lowercase letter, so `'Cherry'` comes first.",
       "wrong": [
         "`sort` does reorder the array.",
         "Default sort is not case-insensitive.",
@@ -4373,7 +4773,7 @@
       "answer": [
         3
       ],
-      "explain": "A Set compares objects by reference. The two `{ id: 1 }` objects are different, but `k` is one object added twice.",
+      "explain": "A Set compares objects by identity: is it the very same object? The two `{ id: 1 }` objects are two different objects. But `k` is one object added twice, so the size is 3.",
       "wrong": [
         "The two `{ id: 1 }` objects are different objects.",
         "Look-alike objects are not the same value.",
@@ -4525,7 +4925,7 @@
       "answer": [
         1
       ],
-      "explain": "A Set uses SameValueZero: `NaN` matches `NaN`, and `0` matches `-0`. So only two values are kept.",
+      "explain": "A Set treats `NaN` as equal to `NaN`, and `0` as equal to `-0` (a rule called SameValueZero). So only two values are kept, and `has(NaN)` is `true`.",
       "wrong": [
         "A Set can find `NaN`.",
         "",
@@ -4903,7 +5303,7 @@
         2,
         3
       ],
-      "explain": "A date comes back as a string, and a method is dropped. Plain data like numbers, arrays, booleans and `null` round-trips fine.",
+      "explain": "A date comes back as a string, and a method is dropped. Plain data like numbers, arrays, booleans and `null` comes back the same.",
       "wrong": [
         "Arrays of numbers fit JSON exactly.",
         "`null` is valid JSON and comes back as `null`.",

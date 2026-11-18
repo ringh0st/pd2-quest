@@ -211,14 +211,15 @@ a.card:not(.section-card):not(.stat):not(.row):not(.stack-s) { display: block; }
 .ring-wrap .ring-label { position: absolute; inset: 0; display: grid; place-items: center; text-align: center; line-height: 1.1; }
 
 /* ---------- sections / path ---------- */
-.section-card { display: grid; grid-template-columns: 52px 1fr auto; gap: 14px; align-items: center; }
+/* The icon column fits its tile, which grows with the text size (a fixed 52px let a bigger tile overlap the text) */
+.section-card { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 14px; align-items: center; }
 .section-emoji {
   width: 52px; height: 52px; display: grid; place-items: center;
   border-radius: 16px; font-size: 26px;
   background: color-mix(in srgb, var(--accent, var(--primary)) 16%, var(--surface));
 }
 .path { display: grid; gap: 14px; padding: 8px 0 20px; }
-.path-node { display: grid; grid-template-columns: 60px 1fr; gap: 14px; align-items: center; text-decoration: none; color: inherit; }
+.path-node { display: grid; grid-template-columns: minmax(60px, auto) minmax(0, 1fr); gap: 14px; align-items: center; text-decoration: none; color: inherit; }
 .path-node .dot {
   width: 60px; height: 60px; border-radius: 50%;
   display: grid; place-items: center; font-size: 24px; font-weight: 700;

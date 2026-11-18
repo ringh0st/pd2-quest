@@ -13,7 +13,7 @@
         {
           "type": "text",
           "title": "In plain words",
-          "body": "**Node.js** runs JavaScript outside the browser, on a server or your laptop. Your code runs on one main thread. Slow jobs, like reading a file or calling a database, are handed to the system. Node serves other work while it waits. That is **non-blocking I/O**."
+          "body": "JavaScript was born in web browsers. **Node.js** runs it outside a browser: on a server (a computer that answers requests) or your laptop. Your code runs on one **main thread**, one step at a time. Slow jobs that wait, like reading a file, are **I/O** (input and output). Node hands them off and keeps working: **non-blocking I/O**."
         },
         {
           "type": "tip",
@@ -23,15 +23,15 @@
         {
           "type": "text",
           "title": "Good fit, bad fit",
-          "body": "Node shines at **I/O-heavy** work: APIs, chat, streaming, lots of small requests. Long math on the main thread blocks the **event loop**, the loop that runs the next ready job. Move CPU-heavy work to **worker threads** or a **child process**."
+          "body": "Node shines at **I/O-heavy** work: many small requests that mostly wait, like chat or APIs (addresses other programs call to get data). The **event loop** is the loop that runs the next ready job. Long math on the main thread blocks it, so every request waits. Move CPU-heavy work (long math) to **worker threads** or a **child process**."
         },
         {
           "type": "list",
           "title": "Not a browser",
           "items": [
-            "No `window`, no `document`, no DOM",
-            "`globalThis` (also called `global`) is the global object",
-            "`process` holds `argv`, `env` and `exit()`",
+            "No `window`, no `document`, no DOM: those belong to web pages",
+            "`globalThis` (also called `global`) is the global object: names on it work anywhere",
+            "`process` describes the running program: `argv` (the typed words), `env` (settings) and `exit()` (stop)",
             "`Buffer` holds raw bytes, like file data"
           ]
         },
@@ -40,21 +40,21 @@
           "title": "CommonJS",
           "lang": "js",
           "code": "// math.js\nexports.add = (a, b) => a + b;\n\n// app.js\nconst { add } = require('./math');\nconsole.log(add(2, 3)); // 5",
-          "body": "**CommonJS** is Node's original module system. `require()` loads a file and returns its `module.exports`. `exports.add` adds to that same object."
+          "body": "A **module** is one file whose code other files can use. **CommonJS** is Node's original module system. `require()` loads a file and returns its `module.exports` object. `exports.add` puts `add` on that object. `(a, b) => a + b` is a short way to write a function. So `app.js` logs `5`."
         },
         {
           "type": "text",
           "title": "Loaded once",
-          "body": "Node **caches** a module after the first `require()`. Its top-level code runs once. Every later `require()` of the same file gets the very same object back. Change it in one file, and every file sees the change."
+          "body": "Node **caches** a module after the first `require()`: it keeps the result to reuse. So the file's top-level code runs only once. Every later `require()` of that file gets the very same object back. Change the object in one file, and every other file sees the change."
         },
         {
           "type": "text",
           "title": "ES modules in Node",
-          "body": "**ES modules** use `import` and `export`. Node loads a file that way when it ends in `.mjs`, or ends in `.js` under `\"type\": \"module\"` in package.json. `.cjs` always means CommonJS. ES modules have no `require` or `__dirname`; use `import.meta.url`. Relative imports need the full name: `./math.js`."
+          "body": "**ES modules** are the standard way to share code, with `import` and `export`. Node uses them for files ending in `.mjs`, or in `.js` when package.json (the project's settings file) says `\"type\": \"module\"`. `.cjs` always means CommonJS. ES modules have no `require` or `__dirname` (the file's folder); use `import.meta.url`. Relative imports need the full name: `./math.js`."
         },
         {
           "type": "trap",
-          "body": "`exports = { add }` exports nothing. It only points the local name at a new object. `require()` still returns `module.exports`, which stays empty. To replace the whole export, write `module.exports = { add }`."
+          "body": "`exports = { add }` exports nothing. `exports` is only a nickname for `module.exports`. Giving it a new object just moves the nickname. `require()` still returns `module.exports`, which stays empty: `{}`. To replace the whole export, write `module.exports = { add }`."
         },
         {
           "type": "tip",
@@ -116,6 +116,47 @@
             "ES module"
           ],
           "say": "The standard JavaScript way to share code between files, using import and export. Browsers and Node both understand it."
+        },
+        {
+          "term": "server",
+          "match": [
+            "servers"
+          ],
+          "say": "A computer, or a program on it, that waits for requests and sends answers back. A website's server sends you its pages."
+        },
+        {
+          "term": "main thread",
+          "say": "The one line of work where Node runs your JavaScript. It does one thing at a time, so a slow step makes everything else wait."
+        },
+        {
+          "term": "I/O",
+          "say": "Short for input and output: reading or writing files, talking to a database or the network. These jobs mostly wait for something else."
+        },
+        {
+          "term": "module",
+          "match": [
+            "modules"
+          ],
+          "say": "One file of code that shares some of its parts with other files, so you can split a program into pieces."
+        },
+        {
+          "term": "require()",
+          "match": [
+            "require"
+          ],
+          "say": "Loads another file's code in CommonJS. require('./math') gives you whatever math.js put in module.exports."
+        },
+        {
+          "term": "Buffer",
+          "say": "A Node object that holds raw bytes, the tiny numbers a file or network message is made of. Reading a file without naming a text encoding gives you one."
+        },
+        {
+          "term": "__dirname",
+          "say": "In a CommonJS file, the path of the folder that holds the file. ES module files do not have it."
+        },
+        {
+          "term": "import.meta.url",
+          "say": "In an ES module, the file's own address, written as a URL that starts with file://. You can work out the file's folder from it."
         }
       ]
     },
@@ -128,7 +169,12 @@
         {
           "type": "text",
           "title": "In plain words",
-          "body": "You run Node and its tools from a terminal. `node` runs JavaScript files and quick snippets. **npm**, the Node package manager, installs packages and runs your project's scripts. **npx** runs a command that comes from a package. If the package isn't installed, it offers to fetch it."
+          "body": "A **terminal** is a window where you type commands instead of clicking. A **command** is one typed instruction, like `node app.js`: a program's name, then what it should work on. Press Enter and it runs. `node` runs JavaScript files and quick snippets."
+        },
+        {
+          "type": "text",
+          "title": "Packages and npm",
+          "body": "A **package** is a folder of code someone shared so others can reuse it, like `lodash` or `jest`. **npm**, the Node package manager, comes with Node. It downloads packages into your project and runs your project's scripts. **npx** runs a command that comes from a package. If the package isn't there, it asks, then fetches it."
         },
         {
           "type": "tip",
@@ -139,11 +185,12 @@
           "type": "list",
           "title": "Running code with node",
           "items": [
+            "Words that start with `-` are **flags**: options that change what a command does",
             "`node app.js` runs a file",
             "`node -e \"code\"` runs a snippet; it prints only what you log",
-            "`node -p \"1 + 1\"` runs it and prints the result",
+            "`node -p \"1 + 1\"` runs it and prints the result: `2`",
             "`node` alone opens the **REPL**, a live prompt",
-            "`node -r dotenv/config app.js` loads a module first"
+            "`node -r dotenv/config app.js` loads a module before `app.js`"
           ]
         },
         {
@@ -151,17 +198,17 @@
           "title": "Debugging",
           "lang": "bash",
           "code": "node --inspect app.js      # run; a debugger can attach\nnode --inspect-brk app.js  # also pause before line 1\nnode inspect app.js        # built-in terminal debugger",
-          "body": "`--inspect` lets a debugger such as Chrome DevTools attach (open `chrome://inspect`). `--inspect-brk` also pauses before your code starts, so you can set breakpoints first."
+          "body": "A **debugger** lets you pause a running program and look inside. `--inspect` lets one attach, such as Chrome DevTools (open `chrome://inspect`). `--inspect-brk` also pauses before your code starts, so you can set **breakpoints** (lines where it should stop) first."
         },
         {
           "type": "list",
           "title": "Everyday npm",
           "items": [
-            "`npm init -y` makes package.json with default answers",
-            "`npm install lodash` adds a dependency",
-            "`npm install -D jest` adds a **devDependency**",
+            "`npm init -y` makes package.json, the project's settings file, with default answers",
+            "`npm install lodash` adds a **dependency**: a package your code needs",
+            "`npm install -D jest` adds a **devDependency**: needed only to build or test",
             "`npm install -g` installs a tool for the whole machine",
-            "`npm ci` installs exactly what the **lock file** says"
+            "`npm ci` installs exactly the versions the **lock file** lists"
           ]
         },
         {
@@ -169,7 +216,7 @@
           "title": "Scripts",
           "lang": "bash",
           "code": "npm run build   # runs \"build\" from \"scripts\"\nnpm test        # \"test\" needs no \"run\"\nnpm start       # neither does \"start\"\nnpx eslint .    # run a package's command",
-          "body": "`npm run <name>` runs any script in package.json. Only `test`, `start`, `stop` and `restart` have shortcuts without `run`."
+          "body": "A **script** is a named command saved in package.json under `\"scripts\"`. `npm run <name>` runs one. Only `test`, `start`, `stop` and `restart` also work without `run`. `npx eslint .` runs the `eslint` command from a package."
         },
         {
           "type": "trap",
@@ -232,6 +279,57 @@
             "npm run <name>"
           ],
           "say": "The command that runs a script listed in package.json, by its name. For example, npm run build."
+        },
+        {
+          "term": "terminal",
+          "say": "A window where you control the computer by typing commands instead of clicking. You type a line, press Enter, and see the answer as text."
+        },
+        {
+          "term": "command",
+          "match": [
+            "commands"
+          ],
+          "say": "One instruction you type in a terminal, like node app.js. It starts with a program's name, then says what it should work on."
+        },
+        {
+          "term": "package",
+          "match": [
+            "packages"
+          ],
+          "say": "A folder of code that someone shared so others can reuse it. A test tool like Jest is a package. npm downloads packages for you."
+        },
+        {
+          "term": "package.json",
+          "say": "The settings file of a Node project. It lists the project's name, the packages it needs and its scripts."
+        },
+        {
+          "term": "flags",
+          "match": [
+            "flag"
+          ],
+          "say": "Extra options typed after a command, starting with a dash. In node -p, the -p flag tells Node to print the result."
+        },
+        {
+          "term": "debugger",
+          "say": "A tool that can pause a running program so you can look at its values, step by step, to find a bug."
+        },
+        {
+          "term": "breakpoints",
+          "match": [
+            "breakpoint"
+          ],
+          "say": "Lines you mark in a debugger. When the program reaches one, it pauses so you can look around."
+        },
+        {
+          "term": "dependency",
+          "say": "A package your project needs to work. npm install lodash adds lodash as one."
+        },
+        {
+          "term": "script",
+          "match": [
+            "scripts"
+          ],
+          "say": "A named command saved in package.json, like test or build. You run it with npm, for example npm run build."
         }
       ]
     },
@@ -244,7 +342,7 @@
         {
           "type": "text",
           "title": "In plain words",
-          "body": "Node ships with **core modules**: built-in tools you load without installing anything. You can add the `node:` prefix, like `require('node:fs')`, to show it is built in. For bigger apps, people add a **framework** from npm, such as Express."
+          "body": "Node ships with **core modules**: built-in tools you load without installing anything. You can add the `node:` prefix, like `require('node:fs')`, to show it is built in. For bigger apps, people add a **framework** from npm, such as Express. A framework is a ready-made skeleton for an app."
         },
         {
           "type": "tip",
@@ -261,7 +359,8 @@
             "`events`: the `EventEmitter` class",
             "`stream`: move data piece by piece",
             "`util`: helpers like `promisify`",
-            "`os`, `url`, `crypto`, `child_process`"
+            "`child_process`: run other programs",
+            "Also `os`, `url` and `crypto`"
           ]
         },
         {
@@ -269,39 +368,39 @@
           "title": "Three ways to read a file",
           "lang": "js",
           "code": "const fs = require('node:fs');\nconst fsp = require('node:fs/promises');\n\nconst a = fs.readFileSync('a.txt', 'utf8'); // blocks\nfs.readFile('a.txt', 'utf8', (err, b) => {}); // callback\nfsp.readFile('a.txt', 'utf8').then((c) => {}); // promise",
-          "body": "A **sync** call blocks the event loop: nothing else runs until it finishes. Fine in a start-up script, bad in a busy server. Callbacks get the **error first**, then the data."
+          "body": "`readFileSync` is **sync**: nothing else runs until it ends. Fine at start-up, bad in a busy server. `readFile` takes a **callback**: a function Node calls when the read is done, with the error first, then the data. The `fs/promises` version returns a **promise**: an object that gets the result later."
         },
         {
           "type": "code",
           "title": "Events",
           "lang": "js",
           "code": "const EventEmitter = require('node:events');\nconst bell = new EventEmitter();\nbell.on('ring', (who) => console.log('hi', who));\nbell.once('ring', () => console.log('first only'));\nbell.emit('ring', 'Ann'); // hi Ann, first only\nbell.emit('ring', 'Bo');  // hi Bo",
-          "body": "An **EventEmitter** calls its listeners **synchronously**, in the order they were added. `once` listens one time. Emitting `'error'` with no listener throws."
+          "body": "An **EventEmitter** sends named events. `on()` adds a **listener**: a function that runs each time `emit()` sends that event. Listeners run **synchronously** (right away), in the order added. `once()` listens one time only. So the first `emit()` logs `hi Ann` then `first only`. Emitting `'error'` with no listener throws."
         },
         {
           "type": "text",
           "title": "Streams",
-          "body": "A **stream** moves data in small chunks instead of all at once. There are four kinds: Readable, Writable, Duplex and Transform. Connect them with `pipe()` or `stream.pipeline()`. `pipeline` also passes on errors and cleans up. Streams keep memory low, even for huge files."
+          "body": "A **stream** moves data in small chunks instead of all at once. There are four kinds: Readable (gives data), Writable (takes data), Duplex (both) and Transform (changes data as it passes). Connect them with `pipe()` or `stream.pipeline()`. `pipeline` also passes on errors and cleans up. Memory stays low, even for huge files."
         },
         {
           "type": "list",
           "title": "Frameworks: pick by need",
           "items": [
-            "**Express**: minimal, routes plus **middleware**",
+            "**Express**: minimal, routes plus **middleware** (small steps each request passes through)",
             "**Koa**: small, built on `async` middleware",
             "**Fastify**: minimal and fast, with JSON schemas",
-            "**NestJS**: structured, TypeScript, for big teams",
+            "**NestJS**: structured, TypeScript (JavaScript with types), for big teams",
             "**Next.js**: a React framework that can render pages on the server"
           ]
         },
         {
           "type": "trap",
-          "body": "Calling `readFileSync` on a huge file inside a request handler. Every other user waits until it finishes, and the whole file sits in memory. Use the async API, or a stream for big files."
+          "body": "Calling `readFileSync` on a huge file inside a request handler (the function that answers each request). Every other user waits until it finishes, and the whole file sits in memory. Use the async API, or a stream for big files."
         },
         {
           "type": "tip",
           "title": "Remember it",
-          "body": "**\"Sync stops the shop.\"** In a server, use callbacks, promises or streams. And `emit` is a phone call, not a letter: listeners run right away."
+          "body": "**\"Sync stops the shop.\"** In a server, use callbacks, promises or streams. And `emit()` is a phone call, not a letter: listeners run right away."
         }
       ],
       "check": [
@@ -358,6 +457,62 @@
         {
           "term": "middleware",
           "say": "Small functions that a request passes through, one after another, before the answer goes back. Each can check, change or stop it."
+        },
+        {
+          "term": "framework",
+          "match": [
+            "frameworks"
+          ],
+          "say": "A ready-made skeleton for an app. It gives you a set way to build things, and you fill in your own parts."
+        },
+        {
+          "term": "http",
+          "say": "A built-in Node module for the web. It can start a web server or send a request to another server."
+        },
+        {
+          "term": "child_process",
+          "say": "A built-in module that starts other programs, like a git command, and lets you read what they print."
+        },
+        {
+          "term": "readFileSync",
+          "say": "Reads a whole file and makes everything wait until it is done. Easy to use, but it freezes a busy server."
+        },
+        {
+          "term": "callback",
+          "match": [
+            "callbacks"
+          ],
+          "say": "A function you hand to another function, to be called later. Node calls it when a slow job ends, passing the error first, then the result."
+        },
+        {
+          "term": "promise",
+          "match": [
+            "promises"
+          ],
+          "say": "An object that stands for a result that is not ready yet. Later it is either fulfilled with a value or rejected with an error."
+        },
+        {
+          "term": "listener",
+          "match": [
+            "listeners"
+          ],
+          "say": "A function waiting for one named event. Each time that event is sent, the listener runs."
+        },
+        {
+          "term": "on()",
+          "say": "Adds a listener to an EventEmitter. bell.on('ring', fn) runs fn every time 'ring' is sent."
+        },
+        {
+          "term": "once()",
+          "say": "Adds a listener that runs only the first time the event is sent, then removes itself."
+        },
+        {
+          "term": "pipe()",
+          "say": "Connects one stream to another, so data flows from the first into the second, chunk by chunk. It does not pass errors along."
+        },
+        {
+          "term": "emit()",
+          "say": "Sends a named event from an EventEmitter. Every listener for that name runs at once, in order, before emit() finishes."
         }
       ]
     },
@@ -383,7 +538,7 @@
           "items": [
             "**dependencies**: needed while the app runs (`express`)",
             "**devDependencies**: needed only to build or test (`jest`, `eslint`)",
-            "**peerDependencies**: a plugin names the host package it works with",
+            "**peerDependencies**: a **plugin** (an add-on) names the host package it works with",
             "When others install your package, they do not get your devDependencies"
           ]
         },
@@ -392,7 +547,7 @@
           "title": "A package.json",
           "lang": "json",
           "code": "{\n  \"name\": \"shop-api\",\n  \"version\": \"1.4.0\",\n  \"private\": true,\n  \"main\": \"index.js\",\n  \"scripts\": { \"pretest\": \"eslint .\", \"test\": \"jest\" },\n  \"dependencies\": { \"express\": \"^4.18.1\" },\n  \"devDependencies\": { \"jest\": \"~28.1.0\" }\n}",
-          "body": "`\"private\": true` blocks publishing by mistake. `main` is the entry file. `pretest` runs by itself before `test`. `name` and `version` are required only to publish."
+          "body": "`\"private\": true` stops it being published (shared on npm) by mistake. `main` is the entry file, loaded when others use the package. `pretest` runs by itself before `test`. `name` and `version` are required only to publish."
         },
         {
           "type": "list",
@@ -400,7 +555,7 @@
           "items": [
             "**Semver**: MAJOR.MINOR.PATCH; a new major may break you",
             "`^4.18.1`: 4.18.1 or newer, below 5.0.0",
-            "`~28.1.0`: patches only, so 28.1.x",
+            "`~28.1.0`: the **tilde** allows patches only, so 28.1.x",
             "`4.18.1`: exactly that version",
             "With a leading 0, `^0.2.3` stays below 0.3.0"
           ]
@@ -408,7 +563,7 @@
         {
           "type": "text",
           "title": "The lock file",
-          "body": "**package-lock.json** pins the exact version of every package, even the packages your packages use. **Commit it.** `npm ci` installs exactly from it. It deletes `node_modules` first, never changes either file, and fails if the two files disagree. That makes it right for build servers."
+          "body": "**package-lock.json** pins the exact version of every package, even the packages your packages use. **Commit it** (save it in your project's history). `npm ci` installs exactly from it. It deletes `node_modules` first, never changes either file, and fails if the two files disagree. That makes it right for build servers."
         },
         {
           "type": "text",
@@ -470,6 +625,26 @@
         {
           "term": "npm audit",
           "say": "A command that checks your packages against a list of known security holes and reports what it finds."
+        },
+        {
+          "term": "plugin",
+          "say": "An add-on package that adds features to another package, its host. An ESLint plugin adds new rules to ESLint."
+        },
+        {
+          "term": "\"private\": true",
+          "say": "A package.json setting that makes npm refuse to publish the package, so it can't be shared by mistake."
+        },
+        {
+          "term": "pretest",
+          "say": "A script name npm runs by itself just before the test script. Any script name with pre in front works the same way."
+        },
+        {
+          "term": "tilde",
+          "say": "The ~ sign before a version. It allows newer patch versions only. ~1.4.2 allows 1.4.9 but not 1.5.0."
+        },
+        {
+          "term": "npm outdated",
+          "say": "A command that lists your packages that have newer versions available."
         }
       ]
     }
@@ -478,7 +653,7 @@
     {
       "id": "server-f1",
       "front": "What kind of work is Node.js good at, and what kind is it bad at?",
-      "back": "Good: I/O-heavy work like APIs, chat and many small requests. Bad: long CPU-heavy math on the main thread. Move that to worker threads or a child process."
+      "back": "Good: I/O-heavy work, meaning many small requests that mostly wait on files, databases or the network. Bad: long math on the main thread. Move that to worker threads or a child process."
     },
     {
       "id": "server-f2",
@@ -502,7 +677,7 @@
     },
     {
       "id": "server-f6",
-      "front": "When do you use `--inspect-brk` instead of `--inspect`?",
+      "front": "When should you start Node with `--inspect-brk` instead of `--inspect`?",
       "back": "When the bug happens right at the start. `--inspect-brk` pauses before your first line, so you can set breakpoints first."
     },
     {
@@ -512,7 +687,7 @@
     },
     {
       "id": "server-f8",
-      "front": "What does `npx` do?",
+      "front": "What does the `npx` command do?",
       "back": "It runs a command from a package. It uses the copy in your project if there is one. If not, it asks, then fetches the package."
     },
     {
@@ -532,7 +707,7 @@
     },
     {
       "id": "server-f12",
-      "front": "Which framework fits which need?",
+      "front": "Which Node.js framework fits which kind of project?",
       "back": "Express or Koa: minimal, with middleware. Fastify: minimal and fast. NestJS: structured and TypeScript-first. Next.js: a React framework that can render pages on the server."
     },
     {
@@ -542,7 +717,7 @@
     },
     {
       "id": "server-f14",
-      "front": "What does `^1.4.2` allow? And `~1.4.2`?",
+      "front": "Which versions does `^1.4.2` allow, and which does `~1.4.2` allow?",
       "back": "`^1.4.2`: 1.4.2 up to, but not including, 2.0.0. `~1.4.2`: 1.4.2 up to, but not including, 1.5.0."
     },
     {
@@ -553,7 +728,7 @@
     {
       "id": "server-f16",
       "front": "What does `npm ci` do differently from `npm install`?",
-      "back": "It needs a lock file, deletes `node_modules` first, installs exactly what the lock says, never changes either file, and fails if they disagree."
+      "back": "It needs a lock file, deletes `node_modules` first and installs exactly what the lock file says. It never changes package.json or the lock file, and fails if they disagree."
     }
   ],
   "questions": [
@@ -624,7 +799,7 @@
         "That would need a fresh `count` for `b`, but the module is cached.",
         "Two calls happened before `b()`, so it adds one more.",
         "",
-        "`count` is in scope for the function the module exports."
+        "The exported function can still see `count`, so there is no error."
       ],
       "source": "Node.js docs: Modules: CommonJS modules"
     },
@@ -644,7 +819,7 @@
       "answer": [
         0
       ],
-      "explain": "Assigning to `exports` only rebinds a local name. `require()` returns `module.exports`, which is still an empty object, so `greet.hello` is `undefined`.",
+      "explain": "Assigning to `exports` only moves a local nickname. `require()` returns `module.exports`, which is still an empty object, so `greet.hello` is `undefined`.",
       "wrong": [
         "",
         "The function was never put on `module.exports`.",
@@ -819,11 +994,11 @@
       ],
       "explain": "`exports` starts as a shortcut to `module.exports`, so adding properties works. `require()` is synchronous and returns `module.exports`, cached after the first load.",
       "wrong": [
-        "Reassigning `exports` only rebinds the local name.",
+        "Reassigning `exports` only moves the local nickname.",
         "",
         "The module is cached, so its code runs once.",
         "",
-        "That describes dynamic `import()`, not `require()`."
+        "That describes `import()` called like a function, not `require()`."
       ],
       "source": "Node.js docs: Modules: CommonJS modules"
     },
@@ -844,7 +1019,7 @@
       "answer": [
         0
       ],
-      "explain": "Assigning `module.exports` breaks its link to `exports`. The later `exports.name` goes onto the old object, which nobody returns, so `s.name` is `undefined`.",
+      "explain": "Giving `module.exports` a new object cuts its link to `exports`. The later `exports.name` goes onto the old object, which nobody returns, so `s.name` is `undefined`.",
       "wrong": [
         "",
         "`name` was added to the old object, not the exported one.",
@@ -1140,7 +1315,7 @@
       "answer": [
         2
       ],
-      "explain": "By default the inspector listens on `127.0.0.1:9229`, the server's own local address. Reach it safely through an SSH tunnel; opening it to the network is risky.",
+      "explain": "By default the inspector listens on `127.0.0.1:9229`. That address means \"this machine only\", so other computers can't reach it. Connect safely through an SSH tunnel; opening it to the whole network is risky.",
       "wrong": [
         "`--inspect` works alone; `-brk` only adds a pause at the start.",
         "DevTools attaches to Node through `chrome://inspect`.",
@@ -1309,7 +1484,7 @@
       "answer": [
         2
       ],
-      "explain": "A stream sends the file in small chunks, so the whole file never sits in memory. `pipe` also slows down when the client is slow.",
+      "explain": "A stream sends the file in small chunks, so the whole file never sits in memory. `pipe` also pauses reading while a user's download is slow.",
       "wrong": [
         "It still loads the whole file, and it also blocks the event loop.",
         "Time is not the problem; memory is.",
@@ -1334,12 +1509,12 @@
       "answer": [
         1
       ],
-      "explain": "`util.promisify` wraps a function whose callback gets the error first. The new function returns a promise you can `await`.",
+      "explain": "`util.promisify` wraps a function whose callback gets the error first. The new function returns a promise (a result that comes later) you can `await`.",
       "wrong": [
         "That makes a promise holding the function itself, not its result.",
         "",
         "`events.once` waits for an event from an emitter, not a callback.",
-        "`new Promise` would call `getUser` with `resolve` and `reject` as `id` and the callback."
+        "`new Promise` would pass its own `resolve` and `reject` into `getUser`, as if they were `id` and the callback."
       ],
       "source": "Node.js docs: Util"
     },
@@ -1536,7 +1711,7 @@
       "answer": [
         0
       ],
-      "explain": "`pipe()` does not pass errors along or close the other streams. `stream.pipeline()` passes on any error to its callback and destroys every stream in the chain.",
+      "explain": "`pipe()` does not pass errors along or close the other streams. `stream.pipeline()` sends any error to its callback and destroys (closes) every stream in the chain.",
       "wrong": [
         "",
         "The error comes from `src`, and `pipe` still leaves `dest` open.",
@@ -1608,10 +1783,10 @@
       "answer": [
         0
       ],
-      "explain": "`package-lock.json` pins the exact version of every package in the tree. package.json holds only ranges for direct dependencies.",
+      "explain": "`package-lock.json` pins the exact version of every package, nested ones too. package.json holds only ranges for the packages you list yourself.",
       "wrong": [
         "",
-        "package.json holds ranges, and only for your direct dependencies.",
+        "package.json holds ranges, and only for the packages you list yourself.",
         "That folder holds runnable commands from packages.",
         "`.npmrc` holds npm settings, like the registry."
       ],
@@ -1730,7 +1905,7 @@
       "answer": [
         2
       ],
-      "explain": "`peerDependencies` says which host package, and which versions, the plugin works with. The host project provides it.",
+      "explain": "`peerDependencies` says which host package, and which versions, the plugin works with. The host project installs it, and the plugin uses that copy.",
       "wrong": [
         "That would give the plugin its own copy of ESLint.",
         "Optional ones are skipped if they fail; the plugin still gets its own copy.",
