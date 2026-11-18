@@ -3,6 +3,7 @@
 // when the connection comes back, so nothing a learner writes is lost.
 import { SUPABASE_KEY, SUPABASE_URL, hasBackend } from './backend.js';
 import { APP_VERSION } from './appInfo.js';
+import { accessToken } from './auth.js';
 
 const OUTBOX = 'devquest.feedback.outbox.v1';
 const REPORTER = 'devquest.feedback.reporter.v1';
@@ -45,11 +46,13 @@ let flushing = null;
 export function flushFeedback() {
   if (!hasBackend() || !navigator.onLine) return Promise.resolve(read());
   flushing ??= (async () => {
+    // Signed in: the database links the report to the account (feedback.user_id); otherwise it's anonymous
+    const token = await accessToken().catch(() => null);
     for (const row of read()) {
       try {
         const res = await fetch(`${SUPABASE_URL}/rest/v1/feedback`, {
           method: 'POST',
-          headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
+          headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${token || SUPABASE_KEY}`, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
           body: JSON.stringify(row),
         });
         // 201 = saved; 409 = already saved earlier (same id): either way it's done

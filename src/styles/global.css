@@ -1472,3 +1472,38 @@ input, textarea, select { font-family: inherit; }
 .pg-pass .pg-line-icon, .pg-pass .pg-line-text { color: #8EE6B0; }
 .pg-line-hint { font-family: var(--font-body, inherit); font-size: var(--fs-small); color: #E6DDD1; }
 .pg-line-at { justify-self: start; border: 0; padding: 2px 10px; min-height: 28px; border-radius: 999px; background: rgb(255 255 255 / 0.10); color: #F3ECE2; font: inherit; font-size: var(--fs-small); text-decoration: underline; }
+
+/* ===== account (Sign in with Google) ===== */
+.google-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 12px; min-height: 48px; width: 100%;
+  padding: 0 16px; border-radius: 999px; border: 1px solid #747775; background: #FFFFFF; color: #1F1F1F;
+  font-family: Roboto, var(--font-body); font-size: calc(16px * var(--text-scale)); font-weight: 600; cursor: pointer;
+}
+.google-btn:hover { background: #F2F2F2; }
+.google-btn:disabled { opacity: 0.7; cursor: progress; }
+.google-g { width: 20px; height: 20px; flex: none; }
+:root[data-theme='dark'] .google-btn { background: #131314; border-color: #8E918F; color: #E3E3E3; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme='light']) .google-btn { background: #131314; border-color: #8E918F; color: #E3E3E3; } }
+.account-card p { margin: 0; }
+.account-avatar { width: 44px; height: 44px; border-radius: 50%; flex: none; object-fit: cover; }
+.account-avatar-letter { display: grid; place-items: center; background: var(--primary); color: var(--on-primary); font-weight: 700; font-size: 20px; }
+.account-name { display: block; overflow-wrap: anywhere; }
+.account-email { display: block; overflow-wrap: anywhere; }
+.account-actions { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 9.5em), 1fr)); gap: 8px; }
+.account-actions .btn, .inbox-actions .btn { white-space: nowrap; }
+.account-error { color: var(--incorrect); display: flex; gap: 6px; align-items: flex-start; }
+.account-danger > summary { cursor: pointer; color: var(--text-muted); min-height: 44px; display: flex; align-items: center; }
+.account-danger[open] { display: grid; gap: 8px; }
+.btn.danger { --b-bg: #B3261E; --b-fg: #FFFFFF; --b-ledge: #7A1A15; }
+.skeleton-line, .inbox-skeleton { border-radius: 10px; background: var(--surface-2); }
+.skeleton-line { height: 18px; margin: 6px 0; } .skeleton-line.short { width: 60%; }
+.inbox-skeleton { height: 140px; }
+@media (prefers-reduced-motion: no-preference) {
+  .skeleton-line, .inbox-skeleton { animation: skeleton-pulse 1.6s ease-in-out infinite; }
+  @keyframes skeleton-pulse { 50% { opacity: 0.55; } }
+}
+.inbox-row p { margin: 0; }
+.inbox-label { overflow-wrap: anywhere; }
+.inbox-message { white-space: pre-wrap; overflow-wrap: anywhere; }
+.inbox-contact { overflow-wrap: anywhere; user-select: all; }
+.inbox-actions { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 10em), 1fr)); gap: 8px; align-items: center; }

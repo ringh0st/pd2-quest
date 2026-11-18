@@ -27,6 +27,7 @@ const Settings = screen(() => import('./screens/Settings.jsx'), 'Settings');
 const Resources = screen(() => import('./screens/Resources.jsx'), 'Resources');
 const Placement = screen(() => import('./screens/Placement.jsx'), 'Placement');
 const Plan = screen(() => import('./screens/Plan.jsx'), 'Plan');
+const Inbox = screen(() => import('./screens/Inbox.jsx'), 'Inbox');
 const PlaygroundScreen = screen(() => import('./screens/PlaygroundScreen.jsx'), 'PlaygroundScreen');
 import { Play } from './screens/Play.jsx';
 import { THEMES } from './game/economy.js';
@@ -43,6 +44,8 @@ import { UpdateBanner } from './components/UpdateBanner.jsx';
 import { APP_NAME } from './lib/appInfo.js';
 import { GoTo, resumePendingGoTo } from './screens/GoTo.jsx';
 import { startFeedbackOutbox } from './lib/feedbackSend.js';
+import { startAuth } from './lib/auth.js';
+import { startCloudSync } from './lib/cloudSync.js';
 
 const FOCUS_ROUTES = /^\/(lesson|sprint|welcome|play|bolt|placement)/;
 
@@ -93,6 +96,7 @@ function Screen({ route }) {
     case 'settings': return <Settings />;
     case 'resources': return <Resources />;
     case 'playground': return <PlaygroundScreen />;
+    case 'inbox': return <Inbox />;
     case 'welcome': return <Onboarding />;
     case 'plan': return <Plan />;
     case 'go': return <GoTo parts={route.parts} query={route.query} key={route.path} />;
@@ -104,7 +108,7 @@ function Screen({ route }) {
 const TITLES = {
   '': 'Home', map: 'Adventure map', learn: 'Adventure map', world: 'World', section: 'World', play: 'Level', shop: 'Shop', bolt: 'Daily Bolt',
   lesson: 'Lesson', sprint: 'Practice sprint', cards: 'Flashcards', exam: 'Exam simulator', me: 'Me', settings: 'Settings',
-  resources: 'Resources', welcome: 'Welcome', placement: 'Placement', plan: 'Study plan', playground: 'Playground',
+  resources: 'Resources', welcome: 'Welcome', placement: 'Placement', plan: 'Study plan', playground: 'Playground', inbox: 'Feedback inbox',
 };
 
 /** On every screen change: a page title for the tab/screen reader, and focus on the new screen's heading. */
@@ -139,7 +143,7 @@ export default function App() {
     if (!onboarded && route.path !== '/welcome' && !route.path.startsWith('/lesson')) go('/welcome');
   }, [onboarded, route.path]);
   // Feedback: send anything still waiting; finish a feedback link that had to switch exams first
-  useEffect(() => { startFeedbackOutbox(); resumePendingGoTo(); }, []);
+  useEffect(() => { startCloudSync(); startAuth(); startFeedbackOutbox(); resumePendingGoTo(); }, []);
 
   // The opening splash shows once each time the app opens; the app loads underneath it.
   // Automated test browsers (navigator.webdriver) skip it so tests can drive the app straight away.
