@@ -1,7 +1,7 @@
 // The account card on the Me screen: sign in with Google (optional), see that progress is synced, sign out,
 // delete the account, and (for the owner) open the Feedback inbox. Hidden until the server is set up.
 import { useState, useSyncExternalStore } from 'react';
-import { hasBackend } from '../../lib/backend.js';
+import { hasSignIn } from '../../lib/backend.js';
 import { signInWithGoogle, signOut, deleteAccount } from '../../lib/auth.js';
 import { subscribeSync, syncSnapshot, syncNow } from '../../lib/cloudSync.js';
 import { useAuth } from '../../hooks/useAuth.js';
@@ -21,7 +21,7 @@ export function AccountCard() {
   const { ready, user, admin, busy, error } = useAuth();
   const sync = useSyncExternalStore(subscribeSync, syncSnapshot, syncSnapshot);
   const [confirmDelete, setConfirmDelete] = useState(false);
-  if (!hasBackend()) return null;
+  if (!hasSignIn()) return null;
 
   if (!ready) {
     return <section className="card account-card" aria-busy="true" aria-label="Account"><div className="skeleton-line" /><div className="skeleton-line short" /></section>;

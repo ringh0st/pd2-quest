@@ -2,11 +2,11 @@
 // adds progress sync between devices (lib/cloudSync.js) and lets the owner read feedback (screens/Inbox.jsx).
 // The Supabase library is loaded only when it's needed: when someone taps Sign in, comes back from Google, or was
 // signed in before. Everyone else never downloads it.
-import { SUPABASE_KEY, SUPABASE_URL, hasBackend } from './backend.js';
+import { SUPABASE_KEY, SUPABASE_URL, hasSignIn } from './backend.js';
 
 const RETURN_ROUTE = 'devquest.auth.return';
 const listeners = new Set();
-let snapshot = { ready: !hasBackend(), user: null, admin: false, busy: false, error: '' };
+let snapshot = { ready: !hasSignIn(), user: null, admin: false, busy: false, error: '' };
 let clientPromise = null;
 
 const set = (patch) => { snapshot = { ...snapshot, ...patch }; listeners.forEach((l) => l()); };
@@ -43,7 +43,7 @@ const hadSession = () => { try { return !!localStorage.getItem('devquest.auth');
 
 /** At app start: finish a sign-in that just came back from Google, or restore an earlier one. */
 export async function startAuth() {
-  if (!hasBackend()) return;
+  if (!hasSignIn()) return;
   const returning = cameBackFromGoogle(); // checked first: the Supabase library cleans the address bar itself
   if (!returning && !hadSession()) { set({ ready: true }); return; }
   try {
