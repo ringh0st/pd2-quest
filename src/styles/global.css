@@ -1512,3 +1512,29 @@ input, textarea, select { font-family: inherit; }
 .inbox-message { white-space: pre-wrap; overflow-wrap: anywhere; }
 .inbox-contact { overflow-wrap: anywhere; user-select: all; }
 .inbox-actions { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 10em), 1fr)); gap: 8px; align-items: center; }
+
+/* ===== Top players ===== */
+.top-prizes { padding-block: 14px; }
+.top-prize-row { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; }
+.top-prize { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px 6px 6px; border-radius: 999px; background: var(--surface-2); font-weight: 700; }
+.top-prize-coins { display: inline-flex; align-items: center; gap: 4px; }
+.top-prize-coins .icon, .top-row-prize .icon { color: var(--gold-text); }
+.top-medal { position: relative; display: inline-grid; place-items: center; width: 36px; height: 36px; border-radius: 50%; flex: none; }
+.top-medal .icon { position: absolute; width: 26px; height: 26px; opacity: 0.35; }
+.top-medal-n { position: relative; font-weight: 800; font-size: 17px; }
+.top-medal.gold { background: #F5C84C; color: #4A3200; }
+.top-medal.silver { background: #D9DEE3; color: #2F3439; }
+.top-medal.bronze { background: #E3A878; color: #4A2410; }
+.top-place { display: inline-grid; place-items: center; width: 36px; height: 36px; flex: none; font-weight: 700; color: var(--text-muted); }
+.top-list { display: grid; gap: 6px; }
+.top-row { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 16px; background: var(--surface); box-shadow: inset 0 0 0 1px var(--hairline); min-width: 0; }
+.top-row.podium { padding-block: 12px; }
+.top-row.me { box-shadow: inset 0 0 0 2px var(--primary); background: color-mix(in srgb, var(--primary) 8%, var(--surface)); }
+.top-name { font-weight: 700; overflow-wrap: anywhere; min-width: 0; }
+.top-you { font-weight: 600; color: var(--text-muted); }
+.top-points { white-space: nowrap; }
+.top-row-prize { display: inline-flex; align-items: center; gap: 3px; font-weight: 700; font-size: var(--fs-small); white-space: nowrap; }
+.top-skeleton { height: 58px; border-radius: 16px; background: var(--surface-2); }
+@media (prefers-reduced-motion: no-preference) { .top-skeleton { animation: skeleton-pulse 1.6s ease-in-out infinite; } }
+
+.music-toggle.off .icon { color: var(--text-muted); }

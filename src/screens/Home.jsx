@@ -18,8 +18,10 @@ import { DailyQuests } from '../components/game/DailyQuests.jsx';
 import { ParkIt } from '../components/ParkIt.jsx';
 import { InstallHelpButton } from '../components/InstallHelp.jsx';
 import { ThemeToggle } from '../components/ThemeToggle.jsx';
+import { MusicToggle } from '../components/MusicToggle.jsx';
 import { openStartMenu } from '../lib/startMenu.js';
 import { track } from '../lib/track.js';
+import { hasBackend } from '../lib/backend.js';
 import { StudyPlanCard } from '../components/plan/StudyPlanCard.jsx';
 import { Icon } from '../components/icons/Icon.jsx';
 import { BossArt } from '../components/art/BossArt.jsx';
@@ -120,6 +122,7 @@ export function Home() {
             {s.streak.freezes > 0 && <span aria-hidden="true" className="ic-label" style={{ fontSize: 'calc(14px * var(--text-scale))', gap: 2 }}><Icon name="freeze" className="ic-freeze" />{s.streak.freezes}</span>}
           </button>
           <CoinChip />
+          <MusicToggle />
           <ThemeToggle />
           <ParkIt />
         </div>
@@ -185,6 +188,14 @@ export function Home() {
           <span className="ic-tile" style={{ '--tile-accent': accentOf(weak?.id) }} aria-hidden="true"><Icon name={iconOf(weak?.id)} /></span><span className="lbl">Weak spot</span>
         </a>
       </motion.div>
+
+      {hasBackend() && (
+        <motion.a className="card link row" href="#/top" onClick={() => sfx.tap()} {...enter(3)}>
+          <span className="ic-tile gold" aria-hidden="true"><Icon name="trophy" /></span>
+          <span className="grow"><strong>Top players</strong><br /><span className="small muted">This week and month · top 3 win 200, 100 and 50 coins</span></span>
+          <Icon name="chevron" />
+        </motion.a>
+      )}
 
       {track.playground && (
         <motion.a className="card link row" href="#/playground" onClick={() => sfx.tap()} {...enter(3)}>

@@ -60,9 +60,8 @@ export function flushFeedback() {
         else break;
       } catch { break; }
     }
-    flushing = null;
     return read();
-  })();
+  })().finally(() => { flushing = null; }); // after the assignment, always (see topList.sendPoints)
   return flushing;
 }
 

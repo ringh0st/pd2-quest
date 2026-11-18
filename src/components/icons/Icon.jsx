@@ -9,7 +9,7 @@ import {
   Smartphone, Bell, Clock, TrendingUp, Hand, Scissors, PenLine, Mountain, Leaf, Sun, Moon, Award, Puzzle,
   FlaskConical, Cpu, Infinity as InfinityIcon, TriangleAlert, RotateCcw, WrapText, MoveHorizontal, ListChecks,
   Compass, Library, Hourglass, Shuffle, Eye, Sprout, Dumbbell, Smile, Coffee, MessageCircle, CircleCheck,
-  CircleX, Circle, Info, Keyboard, Copy, Square, Volume2, Code, Database, Cloud, Layers3, Wand, Sunrise, Bot, Apple,
+  CircleX, Circle, Info, Keyboard, Copy, Square, VolumeX, Music2, Volume2, Code, Database, Cloud, Layers3, Wand, Sunrise, Bot, Apple,
 } from 'lucide-react';
 
 export const ICONS = {
@@ -23,7 +23,7 @@ export const ICONS = {
   // study
   brain: Brain, timer: Timer, hourglass: Hourglass, clock: Clock, idea: Lightbulb, review: Repeat, book: BookOpen,
   checklist: ListChecks, pen: PenLine, sprout: Sprout, muscle: Dumbbell, trend: TrendingUp, shuffle: Shuffle,
-  eye: Eye, keyboard: Keyboard, code: Code, copy: Copy, speaker: Volume2,
+  eye: Eye, keyboard: Keyboard, code: Code, copy: Copy, speaker: Volume2, mute: VolumeX, music: Music2,
   // sections (exam domains)
   fund: ShieldCheck, auto: Workflow, ui: LayoutTemplate, test: FlaskConical, perf: Gauge, bug: Bug, cpu: Cpu,
   database: Database, cloud: Cloud, layers: Layers3,

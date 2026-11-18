@@ -82,10 +82,8 @@ export function syncNow() {
       setStatus({ state: 'synced', at: Date.now() });
     } catch {
       setStatus({ state: navigator.onLine ? 'error' : 'offline' });
-    } finally {
-      running = null;
     }
-  })();
+  })().finally(() => { running = null; }); // after the assignment, always (see topList.sendPoints)
   return running;
 }
 

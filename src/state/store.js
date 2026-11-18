@@ -201,7 +201,12 @@ function rollDay(s, now) {
 }
 
 /** Add XP and register study for the streak. Queues celebration events. */
+// Who else wants to know about XP earned (the Top list counts it on the server: lib/topList.js)
+const earnListeners = new Set();
+export function onEarn(fn) { earnListeners.add(fn); return () => earnListeners.delete(fn); }
+
 export function earn(amount, now = Date.now()) {
+  if (amount > 0) earnListeners.forEach((fn) => fn(amount));
   setState((prev) => {
     let s = rollDay(prev, now);
     const events = [...s.events];
