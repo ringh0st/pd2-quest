@@ -12,6 +12,7 @@ import { cleanQuestion, questionSpeech } from '../lib/speechText.js';
 import { useShortcuts } from '../hooks/useShortcuts.js';
 import { useEffect, useRef } from 'react';
 import { useCalm } from '../hooks/useMotionPrefs.js';
+import { FeedbackButton } from './FeedbackButton.jsx';
 
 const LETTERS = 'ABCDEF';
 
@@ -65,6 +66,7 @@ export function QuestionView({ question, chosen, onToggle, revealed, shake = 0, 
           label="Read the question and answers aloud"
           text={questionSpeech(question)}
         />
+        <FeedbackButton kind="question" where={{ id: question.id }} label="Report a problem with this question" />
       </div>
       {question.code && <CodeBlock code={question.code} lang={question.lang} />}
       <div

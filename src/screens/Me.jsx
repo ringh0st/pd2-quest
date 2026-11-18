@@ -15,6 +15,7 @@ import { CoinChip } from '../components/game/CoinChip.jsx';
 import { ThemeToggle } from '../components/ThemeToggle.jsx';
 import { Icon } from '../components/icons/Icon.jsx';
 import { BadgeMedal } from '../components/art/BadgeMedal.jsx';
+import { FeedbackButton } from '../components/FeedbackButton.jsx';
 
 function lastDays(n) {
   const out = [];
@@ -131,6 +132,7 @@ export function Me() {
         <a className="btn" href="#/resources" onClick={() => sfx.tap()}><Icon name="book" /> Resources</a>
         <a className="btn" href="#/settings" onClick={() => sfx.tap()}><Icon name="settings" /> Settings</a>
       </nav>
+      <FeedbackButton kind="app" where={{ route: '/me' }} variant="row" label="Send feedback or an idea" />
     </main>
   );
 }

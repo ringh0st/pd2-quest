@@ -24,6 +24,7 @@ import { useStudyScreen } from '../hooks/useStudyScreen.js';
 import { SpeakButton } from '../components/SpeakButton.jsx';
 import { cardSpeech, termSpeech } from '../lib/speechText.js';
 import { useShortcuts } from '../hooks/useShortcuts.js';
+import { FeedbackButton } from '../components/FeedbackButton.jsx';
 
 const KIND_LABEL = {
   text: '', code: 'Code', list: '',
@@ -73,13 +74,18 @@ function useTallest(ref, deps) {
   return tallest;
 }
 
-export function Lesson({ id }) {
+export function Lesson({ id, startCard }) {
   useStudyScreen();
   const lesson = lessonById[id];
   // Pick up where you left off: the card you were on, or the quick check mid-way.
   const [saved] = useState(() => (lesson ? loadRun(lesson.id) : null));
-  const [phase, setPhase] = useState(() => (saved?.phase === 'check' && saved.runner ? 'check' : 'cards')); // cards | check | done
-  const [i, setI] = useState(() => (saved?.phase === 'cards' ? Math.min(saved.i ?? 0, (lesson?.cards.length ?? 1) - 1) : 0));
+  const [phase, setPhase] = useState(() => (startCard === undefined && saved?.phase === 'check' && saved.runner ? 'check' : 'cards')); // cards | check | done
+  // A feedback link (#/go/…/card/…) opens a given card; otherwise pick up where you left off
+  const [i, setI] = useState(() => {
+    const last = (lesson?.cards.length ?? 1) - 1;
+    if (startCard !== undefined && !Number.isNaN(Number(startCard))) return Math.max(0, Math.min(Number(startCard), last));
+    return saved?.phase === 'cards' ? Math.min(saved.i ?? 0, last) : 0;
+  });
   const [resumeRunner, setResumeRunner] = useState(() => (saved?.phase === 'check' ? saved.runner : null));
   const [dir, setDir] = useState(1);
   const [summary, setSummary] = useState(null);
@@ -211,13 +217,13 @@ export function Lesson({ id }) {
           dragElastic={0.6}
           onDragEnd={(_, info) => { if (info.offset.x < -70) move(1); else if (info.offset.x > 70) move(-1); }}
         >
-          <CardContent card={card} glossary={glossary} tools={<SpeakButton label="Read this card aloud" text={cardSpeech(card)} />} />
+          <CardContent card={card} glossary={glossary} tools={<><SpeakButton label="Read this card aloud" text={cardSpeech(card)} /><FeedbackButton kind="card" where={{ id: lesson.id, card: i }} label="Report a problem with this card" /></>} />
         </motion.article>
         {/* Invisible copies of every card: the stage keeps the tallest one's height, so moving between cards never makes the page jump. */}
         <div className="lesson-measure" ref={measureRef} aria-hidden="true" inert>
           {cards.map((c, k) => (
             <article key={k} className={`lesson-card is-${c.type}`}>
-              <CardContent card={c} glossary={measureGlossary(c)} tools={<span className="speak-btn" />} />
+              <CardContent card={c} glossary={measureGlossary(c)} tools={<><span className="speak-btn" /><span className="icon-btn feedback-btn" /></>} />
             </article>
           ))}
         </div>
@@ -234,6 +240,7 @@ export function Lesson({ id }) {
                 <Icon name="idea" className="ic-gold" />
                 <strong className="grow">{shownTerm.term}</strong>
                 <SpeakButton label={`Read “${shownTerm.term}” aloud`} text={termSpeech(shownTerm)} />
+                <FeedbackButton kind="term" where={{ id: lesson.id, card: i, term: shownTerm.term }} label={`Report a problem with the meaning of “${shownTerm.term}”`} />
                 <button type="button" className="icon-btn" onClick={() => setTerm(null)} aria-label="Close the meaning"><Icon name="close" /></button>
               </div>
               <p>{shownTerm.say}</p>

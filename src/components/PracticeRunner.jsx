@@ -24,6 +24,7 @@ import { Icon } from './icons/Icon.jsx';
 import { SpeakButton } from './SpeakButton.jsx';
 import { explanationSpeech } from '../lib/speechText.js';
 import { scrollToTop } from '../lib/scroller.js';
+import { FeedbackButton } from './FeedbackButton.jsx';
 
 const PRAISE = ['Nailed it!', 'Yes!', 'Boom!', 'Correct!', 'Sharp!', 'You got it!', 'Brain on fire!', 'Clean!'];
 const KIND = ['Not quite', 'Not yet', 'Good try'];
@@ -250,6 +251,7 @@ export function PracticeRunner({ questions, onDone, onExit, topRight, requeue = 
                 label="Read the explanation aloud"
                 text={explanationSpeech(q)}
               />
+              <FeedbackButton kind="explanation" where={{ id: q.id }} label="Report a problem with this explanation" />
             </div>
             {!lastRight && (
               <p className="right-answer"><strong>Answer{need > 1 ? 's' : ''}:</strong>{' '}

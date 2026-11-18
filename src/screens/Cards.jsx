@@ -18,6 +18,7 @@ import { QuickSettings } from '../components/settings/QuickSettings.jsx';
 import { Icon } from '../components/icons/Icon.jsx';
 import { useStudyScreen } from '../hooks/useStudyScreen.js';
 import { Dropdown } from '../components/Dropdown.jsx';
+import { FeedbackButton } from '../components/FeedbackButton.jsx';
 
 const NEW_PER_DECK = 10;
 
@@ -112,6 +113,7 @@ export function Cards({ query }) {
           <span style={{ width: `${Math.max(3, (i / deck.length) * 100)}%` }} />
         </div>
         <span className="chip">{i + 1}/{deck.length}</span>
+        <FeedbackButton kind="flashcard" where={{ id: card.id }} label="Report a problem with this flashcard" />
         <QuickSettings />
         <ParkIt />
       </div>

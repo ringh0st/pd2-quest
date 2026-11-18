@@ -40,6 +40,8 @@ import { takeSkipSplash } from './lib/track.js';
 import { closeStartMenu, startMenuRequested, subscribeStartMenu } from './lib/startMenu.js';
 import { UpdateBanner } from './components/UpdateBanner.jsx';
 import { APP_NAME } from './lib/appInfo.js';
+import { GoTo, resumePendingGoTo } from './screens/GoTo.jsx';
+import { startFeedbackOutbox } from './lib/feedbackSend.js';
 
 const FOCUS_ROUTES = /^\/(lesson|sprint|welcome|play|bolt|placement)/;
 
@@ -82,7 +84,7 @@ function Screen({ route }) {
     case 'play': return <Play id={b} key={b} />;
     case 'shop': return <Shop />;
     case 'bolt': return <Bolt />;
-    case 'lesson': return <Lesson id={b} key={b} />;
+    case 'lesson': return <Lesson id={b} key={b} startCard={route.query.card} />;
     case 'sprint': return <Sprint query={route.query} key={JSON.stringify(route.query)} />;
     case 'cards': return <Cards query={route.query} key={JSON.stringify(route.query)} />;
     case 'exam': return <Exam />;
@@ -91,6 +93,7 @@ function Screen({ route }) {
     case 'resources': return <Resources />;
     case 'welcome': return <Onboarding />;
     case 'plan': return <Plan />;
+    case 'go': return <GoTo parts={route.parts} key={route.path} />;
     case 'placement': return <Placement a={b} b={route.parts[2]} key={route.path} />;
     default: return <Home />;
   }
@@ -133,6 +136,8 @@ export default function App() {
   useEffect(() => {
     if (!onboarded && route.path !== '/welcome' && !route.path.startsWith('/lesson')) go('/welcome');
   }, [onboarded, route.path]);
+  // Feedback: send anything still waiting; finish a feedback link that had to switch exams first
+  useEffect(() => { startFeedbackOutbox(); resumePendingGoTo(); }, []);
 
   // The opening splash shows once each time the app opens; the app loads underneath it.
   // Automated test browsers (navigator.webdriver) skip it so tests can drive the app straight away.

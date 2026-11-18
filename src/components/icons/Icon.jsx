@@ -2,7 +2,7 @@
 // sized in em so they follow the text size setting. Decorative by default (aria-hidden);
 // pass `label` when the icon is the only thing that says what something means.
 import {
-  Flame, Coins, Trophy, House, Map, Layers, Flag, User, Zap, SquareParking, Settings, Check, X, ChevronRight,
+  MessageSquareWarning, Flame, Coins, Trophy, House, Map, Layers, Flag, User, Zap, SquareParking, Settings, Check, X, ChevronRight,
   ChevronDown, ArrowLeft, ArrowRight, Star, Lock, LockOpen, Target, Gift, Snowflake, Rocket, Sparkles, Brain, Timer,
   CalendarDays, Lightbulb, Repeat, Skull, Swords, Heart, HeartCrack, Shirt, Palette, PartyPopper, Wrench, Pause,
   Play, Download, Upload, Share, Plus, BookOpen, Crown, Medal, Bug, Gauge, Workflow, LayoutTemplate, ShieldCheck,
@@ -32,7 +32,7 @@ export const ICONS = {
   park: SquareParking, retry: RotateCcw, wrap: WrapText, scroll: MoveHorizontal, infinity: InfinityIcon,
   download: Download, upload: Upload, share: Share, add: Plus, bell: Bell, phone: Smartphone, scissors: Scissors,
   hand: Hand, party: PartyPopper, shirt: Shirt, palette: Palette, tools: Wrench, smile: Smile, coffee: Coffee,
-  chat: MessageCircle, leaf: Leaf, sun: Sun, moon: Moon, sunrise: Sunrise, mountain: Mountain, bot: Bot, apple: Apple,
+  report: MessageSquareWarning, chat: MessageCircle, leaf: Leaf, sun: Sun, moon: Moon, sunrise: Sunrise, mountain: Mountain, bot: Bot, apple: Apple,
 };
 
 /**
