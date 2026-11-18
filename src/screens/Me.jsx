@@ -1,4 +1,4 @@
-import { useStore, unparkThought } from '../state/store.js';
+import { useStore } from '../state/store.js';
 import { levelFor, rankFor } from '../engine/xp.js';
 import { liveStreak } from '../engine/streak.js';
 import { sectionMastery, readiness, accuracy } from '../engine/mastery.js';
@@ -16,10 +16,9 @@ import { ThemeToggle } from '../components/ThemeToggle.jsx';
 import { MusicToggle } from '../components/MusicToggle.jsx';
 import { Icon } from '../components/icons/Icon.jsx';
 import { BadgeMedal } from '../components/art/BadgeMedal.jsx';
-import { FeedbackButton } from '../components/FeedbackButton.jsx';
 import { ShareApp } from '../components/ShareApp.jsx';
 import { AccountCard } from '../components/account/AccountCard.jsx';
-import { RepliesCard } from '../components/RepliesCard.jsx';
+import { MessagesCard } from '../components/MessagesCard.jsx';
 import { guidesUrl, INFO_LINKS } from '../lib/siteLinks.js';
 
 function lastDays(n) {
@@ -49,8 +48,6 @@ export function Me() {
         <a className="icon-btn" href="#/settings" aria-label="Settings" onClick={() => sfx.tap()}><Icon name="settings" /></a>
       </div>
 
-      <RepliesCard />
-
       <section className="hero me-hero" aria-label="Level">
         <ProgressRing value={lv.progress} size={96} stroke={11} color="var(--gold-meter)" label={`Level ${lv.level}, ${Math.round(lv.progress * 100)}% to next`}>
           <div><div style={{ fontSize: 'calc(13px * var(--text-scale))', fontWeight: 700 }} className="muted">LEVEL</div><div style={{ fontSize: 30, fontWeight: 700 }}>{lv.level}</div></div>
@@ -68,6 +65,8 @@ export function Me() {
         <div className="stat"><span className="num">{acc ?? '–'}{acc != null && '%'}</span><span className="lbl">Accuracy</span></div>
         <div className="stat"><span className="num">{Object.keys(s.lessons).length}/{totalLessons()}</span><span className="lbl">Lessons</span></div>
       </div>
+
+      <MessagesCard />
 
       <section className="card stack" aria-label="Last 7 days">
         <div className="spread"><strong>This week</strong><span className="small muted ic-label me-week-meta"><span>Best {s.streak.best}</span><span aria-hidden="true">·</span><span className="ic-freeze"><Icon name="freeze" /></span>{s.streak.freezes} freeze{s.streak.freezes === 1 ? '' : 's'}</span></div>
@@ -119,21 +118,6 @@ export function Me() {
         </ul>
       </section>
 
-      <section className="card stack" aria-label="Parked thoughts">
-        <strong className="ic-label"><span className="ic-sec" style={{ '--sec-accent': 'var(--correct)' }}><Icon name="park" /></span>Parked thoughts</strong>
-        {s.parked.length === 0
-          ? <p className="small muted">Nothing parked. When a distracting thought pops up mid-study, tap the Park button to drop it here.</p>
-          : (
-            <ul className="list-plain">
-              {s.parked.map((p) => (
-                <li key={p.id} className="spread">
-                  <span className="grow">{p.text}</span>
-                  <button className="btn small" onClick={() => { sfx.done(); unparkThought(p.id); }} aria-label={`Done: ${p.text}`}><Icon name="check" /> Done</button>
-                </li>
-              ))}
-            </ul>
-          )}
-      </section>
 
       <AccountCard />
 
@@ -142,7 +126,6 @@ export function Me() {
         <a className="btn" href="#/resources" onClick={() => sfx.tap()}><Icon name="book" /> Resources</a>
         <a className="btn" href="#/settings" onClick={() => sfx.tap()}><Icon name="settings" /> Settings</a>
       </nav>
-      <FeedbackButton kind="app" where={{ route: '/me' }} variant="row" label="Send feedback or an idea" />
       <ShareApp className="btn me-share" />
       <p className="me-info small muted">
         <a href={guidesUrl()} target="_blank" rel="noopener">Study guide on the web</a>

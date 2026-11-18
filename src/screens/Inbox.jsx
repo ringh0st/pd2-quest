@@ -18,7 +18,8 @@ const STATUSES = [
   { value: 'fixed', label: 'Fixed' },
   { value: 'wontfix', label: 'Won’t fix' },
 ];
-const CATEGORY = { wrong: 'Wrong', confusing: 'Confusing', typo: 'Typo', bug: 'Bug', idea: 'Idea', other: 'Other' };
+const CATEGORY = { wrong: 'Wrong', confusing: 'Confusing', typo: 'Typo', bug: 'Bug', idea: 'Idea', other: 'Other', question: 'Question', problem: 'Problem' };
+const TOPICS = [['all', 'All'], ['content', 'Content'], ['general', 'General']];
 
 /** The in-app part of a report's link ("#/go/js/card/types-4/2"), so it opens here, in this tab. */
 const appRoute = (link = '') => (link.includes('#') ? link.slice(link.indexOf('#') + 1) : null);
@@ -29,6 +30,7 @@ export function Inbox({ query = {} }) {
   const { ready, user, admin } = useAuth();
   const openId = query.open || null; // back from "Open the spot": show that report
   const [filter, setFilter] = useState(openId ? 'all' : 'new');
+  const [topic, setTopic] = useState('all'); // content reports, general messages (Contact us), or both
   const [rows, setRows] = useState(null);
   const [failed, setFailed] = useState(false);
   const { showToast } = useFeedback();
@@ -39,11 +41,13 @@ export function Inbox({ query = {} }) {
       const client = await supabase();
       let q = client.from('feedback').select('*').order('created_at', { ascending: false }).limit(300);
       if (filter !== 'all') q = q.eq('status', filter);
+      if (topic === 'general') q = q.eq('kind', 'app');
+      else if (topic === 'content') q = q.neq('kind', 'app');
       const { data, error } = await q;
       if (error) throw error;
       setRows(data);
     } catch { setFailed(true); setRows([]); }
-  }, [filter]);
+  }, [filter, topic]);
 
   useEffect(() => { if (admin) { setRows(null); load(); } }, [admin, load]);
 
@@ -84,6 +88,7 @@ export function Inbox({ query = {} }) {
             </button>
           </section>
           <Segmented label="Show" options={[...STATUSES.slice(0, 3).map((s) => [s.value, s.label]), ['all', 'All']]} value={filter} onChange={setFilter} />
+          <Segmented label="Topic" options={TOPICS} value={topic} onChange={setTopic} />
           {rows === null && <div className="stack" aria-busy="true" aria-label="Loading reports">{[0, 1, 2].map((k) => <div key={k} className="card inbox-skeleton" />)}</div>}
           {failed && <p className="small account-error" role="alert"><Icon name="warn" /> Couldn’t load the reports. Check the connection and refresh.</p>}
           {rows && !failed && !rows.length && <p className="muted center"><Icon name="sparkles" className="ic-gold" /> Nothing here.</p>}
@@ -121,7 +126,7 @@ function InboxRow({ row, focused, onStatus, onReply, onNote }) {
         <span className="chip">{CATEGORY[row.category] || row.category}</span>
         <time className="muted" dateTime={row.created_at}>{new Date(row.created_at).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })}</time>
       </div>
-      <strong className="inbox-label">{row.label}</strong>
+      <strong className="inbox-label">{row.kind === 'app' ? <><Icon name="chat" /> General message</> : row.label}</strong>
       {row.message ? <p className="inbox-message">{row.message}</p> : <p className="small muted">No message.</p>}
       {row.contact && <p className="small">Email: <span className="inbox-contact">{row.contact}</span></p>}
       <p className="small muted">{[row.device, row.app_version && `v${row.app_version}`, row.user_id ? 'signed in' : 'guest'].filter(Boolean).join(' · ')}</p>

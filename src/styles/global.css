@@ -1578,3 +1578,16 @@ body:has(.app.with-nav) .review-bar.above-nav { margin-left: 0; }
 .reply-new { justify-self: start; font-size: 12px; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; color: var(--on-primary); background: var(--primary); border-radius: 999px; padding: 1px 8px; }
 .reply-text { font-weight: 600; white-space: pre-wrap; overflow-wrap: anywhere; }
 .reply-yours { color: var(--text-muted); overflow-wrap: anywhere; }
+
+/* ===== Me: messages card (Replies | Parked thoughts) ===== */
+.msg-tabs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px; padding: 4px; border-radius: 16px; background: var(--surface-2); }
+.msg-tab {
+  position: relative; display: inline-flex; align-items: center; justify-content: center; gap: 6px; flex-wrap: wrap;
+  min-height: 44px; padding: 6px 10px; border: 0; border-radius: 12px; background: transparent; color: var(--text-muted);
+  font-weight: 700; font-size: var(--fs-small); cursor: pointer; text-align: center;
+}
+.msg-tab.on { background: var(--surface); color: var(--text); box-shadow: var(--shadow-1, 0 1px 3px rgb(0 0 0 / 0.08)); }
+.msg-badge { position: static; transform: none; margin-left: 2px; }
+.msg-count { min-width: 1.6em; padding: 0 6px; border-radius: 999px; background: var(--surface-3); color: var(--text); font-size: 12px; line-height: 1.6; }
+.messages-card [role='tabpanel'] { display: grid; gap: 10px; }
+.messages-card [role='tabpanel'][hidden] { display: none; }

@@ -14,7 +14,11 @@ import { haptic } from '../audio/haptics.js';
 const CATEGORIES = [
   ['wrong', 'Wrong'], ['confusing', 'Confusing'], ['typo', 'Typo'], ['bug', 'Bug'], ['idea', 'Idea'], ['other', 'Other'],
 ];
+// Not about one card or question ("Contact us", or anywhere outside a specific spot): a general message
+const GENERAL_CATEGORIES = [['question', 'Question'], ['problem', 'Problem'], ['idea', 'Idea'], ['other', 'Other']];
 const PROMPTS = {
+  question: 'What would you like to know?',
+  problem: 'What happened, and what did you expect?',
   wrong: 'What’s wrong, and what should it say? A doc link helps.',
   confusing: 'Which part didn’t make sense?',
   typo: 'What’s the typo? (optional)',
@@ -29,7 +33,8 @@ const PROMPTS = {
  */
 export function FeedbackButton({ kind, where = {}, label = 'Report a problem with this', variant = 'icon' }) {
   const [open, setOpen] = useState(false);
-  const [category, setCategory] = useState(kind === 'app' ? 'idea' : 'wrong');
+  const general = kind === 'app';
+  const [category, setCategory] = useState(general ? 'question' : 'wrong');
   const [message, setMessage] = useState('');
   const [contact, setContact] = useState('');
   const [sending, setSending] = useState(false);
@@ -54,7 +59,7 @@ export function FeedbackButton({ kind, where = {}, label = 'Report a problem wit
   return (
     <>
       {variant === 'row' ? (
-        <button type="button" className="btn block" onClick={() => setOpen(true)} aria-haspopup="dialog"><Icon name="report" /> {label}</button>
+        <button type="button" className="btn block" onClick={() => setOpen(true)} aria-haspopup="dialog"><Icon name={general ? 'chat' : 'report'} /> {label}</button>
       ) : (
         <button type="button" className="icon-btn feedback-btn" onClick={(e) => { e.stopPropagation(); setOpen(true); }} aria-label={label} title={label} aria-haspopup="dialog">
           <Icon name="report" />
@@ -64,23 +69,25 @@ export function FeedbackButton({ kind, where = {}, label = 'Report a problem wit
         {location && (
           <form className="stack" onSubmit={submit}>
             <div className="row" style={{ alignItems: 'center', gap: 10 }}>
-              <h2 id="feedback-title" className="pq-head grow"><span className="pq-tile" data-tone="flame"><Icon name="report" /></span><span>Tell us what’s off</span></h2>
+              <h2 id="feedback-title" className="pq-head grow"><span className="pq-tile" data-tone={general ? 'teal' : 'flame'}><Icon name={general ? 'chat' : 'report'} /></span><span>{general ? 'Contact us' : 'Tell us what’s off'}</span></h2>
               <button type="button" className="icon-btn" onClick={close} aria-label="Close"><Icon name="close" /></button>
             </div>
-            <p className="small muted feedback-where"><Icon name="target" /> {location.label}</p>
-            <Segmented label="What kind of problem?" value={category} onChange={setCategory} options={CATEGORIES} />
+            {general
+              ? <p className="small muted">Questions, problems, ideas: anything. We read every message, and our answer shows up on your Me screen under Replies.</p>
+              : <p className="small muted feedback-where"><Icon name="target" /> {location.label}</p>}
+            <Segmented label={general ? 'What is it about?' : 'What kind of problem?'} value={category} onChange={setCategory} options={general ? GENERAL_CATEGORIES : CATEGORIES} />
             <div className="field">
-              <label htmlFor="feedback-message">Your note</label>
+              <label htmlFor="feedback-message">{general ? 'Your message' : 'Your note'}</label>
               <textarea id="feedback-message" className="input" rows={4} maxLength={2000} data-autofocus value={message}
                 onChange={(e) => setMessage(e.target.value)} placeholder={PROMPTS[category]} />
             </div>
             <div className="field">
-              <label htmlFor="feedback-contact">Email, if you’d like a reply (optional)</label>
+              <label htmlFor="feedback-contact">{general ? 'Email, if you’d also like the answer by email (optional)' : 'Email, if you’d like a reply (optional)'}</label>
               <input id="feedback-contact" className="input" type="email" autoComplete="email" maxLength={200} value={contact} onChange={(e) => setContact(e.target.value)} />
             </div>
-            <p className="small muted">Sent with the spot you’re on and your device type. No name, no account.</p>
+            <p className="small muted">{general ? 'Sent with your device type and app version. No name, no account.' : 'Sent with the spot you’re on and your device type. No name, no account.'}</p>
             <button className="btn primary block" type="submit" disabled={sending || (!message.trim() && category !== 'typo')}>
-              {sending ? 'Sending…' : <><Icon name="report" /> Send</>}
+              {sending ? 'Sending…' : <><Icon name={general ? 'chat' : 'report'} /> Send</>}
             </button>
           </form>
         )}

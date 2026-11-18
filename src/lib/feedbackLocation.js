@@ -10,7 +10,7 @@ export const KINDS = {
   question: 'Question',
   explanation: 'Explanation',
   flashcard: 'Flashcard',
-  app: 'App',
+  app: 'General',
 };
 
 /**
@@ -19,7 +19,8 @@ export const KINDS = {
  */
 export function locationOf(kind, { id = '', card = null, term = '', route = '' } = {}) {
   const exam = track.id;
-  const parts = [TRACKS[exam].short, id || route || 'app'];
+  // Not about one spot: a general message ("JavaScript · General"); the screen it came from stays in the link
+  const parts = kind === 'app' ? [TRACKS[exam].short] : [TRACKS[exam].short, id || route || 'app'];
   if (card !== null) parts.push(`card ${card + 1}`);
   if (term) parts.push(`“${term}”`);
   const label = `${parts.join(' · ')} (${KINDS[kind]})`;
