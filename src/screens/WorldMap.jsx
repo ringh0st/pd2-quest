@@ -9,6 +9,7 @@ import { useFeedback } from '../components/Feedback.jsx';
 import { go } from '../hooks/useRoute.js';
 import { sfx } from '../audio/sfx.js';
 import { haptic } from '../audio/haptics.js';
+import { track } from '../lib/track.js';
 import { Icon } from '../components/icons/Icon.jsx';
 import { WorldEmblem } from '../components/art/WorldEmblem.jsx';
 import { BossArt } from '../components/art/BossArt.jsx';
@@ -81,6 +82,13 @@ export function WorldMap() {
         <span className="grow"><strong>Free official resources</strong><br /><span className="small muted">{exam.resources.length} Trailhead modules & docs + a {exam.studyPlan.length}-week plan</span></span>
         <Icon name="chevron" />
       </a>
+      {track.playground && (
+        <a className="card link row" href="#/playground" onClick={() => sfx.tap()}>
+          <span className="ic-tile" aria-hidden="true"><Icon name="code" /></span>
+          <span className="grow"><strong>Playground</strong><br /><span className="small muted">Write JavaScript and run it right here</span></span>
+          <Icon name="chevron" />
+        </a>
+      )}
     </main>
   );
 }

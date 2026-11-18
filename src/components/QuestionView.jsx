@@ -68,7 +68,7 @@ export function QuestionView({ question, chosen, onToggle, revealed, shake = 0, 
         />
         <FeedbackButton kind="question" where={{ id: question.id }} label="Report a problem with this question" />
       </div>
-      {question.code && <CodeBlock code={question.code} lang={question.lang} />}
+      {question.code && <CodeBlock code={question.code} lang={question.lang} tryable={revealed} />}
       <div
         className="options"
         role={multi ? 'group' : 'radiogroup'}

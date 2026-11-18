@@ -6,11 +6,12 @@ const TRACK_KEY = 'devquest.track';
 // Everything that differs between the exams lives here or in the exam's content folder (src/data/<id>/:
 // exam.json for the exam facts, one file per section). `sections` lists the section files in the
 // official exam guide's order; a section id picks its world look (game/worlds.js) and accent colour.
+// `playground`: the exam's code runs in a browser, so code examples get "Try it" and there's a Playground screen.
 export const TRACKS = {
   pd1: { id: 'pd1', name: 'PD1 Quest', short: 'PD1', exam: 'Salesforce Platform Developer I', prefix: 'pd1quest', sections: ['fund', 'auto', 'ui', 'test'] },
   pd2: { id: 'pd2', name: 'PD2 Quest', short: 'PD2', exam: 'Salesforce Platform Developer II', prefix: 'pd2quest', sections: ['fund', 'auto', 'ui', 'test', 'perf'] },
   pab: { id: 'pab', name: 'App Builder Quest', short: 'App Builder', exam: 'Salesforce Platform App Builder', prefix: 'pabquest', sections: ['fund', 'data', 'logic', 'ui', 'deploy'] },
-  js: { id: 'js', name: 'JS Quest', short: 'JavaScript', exam: 'Salesforce JavaScript Developer', prefix: 'jsquest', sections: ['types', 'objects', 'browser', 'debug', 'async', 'server', 'testing'] },
+  js: { id: 'js', name: 'JS Quest', short: 'JavaScript', exam: 'Salesforce JavaScript Developer', prefix: 'jsquest', playground: true, sections: ['types', 'objects', 'browser', 'debug', 'async', 'server', 'testing'] },
 };
 export const TRACK_IDS = Object.keys(TRACKS);
 

@@ -27,6 +27,7 @@ const Settings = screen(() => import('./screens/Settings.jsx'), 'Settings');
 const Resources = screen(() => import('./screens/Resources.jsx'), 'Resources');
 const Placement = screen(() => import('./screens/Placement.jsx'), 'Placement');
 const Plan = screen(() => import('./screens/Plan.jsx'), 'Plan');
+const PlaygroundScreen = screen(() => import('./screens/PlaygroundScreen.jsx'), 'PlaygroundScreen');
 import { Play } from './screens/Play.jsx';
 import { THEMES } from './game/economy.js';
 import { Lesson } from './screens/Lesson.jsx';
@@ -91,6 +92,7 @@ function Screen({ route }) {
     case 'me': return <Me />;
     case 'settings': return <Settings />;
     case 'resources': return <Resources />;
+    case 'playground': return <PlaygroundScreen />;
     case 'welcome': return <Onboarding />;
     case 'plan': return <Plan />;
     case 'go': return <GoTo parts={route.parts} query={route.query} key={route.path} />;
@@ -102,7 +104,7 @@ function Screen({ route }) {
 const TITLES = {
   '': 'Home', map: 'Adventure map', learn: 'Adventure map', world: 'World', section: 'World', play: 'Level', shop: 'Shop', bolt: 'Daily Bolt',
   lesson: 'Lesson', sprint: 'Practice sprint', cards: 'Flashcards', exam: 'Exam simulator', me: 'Me', settings: 'Settings',
-  resources: 'Resources', welcome: 'Welcome', placement: 'Placement', plan: 'Study plan',
+  resources: 'Resources', welcome: 'Welcome', placement: 'Placement', plan: 'Study plan', playground: 'Playground',
 };
 
 /** On every screen change: a page title for the tab/screen reader, and focus on the new screen's heading. */
