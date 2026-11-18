@@ -186,6 +186,14 @@ export function Home() {
         </a>
       </motion.div>
 
+      {track.playground && (
+        <motion.a className="card link row" href="#/playground" onClick={() => sfx.tap()} {...enter(3)}>
+          <span className="ic-tile" aria-hidden="true"><Icon name="code" /></span>
+          <span className="grow"><strong>Playground</strong><br /><span className="small muted">Write JavaScript and run it right here</span></span>
+          <Icon name="chevron" />
+        </motion.a>
+      )}
+
       <motion.div {...enter(4)}><DailyQuests /></motion.div>
 
       <motion.a className="card link stack-s" href="#/me" {...enter(5)}>

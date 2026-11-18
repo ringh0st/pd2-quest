@@ -18,7 +18,7 @@ export function PlaygroundScreen() {
   return (
     <main className="screen" id="main">
       <div className="topbar">
-        <button className="icon-btn" onClick={() => go('/map')} aria-label="Back"><Icon name="back" /></button>
+        <button className="icon-btn" onClick={() => (window.history.length > 1 ? window.history.back() : go('/'))} aria-label="Back"><Icon name="back" /></button>
         <h1 className="grow pq-head"><span className="pq-tile s"><Icon name="code" /></span><span>Playground</span></h1>
       </div>
       <Playground initialCode={STARTER} saveAs="scratch" />

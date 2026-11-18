@@ -9,6 +9,7 @@ import { Dropdown } from '../components/Dropdown.jsx';
 import { useFeedback } from '../components/Feedback.jsx';
 import { sfx } from '../audio/sfx.js';
 import { announceFeedbackChanged } from '../hooks/useNewFeedbackCount.js';
+import { addCoins } from '../state/store.js';
 
 const STATUSES = [
   { value: 'new', label: 'New' },
@@ -69,6 +70,13 @@ export function Inbox() {
       )}
       {admin && (
         <>
+          <section className="card stack-s" aria-labelledby="owner-tools">
+            <strong id="owner-tools" className="ic-label"><Icon name="tools" /> Owner tools</strong>
+            <p className="small muted">For testing the Shop. Coins are saved on this device only.</p>
+            <button type="button" className="btn" onClick={() => { addCoins(1000); sfx.coin(); showToast('Added 1000 coins', 'coin'); }}>
+              <Icon name="coin" /> Add 1000 coins
+            </button>
+          </section>
           <Segmented label="Show" options={[...STATUSES.slice(0, 3).map((s) => [s.value, s.label]), ['all', 'All']]} value={filter} onChange={setFilter} />
           {rows === null && <div className="stack" aria-busy="true" aria-label="Loading reports">{[0, 1, 2].map((k) => <div key={k} className="card inbox-skeleton" />)}</div>}
           {failed && <p className="small account-error" role="alert"><Icon name="warn" /> Couldn’t load the reports. Check the connection and refresh.</p>}
