@@ -31,6 +31,7 @@ function line(ev) {
       ? { art: 'chest', icon: 'gift', tone: 'gold', title: ev.title || 'Bonus chest!', body: `+${ev.coins} coins for the shop.`, rank: 1 }
       : { art: 'chest', icon: 'gift', tone: 'gold', title: `Lucky drop: +${ev.xp} XP`, body: 'Surprise bonus for finishing a round.', rank: 1 };
     case 'passed': return { art: 'trophy', icon: 'trophy', tone: 'gold', title: `${track.exam.replace('Salesforce ', '')}!`, body: 'You did it. Zap is so proud. Go celebrate!', rank: 4 };
+    case 'reply': return { icon: 'chat', tone: 'primary', title: ev.count > 1 ? `${ev.count} replies to your reports` : 'You got a reply to your report', body: 'Read it on the Me screen.', rank: 0, small: true };
     case 'badge': return { badge: ev.badge?.id, icon: 'medal', tone: 'gold', title: `Badge: ${ev.badge?.name}`, body: `${ev.badge?.about}.`, rank: 2 };
     case 'streak': {
       const n = ev.count;

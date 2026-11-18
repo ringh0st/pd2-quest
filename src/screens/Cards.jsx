@@ -19,6 +19,8 @@ import { Icon } from '../components/icons/Icon.jsx';
 import { useStudyScreen } from '../hooks/useStudyScreen.js';
 import { Dropdown } from '../components/Dropdown.jsx';
 import { FeedbackButton } from '../components/FeedbackButton.jsx';
+import { AdminEditButton } from '../components/admin/AdminEditButton.jsx';
+import { useContentVersion } from '../hooks/useContentVersion.js';
 
 const NEW_PER_DECK = 10;
 
@@ -32,6 +34,7 @@ function buildDeck(sectionId) {
 
 export function Cards({ query }) {
   useStudyScreen();
+  useContentVersion(); // admin edits re-render the card
   const [sectionId, setSectionId] = useState(query.section || '');
   const [deck, setDeck] = useState(null);
   const [i, setI] = useState(0);
@@ -114,6 +117,7 @@ export function Cards({ query }) {
         </div>
         <span className="chip">{i + 1}/{deck.length}</span>
         <FeedbackButton kind="flashcard" where={{ id: card.id }} label="Report a problem with this flashcard" />
+        <AdminEditButton kind="flashcard" id={card.id} />
         <QuickSettings />
         <ParkIt />
       </div>

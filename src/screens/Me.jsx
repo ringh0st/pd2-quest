@@ -19,6 +19,7 @@ import { BadgeMedal } from '../components/art/BadgeMedal.jsx';
 import { FeedbackButton } from '../components/FeedbackButton.jsx';
 import { ShareApp } from '../components/ShareApp.jsx';
 import { AccountCard } from '../components/account/AccountCard.jsx';
+import { RepliesCard } from '../components/RepliesCard.jsx';
 import { guidesUrl, INFO_LINKS } from '../lib/siteLinks.js';
 
 function lastDays(n) {
@@ -133,6 +134,7 @@ export function Me() {
       </section>
 
       <AccountCard />
+      <RepliesCard />
 
       <nav className="me-links" aria-label="More">
         <a className="btn" href="#/shop" onClick={() => sfx.tap()}><Icon name="shirt" /> Shop</a>

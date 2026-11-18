@@ -48,6 +48,9 @@ import { startFeedbackOutbox } from './lib/feedbackSend.js';
 import { startAuth } from './lib/auth.js';
 import { startCloudSync } from './lib/cloudSync.js';
 import { startTopList } from './lib/topList.js';
+import { startContentEdits } from './lib/contentEdits.js';
+import { startReplyCheck } from './lib/feedbackReplies.js';
+import { ReviewBar } from './components/admin/ReviewBar.jsx';
 
 const FOCUS_ROUTES = /^\/(lesson|sprint|welcome|play|bolt|placement)/;
 
@@ -98,7 +101,7 @@ function Screen({ route }) {
     case 'settings': return <Settings />;
     case 'resources': return <Resources />;
     case 'playground': return <PlaygroundScreen />;
-    case 'inbox': return <Inbox />;
+    case 'inbox': return <Inbox query={route.query} />;
     case 'top': return <Top />;
     case 'welcome': return <Onboarding />;
     case 'plan': return <Plan />;
@@ -146,7 +149,7 @@ export default function App() {
     if (!onboarded && route.path !== '/welcome' && !route.path.startsWith('/lesson')) go('/welcome');
   }, [onboarded, route.path]);
   // Feedback: send anything still waiting; finish a feedback link that had to switch exams first
-  useEffect(() => { startCloudSync(); startTopList(); startAuth(); startFeedbackOutbox(); resumePendingGoTo(); }, []);
+  useEffect(() => { startContentEdits(); startCloudSync(); startTopList(); startAuth(); startReplyCheck(); startFeedbackOutbox(); resumePendingGoTo(); }, []);
 
   // The opening splash shows once each time the app opens; the app loads underneath it.
   // Automated test browsers (navigator.webdriver) skip it so tests can drive the app straight away.
@@ -172,6 +175,7 @@ export default function App() {
           </ErrorBoundary>
         </div>
         {!focus && onboarded && <BottomNav path={route.path} dueCards={dueCardCount(cards)} />}
+        <ReviewBar path={route.path} aboveNav={!focus && onboarded} />
         <CelebrationLayer />
         {!splash && !menuOpen && <UpdateBanner />}
         {(splash || menuOpen) && <SplashScreen onDone={hideSplash} instant={!splash} />}

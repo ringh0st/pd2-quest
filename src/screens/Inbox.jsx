@@ -1,6 +1,6 @@
 // The owner's Feedback inbox: every report, newest first, with where it came from and a link that opens that exact
 // spot. Only accounts in the `admins` table can read it (the database checks; this screen just asks).
-import { useCallback, useEffect, useId, useState } from 'react';
+import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import { supabase } from '../lib/auth.js';
 import { useAuth } from '../hooks/useAuth.js';
 import { Icon } from '../components/icons/Icon.jsx';
@@ -10,6 +10,7 @@ import { useFeedback } from '../components/Feedback.jsx';
 import { sfx } from '../audio/sfx.js';
 import { announceFeedbackChanged } from '../hooks/useNewFeedbackCount.js';
 import { addCoins } from '../state/store.js';
+import { setReviewFocus } from '../lib/reviewFocus.js';
 
 const STATUSES = [
   { value: 'new', label: 'New' },
@@ -22,9 +23,12 @@ const CATEGORY = { wrong: 'Wrong', confusing: 'Confusing', typo: 'Typo', bug: 'B
 /** The in-app part of a report's link ("#/go/js/card/types-4/2"), so it opens here, in this tab. */
 const appRoute = (link = '') => (link.includes('#') ? link.slice(link.indexOf('#') + 1) : null);
 
-export function Inbox() {
+const QUICK_REPLIES = ['Fixed, thanks for telling us!', 'Good catch! It’s corrected now.', 'Thanks! We’ve made it clearer.', 'Thanks for the idea, we’ll think about it.'];
+
+export function Inbox({ query = {} }) {
   const { ready, user, admin } = useAuth();
-  const [filter, setFilter] = useState('new');
+  const openId = query.open || null; // back from "Open the spot": show that report
+  const [filter, setFilter] = useState(openId ? 'all' : 'new');
   const [rows, setRows] = useState(null);
   const [failed, setFailed] = useState(false);
   const { showToast } = useFeedback();
@@ -43,16 +47,18 @@ export function Inbox() {
 
   useEffect(() => { if (admin) { setRows(null); load(); } }, [admin, load]);
 
-  const setStatus = async (row, status) => {
+  // Saves changes to one report (status, reply, private note) and shows them in place
+  const saveRow = async (row, patch, done) => {
     try {
       const client = await supabase();
-      const { error } = await client.from('feedback').update({ status }).eq('id', row.id);
+      const { error } = await client.from('feedback').update(patch).eq('id', row.id);
       if (error) throw error;
       sfx.done();
       announceFeedbackChanged();
-      setRows((list) => (filter === 'all' ? list.map((r) => (r.id === row.id ? { ...r, status } : r)) : list.filter((r) => r.id !== row.id)));
-      showToast(`Marked ${STATUSES.find((s) => s.value === status).label.toLowerCase()}`, 'check');
-    } catch { showToast('Couldn’t save that. Check the connection.'); }
+      setRows((list) => list.map((r) => (r.id === row.id ? { ...r, ...patch } : r)));
+      showToast(done, 'check');
+      return true;
+    } catch { showToast('Couldn’t save that. Check the connection.'); return false; }
   };
 
   return (
@@ -83,7 +89,14 @@ export function Inbox() {
           {rows && !failed && !rows.length && <p className="muted center"><Icon name="sparkles" className="ic-gold" /> Nothing here.</p>}
           {rows && rows.length > 0 && (
             <ol className="list-plain stack">
-              {rows.map((r) => <InboxRow key={r.id} row={r} onStatus={(s) => setStatus(r, s)} />)}
+              {rows.map((r) => (
+                <InboxRow
+                  key={r.id} row={r} focused={r.id === openId}
+                  onStatus={(status) => saveRow(r, { status }, `Marked ${STATUSES.find((x) => x.value === status).label.toLowerCase()}`)}
+                  onReply={(reply, fixed) => saveRow(r, { reply, replied_at: new Date().toISOString(), ...(fixed ? { status: 'fixed' } : {}) }, 'Reply sent. They’ll see it in the app.')}
+                  onNote={(note) => saveRow(r, { note: note || null }, 'Note saved')}
+                />
+              ))}
             </ol>
           )}
         </>
@@ -92,26 +105,50 @@ export function Inbox() {
   );
 }
 
-function InboxRow({ row, onStatus }) {
+function InboxRow({ row, focused, onStatus, onReply, onNote }) {
   const labelId = useId();
+  const replyId = useId();
+  const noteId = useId();
+  const ref = useRef(null);
   const route = appRoute(row.link);
+  const [reply, setReply] = useState(row.reply || '');
+  const [fixed, setFixed] = useState(row.status !== 'fixed' && ['wrong', 'typo', 'confusing', 'bug'].includes(row.category));
+  const [note, setNote] = useState(row.note || '');
+  useEffect(() => { if (focused) ref.current?.scrollIntoView({ block: 'center' }); }, [focused]);
   return (
-    <li className="card stack-s inbox-row">
+    <li ref={ref} className={`card stack-s inbox-row${focused ? ' focused' : ''}`}>
       <div className="spread small">
         <span className="chip">{CATEGORY[row.category] || row.category}</span>
         <time className="muted" dateTime={row.created_at}>{new Date(row.created_at).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })}</time>
       </div>
       <strong className="inbox-label">{row.label}</strong>
       {row.message ? <p className="inbox-message">{row.message}</p> : <p className="small muted">No message.</p>}
-      {row.contact && <p className="small">Reply to: <span className="inbox-contact">{row.contact}</span></p>}
+      {row.contact && <p className="small">Email: <span className="inbox-contact">{row.contact}</span></p>}
       <p className="small muted">{[row.device, row.app_version && `v${row.app_version}`, row.user_id ? 'signed in' : 'guest'].filter(Boolean).join(' · ')}</p>
       <div className="inbox-actions">
-        {route && <a className="btn" href={`#${route}`} onClick={() => sfx.tap()}><Icon name="next" /> Open the spot</a>}
+        {route && <a className="btn" href={`#${route}`} onClick={() => { sfx.tap(); setReviewFocus(row); }}><Icon name="next" /> Open the spot</a>}
         <span className="inbox-status">
           <span id={labelId} className="sr-only">Status</span>
           <Dropdown labelId={labelId} value={row.status} options={STATUSES} onChange={onStatus} />
         </span>
       </div>
+
+      <div className="inbox-reply stack-s">
+        <label htmlFor={replyId} className="small"><strong>Reply to them</strong> <span className="muted">(they see it in the app, on the Me screen)</span></label>
+        {row.reply && <p className="small muted"><Icon name="ok" /> Sent {row.replied_at ? new Date(row.replied_at).toLocaleDateString(undefined, { dateStyle: 'medium' }) : ''}. Edit and send again to change it.</p>}
+        <div className="inbox-quick">
+          {QUICK_REPLIES.map((q) => <button key={q} type="button" className="chip-btn" onClick={() => setReply(q)}>{q}</button>)}
+        </div>
+        <textarea id={replyId} className="input edit-input" rows={3} maxLength={2000} value={reply} onChange={(e) => setReply(e.target.value)} placeholder="Write your reply" />
+        <label className="small inbox-check"><input type="checkbox" checked={fixed} onChange={(e) => setFixed(e.target.checked)} /> Also mark as fixed</label>
+        <button type="button" className="btn primary" disabled={!reply.trim() || (reply.trim() === (row.reply || '') && !fixed)} onClick={() => onReply(reply.trim(), fixed)}><Icon name="chat" /> {row.reply ? 'Update reply' : 'Send reply'}</button>
+      </div>
+
+      <details className="inbox-note" open={!!row.note}>
+        <summary className="small"><strong>Private note</strong> <span className="muted">(only you see it)</span></summary>
+        <textarea id={noteId} aria-label="Private note" className="input edit-input" rows={2} maxLength={2000} value={note} onChange={(e) => setNote(e.target.value)} placeholder="What to fix, where you got to…" />
+        <button type="button" className="btn small" disabled={note === (row.note || '')} onClick={() => onNote(note.trim())}>Save note</button>
+      </details>
     </li>
   );
 }

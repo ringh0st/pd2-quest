@@ -26,6 +26,8 @@ import { SpeakButton } from '../components/SpeakButton.jsx';
 import { cardSpeech, termSpeech } from '../lib/speechText.js';
 import { useShortcuts } from '../hooks/useShortcuts.js';
 import { FeedbackButton } from '../components/FeedbackButton.jsx';
+import { AdminEditButton } from '../components/admin/AdminEditButton.jsx';
+import { useContentVersion } from '../hooks/useContentVersion.js';
 
 const KIND_LABEL = {
   text: '', code: 'Code', list: '',
@@ -91,6 +93,7 @@ export function Lesson({ id, startCard }) {
   const [dir, setDir] = useState(1);
   const [summary, setSummary] = useState(null);
   const reduced = useReducedMotion();
+  useContentVersion(); // admin edits re-render the cards
   const [term, setTerm] = useState(null); // index into lesson.terms, shown under the card
   const matcher = useMemo(() => termMatcher(lesson?.terms), [lesson]);
   const measureRef = useRef(null);
@@ -221,7 +224,7 @@ export function Lesson({ id, startCard }) {
           onDragEnd={(_, info) => { if (info.offset.x < -70) move(1); else if (info.offset.x > 70) move(-1); }}
           {...swipe}
         >
-          <CardContent card={card} glossary={glossary} tools={<><SpeakButton label="Read this card aloud" text={cardSpeech(card)} /><FeedbackButton kind="card" where={{ id: lesson.id, card: i }} label="Report a problem with this card" /></>} />
+          <CardContent card={card} glossary={glossary} tools={<><SpeakButton label="Read this card aloud" text={cardSpeech(card)} /><FeedbackButton kind="card" where={{ id: lesson.id, card: i }} label="Report a problem with this card" /><AdminEditButton kind="card" id={lesson.id} card={i} /></>} />
         </motion.article>
         {/* Invisible copies of every card: the stage keeps the tallest one's height, so moving between cards never makes the page jump. */}
         <div className="lesson-measure" ref={measureRef} aria-hidden="true" inert>
@@ -245,6 +248,7 @@ export function Lesson({ id, startCard }) {
                 <strong className="grow">{shownTerm.term}</strong>
                 <SpeakButton label={`Read “${shownTerm.term}” aloud`} text={termSpeech(shownTerm)} />
                 <FeedbackButton kind="term" where={{ id: lesson.id, card: i, term: shownTerm.term }} label={`Report a problem with the meaning of “${shownTerm.term}”`} />
+                <AdminEditButton kind="term" id={lesson.id} card={term} />
                 <button type="button" className="icon-btn" onClick={() => setTerm(null)} aria-label="Close the meaning"><Icon name="close" /></button>
               </div>
               <p>{shownTerm.say}</p>

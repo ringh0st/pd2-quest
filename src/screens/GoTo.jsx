@@ -8,6 +8,8 @@ import { PracticeRunner } from '../components/PracticeRunner.jsx';
 import { Rich } from '../lib/rich.jsx';
 import { Icon } from '../components/icons/Icon.jsx';
 import { FeedbackButton } from '../components/FeedbackButton.jsx';
+import { AdminEditButton } from '../components/admin/AdminEditButton.jsx';
+import { useContentVersion } from '../hooks/useContentVersion.js';
 import { go, replace } from '../hooks/useRoute.js';
 
 const PENDING = 'devquest.goto';
@@ -23,6 +25,7 @@ export function resumePendingGoTo() {
 }
 
 export function GoTo({ parts, query = {} }) {
+  useContentVersion(); // admin edits re-render the flashcard
   const [, exam, kind, rawId = '', n] = parts;
   const id = decodeURIComponent(rawId);
   const otherExam = TRACKS[exam] && exam !== track.id;
@@ -60,6 +63,7 @@ export function GoTo({ parts, query = {} }) {
           <button className="icon-btn" onClick={() => go('/cards')} aria-label="Back to flashcards"><Icon name="back" /></button>
           <h1 className="grow" style={{ fontSize: 'calc(20px * var(--text-scale))' }}>Flashcard {id}</h1>
           <FeedbackButton kind="flashcard" where={{ id }} />
+          <AdminEditButton kind="flashcard" id={id} />
         </div>
         <section className="card stack">
           <span className="small muted" style={{ fontWeight: 700 }}>QUESTION</span>

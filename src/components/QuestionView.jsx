@@ -13,6 +13,8 @@ import { useShortcuts } from '../hooks/useShortcuts.js';
 import { useEffect, useRef } from 'react';
 import { useCalm } from '../hooks/useMotionPrefs.js';
 import { FeedbackButton } from './FeedbackButton.jsx';
+import { AdminEditButton } from '../components/admin/AdminEditButton.jsx';
+import { useContentVersion } from '../hooks/useContentVersion.js';
 
 const LETTERS = 'ABCDEF';
 
@@ -34,6 +36,7 @@ function arrowNav(e) {
  */
 export function QuestionView({ question, chosen, onToggle, revealed, shake = 0, hidden = [] }) {
   const reduced = useReducedMotion();
+  useContentVersion(); // admin edits re-render the question
   const calm = useCalm();
   const [labelRef, animateLabel] = useAnimate();
   const lastShake = useRef(shake);
@@ -67,6 +70,7 @@ export function QuestionView({ question, chosen, onToggle, revealed, shake = 0, 
           text={questionSpeech(question)}
         />
         <FeedbackButton kind="question" where={{ id: question.id }} label="Report a problem with this question" />
+        <AdminEditButton kind="question" id={question.id} />
       </div>
       {question.code && <CodeBlock code={question.code} lang={question.lang} tryable={revealed} />}
       <div

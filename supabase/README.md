@@ -51,10 +51,18 @@ You do steps 1–4 (they need your accounts). Then send me the two values from s
    ```
 3. Back in the app, pull to refresh (or reopen): **Me → Feedback inbox** appears.
 
+## More SQL files (run each once, in this order, after setup.sql)
+
+- [`top.sql`](top.sql): the Weekly and Monthly Top players lists with coin prizes. Also turn on
+  **Authentication → Sign In / Providers → Allow anonymous sign-ins**, so guests can join.
+- [`content.sql`](content.sql): your edits to lessons, questions and flashcards (the pencil buttons), and replies
+  to feedback that the sender sees in the app.
+
 ## Reading feedback
 
-- **In the app:** Me → Feedback inbox. New / Doing / Fixed tabs, "Open the spot" jumps to the exact card or question
-  (switching exam if needed), and a status menu to triage.
+- **In the app:** the Admin tab. New / Doing / Fixed tabs; "Open the spot" jumps to the exact card or question
+  (switching exam if needed) and keeps the report on screen with **Edit this** and **Back to report**; a status
+  menu; a **reply** the sender sees on their Me screen; and a private note for yourself.
 - **In the dashboard:** Table Editor → `feedback`. Filter `status = new`, sort by `created_at`.
 
 ## Moving to a new domain later (e.g. Nimbolt)
