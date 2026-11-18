@@ -18,7 +18,7 @@ function syncText({ state, at }) {
 }
 
 export function AccountCard() {
-  const { ready, user, admin, busy, error } = useAuth();
+  const { ready, user, busy, error } = useAuth();
   const sync = useSyncExternalStore(subscribeSync, syncSnapshot, syncSnapshot);
   const [confirmDelete, setConfirmDelete] = useState(false);
   if (!hasSignIn()) return null;
@@ -50,7 +50,6 @@ export function AccountCard() {
         </span>
       </div>
       <p className="small muted" role="status"><Icon name={sync.state === 'synced' ? 'ok' : sync.state === 'error' || sync.state === 'offline' ? 'warn' : 'cloud'} /> {syncText(sync)}</p>
-      {admin && <a className="btn" href="#/inbox" onClick={() => sfx.tap()}><Icon name="report" /> Feedback inbox</a>}
       <div className="account-actions">
         <button type="button" className="btn" onClick={() => { sfx.tap(); syncNow(); }} disabled={sync.state === 'syncing'}><Icon name="retry" /> Sync now</button>
         <button type="button" className="btn" onClick={() => { sfx.tap(); signOut(); }} disabled={busy}>Sign out</button>

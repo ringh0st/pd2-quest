@@ -1,4 +1,4 @@
-# Dev Quest ⚡
+# Nimbolt ⚡
 
 A phone-first study app for **Salesforce certification exams**, designed for people with ADHD, people who get distracted easily, and anyone who learns better with quick wins. One app, four exams: pick **PD1 Quest** (Platform Developer I), **PD2 Quest** (Platform Developer II), **App Builder Quest** (Platform App Builder) or **JS Quest** (JavaScript Developer) on the opening screen, and switch any time in Settings. Each exam keeps its own progress; settings are shared.
 
@@ -41,7 +41,7 @@ Open the GitHub Pages link, then:
   1. Open the link in **Safari** (from another app, tap “Open in Safari” first).
   2. Tap **Share** (the square with an arrow, bottom of the screen; top right on iPad). Only see **⋯**? Tap it, then **Share**.
   3. Scroll down and tap **Add to Home Screen** (not listed? tap **View More** / **Edit Actions** and add it).
-  4. Keep **Open as Web App** on and tap **Add**. Open Dev Quest from the new ⚡ icon.
+  4. Keep **Open as Web App** on and tap **Add**. Open Nimbolt from the new ⚡ icon.
   5. Studied in Safari before? The home-screen app keeps its own progress: Safari → Settings → **Save backup**, then in the app → Settings → **Restore**.
 
   The app also has a small **📲 Add to Home Screen** button (Home and Settings) with these steps. It disappears once you add the app.

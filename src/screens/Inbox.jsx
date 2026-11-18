@@ -3,12 +3,12 @@
 import { useCallback, useEffect, useId, useState } from 'react';
 import { supabase } from '../lib/auth.js';
 import { useAuth } from '../hooks/useAuth.js';
-import { go } from '../hooks/useRoute.js';
 import { Icon } from '../components/icons/Icon.jsx';
 import { Segmented } from '../components/Controls.jsx';
 import { Dropdown } from '../components/Dropdown.jsx';
 import { useFeedback } from '../components/Feedback.jsx';
 import { sfx } from '../audio/sfx.js';
+import { announceFeedbackChanged } from '../hooks/useNewFeedbackCount.js';
 
 const STATUSES = [
   { value: 'new', label: 'New' },
@@ -48,6 +48,7 @@ export function Inbox() {
       const { error } = await client.from('feedback').update({ status }).eq('id', row.id);
       if (error) throw error;
       sfx.done();
+      announceFeedbackChanged();
       setRows((list) => (filter === 'all' ? list.map((r) => (r.id === row.id ? { ...r, status } : r)) : list.filter((r) => r.id !== row.id)));
       showToast(`Marked ${STATUSES.find((s) => s.value === status).label.toLowerCase()}`, 'check');
     } catch { showToast('Couldn’t save that. Check the connection.'); }
@@ -56,7 +57,6 @@ export function Inbox() {
   return (
     <main className="screen" id="main">
       <div className="topbar">
-        <button className="icon-btn" onClick={() => go('/me')} aria-label="Back"><Icon name="back" /></button>
         <h1 className="grow pq-head"><span className="pq-tile s"><Icon name="report" /></span><span>Feedback inbox</span></h1>
         {admin && <button className="icon-btn" onClick={() => { sfx.tap(); setRows(null); load(); }} aria-label="Refresh"><Icon name="retry" /></button>}
       </div>

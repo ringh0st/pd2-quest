@@ -7,6 +7,7 @@ import { installMode, promptInstall, installDone, markInstalled, subscribeInstal
 import { Sheet } from './Sheet.jsx';
 import { sfx } from '../audio/sfx.js';
 import { Icon } from './icons/Icon.jsx';
+import { BRAND_NAME } from '../lib/appInfo.js';
 import { HeroArt } from './art/HeroArt.jsx';
 
 function KeyIcon({ children, label }) {
@@ -44,8 +45,8 @@ const IPHONE_STEPS = [
   { mark: 'compass', title: 'Open this page in Safari', body: 'Already in Safari? Great. In another app (Gmail, Slack…), tap “Open in Safari” first.' },
   { mark: 'share', icon: <ShareIcon />, title: 'Tap Share', body: <>It’s the square with an arrow, at the bottom of the screen (top right on iPad). Only see three dots? Tap <MoreIcon /> first, then <strong>Share</strong>.</> },
   { mark: 'add', icon: <AddIcon />, title: 'Tap “Add to Home Screen”', body: 'Scroll down the list to find it. Not there? Tap “View More” or “Edit Actions” at the bottom and add it.' },
-  { mark: 'check', title: 'Keep “Open as Web App” on, then tap Add', body: 'The name can stay “Dev Quest”. The lightning-bolt icon appears on your home screen.' },
-  { mark: 'rocket', title: 'Open Dev Quest from the new icon', body: 'It opens full screen like a real app and works offline.' },
+  { mark: 'check', title: 'Keep “Open as Web App” on, then tap Add', body: `The name can stay “${BRAND_NAME}”. The lightning-bolt icon appears on your home screen.` },
+  { mark: 'rocket', title: `Open ${BRAND_NAME} from the new icon`, body: 'It opens full screen like a real app and works offline.' },
 ];
 
 export function InstallHelpButton({ className = '' }) {
@@ -73,7 +74,7 @@ function InstallGuide({ onClose, onAdded }) {
     <div className="stack install-sheet">
       <div className="pq-install-head">
         <HeroArt kind="install" size={56} />
-        <h2 id="install-guide-title">Add Dev Quest to your Home Screen</h2>
+        <h2 id="install-guide-title">Add {BRAND_NAME} to your Home Screen</h2>
       </div>
       <p className="small muted">One minute, once: its own icon, full screen, works offline, and safer from Safari clearing site data.</p>
 
@@ -104,7 +105,7 @@ function InstallGuide({ onClose, onAdded }) {
       {!ios && (
         <section className="stack-s" aria-labelledby="android-title">
           <h3 id="android-title" className="pq-head"><span className="pq-tile s" data-tone="green"><Icon name="bot" /></span><span>Android (Chrome)</span></h3>
-          {canPrompt && <button className="btn primary" onClick={() => promptInstall()}>Install Dev Quest now</button>}
+          {canPrompt && <button className="btn primary" onClick={() => promptInstall()}>Install {BRAND_NAME} now</button>}
           <p className="small">Tap <MenuIcon /> (top right), then <strong>Install app</strong> or <strong>Add to Home screen</strong>.</p>
         </section>
       )}

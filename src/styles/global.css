@@ -79,7 +79,7 @@ strong { font-weight: 700; }
   height: calc(var(--nav-h) + var(--safe-b));
   padding: 6px 8px var(--safe-b);
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: repeat(var(--tabs, 5), minmax(0, 1fr));
   background: var(--surface);
   border-top: 1px solid var(--hairline);
   z-index: 20;
@@ -1166,8 +1166,8 @@ h1[tabindex='-1']:focus, h2[tabindex='-1']:focus { outline: none; }
 .splash-title { display: grid; justify-items: center; gap: 10px; margin: 0; line-height: 1; }
 .splash-word { display: flex; font-family: 'Lexend', var(--font-body); font-size: clamp(44px, 14vw, 72px); font-weight: 700; letter-spacing: -0.02em; }
 .splash-letter { display: inline-block; color: var(--primary); text-shadow: 0 3px 0 var(--primary-ledge); animation: splashPop 600ms cubic-bezier(.34,1.56,.64,1) calc(1.35s + var(--i) * 70ms) both; }
-.splash-letter:nth-child(n+5) { color: var(--gold-text); text-shadow: 0 3px 0 color-mix(in srgb, var(--gold-text) 45%, #2b2118); }
-:root[data-theme='dark'] .splash-letter:nth-child(n+5) { color: var(--gold); text-shadow: 0 3px 0 #8A5A00; }
+.splash-letter.alt { color: var(--gold-text); text-shadow: 0 3px 0 color-mix(in srgb, var(--gold-text) 45%, #2b2118); }
+:root[data-theme='dark'] .splash-letter.alt { color: var(--gold); text-shadow: 0 3px 0 #8A5A00; }
 .splash-space { display: inline-block; width: 0.28em; }
 @keyframes splashPop { from { opacity: 0; transform: translateY(40%) scale(0.3) rotate(-14deg); } 60% { transform: translateY(-12%) scale(1.12) rotate(4deg); } }
 .splash-tagline {

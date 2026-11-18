@@ -4,6 +4,7 @@ import site from '../../site.json';
 
 /** The app as a whole (opening screen, Home Screen icon); each exam inside it is a Quest. */
 export const BRAND_NAME = site.name; // one place to rename: site.json
+export const BRAND_WORDMARK = site.wordmark; // the name in two parts: the second is drawn in gold
 export const BRAND_TAGLINE = 'Salesforce certification prep';
 export const APP_NAME = track.name;
 export const APP_TAGLINE = track.exam;

@@ -4,7 +4,8 @@
 
 export const REMINDER_DAYS = ['daily', 'weekdays'];
 export const DEFAULT_REMINDER = { time: '19:00', days: 'daily', notify: false };
-export const REMINDER_TITLE = 'Dev Quest: 5 minutes';
+/** The reminder's title, e.g. "Nimbolt: 5 minutes" (the app's name comes from site.json via appInfo). */
+export const reminderTitle = (appName) => `${appName}: 5 minutes`;
 export const REMINDER_BODY = 'Got 5 minutes? A tiny round is ready whenever you are. No pressure.';
 
 const pad = (n) => String(n).padStart(2, '0');
@@ -87,14 +88,15 @@ export function foldLine(line) {
 }
 
 /** A complete VCALENDAR with one recurring 5-minute event and an alarm at its start. */
-export function buildReminderIcs({ time, days, url, now = new Date() }) {
+export function buildReminderIcs({ time, days, url, appName = 'Study app', now = new Date() }) {
+  const title = reminderTitle(appName);
   const r = normalizeReminder({ time, days });
   const start = nextOccurrence(r, now);
   const description = `${REMINDER_BODY}${url ? ` Open the app: ${url}` : ''}`;
   const lines = [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
-    'PRODID:-//Dev Quest//Study reminder//EN',
+    `PRODID:-//${appName}//Study reminder//EN`,
     'CALSCALE:GREGORIAN',
     'METHOD:PUBLISH',
     'BEGIN:VEVENT',
@@ -103,13 +105,13 @@ export function buildReminderIcs({ time, days, url, now = new Date() }) {
     `DTSTART:${formatLocalDateTime(start)}`,
     'DURATION:PT5M',
     rruleFor(r.days),
-    `SUMMARY:${escapeText(REMINDER_TITLE)}`,
+    `SUMMARY:${escapeText(title)}`,
     `DESCRIPTION:${escapeText(description)}`,
     ...(url ? [`URL:${url}`] : []),
     'TRANSP:TRANSPARENT',
     'BEGIN:VALARM',
     'ACTION:DISPLAY',
-    `DESCRIPTION:${escapeText(REMINDER_TITLE)}`,
+    `DESCRIPTION:${escapeText(title)}`,
     'TRIGGER:PT0S',
     'END:VALARM',
     'END:VEVENT',

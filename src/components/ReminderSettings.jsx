@@ -3,6 +3,7 @@ import { useId, useState } from 'react';
 import { Switch, Segmented } from './Controls.jsx';
 import { useFeedback } from './Feedback.jsx';
 import { Icon } from './icons/Icon.jsx';
+import { BRAND_NAME } from '../lib/appInfo.js';
 import {
   canOfferNotifications, downloadReminderIcs, notificationPermission, readReminder, requestNotificationPermission, saveReminder,
 } from '../lib/reminders.js';
@@ -50,8 +51,8 @@ export function ReminderSettings() {
         <Switch
           label="Also notify me on this phone"
           hint={permission === 'denied'
-            ? 'Notifications are blocked for Dev Quest. You can allow them in your phone’s settings.'
-            : 'Only works while Dev Quest is open or still running in the background. Phones may close it, so keep the calendar reminder too.'}
+            ? `Notifications are blocked for ${BRAND_NAME}. You can allow them in your phone’s settings.`
+            : `Only works while ${BRAND_NAME} is open or still running in the background. Phones may close it, so keep the calendar reminder too.`}
           checked={reminder.notify && permission === 'granted'}
           disabled={permission === 'denied'}
           onChange={toggleNotify}

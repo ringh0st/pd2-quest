@@ -13,7 +13,7 @@ import { sfx } from '../../audio/sfx.js';
 import { haptic } from '../../audio/haptics.js';
 import { useHoldCelebrations } from '../../hooks/useFocusMode.js';
 import { useReducedMotion } from '../../hooks/useMotionPrefs.js';
-import { APP_VERSION, BRAND_NAME, BRAND_TAGLINE, COPYRIGHT_YEAR, STUDIO_NAME } from '../../lib/appInfo.js';
+import { APP_VERSION, BRAND_NAME, BRAND_WORDMARK, BRAND_TAGLINE, COPYRIGHT_YEAR, STUDIO_NAME } from '../../lib/appInfo.js';
 import { TRACKS, TRACK_IDS, currentTrack, hasChosenTrack, switchTrack, chooseTrack } from '../../lib/track.js';
 
 const SPLASH_MS = 4000;
@@ -94,7 +94,7 @@ export function SplashScreen({ onDone, instant = false }) {
       <h1 className="splash-title" aria-hidden="true">
         <span className="splash-word">
           {[...BRAND_NAME].map((ch, i) => (
-            <span key={i} className={ch === ' ' ? 'splash-space' : 'splash-letter'} style={{ '--i': i }}>{ch === ' ' ? ' ' : ch}</span>
+            <span key={i} className={ch === ' ' ? 'splash-space' : `splash-letter${i >= BRAND_WORDMARK[0].length ? ' alt' : ''}`} style={{ '--i': i }}>{ch === ' ' ? ' ' : ch}</span>
           ))}
         </span>
         <span className="splash-tagline">{BRAND_TAGLINE}</span>

@@ -30,7 +30,7 @@ test('reminders: DTSTART is local floating time on the first matching day', () =
 
 test('reminders: ics has CRLF lines of at most 75 octets, alarm, summary and URL', () => {
   const url = 'https://example.github.io/pd2-quest/';
-  const ics = buildReminderIcs({ time: '19:30', days: 'daily', url, now: at(15, 8) });
+  const ics = buildReminderIcs({ time: '19:30', days: 'daily', url, appName: 'Nimbolt', now: at(15, 8) });
   assert.ok(ics.startsWith('BEGIN:VCALENDAR\r\nVERSION:2.0\r\n'));
   assert.ok(ics.endsWith('END:VCALENDAR\r\n'));
   assert.equal(ics.replace(/\r\n/g, '').includes('\n'), false, 'no bare LF');
@@ -38,7 +38,7 @@ test('reminders: ics has CRLF lines of at most 75 octets, alarm, summary and URL
   const flat = unfold(ics);
   assert.match(flat, /BEGIN:VALARM\r\nACTION:DISPLAY\r\n/);
   assert.match(flat, /\r\nTRIGGER:PT0S\r\n/);
-  assert.match(flat, /\r\nSUMMARY:Dev Quest: 5 minutes\r\n/);
+  assert.match(flat, /\r\nSUMMARY:Nimbolt: 5 minutes\r\n/);
   assert.match(flat, new RegExp(`\\r\\nURL:${url}\\r\\n`));
   assert.ok(flat.includes(url), 'description links to the app');
 });

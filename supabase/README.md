@@ -18,9 +18,9 @@ You do steps 1–4 (they need your accounts). Then send me the two values from s
 
 ## 2. Create the Google sign-in client (Google Cloud, free)
 
-1. Go to console.cloud.google.com → create a project (e.g. `Dev Quest`).
+1. Go to console.cloud.google.com → create a project (e.g. `Nimbolt`).
 2. **APIs & Services → OAuth consent screen** (may be called **Google Auth Platform → Branding**):
-   - User type: **External**. App name: `Dev Quest`. Support email: yours.
+   - User type: **External**. App name: `Nimbolt`. Support email: yours.
    - App logo: optional (adding one means Google reviews it; you can skip it).
    - App domain → Privacy policy: `https://ringh0st.github.io/pd2-quest/privacy/`
      Terms: `https://ringh0st.github.io/pd2-quest/terms/` · Home page: `https://ringh0st.github.io/pd2-quest/`
@@ -28,7 +28,7 @@ You do steps 1–4 (they need your accounts). Then send me the two values from s
    - Scopes: only the default `email`, `profile`, `openid` (no review needed for these).
    - **Publish app** (Audience → "In production"), so anyone can sign in, not just test users.
 3. **APIs & Services → Credentials → Create credentials → OAuth client ID**:
-   - Type: **Web application**. Name: `Dev Quest web`.
+   - Type: **Web application**. Name: `Nimbolt web`.
    - Authorized JavaScript origins: `https://ringh0st.github.io`
    - Authorized redirect URIs: `https://YOUR-PROJECT.supabase.co/auth/v1/callback`
      (the exact URL is shown in Supabase under Authentication → Providers → Google, "Callback URL").

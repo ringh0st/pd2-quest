@@ -1,4 +1,4 @@
--- Dev Quest: everything the app needs in Supabase. Paste all of it into SQL Editor → New query → Run.
+-- Nimbolt: everything the app needs in Supabase. Paste all of it into SQL Editor → New query → Run.
 -- Safe to run again (it only adds what's missing and refreshes the rules).
 --
 --   feedback  reports from "Report a problem" / "Send feedback" (anyone may add; only admins read or change)

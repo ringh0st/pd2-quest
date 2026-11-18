@@ -55,6 +55,17 @@ export function MeIcon({ on }) {
   );
 }
 
+/** Admin (only the owner sees this tab): an inbox tray with a speech bubble, for learners' reports. */
+export function AdminIcon({ on }) {
+  return (
+    <Svg on={on}>
+      <path d="M4 15.5 6.6 7.4A2.5 2.5 0 0 1 9 5.6h10a2.5 2.5 0 0 1 2.4 1.8l2.6 8.1V22a2.5 2.5 0 0 1-2.5 2.5h-15A2.5 2.5 0 0 1 4 22Z" {...tone(on)} />
+      <path d="M4 15.5h5.5l1.6 2.8h5.8l1.6-2.8H24" />
+      <path d="M10.5 10.5h7" />
+    </Svg>
+  );
+}
+
 /** The big Play glyph inside the raised center tile: a rounded, solid triangle. */
 export function PlayGlyph() {
   return (
@@ -64,4 +75,4 @@ export function PlayGlyph() {
   );
 }
 
-export const NAV_ICONS = { home: HomeIcon, cards: CardsIcon, exam: ExamIcon, me: MeIcon };
+export const NAV_ICONS = { home: HomeIcon, cards: CardsIcon, exam: ExamIcon, me: MeIcon, admin: AdminIcon };
