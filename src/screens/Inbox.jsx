@@ -115,7 +115,7 @@ function InboxRow({ row, focused, onStatus, onReply, onNote }) {
   const replyId = useId();
   const noteId = useId();
   const ref = useRef(null);
-  const route = appRoute(row.link);
+  const route = row.kind === 'app' ? null : appRoute(row.link); // general messages aren't about a spot
   const [reply, setReply] = useState(row.reply || '');
   const [fixed, setFixed] = useState(row.status !== 'fixed' && ['wrong', 'typo', 'confusing', 'bug'].includes(row.category));
   const [note, setNote] = useState(row.note || '');
