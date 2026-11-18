@@ -24,6 +24,8 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+        env:
+          npm_config_onnxruntime_node_install_cuda: skip # the voice engine's optional GPU download (not needed)
       # The natural voice's recorded clips (made by the "Record natural voice" workflow) are published under audio/.
       - uses: actions/checkout@v4
         continue-on-error: true # before the first recording

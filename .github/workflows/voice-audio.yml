@@ -38,6 +38,8 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+        env:
+          npm_config_onnxruntime_node_install_cuda: skip # the voice engine's optional GPU download (not needed)
       - run: sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg
       - run: mkdir -p voice-audio new-clips
       - run: node scripts/make-voice-audio.mjs voice-audio --shard=${{ matrix.shard }}/8 --minutes=300
@@ -85,6 +87,8 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+        env:
+          npm_config_onnxruntime_node_install_cuda: skip # the voice engine's optional GPU download (not needed)
       - run: node scripts/make-voice-audio.mjs voice-audio --prune --index | tee index.txt
       - name: Commit the clips
         id: commit
