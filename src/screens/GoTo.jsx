@@ -22,19 +22,23 @@ export function resumePendingGoTo() {
   } catch { /* storage blocked */ }
 }
 
-export function GoTo({ parts }) {
+export function GoTo({ parts, query = {} }) {
   const [, exam, kind, rawId = '', n] = parts;
   const id = decodeURIComponent(rawId);
   const otherExam = TRACKS[exam] && exam !== track.id;
 
   useEffect(() => {
     if (otherExam) {
-      try { sessionStorage.setItem(PENDING, `/${parts.join('/')}`); } catch { /* storage blocked */ }
+      const qs = new URLSearchParams(query).toString();
+      try { sessionStorage.setItem(PENDING, `/${parts.join('/')}${qs ? `?${qs}` : ''}`); } catch { /* storage blocked */ }
       switchTrack(exam);
       return;
     }
     if ((kind === 'card' || kind === 'term') && lessonById[id]) replace(`/lesson/${id}?card=${Number(n) || 0}`);
-    else if (kind === 'app') replace(`/${parts.slice(3).join('/')}`);
+    else if (kind === 'app') {
+      const qs = new URLSearchParams(query).toString();
+      replace(`/${parts.slice(3).join('/')}${qs ? `?${qs}` : ''}`);
+    }
   }, [otherExam]); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (otherExam || ((kind === 'card' || kind === 'term') && lessonById[id]) || kind === 'app') {

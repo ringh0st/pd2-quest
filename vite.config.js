@@ -4,6 +4,35 @@ import { VitePWA } from 'vite-plugin-pwa';
 import { readFileSync } from 'node:fs';
 
 const { version } = JSON.parse(readFileSync('./package.json', 'utf8'));
+// Name, address and wording live in site.json (one place to rename the app or move it to a new domain)
+const site = JSON.parse(readFileSync('./site.json', 'utf8'));
+const SITE_URL = site.url.endsWith('/') ? site.url : `${site.url}/`;
+
+/** Fills the page head: name, canonical address, link previews and structured data for search engines. */
+function siteHead() {
+  const ld = [
+    { '@context': 'https://schema.org', '@type': 'WebSite', name: site.name, url: SITE_URL, description: site.tagline },
+    { '@context': 'https://schema.org', '@type': 'Organization', name: site.studio, url: SITE_URL, logo: `${SITE_URL}icon-512.png` },
+  ];
+  const tags = [
+    `<link rel="canonical" href="${SITE_URL}" />`,
+    `<meta property="og:type" content="website" />`,
+    `<meta property="og:site_name" content="${site.name}" />`,
+    `<meta property="og:title" content="${site.name}: ${site.tagline}" />`,
+    `<meta property="og:description" content="Free, bite-size lessons, key terms explained simply, practice questions with explanations and mock exams for Salesforce certification exams. No account." />`,
+    `<meta property="og:url" content="${SITE_URL}" />`,
+    `<meta property="og:image" content="${SITE_URL}og.png" />`,
+    `<meta name="twitter:card" content="summary_large_image" />`,
+    ...ld.map((o) => `<script type="application/ld+json">${JSON.stringify(o)}</script>`),
+  ].join('\n    ');
+  return {
+    name: 'site-head',
+    transformIndexHtml: (html) => html
+      .replace('<!--seo-head-->', tags)
+      .replaceAll('%SITE_NAME%', site.name).replaceAll('%SITE_TAGLINE%', site.tagline)
+      .replace('%WORDMARK_A%', site.wordmark[0]).replace('%WORDMARK_B%', site.wordmark[1]),
+  };
+}
 
 // Relative base so the build works on GitHub Pages under /<repo>/.
 export default defineConfig({
@@ -13,14 +42,15 @@ export default defineConfig({
   define: { 'import.meta.env.VITE_APP_VERSION': JSON.stringify(version) },
   plugins: [
     react(),
+    siteHead(),
     VitePWA({
       registerType: 'prompt',
       injectRegister: false, // registered in src/lib/updates.js (update during the splash, else a banner)
       includeAssets: ['icon.svg', 'apple-touch-icon.png'],
       manifest: {
-        name: 'Dev Quest: Salesforce certification prep',
-        short_name: 'Dev Quest',
-        description: 'Bite-sized, ADHD-friendly prep for Salesforce certification exams.',
+        name: `${site.name}: Salesforce certification prep`,
+        short_name: site.name,
+        description: `${site.tagline}.`,
         start_url: './',
         scope: './',
         display: 'standalone',
@@ -43,6 +73,8 @@ export default defineConfig({
           options: { cacheName: 'natural-voice-list' },
         }],
         navigateFallback: 'index.html',
+        // The study site (scripts/build-site.mjs) is plain pages next to the app: let them load, don't show the app instead
+        navigateFallbackDenylist: [/\/(guides|about|privacy|terms)\//, /\/(sitemap\.xml|robots\.txt|og\.png)$/],
       },
     }),
   ],

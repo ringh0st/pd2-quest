@@ -93,7 +93,7 @@ function Screen({ route }) {
     case 'resources': return <Resources />;
     case 'welcome': return <Onboarding />;
     case 'plan': return <Plan />;
-    case 'go': return <GoTo parts={route.parts} key={route.path} />;
+    case 'go': return <GoTo parts={route.parts} query={route.query} key={route.path} />;
     case 'placement': return <Placement a={b} b={route.parts[2]} key={route.path} />;
     default: return <Home />;
   }
