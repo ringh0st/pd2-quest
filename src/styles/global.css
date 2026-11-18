@@ -394,7 +394,8 @@ a.card:not(.section-card):not(.stat):not(.row):not(.stack-s) { display: block; }
   -webkit-backdrop-filter: blur(6px);
 }
 .celebrate-card {
-  width: min(100%, 380px);
+  /* Full width up to 380px, always centred (iPhone Safari left it narrow and to the left with min(100%, 380px)) */
+  width: 100%; max-width: 380px; margin-inline: auto; align-self: center; box-sizing: border-box;
   background: var(--surface);
   border-radius: 30px;
   padding: 28px 22px 22px;
