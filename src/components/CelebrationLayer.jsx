@@ -17,6 +17,7 @@ import { BadgeMedal } from './art/BadgeMedal.jsx';
 import { Icon } from './icons/Icon.jsx';
 import { track } from '../lib/track.js';
 import { exam } from '../data/index.js';
+import { holdCoins, flyCoins } from '../lib/coinFlight.js';
 
 const SETTLE_MS = 900;
 
@@ -28,7 +29,7 @@ function line(ev) {
     case 'levelUp': return { art: 'levelUp', icon: 'trend', tone: 'primary', title: `Level ${ev.level}!`, body: `You’re now ${withArticle(rankFor(ev.level, exam.ranks))}.`, rank: 3 };
     case 'goal': return { art: 'goal', icon: 'target', tone: 'correct', title: 'Daily goal smashed!', body: 'Anything more today is bonus XP.', rank: 2 };
     case 'chest': return ev.coins
-      ? { art: 'chest', icon: 'gift', tone: 'gold', title: ev.title || 'Bonus chest!', body: `+${ev.coins} coins for the shop.`, rank: 1 }
+      ? { art: 'chest', icon: 'gift', tone: 'gold', title: ev.title || 'Bonus chest!', body: `+${ev.coins} coins for the shop.`, rank: 1, coins: ev.coins }
       : { art: 'chest', icon: 'gift', tone: 'gold', title: `Lucky drop: +${ev.xp} XP`, body: 'Surprise bonus for finishing a round.', rank: 1 };
     case 'passed': return { art: 'trophy', icon: 'trophy', tone: 'gold', title: `${track.exam.replace('Salesforce ', '')}!`, body: 'You did it. Zap is so proud. Go celebrate!', rank: 4 };
     case 'reply': return { icon: 'chat', tone: 'primary', title: ev.count > 1 ? `${ev.count} replies to your reports` : 'You got a reply to your report', body: 'Read it on the Me screen.', rank: 0, small: true };
@@ -55,7 +56,8 @@ export function CelebrationLayer() {
   const { path } = useRoute();
   const { showToast, celebrate, announce } = useFeedback();
   const reduced = useReducedMotion();
-  const [shown, setShown] = useState(null); // { items, count }
+  const [shown, setShown] = useState(null); // { items, count, coins }
+  const artRef = useRef(null);
   const shownPath = useRef(path);
 
   // Wait until no flow holds celebrations, then a beat more, then show everything queued at once.
@@ -73,7 +75,10 @@ export function CelebrationLayer() {
         return;
       }
       shownPath.current = path;
-      setShown({ items, count });
+      // Coins from chests stay off the counter until you collect them: then they fly in
+      const coins = items.reduce((sum, x) => sum + (x.coins || 0), 0);
+      holdCoins(coins);
+      setShown({ items, count, coins });
       const top = items[0];
       if (top.title.startsWith('Level')) sfx.levelUp(); else if (items.every((x) => x.small)) sfx.streak(); else sfx.chest();
       haptic('celebrate');
@@ -85,6 +90,7 @@ export function CelebrationLayer() {
 
   const close = () => {
     if (!shown) return;
+    if (shown.coins) flyCoins({ from: artRef.current, amount: shown.coins });
     takeEvents(shown.count);
     setShown(null);
   };
@@ -117,10 +123,12 @@ export function CelebrationLayer() {
             exit={reduced ? { opacity: 0 } : { scale: 0.9, opacity: 0 }}
             transition={{ type: 'spring', stiffness: 400, damping: 25 }}
           >
-            <div className="celebrate-art">
+            <div className="celebrate-art" ref={artRef}>
               {top.badge
                 ? <BadgeMedalPop id={top.badge} reduced={reduced || calm} />
-                : <HeroArt kind={top.art} size={112} />}
+                : top.art === 'chest' && shown.coins && !reduced && !calm
+                  ? <ChestPop />
+                  : <HeroArt kind={top.art} size={112} />}
             </div>
             <h2 id="celebrate-title">{top.title}</h2>
             {top.body && <p className="muted">{top.body}</p>}
@@ -134,7 +142,9 @@ export function CelebrationLayer() {
                 ))}
               </ul>
             )}
-            <button className="btn primary block" autoFocus onClick={close}>Nice! Keep going</button>
+            {shown.coins
+              ? <button className="btn gold block big collect-btn" autoFocus onClick={close}><Icon name="coin" /> Collect +{shown.coins}</button>
+              : <button className="btn primary block" autoFocus onClick={close}>Nice! Keep going</button>}
           </motion.div>
         </motion.div>
       )}
@@ -153,5 +163,30 @@ function BadgeMedalPop({ id, reduced }) {
     >
       <BadgeMedal id={id} size={112} />
     </motion.div>
+  );
+}
+
+/** The reward chest: wobbles (knock, knock), pops open with a sparkle, coins glinting inside. */
+function ChestPop() {
+  useEffect(() => {
+    const t1 = setTimeout(() => sfx.chestShake(), 250);
+    const t2 = setTimeout(() => sfx.chestPop(), 900);
+    return () => { clearTimeout(t1); clearTimeout(t2); };
+  }, []);
+  return (
+    <span className="chest-pop">
+      <motion.span
+        className="chest-glow" aria-hidden="true"
+        initial={{ scale: 0.2, opacity: 0 }} animate={{ scale: [0.2, 1.4, 1.15], opacity: [0, 0.9, 0.55] }}
+        transition={{ delay: 0.9, duration: 0.7 }}
+      />
+      <motion.span
+        style={{ display: 'inline-grid' }}
+        animate={{ rotate: [0, -9, 9, -7, 7, -3, 0, 0], scale: [1, 1, 1, 1, 1, 1, 1.22, 1] }}
+        transition={{ duration: 1.2, delay: 0.2, times: [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.62, 1] }}
+      >
+        <HeroArt kind="chest" size={112} />
+      </motion.span>
+    </span>
   );
 }

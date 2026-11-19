@@ -10,6 +10,7 @@ import { useFeedback } from '../components/Feedback.jsx';
 import { sfx } from '../audio/sfx.js';
 import { announceFeedbackChanged } from '../hooks/useNewFeedbackCount.js';
 import { addCoins } from '../state/store.js';
+import { holdCoins, flyCoins } from '../lib/coinFlight.js';
 import { setReviewFocus } from '../lib/reviewFocus.js';
 
 const STATUSES = [
@@ -83,7 +84,7 @@ export function Inbox({ query = {} }) {
           <section className="card stack-s" aria-labelledby="owner-tools">
             <strong id="owner-tools" className="ic-label"><Icon name="tools" /> Owner tools</strong>
             <p className="small muted">For testing the Shop. Coins are saved on this device only.</p>
-            <button type="button" className="btn" onClick={() => { addCoins(1000); sfx.coin(); showToast('Added 1000 coins', 'coin'); }}>
+            <button type="button" className="btn" onClick={(e) => { const from = e.currentTarget; holdCoins(1000); addCoins(1000); sfx.coin(); flyCoins({ from, amount: 1000 }); }}>
               <Icon name="coin" /> Add 1000 coins
             </button>
           </section>

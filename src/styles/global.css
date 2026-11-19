@@ -1622,3 +1622,20 @@ body:has(.app.with-nav) .review-bar.above-nav { margin-left: 0; }
 .top-medal.s .top-medal-n { font-size: 13px; }
 
 .top-promo-sub .nowrap { white-space: nowrap; }
+
+/* ===== coins flying into the counter ===== */
+.coin-flight-layer { position: fixed; inset: 0; z-index: 80; pointer-events: none; }
+.flying-coin {
+  position: fixed; left: 0; top: 0; width: 30px; height: 30px; margin: -15px 0 0 -15px; display: grid; place-items: center;
+  border-radius: 50%; background: radial-gradient(circle at 35% 30%, #FFE9A3, var(--gold) 55%, var(--gold-ledge));
+  color: #5A3B00; box-shadow: 0 2px 0 var(--gold-ledge), 0 4px 10px rgb(0 0 0 / 0.18); will-change: transform;
+}
+.flying-coin .icon { width: 18px; height: 18px; }
+.coin-bank { position: fixed; top: calc(var(--safe-t, 0px) + 14px); right: 14px; z-index: 81; box-shadow: var(--shadow-2); }
+.collect-btn { font-size: calc(18px * var(--text-scale)); }
+.chest-pop { position: relative; display: inline-grid; place-items: center; }
+.chest-glow {
+  position: absolute; width: 150px; height: 150px; border-radius: 50%;
+  background: radial-gradient(circle, color-mix(in srgb, var(--gold) 70%, transparent), transparent 65%);
+}
+.chest-pop > span:last-child { position: relative; }

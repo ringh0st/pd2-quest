@@ -51,6 +51,7 @@ import { startTopList } from './lib/topList.js';
 import { startContentEdits } from './lib/contentEdits.js';
 import { startReplyCheck } from './lib/feedbackReplies.js';
 import { ReviewBar } from './components/admin/ReviewBar.jsx';
+import { CoinFlightLayer } from './components/game/CoinFlightLayer.jsx';
 
 const FOCUS_ROUTES = /^\/(lesson|sprint|welcome|play|bolt|placement)/;
 
@@ -177,6 +178,7 @@ export default function App() {
         {!focus && onboarded && <BottomNav path={route.path} dueCards={dueCardCount(cards)} />}
         <ReviewBar path={route.path} aboveNav={!focus && onboarded} />
         <CelebrationLayer />
+        <CoinFlightLayer />
         {!splash && !menuOpen && <UpdateBanner />}
         {(splash || menuOpen) && <SplashScreen onDone={hideSplash} instant={!splash} />}
       </FeedbackProvider>

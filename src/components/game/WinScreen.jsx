@@ -15,6 +15,7 @@ import { Icon } from '../icons/Icon.jsx';
 import { BossArt } from '../art/BossArt.jsx';
 import { BreakCard } from '../BreakCard.jsx';
 import { exam } from '../../data/index.js';
+import { RewardCoins } from './RewardCoins.jsx';
 
 export function WinScreen({ kind, title, stars, prevStars = 0, coins = 0, xp = 0, detail, next, worldId, onRetry }) {
   const reduced = useReducedMotion();
@@ -30,7 +31,6 @@ export function WinScreen({ kind, title, stars, prevStars = 0, coins = 0, xp = 0
       haptic('celebrate');
       // one rising chime per star as each lands, then the coin clink when the rewards appear
       for (let i = 1; i <= stars; i++) timers.push(setTimeout(() => { sfx.star(i); haptic('light'); }, 420 + i * 380));
-      if (coins > 0) timers.push(setTimeout(() => sfx.coin(), 1550));
       timers.push(setTimeout(() => celebrate(kind === 'boss' ? 60 : 45), 300 + stars * 380));
     } else { if (kind === 'boss') sfx.bossLose(); else sfx.done(); haptic('soft'); }
     announce(won ? `Level complete. ${stars} stars. Plus ${coins} coins and ${xp} XP.` : 'Not this time. Try again!');
@@ -65,7 +65,7 @@ export function WinScreen({ kind, title, stars, prevStars = 0, coins = 0, xp = 0
         {detail && <p className="small">{detail}</p>}
         {won && (
           <motion.div className="row" style={{ justifyContent: 'center', flexWrap: 'wrap' }} initial={reduced ? false : { opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 1.5 }}>
-            {coins > 0 && <span className="chip gold"><Icon name="coin" /> +{coins}<span className="sr-only"> coins</span></span>}
+            {coins > 0 && <RewardCoins coins={coins} delay={1650} />}
             {xp > 0 && <span className="chip primary">+{xp} XP</span>}
           </motion.div>
         )}

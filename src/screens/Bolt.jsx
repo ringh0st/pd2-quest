@@ -8,6 +8,7 @@ import { shuffle } from '../engine/session.js';
 import { COINS } from '../game/economy.js';
 import { dayKey } from '../engine/dates.js';
 import { PracticeRunner } from '../components/PracticeRunner.jsx';
+import { RewardCoins } from '../components/game/RewardCoins.jsx';
 import { Stars } from '../components/game/Stars.jsx';
 import { go } from '../hooks/useRoute.js';
 import { useFeedback } from '../components/Feedback.jsx';
@@ -93,7 +94,7 @@ export function Bolt() {
           <>
             <Stars count={stars} size={40} animateIn={!result.replay || !!result.coins} />
             <p className="ic-label"><strong>{result.right}/5</strong> right{result.right === 5 && <span className="ic-ok"><Icon name="target" label="Perfect" /></span>}</p>
-            {result.coins > 0 ? <span className="chip gold"><Icon name="coin" /> +{result.coins}<span className="sr-only"> coins</span></span> : <p className="small muted">Today’s coins collected. New Bolt tomorrow!</p>}
+            {result.coins > 0 ? <RewardCoins coins={result.coins} delay={900} /> : <p className="small muted">Today’s coins collected. New Bolt tomorrow!</p>}
             <BreakCard />
             <button className="btn primary block" autoFocus onClick={() => go('/')}>Back home</button>
             <button className="btn block" onClick={() => setPhase('run')}>Replay for fun</button>

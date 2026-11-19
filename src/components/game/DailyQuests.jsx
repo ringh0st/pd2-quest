@@ -1,6 +1,7 @@
 // Today's three quests with progress bars. Claim each for coins; all three opens a bonus chest.
 import { motion } from 'motion/react';
 import { useStore, claimQuest } from '../../state/store.js';
+import { holdCoins, flyCoins } from '../../lib/coinFlight.js';
 import { questsFor, questProgress, isQuestDone, emptyDayStats } from '../../game/quests.js';
 import { COINS } from '../../game/economy.js';
 import { dayKey } from '../../engine/dates.js';
@@ -41,7 +42,13 @@ export function DailyQuests() {
               {done && !got && (
                 <motion.button
                   className="btn gold small quest-claim" aria-label={`Claim ${COINS.dailyQuest} coins for: ${q.text}`} animate={reduced ? {} : { scale: [1, 1.08, 1] }} transition={{ duration: 0.9, repeat: 3 }}
-                  onClick={() => { claimQuest(q, { coins: COINS.dailyQuest, bonus: COINS.allQuestsBonus }); sfx.quest(); haptic('success'); celebrate(30); showToast(`+${COINS.dailyQuest} coins!`, 'coin'); }}
+                  onClick={(e) => {
+                    const from = e.currentTarget.getBoundingClientRect();
+                    holdCoins(COINS.dailyQuest);
+                    claimQuest(q, { coins: COINS.dailyQuest, bonus: COINS.allQuestsBonus });
+                    sfx.quest(); haptic('success'); celebrate(30);
+                    flyCoins({ from: { x: from.left + from.width / 2, y: from.top + from.height / 2 }, amount: COINS.dailyQuest });
+                  }}
                 >Claim <Icon name="coin" /> {COINS.dailyQuest}</motion.button>
               )}
             </li>

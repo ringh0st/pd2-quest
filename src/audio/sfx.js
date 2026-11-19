@@ -50,8 +50,8 @@ function whoosh({ at = 0, dur = 0.14, vol = 0.04, from = 1800, to = 600 } = {}) 
 const C5 = 523.25;
 const semis = (n) => C5 * Math.pow(2, n / 12);
 const play = (fn) => { if (!enabled) return; try { fn(); } catch { /* sound is a nice extra; never break the app */ } };
-const arp = (steps, { gap = 0.07, dur = 0.24, type = 'triangle', vol = 0.09, base = 0 } = {}) =>
-  steps.forEach((s, i) => tone(semis(s + base), { at: i * gap, dur, type, vol }));
+const arp = (steps, { at = 0, gap = 0.07, dur = 0.24, type = 'triangle', vol = 0.09, base = 0 } = {}) =>
+  steps.forEach((s, i) => tone(semis(s + base), { at: at + i * gap, dur, type, vol }));
 
 export const sfx = {
   // ---- taps and navigation ----
@@ -88,6 +88,12 @@ export const sfx = {
   quest: () => play(() => arp([0, 4, 7], { gap: 0.06, dur: 0.18, vol: 0.08, base: 7 })),
   levelUp: () => play(() => arp([0, 4, 7, 12, 16], { gap: 0.08, dur: 0.25, vol: 0.1 })),
   chest: () => play(() => arp([12, 16, 19, 24], { gap: 0.06, dur: 0.3, type: 'sine', vol: 0.09 })),
+  /** One coin landing in the counter: each one a step higher, like a music box filling up. */
+  coinLand: (i = 0) => play(() => tone(semis(19 + [0, 2, 4, 7, 9, 12, 14, 16, 19, 21, 24, 26][i % 12]), { dur: 0.09, type: 'triangle', vol: 0.05 })),
+  /** The chest wobbling before it opens: soft wooden knocks. */
+  chestShake: () => play(() => { tone(semis(-5), { dur: 0.05, type: 'triangle', vol: 0.05 }); tone(semis(-3), { at: 0.12, dur: 0.05, type: 'triangle', vol: 0.05 }); tone(semis(-5), { at: 0.24, dur: 0.05, type: 'triangle', vol: 0.05 }); }),
+  /** The chest popping open: a bright upward sparkle. */
+  chestPop: () => play(() => { tone(semis(7), { dur: 0.22, type: 'sine', vol: 0.08, slide: 2 }); arp([19, 24, 28, 31], { at: 0.08, gap: 0.04, dur: 0.18, type: 'triangle', vol: 0.05 }); }),
   done: () => play(() => arp([0, 7, 12], { gap: 0.1, dur: 0.3, vol: 0.1 })),
   start: () => play(() => { whoosh({ dur: 0.2, vol: 0.04, from: 500, to: 2200 }); arp([0, 4, 7, 12], { gap: 0.06, dur: 0.2, vol: 0.09, base: 2 }); }),
   // ---- study tools ----
