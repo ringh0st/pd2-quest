@@ -10,6 +10,8 @@ import { Icon } from '../components/icons/Icon.jsx';
 import { ListenButton } from '../components/language/ListenButton.jsx';
 import { useFeedback } from '../components/Feedback.jsx';
 import { sfx } from '../audio/sfx.js';
+import { useStudyScreen } from '../hooks/useStudyScreen.js';
+import { useFocusMode } from '../hooks/useFocusMode.js';
 
 const TYPE = { informal: 'Informal message', formal: 'Formal message', opinion: 'Opinion text' };
 const XP_FOR_TASK = 20;
@@ -52,6 +54,8 @@ function WritingList() {
 }
 
 function WritingTask({ task }) {
+  useStudyScreen();
+  useFocusMode(); // a focused screen: the tab bar steps aside, as in lessons and practice
   const [state, setState] = useState(() => writingState(task.id));
   const [phase, setPhase] = useState(state.done ? 'review' : 'write'); // write | check | review
   const ref = useRef(null);
