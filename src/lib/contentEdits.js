@@ -32,7 +32,8 @@ export function editFields(kind, id, card = -1) {
   const t = editTarget(kind, id, card);
   if (!t) return null;
   const now = Object.fromEntries(EDIT_FIELDS[kind].map((f) => [f, t[f]]));
-  return { now, original: originals.get(editKey(kind, id, card)) ?? now, edited: edits.has(editKey(kind, id, card)) };
+  const original = { ...(originals.get(editKey(kind, id, card)) ?? now), kind: t.kind }; // kind: which form to show
+  return { now, original, edited: edits.has(editKey(kind, id, card)) };
 }
 
 function applyAll(rows) {
@@ -63,7 +64,7 @@ const rowsNow = () => [...edits.values()];
 /** Saves an edit (admins only; the database checks). Returns true when saved. */
 export async function saveEdit(kind, id, card, patch) {
   const target = editTarget(kind, id, card);
-  const clean = cleanPatch(kind, patch, originals.get(editKey(kind, id, card)) ?? target ?? {});
+  const clean = cleanPatch(kind, patch, { ...(originals.get(editKey(kind, id, card)) ?? target ?? {}), kind: target?.kind });
   if (!target || !clean) throw new Error('That edit isn’t valid (a question needs 2+ options and a correct answer).');
   const client = await supabase();
   const row = { exam: track.id, kind, item_id: id, card: card ?? -1, patch: clean };

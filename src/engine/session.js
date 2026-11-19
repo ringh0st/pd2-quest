@@ -68,8 +68,9 @@ export function buildExam(sections, { count = 60, rand = Math.random, hardOnly =
     const n = i === sections.length - 1
       ? count - out.length
       : Math.round((s.weight / total) * count);
-    const hard = s.questions.filter((q) => q.difficulty >= 3);
-    const other = s.questions.filter((q) => !(q.difficulty >= 3));
+    const choices = s.questions.filter((q) => q.kind !== 'type' && q.kind !== 'order'); // the mock is multiple choice (typed language tasks are practice)
+    const hard = choices.filter((q) => q.difficulty >= 3);
+    const other = choices.filter((q) => !(q.difficulty >= 3));
     let pool;
     if (hardOnly) pool = [...ordered(hard), ...ordered(other.filter((q) => q.difficulty === 2))];
     else {
@@ -80,7 +81,7 @@ export function buildExam(sections, { count = 60, rand = Math.random, hardOnly =
       const hFresh = mockFirst(shuffle(hard.filter(fresh), rand));
       const k = Math.min(hFresh.length, Math.round(n * hardShare));
       const restFresh = mockFirst(shuffle([...hFresh.slice(k), ...other.filter(fresh)], rand));
-      pool = [...hFresh.slice(0, k), ...restFresh, ...ordered(s.questions.filter((q) => !fresh(q)))];
+      pool = [...hFresh.slice(0, k), ...restFresh, ...ordered(choices.filter((q) => !fresh(q)))];
     }
     out.push(...pool.slice(0, Math.max(0, n)));
   });

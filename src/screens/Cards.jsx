@@ -19,6 +19,8 @@ import { Icon } from '../components/icons/Icon.jsx';
 import { useStudyScreen } from '../hooks/useStudyScreen.js';
 import { Dropdown } from '../components/Dropdown.jsx';
 import { FeedbackButton } from '../components/FeedbackButton.jsx';
+import { track } from '../lib/track.js';
+import { ListenButton } from '../components/language/ListenButton.jsx';
 import { AdminEditButton } from '../components/admin/AdminEditButton.jsx';
 import { useContentVersion } from '../hooks/useContentVersion.js';
 
@@ -118,6 +120,7 @@ export function Cards({ query }) {
         <span className="chip">{i + 1}/{deck.length}</span>
         <FeedbackButton kind="flashcard" where={{ id: card.id }} label="Report a problem with this flashcard" />
         <AdminEditButton kind="flashcard" id={card.id} />
+        {track.lang && <ListenButton text={card.front.replace(/[`*|]/g, '')} label="Listen to the word" />}
         <QuickSettings />
         <ParkIt />
       </div>

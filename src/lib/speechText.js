@@ -18,19 +18,27 @@ export function speakable(text = '') {
     .trim();
 }
 
+// Example sentences and tables in a language being learned have their own Finnish listen buttons: the English
+// read-aloud says only the translations and a pointer to them.
 export const cardSpeech = (card) =>
-  [card.title, card.body, ...(card.items ?? []), card.type === 'code' ? 'There is a code example on this card.' : '']
+  [card.title, card.body,
+    ...(card.items ?? []).map((it) => (typeof it === 'string' ? it : it?.en)),
+    card.type === 'code' ? 'There is a code example on this card.' : '',
+    card.type === 'table' ? 'There is a table of forms on this card.' : '']
     .filter(Boolean).join('. ');
 
 export const termSpeech = (term) => `${term.term}. ${term.say}`;
 
 export const questionSpeech = (q) =>
-  [cleanQuestion(q.q), q.code ? 'There is a code example.' : '', ...q.options.map((o, i) => `${LETTERS[i]}. ${o}.`)]
+  [cleanQuestion(q.q), q.code ? 'There is a code example.' : '',
+    q.kind === 'type' ? 'Type the missing word.' : q.kind === 'order' ? 'Build the sentence from the words.' : '',
+    ...(q.options ?? []).map((o, i) => `${LETTERS[i]}. ${o}.`)]
     .filter(Boolean).join(' ');
 
 /** The explanation after Check: the right answer first (shown either way), then why. */
-export const explanationSpeech = (q) =>
-  `The answer is ${q.answer.map((i) => `${LETTERS[i]}, ${q.options[i]}`).join(' and ')}. ${q.explain}`;
+export const explanationSpeech = (q) => (q.options
+  ? `The answer is ${q.answer.map((i) => `${LETTERS[i]}, ${q.options[i]}`).join(' and ')}. ${q.explain}`
+  : `The answer is ${q.answer[0]}. ${q.explain}`);
 
 /** What "Try it" in Settings says. */
 export const VOICE_SAMPLE = 'Hi! I will read your lessons and explanations out loud. Tap a word you don\'t know, and I\'ll explain it.';

@@ -14,7 +14,7 @@ const shown = (o) => o.replace(/`|\*\*/g, '').length;
 
 test('the correct option is the longest no more often than chance allows (≤ 32% per section)', () => {
   for (const id of SECTIONS) {
-    const single = load(id).questions.filter((q) => q.answer.length === 1);
+    const single = load(id).questions.filter((q) => q.options).filter((q) => q.answer.length === 1);
     const keyedLongest = single.filter((q) => {
       const len = q.options.map(shown);
       return len[q.answer[0]] === Math.max(...len);
@@ -26,7 +26,7 @@ test('the correct option is the longest no more often than chance allows (≤ 32
 
 test('in choose-N questions the keyed options are rarely just the N longest (≤ 30% per section)', () => {
   for (const id of SECTIONS) {
-    const multi = load(id).questions.filter((q) => q.answer.length > 1);
+    const multi = load(id).questions.filter((q) => q.options).filter((q) => q.answer.length > 1);
     const tell = multi.filter((q) => {
       const top = q.options.map((o, i) => [shown(o), i]).sort((a, b) => b[0] - a[0]).slice(0, q.answer.length).map((x) => x[1]);
       return [...top].sort().join() === [...q.answer].sort().join();
@@ -37,7 +37,7 @@ test('in choose-N questions the keyed options are rarely just the N longest (≤
 
 test('every wrong-reason list lines up with its options', () => {
   for (const id of SECTIONS) {
-    for (const q of load(id).questions) {
+    for (const q of load(id).questions.filter((q) => q.options)) {
       if (!q.wrong) continue;
       assert.equal(q.wrong.length, q.options.length, `${q.id}: wrong[] length`);
       q.answer.forEach((i) => assert.equal(q.wrong[i], '', `${q.id}: correct option ${i} has a wrong-reason`));
@@ -45,7 +45,7 @@ test('every wrong-reason list lines up with its options', () => {
   }
 });
 
-const ALL = SECTIONS.flatMap((id) => load(id).questions);
+const ALL = SECTIONS.flatMap((id) => load(id).questions.filter((q) => q.options));
 const longestGuess = (q) => q.options.map((o, i) => [shown(o), i]).sort((a, b) => b[0] - a[0]).slice(0, q.answer.length).map((x) => x[1]).sort().join();
 const blindScore = (list) => list.filter((q) => longestGuess(q) === [...q.answer].sort().join()).length / list.length;
 

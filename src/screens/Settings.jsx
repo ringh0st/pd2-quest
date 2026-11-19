@@ -1,4 +1,4 @@
-import { track, TRACKS, TRACK_IDS, switchTrack } from '../lib/track.js';
+import { track, TRACKS, visibleTrackIds, switchTrack } from '../lib/track.js';
 import { APP_NAME, APP_VERSION, STUDIO_NAME } from '../lib/appInfo.js';
 import { useRef } from 'react';
 import { useStore, updateSettings, setState, resetProgress, exportProgress, importProgress } from '../state/store.js';
@@ -46,7 +46,7 @@ export function Settings() {
         <h2 className="pq-head"><span className="pq-tile"><Icon name="target" /></span><span>Goals</span></h2>
         <Segmented
           label="Studying for" value={track.id} onChange={(id) => id !== track.id && switchTrack(id)}
-          options={TRACK_IDS.map((id) => [id, TRACKS[id].short])}
+          options={visibleTrackIds().map((id) => [id, TRACKS[id].short])}
         />
         <p className="small muted">Each exam keeps its own progress, streak and coins. Settings are shared.</p>
         <Segmented label="Daily goal (XP)" value={s.dailyGoal} onChange={(v) => setState({ dailyGoal: v })} options={[[20, '20'], [50, '50'], [100, '100'], [150, '150']]} />

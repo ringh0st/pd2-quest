@@ -3,6 +3,7 @@
 // The Supabase library is loaded only when it's needed: when someone taps Sign in, comes back from Google, or was
 // signed in before. Everyone else never downloads it.
 import { SUPABASE_KEY, SUPABASE_URL, hasBackend, hasSignIn } from './backend.js';
+import { rememberAdmin } from './track.js';
 
 const RETURN_ROUTE = 'devquest.auth.return';
 const listeners = new Set();
@@ -36,7 +37,7 @@ async function applySession(client, session) {
   set({ guest: false, user: { id: user.id, email: user.email, name: meta.full_name || meta.name || '', avatar: meta.avatar_url || meta.picture || '' }, ready: true });
   adminCheckFor = user.id;
   const { data } = await client.rpc('is_admin');
-  if (snapshot.user?.id === user.id) set({ admin: data === true });
+  if (snapshot.user?.id === user.id) { set({ admin: data === true }); rememberAdmin(data === true); }
 }
 
 const cameBackFromGoogle = () => /[?&](code|error)=/.test(window.location.search);
@@ -88,6 +89,7 @@ export async function signOut() {
   set({ busy: true });
   try { const client = await supabase(); await client.auth.signOut(); } catch { /* signed out locally anyway */ }
   set({ busy: false, user: null, admin: false });
+  rememberAdmin(false);
 }
 
 /** Deletes the account and its synced progress on the server (progress on this device stays). */

@@ -88,3 +88,30 @@ export function stopSpeaking() {
 
 export const speakingId = () => current;
 export function subscribeSpeech(fn) { subs.add(fn); return () => subs.delete(fn); }
+
+// ---------- the language being learned (Finnish): read by the device's own voice for that language ----------
+const LANG_TAG = { fi: 'fi-FI' };
+const ofLanguage = (lang) => (v) => v.lang?.toLowerCase().replace('_', '-').startsWith(lang);
+
+/** The best device voice for `lang` ('fi'), or null when the device has none. */
+export function languageVoice(lang) {
+  if (!synth) return null;
+  const voices = synth.getVoices().filter(ofLanguage(lang));
+  return voices.sort((a, b) => quality(b) - quality(a))[0] ?? null;
+}
+
+/** Reads `text` in the learned language (slower for listening practice with `rate` < 1). Tap again to stop. */
+export function speakLanguage(id, text, { lang = 'fi', rate = 0.9, onEnd } = {}) {
+  if (current === id) { stopSpeaking(); return; }
+  stopSpeaking();
+  if (!hasDeviceVoice()) { onEnd?.(); return; }
+  const u = new SpeechSynthesisUtterance(text);
+  const v = languageVoice(lang);
+  if (v) u.voice = v;
+  u.lang = v?.lang ?? LANG_TAG[lang] ?? lang;
+  u.rate = rate;
+  u.onend = u.onerror = () => { if (current === id) { current = null; emit(); } onEnd?.(); };
+  current = id;
+  emit();
+  synth.speak(u);
+}

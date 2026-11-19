@@ -54,6 +54,8 @@ export const sectionById = table(sections.map((s) => [s.id, s]));
 export const allQuestions = sections.flatMap((s) => s.questions);
 export const questionById = table(allQuestions.map((q) => [q.id, q]));
 export const allFlashcards = sections.flatMap((s) => s.flashcards);
+/** Guided writing tasks (language tracks), in world order. */
+export const allWriting = sections.flatMap((s) => (s.writing ?? []).map((w) => ({ ...w, section: s.id })));
 export const lessonById = table(
   sections.flatMap((s) => s.lessons.map((l, i) => [l.id, { ...l, section: s.id, index: i }])),
 );

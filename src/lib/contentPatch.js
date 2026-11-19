@@ -5,7 +5,7 @@
 export const EDIT_FIELDS = {
   card: ['title', 'body', 'items', 'code'],
   term: ['say'],
-  question: ['q', 'options', 'answer', 'explain', 'wrong', 'code'],
+  question: ['q', 'options', 'answer', 'explain', 'wrong', 'code', 'hint', 'audio'],
   flashcard: ['front', 'back'],
 };
 
@@ -17,12 +17,19 @@ export function cleanPatch(kind, patch, current = {}) {
   const fields = EDIT_FIELDS[kind];
   if (!fields || !patch || typeof patch !== 'object') return null;
   const out = {};
+  // language tasks (typed form, sentence building): the answers are the accepted texts, not option numbers
+  const typedTask = kind === 'question' && (current.kind === 'type' || current.kind === 'order');
   for (const f of fields) {
     if (!(f in patch)) continue;
-    const v = f === 'items' || f === 'options' || f === 'wrong' ? textList(patch[f])
+    const v = f === 'items' || f === 'options' || f === 'wrong' || (f === 'answer' && typedTask) ? textList(patch[f])
       : f === 'answer' ? (Array.isArray(patch[f]) ? [...new Set(patch[f].filter(Number.isInteger))].sort((a, b) => a - b) : undefined)
         : text(patch[f]);
     if (v !== undefined) out[f] = v;
+  }
+  if (typedTask) {
+    if (out.answer) out.answer = out.answer.map((a) => a.trim()).filter(Boolean);
+    if (out.answer && !out.answer.length) delete out.answer;
+    return Object.keys(out).length ? out : null;
   }
   if (kind === 'question') {
     const options = out.options ?? current.options ?? [];
@@ -43,7 +50,7 @@ export function applyPatch(target, key, kind, patch, originals) {
     originals.set(key, Object.fromEntries(EDIT_FIELDS[kind].map((f) => [f, copy(target[f])])));
   }
   restore(target, key, originals);
-  const clean = cleanPatch(kind, patch, target);
+  const clean = cleanPatch(kind, patch, { ...target });
   if (!clean) return false;
   for (const [f, v] of Object.entries(clean)) target[f] = copy(v);
   return true;

@@ -27,6 +27,7 @@ const Settings = screen(() => import('./screens/Settings.jsx'), 'Settings');
 const Resources = screen(() => import('./screens/Resources.jsx'), 'Resources');
 const Placement = screen(() => import('./screens/Placement.jsx'), 'Placement');
 const Plan = screen(() => import('./screens/Plan.jsx'), 'Plan');
+const WritingDesk = screen(() => import('./screens/WritingDesk.jsx'), 'WritingDesk');
 const Top = screen(() => import('./screens/Top.jsx'), 'Top');
 const Inbox = screen(() => import('./screens/Inbox.jsx'), 'Inbox');
 const PlaygroundScreen = screen(() => import('./screens/PlaygroundScreen.jsx'), 'PlaygroundScreen');
@@ -104,6 +105,7 @@ function Screen({ route }) {
     case 'playground': return <PlaygroundScreen />;
     case 'inbox': return <Inbox query={route.query} />;
     case 'top': return <Top />;
+    case 'write': return <WritingDesk id={b} key={b ?? 'list'} />;
     case 'welcome': return <Onboarding />;
     case 'plan': return <Plan />;
     case 'go': return <GoTo parts={route.parts} query={route.query} key={route.path} />;
@@ -115,7 +117,7 @@ function Screen({ route }) {
 const TITLES = {
   '': 'Home', map: 'Adventure map', learn: 'Adventure map', world: 'World', section: 'World', play: 'Level', shop: 'Shop', bolt: 'Daily Bolt',
   lesson: 'Lesson', sprint: 'Practice sprint', cards: 'Flashcards', exam: 'Exam simulator', me: 'Me', settings: 'Settings',
-  resources: 'Resources', welcome: 'Welcome', placement: 'Placement', plan: 'Study plan', playground: 'Playground', inbox: 'Feedback inbox', top: 'Top players',
+  resources: 'Resources', welcome: 'Welcome', placement: 'Placement', plan: 'Study plan', playground: 'Playground', inbox: 'Feedback inbox', top: 'Top players', write: 'Writing desk',
 };
 
 /** On every screen change: a page title for the tab/screen reader, and focus on the new screen's heading. */

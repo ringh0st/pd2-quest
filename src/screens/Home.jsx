@@ -192,6 +192,14 @@ export function Home() {
         </a>
       </motion.div>
 
+      {track.lang && (
+        <motion.a className="card link row" href="#/write" onClick={() => sfx.tap()} {...enter(3)}>
+          <span className="ic-tile" aria-hidden="true"><Icon name="pen" /></span>
+          <span className="grow"><strong>Writing desk</strong><br /><span className="small muted">Practise YKI writing: messages, emails and opinions</span></span>
+          <Icon name="chevron" />
+        </motion.a>
+      )}
+
       {track.playground && (
         <motion.a className="card link row" href="#/playground" onClick={() => sfx.tap()} {...enter(3)}>
           <span className="ic-tile" aria-hidden="true"><Icon name="code" /></span>
