@@ -151,7 +151,7 @@ export function Lesson({ id, startCard }) {
         <PracticeRunner
           questions={checks} requeue={false} initial={resumeRunner}
           onProgress={(runner) => saveRun(lesson.id, { phase: 'check', runner })}
-          onExit={() => go(`/world/${sec.id}`)} onDone={finish}
+          onExit={(to) => go(to ?? `/world/${sec.id}`)} onDone={finish}
         />
       </main>
     );
@@ -264,6 +264,11 @@ export function Lesson({ id, startCard }) {
         <button className="btn primary" onClick={() => move(1)}>{i + 1 >= cards.length
           ? (checks.length ? <>Quick check <Icon name="bolt" fill /></> : <>Finish <Icon name="party" /></>)
           : <>Next <Icon name="next" /></>}</button>
+        <nav className="leave-row" style={{ gridColumn: '1 / -1', marginTop: 0 }} aria-label="Take a break">
+          <span className="small muted">Take a break:</span>
+          <button type="button" className="btn ghost small" onClick={() => { sfx.tap(); go('/map'); }}><Icon name="map" /> Map</button>
+          <button type="button" className="btn ghost small" onClick={() => { sfx.tap(); go('/'); }}><Icon name="home" /> Home</button>
+        </nav>
       </div>
     </main>
   );

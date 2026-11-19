@@ -97,9 +97,9 @@ export function Play({ id }) {
     const cur = resuming ?? loadRun(level.id) ?? {};
     saveRun(level.id, { usedHeart: !!cur.usedHeart, hearts: cur.hearts ?? totalHearts, runner });
   };
-  const leave = () => {
+  const leave = (to) => {
     showToast('Saved. Resume any time from the level.');
-    go(`/world/${level.world}`);
+    go(to ?? `/world/${level.world}`);
   };
 
   const done = (r) => {

@@ -60,7 +60,7 @@ export function Placement({ a, b }) {
     return (
       <main className="screen focus" id="main">
         <h1 className="sr-only">{lessonMode ? `Test out: ${lesson.title}` : `Placement check: ${theme.name}`}</h1>
-        <PracticeRunner questions={questions} requeue={false} onExit={() => go(back)} onDone={finish} />
+        <PracticeRunner questions={questions} requeue={false} onExit={(to) => go(to ?? back)} onDone={finish} />
       </main>
     );
   }

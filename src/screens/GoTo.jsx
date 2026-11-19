@@ -51,7 +51,7 @@ export function GoTo({ parts, query = {} }) {
     return (
       <main className="screen focus" id="main">
         <p className="small muted ic-label"><Icon name="target" /> Reported question {id}: answer it to see the explanation</p>
-        <PracticeRunner questions={[questionById[id]]} requeue={false} onExit={() => go('/')} onDone={() => go('/')} />
+        <PracticeRunner questions={[questionById[id]]} requeue={false} onExit={(to) => go(to ?? '/')} onDone={() => go('/')} />
       </main>
     );
   }

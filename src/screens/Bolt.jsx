@@ -61,7 +61,7 @@ export function Bolt() {
     return (
       <main className="screen focus" id="main">
         <h1 className="sr-only">Daily Bolt</h1>
-        <PracticeRunner questions={questions} requeue={false} helpers onExit={() => go('/')} onDone={done} />
+        <PracticeRunner questions={questions} requeue={false} helpers onExit={(to) => go(to ?? '/')} onDone={done} />
       </main>
     );
   }

@@ -183,7 +183,7 @@ export function PracticeRunner({ questions, onDone, onExit, topRight, requeue = 
   return (
     <div className="stack" style={{ flex: 1 }} ref={topRef}>
       <div className="quiz-top">
-        <button className="icon-btn" onClick={onExit} aria-label="Leave session"><Icon name="close" /></button>
+        <button className="icon-btn" onClick={() => onExit?.()} aria-label="Leave session"><Icon name="close" /></button>
         <div className="bar" role="progressbar" aria-label="Session progress" aria-valuemin={0} aria-valuemax={queue.length} aria-valuenow={idx + (revealed ? 1 : 0)}>
           <span style={{ width: `${Math.max(4, progress * 100)}%` }} />
         </div>
@@ -318,6 +318,14 @@ export function PracticeRunner({ questions, onDone, onExit, topRight, requeue = 
           <button className="btn primary block big" onClick={next} autoFocus>
             {heartsLeft === 0 ? 'See result' : idx + 1 >= queue.length ? <>Finish <Icon name="party" /></> : <>Continue <Icon name="next" /></>}
           </button>
+        )}
+        {/* After every answer: a way out to the map or home (`onExit(path)`; progress is kept where the screen saves it) */}
+        {revealed && onExit && (
+          <nav className="leave-row" aria-label="Take a break">
+            <span className="small muted">Take a break:</span>
+            <button type="button" className="btn ghost small" onClick={() => { sfx.tap(); onExit('/map'); }}><Icon name="map" /> Map</button>
+            <button type="button" className="btn ghost small" onClick={() => { sfx.tap(); onExit('/'); }}><Icon name="home" /> Home</button>
+          </nav>
         )}
       </div>
     </div>

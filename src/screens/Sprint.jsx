@@ -129,7 +129,7 @@ export function Sprint({ query }) {
           {sec && <><Icon name={sec.icon} className="ic-sec" style={{ '--sec-accent': sec.accent }} /> {sec.short} </>}
           practice
         </p>}
-      <PracticeRunner key={round.n} questions={round.questions} onExit={() => go('/')} onDone={done} topRight={timer} />
+      <PracticeRunner key={round.n} questions={round.questions} onExit={(to) => go(to ?? '/')} onDone={done} topRight={timer} />
     </main>
   );
 }
