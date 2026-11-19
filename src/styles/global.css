@@ -1649,3 +1649,55 @@ body:has(.app.with-nav) .review-bar.above-nav { margin-left: 0; }
 /* after an answer: Take a break: Map · Home */
 .leave-row { display: flex; align-items: center; justify-content: center; gap: 6px 10px; flex-wrap: wrap; margin-top: 8px; }
 .leave-row .btn { min-height: 40px; }
+
+/* ===== language track: examples, tables, typed answers ===== */
+.lang-examples { display: grid; gap: 8px; margin-top: 4px; }
+.lang-example { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-radius: 12px; background: var(--surface-2); }
+.lang-fi { display: block; font-weight: 700; font-size: calc(18px * var(--text-scale)); }
+.lang-en { display: block; color: var(--text-muted); font-size: var(--fs-small); }
+.listen-btn { flex: none; }
+.listen-btn.on { background: var(--primary); color: var(--on-primary); }
+.infl-end { color: var(--primary); font-weight: 800; }
+.form-table-wrap { overflow-x: auto; margin-top: 4px; }
+.form-table { border-collapse: collapse; width: 100%; font-size: var(--fs-small); }
+.form-table th, .form-table td { padding: 6px 8px; text-align: left; border-bottom: 1px solid var(--hairline); white-space: nowrap; }
+.form-table thead th { color: var(--text-muted); font-weight: 700; }
+.form-table tbody th { font-weight: 700; }
+.gap { display: inline-block; min-width: 4.5em; border-bottom: 3px solid var(--primary); margin: 0 4px; padding: 0 4px; line-height: 1.2; }
+.gap.filled { border-bottom-color: var(--correct); color: var(--correct); }
+.q-hint { margin: -4px 0 0; }
+.typed { display: grid; gap: 8px; }
+.typed-row { display: flex; align-items: center; gap: 8px; }
+.typed-input { font-size: calc(20px * var(--text-scale)); font-weight: 700; min-height: 54px; flex: 1; min-width: 0; }
+.typed.right .typed-input { border-color: var(--correct); background: var(--correct-bg); }
+.typed.wrong .typed-input { border-color: var(--incorrect); background: var(--incorrect-bg); text-decoration: line-through; text-decoration-thickness: 2px; }
+.typed-mark { width: 28px; height: 28px; flex: none; }
+.typed.right .typed-mark { color: var(--correct); } .typed.wrong .typed-mark { color: var(--incorrect); }
+.typed-keys { display: flex; gap: 6px; flex-wrap: wrap; }
+.typed-fix { margin: 0; display: grid; gap: 6px; }
+.typed-why { font-size: var(--fs-small); color: var(--text); display: flex; gap: 6px; align-items: flex-start; }
+.order { display: grid; gap: 10px; }
+.order-line { display: flex; flex-wrap: wrap; gap: 6px; min-height: 58px; padding: 8px; border-radius: 14px; border: 2px dashed var(--hairline); align-items: center; }
+.order.right .order-line { border-color: var(--correct); border-style: solid; }
+.order.wrong .order-line { border-color: var(--incorrect); border-style: solid; }
+.order-bank { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.order-tile {
+  min-height: 44px; padding: 6px 14px; border: 0; border-radius: 12px; background: var(--surface); color: var(--text);
+  font-weight: 700; font-size: calc(17px * var(--text-scale)); box-shadow: inset 0 0 0 2px var(--hairline), 0 2px 0 var(--surface-3); cursor: pointer;
+}
+.order-tile.placed { background: color-mix(in srgb, var(--primary) 12%, var(--surface)); box-shadow: inset 0 0 0 2px var(--primary); }
+.order-tile:disabled:not(.placed) { opacity: 0.3; cursor: default; }
+.listen-panel { display: grid; gap: 8px; justify-items: start; padding: 12px; border-radius: 14px; background: var(--surface-2); }
+.listen-text { margin: 0; font-weight: 600; }
+/* writing desk */
+.writing-item.locked { opacity: 0.6; }
+.writing-points { margin: 0; padding-left: 1.2em; display: grid; gap: 2px; }
+.phrase-bank { display: flex; flex-wrap: wrap; gap: 6px; }
+.writing-text { width: 100%; resize: vertical; min-height: 12em; font-size: calc(17px * var(--text-scale)); line-height: 1.5; }
+.writing-tools { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+.writing-count { color: var(--text-muted); font-weight: 700; }
+.writing-count.ok { color: var(--correct); }
+.writing-mine, .writing-model { white-space: pre-wrap; margin: 0; overflow-wrap: anywhere; }
+.writing-model { padding: 10px 12px; border-radius: 12px; background: var(--correct-bg); }
+.check-row { display: flex; gap: 10px; align-items: flex-start; min-height: 32px; }
+.check-row input { width: 20px; height: 20px; margin-top: 2px; flex: none; accent-color: var(--primary); }

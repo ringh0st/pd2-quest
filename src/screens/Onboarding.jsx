@@ -14,7 +14,7 @@ import { Icon } from '../components/icons/Icon.jsx';
 import { HeroArt } from '../components/art/HeroArt.jsx';
 import { iconOption } from '../components/settings/SettingsGroups.jsx';
 import { APP_NAME } from '../lib/appInfo.js';
-import { TRACKS, TRACK_IDS, switchTrack, track } from '../lib/track.js';
+import { TRACKS, visibleTrackIds, switchTrack, track } from '../lib/track.js';
 
 const GOALS = [iconOption(20, 'leaf', '20'), iconOption(50, 'smile', '50'), iconOption(100, 'muscle', '100'), iconOption(150, 'flame', '150')];
 
@@ -84,7 +84,7 @@ export function Onboarding() {
         <button className="btn block" style={{ marginTop: 10 }} onClick={() => start(`/placement/${sections[0].id}`)}>
           Know some already? Skip ahead
         </button>
-        {TRACK_IDS.filter((id) => id !== track.id).map((id) => (
+        {visibleTrackIds().filter((id) => id !== track.id).map((id) => (
           <button key={id} type="button" className="btn block ghost" style={{ marginTop: 10 }} onClick={() => switchTrack(id)}>
             Studying for {TRACKS[id].name} instead? Switch <Icon name="next" />
           </button>

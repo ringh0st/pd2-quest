@@ -14,10 +14,14 @@ const shown = (o) => o.replace(/`|\*\*/g, '').length;
 
 test('the correct option is the longest no more often than chance allows (≤ 32% per section)', () => {
   for (const id of SECTIONS) {
-    const single = load(id).questions.filter((q) => q.answer.length === 1);
+    const single = load(id).questions.filter((q) => q.options).filter((q) => q.answer.length === 1);
+    // In a language track, word forms are often the same length (talossa / talosta): a tie gives no clue there,
+    // so only a strictly longest key counts. Elsewhere a tie for longest counts too.
+    const language = !!TRACKS[id.split('/')[0]]?.lang;
     const keyedLongest = single.filter((q) => {
       const len = q.options.map(shown);
-      return len[q.answer[0]] === Math.max(...len);
+      const max = Math.max(...len);
+      return len[q.answer[0]] === max && (!language || len.filter((l) => l === max).length === 1);
     });
     const rate = keyedLongest.length / single.length;
     assert.ok(rate <= 0.32, `${id}: key is the longest option in ${Math.round(rate * 100)}% of single-answer questions`);
@@ -26,18 +30,19 @@ test('the correct option is the longest no more often than chance allows (≤ 32
 
 test('in choose-N questions the keyed options are rarely just the N longest (≤ 30% per section)', () => {
   for (const id of SECTIONS) {
-    const multi = load(id).questions.filter((q) => q.answer.length > 1);
+    const multi = load(id).questions.filter((q) => q.options).filter((q) => q.answer.length > 1);
     const tell = multi.filter((q) => {
       const top = q.options.map((o, i) => [shown(o), i]).sort((a, b) => b[0] - a[0]).slice(0, q.answer.length).map((x) => x[1]);
       return [...top].sort().join() === [...q.answer].sort().join();
     });
+    if (!multi.length) continue;
     assert.ok(tell.length / multi.length <= 0.3, `${id}: ${tell.length}/${multi.length} choose-N keys are the longest options`);
   }
 });
 
 test('every wrong-reason list lines up with its options', () => {
   for (const id of SECTIONS) {
-    for (const q of load(id).questions) {
+    for (const q of load(id).questions.filter((q) => q.options)) {
       if (!q.wrong) continue;
       assert.equal(q.wrong.length, q.options.length, `${q.id}: wrong[] length`);
       q.answer.forEach((i) => assert.equal(q.wrong[i], '', `${q.id}: correct option ${i} has a wrong-reason`));
@@ -45,7 +50,7 @@ test('every wrong-reason list lines up with its options', () => {
   }
 });
 
-const ALL = SECTIONS.flatMap((id) => load(id).questions);
+const ALL = SECTIONS.flatMap((id) => load(id).questions.filter((q) => q.options));
 const longestGuess = (q) => q.options.map((o, i) => [shown(o), i]).sort((a, b) => b[0] - a[0]).slice(0, q.answer.length).map((x) => x[1]).sort().join();
 const blindScore = (list) => list.filter((q) => longestGuess(q) === [...q.answer].sort().join()).length / list.length;
 

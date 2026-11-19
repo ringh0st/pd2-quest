@@ -27,12 +27,15 @@ import { cardSpeech, termSpeech } from '../lib/speechText.js';
 import { useShortcuts } from '../hooks/useShortcuts.js';
 import { FeedbackButton } from '../components/FeedbackButton.jsx';
 import { AdminEditButton } from '../components/admin/AdminEditButton.jsx';
+import { ExampleList, FormTable } from '../components/language/LanguageCards.jsx';
 import { useContentVersion } from '../hooks/useContentVersion.js';
 
 const KIND_LABEL = {
   text: '', code: 'Code', list: '',
   tip: <span className="ic-label"><Icon name="idea" />Memory hook</span>,
   trap: <span className="ic-label"><Icon name="warn" />Exam trap</span>,
+  examples: <span className="ic-label"><Icon name="speaker" />Examples</span>,
+  table: <span className="ic-label"><Icon name="layers" />Forms</span>,
 };
 
 /** One clear label per card. Titled teaching cards get their own label instead of a doubled one. */
@@ -41,11 +44,12 @@ function cardLabel(card) {
   if (t === 'In plain words') return { label: <span className="ic-label"><Icon name="chat" />In plain words</span>, title: null };
   if (t.startsWith('Think of it like')) return { label: <span className="ic-label"><Icon name="sparkles" />Picture it</span>, title: t };
   if (t === 'Remember it') return { label: KIND_LABEL.tip, title: null };
+  if ((card.type === 'examples' && t === 'Examples') || (card.type === 'table' && t === 'Forms')) return { label: KIND_LABEL[card.type], title: null };
   return { label: KIND_LABEL[card.type] || '', title: t || null };
 }
 
 /** The texts on a card that can hold key terms, in the order the card shows them. */
-const cardTextsOf = (card) => [card.type !== 'code' ? card.body : null, ...(card.items ?? []), card.type === 'code' ? card.body : null];
+const cardTextsOf = (card) => [card.type !== 'code' ? card.body : null, ...(card.items ?? []).map((it) => (typeof it === 'string' ? it : null)), card.type === 'code' ? card.body : null];
 
 /** What a lesson card shows. `glossary(owner)` marks key terms in each text; `tools` sits in the corner. */
 function CardContent({ card, glossary, tools }) {
@@ -58,6 +62,8 @@ function CardContent({ card, glossary, tools }) {
       {card.body && card.type !== 'code' && <p><Rich text={card.body} glossary={glossary(0)} /></p>}
       {card.type === 'list' && <ul>{card.items.map((it, k) => <li key={k}><Rich text={it} glossary={glossary(1 + k)} /></li>)}</ul>}
       {card.type === 'code' && <><CodeBlock code={card.code} lang={card.lang} />{card.body && <p className="small"><Rich text={card.body} glossary={glossary(last)} /></p>}</>}
+      {card.type === 'examples' && <ExampleList items={card.items} />}
+      {card.type === 'table' && <FormTable head={card.head} rows={card.rows} />}
     </>
   );
 }

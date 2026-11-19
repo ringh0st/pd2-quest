@@ -10,7 +10,11 @@ import { Icon } from './icons/Icon.jsx';
 import { SpeakButton } from './SpeakButton.jsx';
 import { cleanQuestion, questionSpeech } from '../lib/speechText.js';
 import { useShortcuts } from '../hooks/useShortcuts.js';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
+import { TypedAnswer } from './language/TypedAnswer.jsx';
+import { OrderTiles } from './language/OrderTiles.jsx';
+import { speakLanguage, speakingId, stopSpeaking, subscribeSpeech } from '../lib/speech.js';
+import { track } from '../lib/track.js';
 import { useCalm } from '../hooks/useMotionPrefs.js';
 import { FeedbackButton } from './FeedbackButton.jsx';
 import { AdminEditButton } from '../components/admin/AdminEditButton.jsx';
@@ -34,7 +38,11 @@ function arrowNav(e) {
  * once (imperatively, so it never replays on the next question). Wrong answers don't shake anything:
  * the red mark, the verdict and Zap already say it, and a shake can feel like being scolded.
  */
-export function QuestionView({ question, chosen, onToggle, revealed, shake = 0, hidden = [] }) {
+/**
+ * Language tasks (`question.kind`): 'type' shows an answer box (`typed`, `onTyped`, `onSubmit`, `result`), 'order'
+ * shows word tiles (`placed`, `onPlaced`), 'listen' adds a Finnish audio panel above the options.
+ */
+export function QuestionView({ question, chosen, onToggle, revealed, shake = 0, hidden = [], typed = '', onTyped, onSubmit, placed = [], onPlaced, result }) {
   const reduced = useReducedMotion();
   useContentVersion(); // admin edits re-render the question
   const calm = useCalm();
@@ -45,13 +53,14 @@ export function QuestionView({ question, chosen, onToggle, revealed, shake = 0, 
     lastShake.current = shake;
     if (!reduced && !calm && labelRef.current) animateLabel(labelRef.current, { scale: [1, 1.08, 1] }, { duration: 0.28 });
   }, [shake, reduced, calm, animateLabel, labelRef]);
-  const multi = question.answer.length > 1;
-  const correct = new Set(question.answer);
+  const typedTask = question.kind === 'type' || question.kind === 'order';
+  const multi = !typedTask && question.answer.length > 1;
+  const correct = new Set(typedTask ? [] : question.answer);
   // Laptop keys: A–E or 1–5 pick an option (the same as tapping it)
   useShortcuts((e) => {
     const k = e.key.toLowerCase();
     const i = /^[1-6]$/.test(k) ? Number(k) - 1 : 'abcdef'.indexOf(k);
-    if (revealed || i < 0 || i >= question.options.length || hidden.includes(i)) return false;
+    if (typedTask || revealed || i < 0 || i >= question.options.length || hidden.includes(i)) return false;
     sfx.select(); haptic('light'); onToggle(i, multi);
     return true;
   });
@@ -64,7 +73,9 @@ export function QuestionView({ question, chosen, onToggle, revealed, shake = 0, 
         </div>
       )}
       <div className="q-head">
-        <h2 className="question" id={`q-${question.id}`}><Rich text={cleanQuestion(question.q)} autoCode /></h2>
+        <h2 className="question" id={`q-${question.id}`} lang={question.kind === 'type' ? 'fi' : undefined}>
+          {question.kind === 'type' ? <GapText text={question.q} filled={revealed ? (result?.right ? typed : result?.expected) : null} /> : <Rich text={cleanQuestion(question.q)} autoCode />}
+        </h2>
         <SpeakButton
           label="Read the question and answers aloud"
           text={questionSpeech(question)}
@@ -73,7 +84,11 @@ export function QuestionView({ question, chosen, onToggle, revealed, shake = 0, 
         <AdminEditButton kind="question" id={question.id} />
       </div>
       {question.code && <CodeBlock code={question.code} lang={question.lang} tryable={revealed} />}
-      <div
+      {question.kind === 'type' && question.hint && <p className="small muted q-hint"><Icon name="idea" /> {question.hint}</p>}
+      {question.kind === 'listen' && <ListenPanel key={question.id} text={question.audio} revealed={revealed} />}
+      {question.kind === 'type' && <TypedAnswer value={typed} onChange={onTyped} onSubmit={onSubmit} revealed={revealed} result={result} />}
+      {question.kind === 'order' && <OrderTiles tiles={question.tiles} placed={placed} onChange={onPlaced} revealed={revealed} result={result} />}
+      {!typedTask && <div
         className="options"
         role={multi ? 'group' : 'radiogroup'}
         aria-labelledby={`q-${question.id}`}
@@ -109,7 +124,31 @@ export function QuestionView({ question, chosen, onToggle, revealed, shake = 0, 
             </motion.button>
           );
         })}
-      </div>
+      </div>}
+    </div>
+  );
+}
+
+/** A gap sentence: "Olen ___ (kauppa)." with the gap drawn as a line, filled in after checking. */
+function GapText({ text, filled }) {
+  const [before, after = ''] = text.split('___');
+  return <>{before}<span className={`gap${filled ? ' filled' : ''}`}>{filled ?? '\u00a0'}</span>{after}</>;
+}
+
+/** Listening: the text is read by a Finnish voice, at most twice (as in YKI), and shown only after answering. */
+function ListenPanel({ text, revealed }) {
+  const [plays, setPlays] = useState(0);
+  const playing = useSyncExternalStore(subscribeSpeech, speakingId, speakingId) === 'listen-task';
+  const left = 2 - plays;
+  const play = () => { if (playing) return; setPlays((n) => n + 1); speakLanguage('listen-task', text, { lang: track.lang || 'fi', rate: 0.88 }); };
+  useEffect(() => () => { if (speakingId() === 'listen-task') stopSpeaking(); }, []);
+  return (
+    <div className="listen-panel">
+      <button type="button" className="btn primary listen-play" onClick={play} disabled={playing || (left <= 0 && !revealed)}>
+        <Icon name={playing ? 'speaker' : 'play'} /> {playing ? 'Playing…' : plays === 0 ? 'Listen' : revealed ? 'Listen again' : `Listen again (${left} left)`}
+      </button>
+      {revealed && <p className="listen-text" lang="fi">“{text}”</p>}
+      {!revealed && plays === 0 && <p className="small muted">You can listen twice, like in the YKI test.</p>}
     </div>
   );
 }

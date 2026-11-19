@@ -8,6 +8,7 @@ import { answerQuestion, earn, getState } from '../state/store.js';
 import { answerXp, comboMultiplier } from '../engine/xp.js';
 import { isCorrect, shuffleOptions } from '../engine/session.js';
 import { sfx } from '../audio/sfx.js';
+import { checkTask, isTypedTask } from '../engine/answers.js';
 import { haptic } from '../audio/haptics.js';
 import { useFeedback } from './Feedback.jsx';
 import { useReducedMotion } from '../hooks/useMotionPrefs.js';
@@ -45,9 +46,13 @@ function hintFor(q) {
 export function PracticeRunner({ questions, onDone, onExit, topRight, requeue = true, hearts = null, helpers = false, header, onAnswer, shouldStop, initial = null, onProgress }) {
   const [queue, setQueue] = useState(() => initial?.queue ?? questions.map((q) => q.id));
   // Options are reshuffled each session so learners remember the idea, not the letter.
-  const byId = useMemo(() => Object.fromEntries(questions.map((q) => [q.id, shuffleOptions(q)])), [questions]);
+  const byId = useMemo(() => Object.fromEntries(questions.map((q) => [q.id, q.options ? shuffleOptions(q) : q])), [questions]);
   const [idx, setIdx] = useState(() => initial?.idx ?? 0);
   const [chosen, setChosen] = useState([]);
+  // language tasks: the typed answer, the placed word tiles, and the checked result
+  const [typed, setTyped] = useState('');
+  const [placed, setPlaced] = useState([]);
+  const [result, setResult] = useState(null);
   const [revealed, setRevealed] = useState(false);
   const [lastRight, setLastRight] = useState(null);
   const [combo, setCombo] = useState(() => initial?.combo ?? 0);
@@ -83,8 +88,10 @@ export function PracticeRunner({ questions, onDone, onExit, topRight, requeue = 
   }, [revealed, idx, reduced]);
 
   const q = byId[queue[idx]];
-  const need = q.answer.length;
+  const typedTask = isTypedTask(q);
+  const need = typedTask ? 1 : q.answer.length;
   const multi = need > 1;
+  const ready = q.kind === 'type' ? typed.trim() !== '' : q.kind === 'order' ? placed.length === q.tiles.length : chosen.length === need;
 
   const [overpick, setOverpick] = useState(0);
   const toggle = (i) => {
@@ -103,7 +110,9 @@ export function PracticeRunner({ questions, onDone, onExit, topRight, requeue = 
   const [confidence, setConfidence] = useState(null); // 'sure' | 'guess' for the question just checked
   const check = (conf = null) => {
     setConfidence(conf);
-    const right = isCorrect(q, chosen);
+    const checked = typedTask ? checkTask(q, q.kind === 'type' ? typed : placed.map((i) => q.tiles[i]).join(' ')) : null;
+    setResult(checked);
+    const right = typedTask ? checked.right : isCorrect(q, chosen);
     const firstTime = right && !(getState().items[q.id]?.right > 0);
     const nextCombo = right ? combo + 1 : 0;
     const xp = answerXp(right, nextCombo, firstTime);
@@ -162,6 +171,7 @@ export function PracticeRunner({ questions, onDone, onExit, topRight, requeue = 
     setHint(null);
     setIdx(idx + 1);
     setChosen([]);
+    setTyped(''); setPlaced([]); setResult(null);
     setRevealed(false);
     setLastRight(null);
     setPop(null);
@@ -172,8 +182,8 @@ export function PracticeRunner({ questions, onDone, onExit, topRight, requeue = 
   useShortcuts((e) => {
     if (e.key !== 'Enter' || onControl(e)) return false;
     if (revealed) { next(); return true; }
-    if (chosen.length !== need) return false;
-    if (askConfidence) check('sure'); else check();
+    if (!ready || q.kind === 'type') return false; // the answer box checks on its own Enter
+    if (askConfidence && !typedTask) check('sure'); else check();
     return true;
   });
 
@@ -211,10 +221,14 @@ export function PracticeRunner({ questions, onDone, onExit, topRight, requeue = 
           transition={{ duration: 0.24, ease: [0.2, 0, 0, 1] }}
           style={{ position: 'relative' }}
         >
-          <QuestionView question={q} chosen={chosen} onToggle={toggle} revealed={revealed} shake={overpick} hidden={hidden} />
+          <QuestionView
+            question={q} chosen={chosen} onToggle={toggle} revealed={revealed} shake={overpick} hidden={hidden}
+            typed={typed} onTyped={setTyped} onSubmit={() => { if (!revealed && ready) check(); }}
+            placed={placed} onPlaced={setPlaced} result={result}
+          />
       </motion.div>
 
-      {helpers && !revealed && (
+      {helpers && !revealed && !typedTask && (
         <div className="helper-row" role="group" aria-label="Helpers">
           {q.answer.length === 1 && (
             <button
@@ -255,7 +269,7 @@ export function PracticeRunner({ questions, onDone, onExit, topRight, requeue = 
               <FeedbackButton kind="explanation" where={{ id: q.id }} label="Report a problem with this explanation" />
               <AdminEditButton kind="question" id={q.id} />
             </div>
-            {!lastRight && (
+            {!lastRight && !typedTask && (
               <p className="right-answer"><strong>Answer{need > 1 ? 's' : ''}:</strong>{' '}
                 {q.answer.map((i) => <span key={i} className="answer-pill">{'ABCDEF'[i]}. <Rich text={q.options[i]} autoCode /></span>)}
               </p>
@@ -267,7 +281,7 @@ export function PracticeRunner({ questions, onDone, onExit, topRight, requeue = 
               <p className="conf-note"><Icon name="info" /> Nice guess! It comes back tomorrow to make it stick.</p>
             )}
             <p><Rich text={q.explain} autoCode /></p>
-            {q.wrong?.some(Boolean) && (
+            {q.options && q.wrong?.some(Boolean) && (
               <>
                 <button className="btn ghost small" onClick={() => setShowWhy((v) => !v)} aria-expanded={showWhy}>
                   <Icon name={showWhy ? 'close' : 'idea'} /> {showWhy ? 'Hide' : 'Why not the others?'}
@@ -284,7 +298,7 @@ export function PracticeRunner({ questions, onDone, onExit, topRight, requeue = 
         )}
       </AnimatePresence>
 
-      <p className="key-hint small muted center">Keys: A–E to pick · Enter to check{askConfidence ? ' (as Sure)' : ''}, then to go on</p>
+      <p className="key-hint small muted center">{typedTask ? 'Type, then Enter to check · Enter again to go on' : `Keys: A–E to pick · Enter to check${askConfidence ? ' (as Sure)' : ''}, then to go on`}</p>
       <div style={{ flex: 1 }} />
       <div className="sticky-actions">
           <AnimatePresence>
@@ -302,7 +316,7 @@ export function PracticeRunner({ questions, onDone, onExit, topRight, requeue = 
         {!revealed ? (
           multi && chosen.length < need ? (
             <button className="btn primary block big" disabled>{`Pick ${need - chosen.length} more`}</button>
-          ) : askConfidence ? (
+          ) : askConfidence && !typedTask ? (
             <div className="check-pair" role="group" aria-label="Check your answer: how sure are you?">
               <button className="btn big check-guess" disabled={chosen.length !== need} onClick={() => check('guess')}>
                 <span className="check-k">Check</span><span className="check-v"><Icon name="info" /> Guessing</span>
@@ -312,7 +326,7 @@ export function PracticeRunner({ questions, onDone, onExit, topRight, requeue = 
               </button>
             </div>
           ) : (
-            <button className="btn primary block big" disabled={chosen.length !== need} onClick={() => check()}>Check</button>
+            <button className="btn primary block big" disabled={!ready} onClick={() => check()}>Check</button>
           )
         ) : (
           <button className="btn primary block big" onClick={next} autoFocus>

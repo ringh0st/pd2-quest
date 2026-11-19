@@ -69,7 +69,14 @@ function Form({ kind, id, card, onDone }) {
         <Field label="Front (question)" value={v.front} onChange={set('front')} rows={3} />
         <Field label="Back (answer)" value={v.back} onChange={set('back')} rows={5} />
       </>)}
-      {kind === 'question' && (<>
+      {kind === 'question' && (o.kind === 'type' || o.kind === 'order') && (<>
+        <Field label={o.kind === 'type' ? 'Sentence with ___ for the gap' : 'Instruction'} value={v.q} onChange={set('q')} rows={3} />
+        {o.kind === 'type' && <Field label="Hint (optional)" value={v.hint} onChange={set('hint')} rows={1} />}
+        <Field label="Accepted answers (one per line; the first is shown as the answer)" value={(v.answer ?? []).join('\n')} onChange={(t) => setV((x) => ({ ...x, answer: t.split('\n') }))} rows={3} />
+        <Field label="Explanation" value={v.explain} onChange={set('explain')} rows={4} />
+      </>)}
+      {kind === 'question' && !(o.kind === 'type' || o.kind === 'order') && (<>
+        {o.audio !== undefined && <Field label="Audio text (read by the Finnish voice)" value={v.audio} onChange={set('audio')} rows={3} />}
         <Field label="Question" value={v.q} onChange={set('q')} rows={4} />
         {o.code !== undefined && <Field label="Code" value={v.code} onChange={set('code')} rows={6} code />}
         <fieldset className="edit-options">

@@ -12,6 +12,7 @@ import { existsSync, mkdirSync, readdirSync, readFileSync, renameSync, rmSync, s
 import { join } from 'node:path';
 import { KokoroTTS } from 'kokoro-js';
 import { VOICE_SAMPLE, clipId, sectionSpeech, speakable } from '../src/lib/speechText.js';
+import { TRACKS } from '../src/lib/track.js';
 
 const [outDir = 'voice-audio', ...flags] = process.argv.slice(2);
 const flag = (name) => flags.find((f) => f.startsWith(`--${name}`))?.split('=')[1] ?? (flags.includes(`--${name}`) ? true : null);
@@ -24,7 +25,9 @@ const PAUSE = new Float32Array(Math.round(RATE * 0.18)); // a breath between sen
 const dataDir = new URL('../src/data/', import.meta.url).pathname;
 const texts = new Map([[clipId(VOICE_SAMPLE), speakable(VOICE_SAMPLE)]]);
 // Sorted, so every CI shard sees the same order.
-for (const exam of readdirSync(dataDir).filter((d) => statSync(join(dataDir, d)).isDirectory()).sort()) {
+// Language tracks (e.g. Finnish) are read by a voice of that language on the device, not by this English voice
+const languageTracks = new Set(Object.values(TRACKS).filter((t) => t.lang).map((t) => t.id));
+for (const exam of readdirSync(dataDir).filter((d) => statSync(join(dataDir, d)).isDirectory() && !languageTracks.has(d)).sort()) {
   for (const file of readdirSync(join(dataDir, exam)).sort()) {
     if (file === 'exam.json' || !file.endsWith('.json')) continue;
     for (const text of sectionSpeech(JSON.parse(readFileSync(join(dataDir, exam, file), 'utf8')))) texts.set(clipId(text), speakable(text));

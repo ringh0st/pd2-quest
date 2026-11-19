@@ -14,7 +14,7 @@ import { haptic } from '../../audio/haptics.js';
 import { useHoldCelebrations } from '../../hooks/useFocusMode.js';
 import { useReducedMotion } from '../../hooks/useMotionPrefs.js';
 import { APP_VERSION, BRAND_NAME, BRAND_WORDMARK, BRAND_TAGLINE, COPYRIGHT_YEAR, STUDIO_NAME } from '../../lib/appInfo.js';
-import { TRACKS, TRACK_IDS, currentTrack, hasChosenTrack, switchTrack, chooseTrack } from '../../lib/track.js';
+import { TRACKS, visibleTrackIds, currentTrack, hasChosenTrack, switchTrack, chooseTrack } from '../../lib/track.js';
 
 const SPLASH_MS = 4000;
 const FADE_MS = 450;
@@ -103,7 +103,7 @@ export function SplashScreen({ onDone, instant = false }) {
       {/* The exam buttons hold their place from the start (invisible while loading), so nothing moves when they appear. */}
       <div className="splash-action">
         <div className="splash-tracks" role="group" aria-label="Pick your exam" aria-hidden={!ready} inert={!ready}>
-          {TRACK_IDS.map((id, k) => {
+          {visibleTrackIds().map((id, k) => {
             const main = chosen && id === currentTrack;
             return (
               <motion.button
