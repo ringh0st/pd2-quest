@@ -1,8 +1,9 @@
 // Draws coins flying from a reward into the coin counter (lib/coinFlight.js): they burst out, then arc one after
 // another into the counter, which bumps and ticks up as each lands, with a rising chime. When no counter is on
-// screen (inside a lesson), a small one drops in at the top to catch them. Calm mode and Reduce motion skip the
-// flight: the coins land at once with one chime.
-import { useEffect, useLayoutEffect, useMemo, useState, useSyncExternalStore } from 'react';
+// screen (inside a lesson), a small one drops in at the top to catch them. Calm mode and Reduce motion get a gentle
+// version: nothing travels across the screen, but the counter glows and counts up in steps with chimes, and a
+// "+N" label fades in beside it.
+import { useEffect, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import { createPortal } from 'react-dom';
 import { AnimatePresence, motion } from 'motion/react';
 import { coinFlightState, subscribeCoinFlight, landCoins, endFlight, coinSplit } from '../../lib/coinFlight.js';
@@ -61,21 +62,34 @@ export function CoinFlightLayer() {
   const still = reduced || calm;
   const [bankUp, setBankUp] = useState(false);
   const [needBank, setNeedBank] = useState(false);
+  const [gains, setGains] = useState([]); // "+N" labels: { id, amount, x, y }
+  const handled = useRef(new Set());
+  const active = flights.length > 0 || pending > 0;
 
-  // Calm / reduced motion: land everything at once
-  useEffect(() => {
-    if (!still || !flights.length) return;
-    flights.forEach((f) => { landCoins(f.amount); endFlight(f.id); });
-    sfx.coin(); haptic('light');
-  }, [still, flights]);
-
-  // Show the drop-in counter while coins fly and no real counter is on screen
+  // Show the drop-in counter while coins are on their way and no real counter is on screen
   useLayoutEffect(() => {
-    if (still) return undefined;
-    if (flights.length) { setNeedBank(!visibleCounter()); setBankUp(true); return undefined; }
-    const t = setTimeout(() => setBankUp(false), 900);
+    if (active) { setNeedBank((was) => was || !visibleCounter()); setBankUp(true); return undefined; }
+    const t = setTimeout(() => { setBankUp(false); setNeedBank(false); }, 900);
     return () => clearTimeout(t);
-  }, [flights.length, still]);
+  }, [active]);
+
+  // Calm / reduced motion: no travel. The counter counts up in 5 steps with chimes; "+N" fades in beside it.
+  useEffect(() => {
+    if (!still) return;
+    for (const f of flights) {
+      if (handled.current.has(f.id)) continue;
+      handled.current.add(f.id);
+      endFlight(f.id);
+      const spot = visibleCounter() ?? { x: BANK.x(), y: BANK.y() };
+      setGains((g) => [...g, { id: f.id, amount: f.amount, x: spot.x, y: spot.y }]);
+      const step = Math.floor(f.amount / 5);
+      for (let i = 0; i < 5; i += 1) {
+        setTimeout(() => { landCoins(i === 4 ? f.amount - step * 4 : step); sfx.coinLand(i * 2); }, 250 + i * 170);
+      }
+      haptic('light');
+      setTimeout(() => setGains((g) => g.filter((x) => x.id !== f.id)), 1900);
+    }
+  }, [still, flights]);
 
   const onLanded = (flight, c) => {
     landCoins(c.value);
@@ -87,10 +101,10 @@ export function CoinFlightLayer() {
   return createPortal(
     <div className="coin-flight-layer">
       <AnimatePresence>
-        {bankUp && needBank && !still && (
+        {bankUp && needBank && (
           <motion.span
-            key="bank" className="chip coin-chip coin-bank" data-coin-target=""
-            initial={{ y: -60, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: -60, opacity: 0 }}
+            key="bank" className={`chip coin-chip coin-bank${still ? ' glow' : ''}`} data-coin-target=""
+            initial={still ? { opacity: 0 } : { y: -60, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={still ? { opacity: 0 } : { y: -60, opacity: 0 }}
             transition={{ type: 'spring', stiffness: 420, damping: 26 }}
           >
             <span className="coin-chip-icon"><Icon name="coin" /></span>{Math.max(0, coins - pending)}
@@ -98,6 +112,16 @@ export function CoinFlightLayer() {
         )}
       </AnimatePresence>
       {!still && flights.map((f) => <Flight key={f.id} flight={f} onLanded={onLanded} />)}
+      <AnimatePresence>
+        {gains.map((g) => (
+          <motion.span
+            key={g.id} className="coin-gain" aria-hidden="true" style={{ left: g.x, top: g.y + 26 }}
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }}
+          >
+            +{g.amount}
+          </motion.span>
+        ))}
+      </AnimatePresence>
     </div>,
     document.body,
   );
