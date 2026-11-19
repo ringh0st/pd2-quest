@@ -66,3 +66,15 @@ export const themeOf = (id) => worldTheme(sectionById[id] ?? { id });
 export const lookOf = (id) => sectionById[id]?.look ?? id;
 export const iconOf = (id) => sectionById[id]?.icon ?? id;
 export const accentOf = (id) => sectionById[id]?.accent ?? `var(--sec-${id})`;
+
+/**
+ * In a language track, practice only asks about what you've studied: questions from lessons you finished (or the
+ * first lesson before that). Other exams practise everything (any topic can come up on the exam).
+ */
+export function studiedSections(lessonsDone = {}) {
+  if (!track.lang) return sections;
+  const done = (q) => !!lessonsDone[q.lesson];
+  const any = sections.some((s) => s.questions.some(done));
+  const firstLesson = sections[0]?.lessons[0]?.id;
+  return sections.map((s) => ({ ...s, questions: s.questions.filter((q) => (any ? done(q) : q.lesson === firstLesson)) }));
+}

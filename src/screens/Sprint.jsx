@@ -1,7 +1,7 @@
 // Sprint: rounds of N interleaved questions inside a gentle, pausable focus timer.
 import { useEffect, useRef, useState } from 'react';
 import { motion } from 'motion/react';
-import { sections, sectionById } from '../data/index.js';
+import { sectionById, studiedSections } from '../data/index.js';
 import { buildSprint } from '../engine/session.js';
 import { earn, getState, pushEvent } from '../state/store.js';
 import { XP } from '../engine/xp.js';
@@ -20,6 +20,7 @@ import { BreakCard } from '../components/BreakCard.jsx';
 
 function makeRound(query) {
   const s = getState();
+  const sections = studiedSections(s.lessons); // a language track only asks about lessons you've done
   const size = query.n ? Math.min(10, Math.max(1, Number(query.n) || s.settings.sprintSize)) : s.settings.sprintSize;
   if (query.mode === 'review') {
     const due = sections.flatMap((x) => x.questions).filter((q) => isDue(s.items[q.id]));

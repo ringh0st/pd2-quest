@@ -15,9 +15,13 @@ const shown = (o) => o.replace(/`|\*\*/g, '').length;
 test('the correct option is the longest no more often than chance allows (≤ 32% per section)', () => {
   for (const id of SECTIONS) {
     const single = load(id).questions.filter((q) => q.options).filter((q) => q.answer.length === 1);
+    // In a language track, word forms are often the same length (talossa / talosta): a tie gives no clue there,
+    // so only a strictly longest key counts. Elsewhere a tie for longest counts too.
+    const language = !!TRACKS[id.split('/')[0]]?.lang;
     const keyedLongest = single.filter((q) => {
       const len = q.options.map(shown);
-      return len[q.answer[0]] === Math.max(...len);
+      const max = Math.max(...len);
+      return len[q.answer[0]] === max && (!language || len.filter((l) => l === max).length === 1);
     });
     const rate = keyedLongest.length / single.length;
     assert.ok(rate <= 0.32, `${id}: key is the longest option in ${Math.round(rate * 100)}% of single-answer questions`);
@@ -31,6 +35,7 @@ test('in choose-N questions the keyed options are rarely just the N longest (≤
       const top = q.options.map((o, i) => [shown(o), i]).sort((a, b) => b[0] - a[0]).slice(0, q.answer.length).map((x) => x[1]);
       return [...top].sort().join() === [...q.answer].sort().join();
     });
+    if (!multi.length) continue;
     assert.ok(tell.length / multi.length <= 0.3, `${id}: ${tell.length}/${multi.length} choose-N keys are the longest options`);
   }
 });
