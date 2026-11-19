@@ -14,7 +14,7 @@ export const TRACKS = {
   js: { id: 'js', name: 'JS Quest', short: 'JavaScript', exam: 'Salesforce JavaScript Developer', prefix: 'jsquest', playground: true, sections: ['types', 'objects', 'browser', 'debug', 'async', 'server', 'testing'] },
   // Finnish for the YKI intermediate test. Admin-only for now (`adminOnly`): only owners see it in the exam lists.
   // `lang`: the language being learned (read aloud with a Finnish voice; typed answers in lessons and practice).
-  yki: { id: 'yki', name: 'YKI Quest', short: 'Finnish', exam: 'YKI Finnish, intermediate (grade 3)', prefix: 'ykiquest', adminOnly: true, lang: 'fi', sections: ['sounds', 'town', 'verbs'] },
+  yki: { id: 'yki', name: 'YKI Quest', short: 'Finnish', exam: 'YKI Finnish, intermediate (grade 3)', prefix: 'ykiquest', adminOnly: true, lang: 'fi', sections: ['sounds', 'town'] }, // 'verbs' (world 3) is written; add it here to switch it on
 };
 export const TRACK_IDS = Object.keys(TRACKS);
 
