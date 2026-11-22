@@ -1,6 +1,6 @@
 // The opening screen: Zap flies in, a lightning arc lights up the badge, the title pops in letter
 // by letter and a bar fills for about 4 seconds while the app loads underneath. Then the two exams
-// appear as big buttons, PD1 Quest and PD2 Quest (the last one studied is the main button); picking
+// appear as big buttons, one per exam (the last one studied is the main button); picking
 // the other exam reloads the app into it. A tap during loading skips to the
 // button. Shows the studio and the version. Static with reduced motion. The layout never changes while it
 // shows: the exam buttons hold their place (invisible) during loading and fade in without moving anything.

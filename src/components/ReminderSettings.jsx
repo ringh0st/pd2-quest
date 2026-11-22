@@ -46,7 +46,7 @@ export function ReminderSettings() {
       </div>
       <Segmented label="On which days?" value={reminder.days} onChange={(v) => update({ days: v })} options={[['daily', 'Every day'], ['weekdays', 'Weekdays']]} />
       <button type="button" className="btn primary" onClick={addToCalendar}><Icon name="plan" /> Add to my calendar</button>
-      <p className="small muted">Adds a repeating 5-minute event with an alert to your calendar app. This is the most reliable option: it rings even when PD2 Quest is closed. Change or delete it any time in your calendar.</p>
+      <p className="small muted">Adds a repeating 5-minute event with an alert to your calendar app. This is the most reliable option: it rings even when {BRAND_NAME} is closed. Change or delete it any time in your calendar.</p>
       {offerNotify && (
         <Switch
           label="Also notify me on this phone"

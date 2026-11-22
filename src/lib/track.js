@@ -1,4 +1,5 @@
-// Which exam the app is studying for. One app, one track at a time: PD1 Quest, PD2 Quest, App Builder Quest or JS Quest.
+// Which exam the app is studying for. One app, one track at a time (Developer I, Developer II, Builder, JavaScript, YKI).
+// Track names are our own ("… Quest"); Salesforce's exam names appear only to say which exam a track prepares for.
 // The track is chosen on the opening screen and kept on this device; switching reloads the app,
 // so every screen and every piece of saved progress belongs to one exam.
 const TRACK_KEY = 'devquest.track';
@@ -8,10 +9,10 @@ const TRACK_KEY = 'devquest.track';
 // official exam guide's order; a section id picks its world look (game/worlds.js) and accent colour.
 // `playground`: the exam's code runs in a browser, so code examples get "Try it" and there's a Playground screen.
 export const TRACKS = {
-  pd1: { id: 'pd1', name: 'PD1 Quest', short: 'PD1', exam: 'Salesforce Platform Developer I', prefix: 'pd1quest', sections: ['fund', 'auto', 'ui', 'test'] },
-  pd2: { id: 'pd2', name: 'PD2 Quest', short: 'PD2', exam: 'Salesforce Platform Developer II', prefix: 'pd2quest', sections: ['fund', 'auto', 'ui', 'test', 'perf'] },
-  pab: { id: 'pab', name: 'App Builder Quest', short: 'App Builder', exam: 'Salesforce Platform App Builder', prefix: 'pabquest', sections: ['fund', 'data', 'logic', 'ui', 'deploy'] },
-  js: { id: 'js', name: 'JS Quest', short: 'JavaScript', exam: 'Salesforce JavaScript Developer', prefix: 'jsquest', playground: true, sections: ['types', 'objects', 'browser', 'debug', 'async', 'server', 'testing'] },
+  pd1: { id: 'pd1', name: 'Developer I Quest', short: 'PD1', exam: 'Salesforce Platform Developer I', prefix: 'pd1quest', sections: ['fund', 'auto', 'ui', 'test'] },
+  pd2: { id: 'pd2', name: 'Developer II Quest', short: 'PD2', exam: 'Salesforce Platform Developer II', prefix: 'pd2quest', sections: ['fund', 'auto', 'ui', 'test', 'perf'] },
+  pab: { id: 'pab', name: 'Builder Quest', short: 'App Builder', exam: 'Salesforce Platform App Builder', prefix: 'pabquest', sections: ['fund', 'data', 'logic', 'ui', 'deploy'] },
+  js: { id: 'js', name: 'JavaScript Quest', short: 'JavaScript', exam: 'Salesforce JavaScript Developer', prefix: 'jsquest', playground: true, sections: ['types', 'objects', 'browser', 'debug', 'async', 'server', 'testing'] },
   // Finnish for the YKI intermediate test. Admin-only for now (`adminOnly`): only owners see it in the exam lists.
   // `lang`: the language being learned (read aloud with a Finnish voice; typed answers in lessons and practice).
   yki: { id: 'yki', name: 'YKI Quest', short: 'Finnish', exam: 'YKI Finnish, intermediate (grade 3)', prefix: 'ykiquest', adminOnly: true, lang: 'fi', sections: ['sounds', 'town'] }, // 'verbs' (world 3) is written; add it here to switch it on

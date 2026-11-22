@@ -23,6 +23,11 @@ const site = JSON.parse(readFileSync(join(root, 'site.json'), 'utf8'));
 const { version } = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8'));
 const BASE = site.url.endsWith('/') ? site.url : `${site.url}/`;
 const TODAY = new Date().toISOString().slice(0, 10);
+// Who runs the app (GDPR: the controller's identity and contact). Filled in site.json → operator.
+const op = site.operator ?? {};
+const operatorHtml = () => (op.name
+  ? `<p>${esc(site.name)} is run by <strong>${esc(op.name)}</strong>${op.country ? ` (${esc(op.country)})` : ''}, who decides how your data is used (the “controller”).${op.email ? ` Contact: <a href="mailto:${esc(op.email)}">${esc(op.email)}</a>.` : ''}</p>`
+  : `<p>${esc(site.name)} is run by ${esc(site.studio)}${op.country ? ` (${esc(op.country)})` : ''}. Contact us through the app: Me → Contact us.</p>`);
 const SAMPLE_EVERY = 10; // publish about 1 in 10 questions; the full bank stays in the app
 
 const EXAMS = ['pd1', 'pd2', 'pab', 'js'];
@@ -247,19 +252,28 @@ trust('about/', `About ${site.name}`, clip(`${site.name} is a free, independent,
 <h2>Found a mistake?</h2><p>${esc(site.contactNote)} Every report goes to the person who fixes the content, with the exact card or question it is about.</p>`);
 trust('privacy/', 'Privacy', clip(`${site.name} has no ads and no tracking. An account is optional; without one your progress stays on your device. What we store if you sign in with Google or send feedback.`), `
 <p class="lead">Short version: no ads, no tracking cookies, and an account is optional. Without one, your progress stays on your device.</p>
+${operatorHtml()}
 <h2>What stays on your device</h2><p>Your progress, settings, notes and streaks are saved in your browser’s storage on your device. Without an account we never receive them. Clearing your browser data or removing the app deletes them; use Settings → Save backup to keep a copy.</p>
 <h2>If you sign in with Google (optional)</h2><p>Signing in lets your progress follow you to other devices. Google tells us your name, email address and profile picture; we use them only to show who is signed in and to keep your account. We then save your study progress for each exam (lessons done, answers and review schedule, XP, streaks and rewards) with our database provider (Supabase), where only your account can read it. Your settings stay on each device. We don’t use your Google account for anything else, never post anything, and never share or sell your data. You can delete your account and everything saved to it at any time on the Me screen (Delete my account).</p>
 <h2>Feedback you send</h2><p>If you use “Report a problem” or “Send feedback”, we receive what you write, what you were looking at (for example a lesson card or a question id), the app version, your device type and screen size, and a random id for your device (so several reports from one device can be grouped; it says nothing about who you are). An email address is sent only if you type one in, and is used only to reply to you. If you’re signed in, the report is also linked to your account. Feedback is stored with our database provider (Supabase) and is readable only by us.</p>
 ${site.cloudflareAnalyticsToken ? `<h2>Visit counts</h2><p>We count visits with Cloudflare Web Analytics, which uses no cookies, does not track you across sites and does not identify you. It tells us things like how many people opened a page and which country and kind of device they used.</p>` : ''}
 <h2>Top players lists</h2><p>The weekly and monthly Top lists show the name you chose in the app (or “Learner” and a few random characters if you didn’t choose one) and the XP you earned in that period. To keep the score, the app gives your device an anonymous account the first time you earn XP; it holds only that name and your daily points, nothing about you. You can hide yourself from the lists at any time on the Top players screen.</p>
 <h2>Read-aloud</h2><p>The natural voice plays recorded audio files from this website. The device voice uses your phone’s own speech feature. Neither sends us anything.</p>
-<h2>Your rights</h2><p>You can delete your account and its saved progress yourself (Me → Delete my account). You can also ask us to delete feedback you sent: send a note through the app saying which report, and include the email you used if any. ${esc(site.name)} is not intended for children under 13.</p>
+<h2>Services that handle data for us</h2><ul>
+<li><strong>Supabase</strong>: our database and sign-in service. It stores accounts, synced progress, feedback and Top list scores${op.dataRegion ? ` in ${esc(op.dataRegion)}` : ''}.</li>
+<li><strong>Google</strong>: only if you choose Sign in with Google.</li>
+<li><strong>GitHub Pages</strong>: hosts this website and app; like any web server it briefly processes your IP address to deliver the pages.</li>
+${site.cloudflareAnalyticsToken ? '<li><strong>Cloudflare Web Analytics</strong>: cookie-free visit counts.</li>' : ''}
+</ul>
+<h2>Why we may use this data</h2><p>To provide the features you use (your account, sync, the Top lists, answering feedback): that’s the legal basis of performing the service you asked for. For optional extras such as your email on a report, your consent, which you can withdraw at any time.</p>
+<h2>Your rights</h2><p>You can see, correct, download or delete your data. Delete your account and its saved progress yourself (Me → Delete my account), and hide yourself from the Top lists on the Top players screen. For anything else (a copy of your data, deleting feedback you sent), ${op.email ? `email <a href="mailto:${esc(op.email)}">${esc(op.email)}</a>` : 'send a note through the app (Me → Contact us)'}; we answer within 30 days. If you think we handle your data wrongly, you can also complain to the Finnish Data Protection Ombudsman (<a href="https://tietosuoja.fi/en">tietosuoja.fi</a>). ${esc(site.name)} is not intended for children under 13.</p>
 <p class="note">Last updated ${TODAY}.</p>`);
 trust('terms/', 'Terms of use', clip(`Terms for using ${site.name}: a free study aid, provided as is, independent of Salesforce, with original content you may use for personal study.`), `
 <h2>A study aid, not a guarantee</h2><p>${esc(site.name)} helps you prepare for Salesforce certification exams. Using it does not guarantee that you will pass. Salesforce changes its products and exams; always check the official exam guide and documentation, especially limits and recent releases.</p>
 <h2>Accuracy</h2><p>We check content against official documentation and fix reported mistakes quickly, but it is provided “as is”, without warranty. Please report anything that looks wrong.</p>
 <h2>Your use</h2><p>The lessons and questions are original work by ${esc(site.studio)}. You may use them for your own study. Please don’t copy them in bulk or republish them. Don’t submit real exam content through feedback: sharing exam questions breaks Salesforce’s certification agreement.</p>
 <h2>Independent</h2><p>${esc(site.name)} is not affiliated with, sponsored by or endorsed by Salesforce, Inc. Salesforce and related marks belong to Salesforce, Inc.</p>
+<h2>Who we are</h2>${operatorHtml()}
 <p class="note">Last updated ${TODAY}.</p>`);
 
 // GitHub Pages shows this for any address that doesn't exist (not in the sitemap)
