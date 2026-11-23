@@ -1,4 +1,4 @@
--- Nimbolt: Weekly and Monthly Top lists with coin prizes for the top 3.
+-- Nibstep: Weekly and Monthly Top lists with coin prizes for the top 3.
 -- Run after setup.sql: SQL Editor → New query → paste all → Run. Safe to run again.
 --
 -- Everyone can take part: guests through an automatic anonymous account (turn on "Allow anonymous sign-ins"

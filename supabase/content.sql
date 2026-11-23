@@ -1,4 +1,4 @@
--- Nimbolt: admin edits to lessons, questions and flashcards, and replies to feedback.
+-- Nibstep: admin edits to lessons, questions and flashcards, and replies to feedback.
 -- Run after setup.sql: SQL Editor → New query → paste all → Run. Safe to run again.
 --
 --   content_edits  your edits to a lesson card, a key-term meaning, a question or a flashcard. Everyone's app reads

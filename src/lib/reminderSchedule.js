@@ -4,7 +4,7 @@
 
 export const REMINDER_DAYS = ['daily', 'weekdays'];
 export const DEFAULT_REMINDER = { time: '19:00', days: 'daily', notify: false };
-/** The reminder's title, e.g. "Nimbolt: 5 minutes" (the app's name comes from site.json via appInfo). */
+/** The reminder's title, e.g. "Nibstep: 5 minutes" (the app's name comes from site.json via appInfo). */
 export const reminderTitle = (appName) => `${appName}: 5 minutes`;
 export const REMINDER_BODY = 'Got 5 minutes? A tiny round is ready whenever you are. No pressure.';
 
