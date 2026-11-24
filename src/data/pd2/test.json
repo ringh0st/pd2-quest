@@ -30,30 +30,30 @@
           "title": "Test data factory",
           "lang": "apex",
           "code": "@isTest\npublic class TestDataFactory {\n  public static List<Account> createAccounts(Integer n, Boolean doInsert) {\n    List<Account> accts = new List<Account>();\n    for (Integer i = 0; i < n; i++) {\n      accts.add(new Account(Name = 'Test ' + i));\n    }\n    if (doInsert) insert accts;\n    return accts;\n  }\n}",
-          "body": "A **test data factory** (one shared class that builds records) makes Accounts for any test. A new required field? Fix it here once."
+          "body": "A **test data factory** is one shared class that builds records, so every test asks it for data. A new required field? Fix it here once. Mark the class `@isTest` so it doesn't count toward your Apex code size limit, and keep its methods `public` so other test classes can call them. `doInsert = false` lets a test change fields before saving."
         },
         {
           "type": "code",
           "title": "`@TestSetup`",
           "lang": "apex",
           "code": "@isTest\nprivate class InvoiceTest {\n  @TestSetup\n  static void makeData() {\n    TestDataFactory.createAccounts(5, true);\n  }\n  @isTest\n  static void closesInvoices() {\n    List<Account> accts = [SELECT Id FROM Account];\n    // ...act + assert\n  }\n}",
-          "body": "`@TestSetup` runs once per class. Each test method gets a fresh copy, and its changes roll back before the next. Statics set there don't carry over, so query the records."
+          "body": "`@TestSetup` runs once per class, before the test methods. Why: records are inserted once instead of in every method, so tests run faster. Each test method gets a fresh copy, and its changes roll back before the next. Only one per class. Statics set there are empty again in each method, so query the records instead."
         },
         {
           "type": "code",
           "title": "Data from a CSV",
           "lang": "apex",
           "code": "List<sObject> accts = Test.loadData(Account.sObjectType, 'TestAccounts');",
-          "body": "`Test.loadData` reads a CSV **static resource** (a file stored in Salesforce) and inserts its rows. Handy when admins own the sample data."
+          "body": "`Test.loadData` reads a CSV **static resource** (a file stored in Salesforce) and inserts its rows. The first row holds the field API names. It returns the new records as a `List<sObject>`. Use it when admins keep the sample data in a spreadsheet; use a factory when the data needs logic."
         },
         {
           "type": "text",
           "title": "SOSL in tests",
-          "body": "**SOSL** (Salesforce's text search) returns **nothing** in a test, even for records the test inserted. Call `Test.setFixedSearchResults(ids)` to tell it which Ids to return."
+          "body": "**SOSL** (Salesforce's text search) returns **nothing** in a test, even for records the test inserted. Call `Test.setFixedSearchResults(ids)` before the search to say which Ids it returns, for example `Test.setFixedSearchResults(new Id[]{ acc.Id })`. Any `WHERE` or `LIMIT` in the search still filters that list."
         },
         {
           "type": "trap",
-          "body": "`SeeAllData=true` ties tests to whatever is in the org, so they break in the next sandbox. And `@TestSetup` is not supported in a class marked `@isTest(SeeAllData=true)`."
+          "body": "Exam trap: \"the query finds no rows, so add `SeeAllData=true`.\" Wrong: that ties tests to whatever is in the org, so they break in the next sandbox. The right fix is to create the data in the test. Also, `@TestSetup` is not supported in a class marked `@isTest(SeeAllData=true)`."
         },
         {
           "type": "tip",
@@ -143,28 +143,28 @@
           "title": "Testing Batch Apex",
           "lang": "apex",
           "code": "@isTest\nstatic void runsBatch() {\n  insert TestDataFactory.createAccounts(50, false);\n  Test.startTest();\n  Database.executeBatch(new CleanupBatch(), 200);\n  Test.stopTest(); // batch finishes here\n  Assert.areEqual(0, [SELECT COUNT() FROM Account WHERE Needs_Cleanup__c = true]);\n}",
-          "body": "The batch runs at `stopTest()`, so assert **after** it. A test can run only one `execute()` chunk, so keep records within the scope size (default 200)."
+          "body": "The batch runs at `stopTest()`: `start()`, `execute()` and `finish()` all finish there, so assert **after** it. A test can run only one `execute()` chunk. With the default scope size of 200, 400 records need two chunks and the test fails. So insert no more records than the scope."
         },
         {
           "type": "text",
           "title": "Scheduled Apex",
-          "body": "Call `System.schedule` between start and stop. The job's `execute()` runs at `stopTest()`, whatever the cron says. To check the schedule itself, query `CronTrigger` (the record that holds the cron expression and next fire time)."
+          "body": "Call `System.schedule` between start and stop. The job's `execute()` runs at `stopTest()`, whatever the cron says, because tests never wait for real time. `System.schedule` returns the Id of a `CronTrigger` (the record that holds the cron expression and next fire time). Query it to check the schedule, for example that `TimesTriggered` is still 0 before `stopTest()`."
         },
         {
           "type": "code",
           "title": "Platform events",
           "lang": "apex",
           "code": "Test.startTest();\nEventBus.publish(new Order_Event__e(Order_Id__c = 'A1'));\nTest.getEventBus().deliver(); // deliver now\nTest.stopTest(); // also delivers\n// assert what the subscriber trigger did",
-          "body": "Published events wait on a **test event bus** until `stopTest()` or `Test.getEventBus().deliver()`. Each `deliver()` sends only what is waiting right now."
+          "body": "In a real org, the event bus delivers published events a moment later. In a test, they wait on a **test event bus** until `stopTest()` or `Test.getEventBus().deliver()`. Each `deliver()` sends only what is waiting right now. So if a subscriber publishes a second event, call `deliver()` again before you assert."
         },
         {
           "type": "text",
           "title": "Parallel tests have rules",
-          "body": "`@IsTest(IsParallel=true)` lets tests run side by side for speed. But those tests **can't call** `System.schedule()`, `System.enqueueJob()` or `Test.getStandardPricebookId()`."
+          "body": "`@IsTest(IsParallel=true)` lets tests run side by side for speed. The price is a few banned calls: these tests **can't call** `System.schedule()`, `System.enqueueJob()` or `Test.getStandardPricebookId()`, and can't create `User` or `GroupMember` records. It can't be combined with `SeeAllData=true` either. If a test needs any of these, leave the class out of parallel runs."
         },
         {
           "type": "trap",
-          "body": "**Chaining a queueable** (enqueueing a job from inside a queueable) can throw an error in a test. The docs suggest guarding the chain call with `Test.isRunningTest()` and testing one link."
+          "body": "**Chaining a queueable** (enqueueing a job from inside a queueable) used to throw an error in tests, so older code guards the chain with `Test.isRunningTest()`. Current docs say you can test chains with a suitable maximum stack depth, set through `AsyncOptions`. A guard means the chain code never runs in tests, the same trap as any test-only branch."
         },
         {
           "type": "tip",
@@ -258,6 +258,13 @@
           "body": "`System.runAs` always applies the user's **record sharing**. Their **object and field permissions** count only where the code checks them. Code in system mode (code that ignores the user's permissions) still reads every field. To test permissions, use `WITH USER_MODE`, `AccessLevel.USER_MODE` or `stripInaccessible`."
         },
         {
+          "type": "code",
+          "title": "`runAs` in a test",
+          "lang": "apex",
+          "code": "User rep = TestDataFactory.buildUser('Standard User');\ninsert rep; // rep owns 2 Opportunities, made earlier\nSystem.runAs(rep) {\n  // with sharing code here sees only rep's records\n  List<Opportunity> opps = OppService.myOpps();\n  Assert.areEqual(2, opps.size());\n}",
+          "body": "Build a user with the profile you care about, then run the code as them. Inside the block, `with sharing` classes see only that user's records. A `without sharing` class still sees everything: the class's own sharing keyword wins over `runAs`."
+        },
+        {
           "type": "list",
           "title": "More `runAs` facts",
           "items": [
@@ -277,11 +284,11 @@
           "title": "`Assert` class + expected exceptions",
           "lang": "apex",
           "code": "try {\n  OrderService.submit(null);\n  Assert.fail('Expected an exception');\n} catch (OrderService.OrderException e) {\n  Assert.isTrue(e.getMessage().contains('required'));\n}",
-          "body": "`Assert.fail` fails the test when no exception is thrown. A failed assert **can't be caught**, even by `catch (Exception e)`. Others: `areEqual(expected, actual)`, `isNull`, `isInstanceOfType`."
+          "body": "A test that \"passes\" when no exception comes proves nothing. `Assert.fail` right after the call fails the test if nothing is thrown. A failed assert **can't be caught**, even by `catch (Exception e)`. In `catch`, check the type with `isInstanceOfType`. Put the expected value first: `areEqual(expected, actual)`. Others: `isTrue`, `isNull`."
         },
         {
           "type": "trap",
-          "body": "`if (Test.isRunningTest())` branches make tests run **different code than production**. Coverage looks fine while real bugs hide. Use mocks and dependency injection instead."
+          "body": "`if (Test.isRunningTest())` branches make tests run **different code than production**. Coverage looks fine while real bugs hide. Use mocks and dependency injection (passing a helper in from outside, so a test can pass a fake) instead. Exam angle: an option that adds a test-only branch is almost always wrong. Email from tests is never sent anyway, so guarding `sendEmail` is pointless."
         },
         {
           "type": "tip",
@@ -370,21 +377,40 @@
           "title": "`HttpCalloutMock`",
           "lang": "apex",
           "code": "@isTest\npublic class WeatherMock implements HttpCalloutMock {\n  public HttpResponse respond(HttpRequest req) {\n    HttpResponse res = new HttpResponse();\n    res.setHeader('Content-Type', 'application/json');\n    res.setBody('{\"temp\":21.5}');\n    res.setStatusCode(200);\n    return res;\n  }\n}\n// in the test method:\nTest.setMock(HttpCalloutMock.class, new WeatherMock());",
-          "body": "One method: `respond(HttpRequest)` returns a fake `HttpResponse`. Read `req.getEndpoint()` to answer different URLs."
+          "body": "One method: `respond(HttpRequest)` returns a fake `HttpResponse`. Your real code builds the request and calls `send()`; in a test the platform hands that request to `respond()` instead of the internet. Read `req.getEndpoint()` to answer different URLs, and assert on `req.getMethod()` or `req.getBody()` to prove what your code sent."
+        },
+        {
+          "type": "code",
+          "title": "Test the error path too",
+          "lang": "apex",
+          "code": "res.setStatusCode(503); // inside the mock's respond()\n// in the test:\nTest.setMock(HttpCalloutMock.class, new RateDownMock());\ntry {\n  RateClient.fetch();\n  Assert.fail('Expected RateException');\n} catch (RateClient.RateException e) {\n  // expected\n}",
+          "body": "A mock can return any status you like, so you can test what happens when the other system fails. Why it matters: real services go down, and that code path needs coverage and proof too. Write a second mock that returns 503, then expect the error."
         },
         {
           "type": "code",
           "title": "Many endpoints, static resources",
           "lang": "apex",
           "code": "MultiStaticResourceCalloutMock multi = new MultiStaticResourceCalloutMock();\nmulti.setStaticResource('https://api.example.com/rates', 'RatesJson');\nmulti.setStaticResource('https://api.example.com/fees', 'FeesJson');\nmulti.setStatusCode(200);\nmulti.setHeader('Content-Type', 'application/json');\nTest.setMock(HttpCalloutMock.class, multi);",
-          "body": "One endpoint? `StaticResourceCalloutMock` (the same body for every call). Several? `MultiStaticResourceCalloutMock` maps each URL to its own static resource."
+          "body": "Use these when the fake body is just a file and needs no logic. One endpoint? `StaticResourceCalloutMock` gives every call the same body from one static resource. Several? `MultiStaticResourceCalloutMock` maps each URL to its own static resource. Need a different answer per request body? Write your own `HttpCalloutMock`."
         },
         {
           "type": "code",
           "title": "SOAP (WSDL2Apex)",
           "lang": "apex",
           "code": "global class CalcMock implements WebServiceMock {\n  global void doInvoke(Object stub, Object request,\n      Map<String, Object> response, String endpoint,\n      String soapAction, String requestName, String responseNS,\n      String responseName, String responseType) {\n    CalcService.AddResponse_element r = new CalcService.AddResponse_element();\n    r.AddResult = 42;\n    response.put('response_x', r);\n  }\n}\n// Test.setMock(WebServiceMock.class, new CalcMock());",
-          "body": "**WSDL2Apex** (a tool that turns a WSDL file into Apex) makes SOAP classes. Mock them with `WebServiceMock`: `doInvoke` returns nothing and puts the reply in the map under `response_x`."
+          "body": "**WSDL2Apex** (a tool that turns a WSDL file into Apex) makes SOAP classes. Those don't use `HttpCalloutMock`. Mock them with `WebServiceMock`: `doInvoke` returns nothing and puts the reply in the map under `response_x`. Register it with `Test.setMock(WebServiceMock.class, ...)`."
+        },
+        {
+          "type": "list",
+          "title": "Which mock?",
+          "items": [
+            "Callout with `Http` and your own logic: **`HttpCalloutMock`**",
+            "One fixed body from a file: **`StaticResourceCalloutMock`**",
+            "One file per endpoint: **`MultiStaticResourceCalloutMock`**",
+            "SOAP classes from WSDL2Apex: **`WebServiceMock`**",
+            "`Continuation` (long-running callout from a component): `Test.setContinuationResponse` plus `Test.invokeContinuationMethod`",
+            "Your own Apex class, no callout: the Stub API (next lesson)"
+          ]
         },
         {
           "type": "trap",
@@ -465,7 +491,7 @@
         {
           "type": "text",
           "title": "In plain words",
-          "body": "You want to test class A, but A uses class B. B is slow, makes callouts or needs lots of setup. The **Stub API** builds a fake B while the test runs. A talks to the fake, so you test A on its own."
+          "body": "You want to test class A, but A uses class B. B is slow, makes callouts or needs lots of setup. The **Stub API** builds a fake B while the test runs. A talks to the fake, so you test A on its own. Callout mocks fake the internet; the Stub API fakes your own Apex classes."
         },
         {
           "type": "tip",
@@ -484,7 +510,7 @@
           "title": "Create and inject",
           "lang": "apex",
           "code": "PricingService svc = (PricingService) Test.createStub(\n    PricingService.class, new PricingStub());\nQuoteBuilder qb = new QuoteBuilder(svc); // dependency injection\n",
-          "body": "`Test.createStub(Type, StubProvider)` returns an Object, so **cast it**. Then **inject** it (pass it in) to the class under test."
+          "body": "`Test.createStub(Type, StubProvider)` returns a plain Object, so **cast it** to the type you stubbed. The result looks like a real `PricingService` to any code that uses it. Then **inject** it (pass it in, here through the constructor) to the class under test. The class can't tell it got a fake."
         },
         {
           "type": "list",
@@ -495,13 +521,21 @@
             "Properties (getters/setters)",
             "Triggers, inner classes, system types",
             "Batchable classes, classes with only private constructors",
-            "Classes outside the namespace of the `createStub()` call"
+            "Classes outside the namespace of the `createStub()` call",
+            "Iterators as return or parameter types"
           ]
         },
         {
           "type": "text",
           "title": "No built-in verify",
           "body": "The Stub API has no `verify()` and no `when()`. To prove a call happened, record `stubbedMethodName` and `listOfArgs` inside `handleMethodCall`. Then assert on what you recorded."
+        },
+        {
+          "type": "code",
+          "title": "Record calls, then assert",
+          "lang": "apex",
+          "code": "public class NotifierStub implements System.StubProvider {\n  public List<String> calls = new List<String>();\n  public Object handleMethodCall(Object obj, String name, Type rt,\n      List<Type> pt, List<String> pn, List<Object> args) {\n    calls.add(name + ':' + args[0]);\n    return null;\n  }\n}\n// after the code under test runs:\nAssert.areEqual(1, stub.calls.size());",
+          "body": "To prove a call happened, the provider keeps a list of every call it gets. Keep a reference to the provider, run the code under test, then assert on the list: how many calls, which method, which arguments."
         },
         {
           "type": "trap",
@@ -584,25 +618,25 @@
         {
           "type": "text",
           "title": "Jest = local unit tests",
-          "body": "Jest runs in **Node.js** via `@salesforce/sfdx-lwc-jest`. Tests live in a `__tests__` folder, named `*.test.js`. **Append the element to the DOM** first: a component gets wire data only once connected. Reach inner elements through `element.shadowRoot`."
+          "body": "Jest runs in **Node.js** via `@salesforce/sfdx-lwc-jest`. Tests live in a `__tests__` folder, named `*.test.js`. **Append the element to the DOM** (the page's tree of elements) first: a component gets wire data only once connected. Reach inner elements through `element.shadowRoot`. Tests in one file share the DOM, so empty `document.body` in `afterEach`."
         },
         {
           "type": "code",
           "title": "Mock a wire adapter",
           "lang": "js",
           "code": "import { createElement } from 'lwc';\nimport AccountCard from 'c/accountCard';\nimport { getRecord } from 'lightning/uiRecordApi';\nconst mockRecord = require('./data/getRecord.json');\n\nit('renders name', async () => {\n  const el = createElement('c-account-card', { is: AccountCard });\n  document.body.appendChild(el);\n  getRecord.emit(mockRecord);\n  await Promise.resolve();\n  expect(el.shadowRoot.querySelector('h2').textContent).toBe('Acme');\n});",
-          "body": "Wire adapters become **test adapters**: `.emit(data)` pushes data, `.error()` pushes an error, `getLastConfig()` shows what the component asked for. Wired Apex uses `createApexTestWireAdapter`."
+          "body": "In Jest there's no org, so no real data arrives. The test plays the server. Wire adapters become **test adapters**: `.emit(data)` pushes data, `.error()` pushes an error, `getLastConfig()` shows what the component asked for. Wired Apex uses `createApexTestWireAdapter`."
         },
         {
           "type": "code",
           "title": "Mock imperative Apex",
           "lang": "js",
           "code": "import getAccounts from '@salesforce/apex/AccountController.getAccounts';\njest.mock(\n  '@salesforce/apex/AccountController.getAccounts',\n  () => ({ default: jest.fn() }),\n  { virtual: true }\n);\n// in a test:\ngetAccounts.mockResolvedValue([{ Id: '001', Name: 'Acme' }]);",
-          "body": "Mocks an Apex method that is called imperatively. `virtual: true` is needed because the Apex module isn't on disk. Then set results with `mockResolvedValue` or `mockRejectedValue`."
+          "body": "Mocks an Apex method that is called imperatively (your code calls it and gets a promise back). `virtual: true` is needed because the Apex module isn't on disk. Then set results with `mockResolvedValue` (success) or `mockRejectedValue` (error), and await before you assert."
         },
         {
           "type": "trap",
-          "body": "DOM updates are **async**. After you set a property or emit data, `await Promise.resolve()` (or a `flushPromises` helper) before you assert."
+          "body": "DOM updates are **async**. LWC collects changes and re-renders a moment later, so your `expect` runs too early. After you set a property or emit data, `await Promise.resolve()` (or a `flushPromises` helper) before you assert. One exception: set `@api` properties **before** `appendChild` if `connectedCallback()` reads them, because that hook runs on insert."
         },
         {
           "type": "list",
@@ -611,7 +645,7 @@
             "**Debug Mode** (per user, in Setup): JavaScript is not minified",
             "**Pause on exceptions** (DevTools Sources): stops at the line that throws",
             "**Enable custom formatters**: shows real values inside LWC proxies",
-            "Sandbox only: clear **secure and persistent browser caching** to load new code",
+            "Sandbox only: turn off **secure and persistent browser caching** to load new code, then turn it back on",
             "`sfdx-lwc-jest --debug` plus `chrome://inspect`: breakpoints in Jest tests"
           ]
         },
@@ -620,7 +654,7 @@
           "title": "Visualforce extension test",
           "lang": "apex",
           "code": "Account acc = new Account(Name = 'Acme');\ninsert acc;\nTest.setCurrentPage(Page.AccountSummary);\nApexPages.currentPage().getParameters().put('id', acc.Id);\nAccountSummaryExt ext =\n    new AccountSummaryExt(new ApexPages.StandardController(acc));",
-          "body": "Sets the page and its URL params, then wraps the record in a `StandardController`. Call action methods, then check `ApexPages.hasMessages()` or `ApexPages.getMessages()`."
+          "body": "An Apex test has no browser, so it rebuilds what a page visit provides. Set the page and its URL params, then wrap the record in a `StandardController`. Call action methods, then check `ApexPages.hasMessages()` or `ApexPages.getMessages()`. An action returns a `PageReference`: assert on `getUrl()` to check where it sends the user."
         },
         {
           "type": "tip",
@@ -708,14 +742,15 @@
           "type": "list",
           "title": "Log levels (quiet to loud)",
           "items": [
-            "`NONE`",
+            "`NONE`: nothing",
             "`ERROR`",
             "`WARN`",
             "`INFO`",
-            "`DEBUG`",
+            "`DEBUG`: what `System.debug()` uses when you give no level",
             "`FINE`",
             "`FINER`",
-            "`FINEST`"
+            "`FINEST`: everything; the Replay Debugger needs it",
+            "Each level also includes all the quieter ones above it"
           ]
         },
         {
@@ -731,18 +766,18 @@
         {
           "type": "text",
           "title": "Developer Console",
-          "body": "**Checkpoints** (up to **5**) take a heap snapshot at a line, with no code changes. The **Query Editor** runs SOQL. **Execution Overview** and the Timeline show slow spots."
+          "body": "The Developer Console is the in-browser tool for quick checks. **Checkpoints** (up to **5**) take a heap snapshot at a line, with no code changes. The **Query Editor** runs SOQL. **Execution Overview** and its Timeline show which code used the most time. Execute Anonymous runs a quick script as you; it fails to compile if you can't access a field it uses."
         },
         {
           "type": "code",
           "title": "`Limits` class",
           "lang": "apex",
           "code": "System.debug(Limits.getQueries() + ' of ' + Limits.getLimitQueries() + ' SOQL used');\nSystem.debug('CPU ms: ' + Limits.getCpuTime());",
-          "body": "`getX()` is what you've used so far; `getLimitX()` is the max. Check before you hit it: a `LimitException` can't be caught."
+          "body": "`getX()` is what you've used so far; `getLimitX()` is the max. Check before you hit it: a `LimitException` can't be caught. `catch` and `finally` don't run, and the whole transaction rolls back. So the fix is to use less (bulkify), not to catch."
         },
         {
           "type": "trap",
-          "body": "Unhandled exception emails go to the **last developer who modified** the class or trigger. Anyone added in Setup > **Apex Exception Email** gets them too."
+          "body": "Unhandled exception emails go to the **last developer who modified** the class or trigger. Anyone added in Setup > **Apex Exception Email** gets them too, even outside addresses. Exam trap: trace flags and `System.debug` never send email, and catching the exception stops the email."
         },
         {
           "type": "tip",
@@ -838,12 +873,12 @@
           "title": "Scratch org loop (sf CLI)",
           "lang": "bash",
           "code": "sf org create scratch --definition-file config/project-scratch-def.json \\\n  --alias feature1 --duration-days 7 --target-dev-hub DevHub\nsf project deploy start --target-org feature1\nsf project retrieve start --target-org feature1",
-          "body": "Creates a scratch org and moves source in and out. Scratch orgs are throwaway (1-30 days), built from source, with **source tracking** (it notes what changed locally and in the org). They come from a **Dev Hub**."
+          "body": "Creates a scratch org and moves source in and out. Scratch orgs are throwaway (7 days by default, up to 30), built from source, with **source tracking** (it notes what changed locally and in the org). They come from a **Dev Hub**. List local-only files in `.forceignore` so the CLI skips them."
         },
         {
           "type": "text",
           "title": "Packages",
-          "body": "**Unlocked packages** (2GP) are versioned, upgradeable bundles of your metadata, built from source with a Dev Hub. To **promote** a version to released, it needs **75% Apex code coverage**. So create it with `--code-coverage`, never with `--skip-validation`."
+          "body": "**Unlocked packages** (2GP) are versioned, upgradeable bundles of your metadata, built from source with a Dev Hub. To **promote** a version to released, it needs **75% Apex code coverage**. So create it with `--code-coverage`, never with `--skip-validation`. Code that relies on metadata already in the org? Use an org-dependent unlocked package (`--org-dependent`)."
         },
         {
           "type": "trap",
@@ -854,12 +889,12 @@
           "title": "Deleting metadata",
           "lang": "xml",
           "code": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<Package xmlns=\"http://soap.sforce.com/2006/04/metadata\">\n  <types>\n    <members>LegacyHelper</members>\n    <name>ApexClass</name>\n  </types>\n</Package>",
-          "body": "Deletes the `LegacyHelper` class. Pair a destructive manifest with a `package.xml`. **Post** (`--post-destructive-changes`) deletes after the rest deploys; **pre** deletes first."
+          "body": "Deletes the `LegacyHelper` class. Pair a destructive manifest with a `package.xml`. **Post** (`--post-destructive-changes`) deletes after the rest deploys; **pre** deletes first. Use post when the same deploy removes the last reference: the updated code lands first, then the field or class goes. Deleting first would fail, because old code still uses it."
         },
         {
           "type": "text",
           "title": "DevOps Center",
-          "body": "**DevOps Center** is a click-based pipeline backed by Git. Each **work item**'s changes are committed to source control and promoted through **pipeline stages**. It's the modern replacement for change sets."
+          "body": "**DevOps Center** is a click-based pipeline backed by Git, built so admins and developers can share one release process. Each **work item**'s changes are committed to source control and promoted through **pipeline stages**. It's the modern replacement for change sets. Production deploys still follow the normal Apex test rules."
         },
         {
           "type": "tip",
@@ -950,7 +985,8 @@
             "**75%** org-wide Apex coverage",
             "Every **trigger** has some coverage",
             "All tests that run must **pass**",
-            "Test classes and `System.debug` lines don't count toward coverage"
+            "Only executable lines count: comments, blank lines and `System.debug` lines are left out",
+            "Test classes don't count toward coverage"
           ]
         },
         {
@@ -977,12 +1013,12 @@
         },
         {
           "type": "trap",
-          "body": "`RunSpecifiedTests` checks coverage **per component**, not org-wide. 85% org-wide doesn't save a class sitting at 60%."
+          "body": "`RunSpecifiedTests` checks coverage **per component**, not org-wide. Example: `ClassA` reaches 90%, `ClassB` 60%, and the org sits at 85%. The deploy still fails, because `ClassB` is under 75%. Fix it by listing more test classes or writing tests for `ClassB`."
         },
         {
           "type": "text",
           "title": "Flows too",
-          "body": "If \"**Deploy processes and flows as active**\" is on, production also checks flows. Tests must cover **75%** of active autolaunched flows and processes."
+          "body": "If \"**Deploy processes and flows as active**\" is on, production also checks flows. Tests must cover **75%** of active autolaunched flows and processes (flows that run without a screen). Why it matters: a deploy with Apex at 90% can still fail on flow coverage."
         },
         {
           "type": "tip",
@@ -1061,7 +1097,7 @@
     {
       "id": "test-f4",
       "front": "What does `Test.loadData` do?",
-      "back": "It inserts the rows of a CSV static resource and returns them: `Test.loadData(Account.sObjectType, 'ResourceName')` returns a `List<sObject>`."
+      "back": "It inserts the rows of a CSV static resource (first row = field names) and returns them: `Test.loadData(Account.sObjectType, 'ResourceName')` returns a `List<sObject>`."
     },
     {
       "id": "test-f5",
@@ -1076,12 +1112,12 @@
     {
       "id": "test-f7",
       "front": "How many `startTest`/`stopTest` pairs can one test method have?",
-      "back": "Just one pair per test method."
+      "back": "Just one pair per test method. A second `Test.startTest()` call is an error, so keep start and stop in the test method, not in shared helpers."
     },
     {
       "id": "test-f8",
       "front": "What's the key limit when testing Batch Apex?",
-      "back": "Only one `execute()` chunk can run in a test. Insert no more records than the batch scope, and assert after `Test.stopTest()`."
+      "back": "Only one `execute()` chunk can run in a test. Insert no more records than the batch scope (default 200), and assert after `Test.stopTest()`, where `start`, `execute` and `finish` run."
     },
     {
       "id": "test-f9",
@@ -1166,7 +1202,7 @@
     {
       "id": "test-f25",
       "front": "How long can a trace flag last?",
-      "back": "At most 24 hours."
+      "back": "At most 24 hours. After that it stops writing logs, so set a new one when you need more."
     },
     {
       "id": "test-f26",
@@ -1324,7 +1360,7 @@
       "answer": [
         0
       ],
-      "explain": "SOSL finds nothing in a test unless you tell it what to find. `Test.setFixedSearchResults` sets the Ids the search returns.",
+      "explain": "SOSL returns nothing in a test, even for records the test inserted. `Test.setFixedSearchResults` sets the Ids the search returns, and any `WHERE` or `LIMIT` in the search still filters them. `SeeAllData` doesn't help, and changing production code to suit a test is the wrong fix.",
       "wrong": [
         "",
         "`SeeAllData` doesn't make SOSL return the test's own records.",
@@ -1432,9 +1468,9 @@
       "id": "test-q10",
       "lesson": "test-2",
       "difficulty": 3,
-      "q": "A Queueable job re-enqueues itself to process the next chunk of records. Its test fails with an error when the job tries to chain. What is the documented way to keep the job testable?",
+      "q": "A Queueable job re-enqueues itself to process the next chunk of records. Its test fails with an error when the job tries to chain. What does the current Queueable documentation suggest?",
       "options": [
-        "Guard the chaining call with `Test.isRunningTest()` and test one link of the chain",
+        "Enqueue it with `AsyncOptions` set to a suitable maximum stack depth",
         "Call `Test.stopTest()` twice to run each chained job",
         "Mark the test with `@isTest(SeeAllData=true)`",
         "Convert the chain to a for loop inside one `execute()` call"
@@ -1442,7 +1478,7 @@
       "answer": [
         0
       ],
-      "explain": "Chaining a queueable from a test has thrown an error, so the Queueable docs suggest checking `Test.isRunningTest()` before chaining. The test then covers one link of the chain. Current docs also allow testing chains with a suitable maximum stack depth (`AsyncOptions`).",
+      "explain": "Current docs say chained queueables can be tested by using an appropriate stack depth, set with `AsyncOptions` (`MaximumQueueableStackDepth`) when you enqueue. Older code guarded the chain with `Test.isRunningTest()`, but then the chain code never runs in tests.",
       "wrong": [
         "",
         "Only one `startTest`/`stopTest` pair is allowed per test method.",
@@ -1609,7 +1645,7 @@
       "answer": [
         1
       ],
-      "explain": "Two endpoints need two different fake answers. `MultiStaticResourceCalloutMock` maps each endpoint to its own static resource, so one mock covers both calls.",
+      "explain": "Two endpoints need two different fake answers. `MultiStaticResourceCalloutMock` maps each endpoint to its own static resource, so one mock covers both calls. `StaticResourceCalloutMock` would give both calls the same body, and `WebServiceMock` is only for SOAP.",
       "wrong": [
         "It returns the same single resource for every callout.",
         "",
@@ -2287,7 +2323,7 @@
       "answer": [
         1
       ],
-      "explain": "Parallel tests trade speed for a few banned calls. `IsParallel=true` tests can't call `System.enqueueJob()`, `System.schedule()` or `Test.getStandardPricebookId()`. This test must run without `IsParallel`.",
+      "explain": "Parallel tests trade speed for a few banned calls. `IsParallel=true` tests can't call `System.enqueueJob()`, `System.schedule()` or `Test.getStandardPricebookId()`. This test enqueues a job, so it fails before the assert. Run it without `IsParallel`, for example in a separate class.",
       "wrong": [
         "Queueable jobs don't need org data access.",
         "",
@@ -2762,7 +2798,7 @@
       "answer": [
         1
       ],
-      "explain": "What a component renders lives inside its shadow tree. Page-level queries like `document.querySelector` can't see in there. Use `element.shadowRoot.querySelector()`.",
+      "explain": "What a component renders lives inside its shadow tree, which page-level queries can't see into. So `document.querySelector` returns null, and `.click()` on null throws. Use `element.shadowRoot.querySelector()`. Base components like `lightning-button` are stubbed in Jest, so they're there to click.",
       "wrong": [
         "`sfdx-lwc-jest` supplies stubs for base components, so `lightning-button` is there to click.",
         "",
@@ -3762,7 +3798,7 @@
       "answer": [
         2
       ],
-      "explain": "A mock can return any status you like. Build an `HttpResponse`, call `setStatusCode(503)` and return it. Then assert that `RateException` is thrown.",
+      "explain": "A mock can return any status you like, so failures are easy to fake. Build an `HttpResponse`, call `setStatusCode(503)` and return it from `respond()`. Then call the code in `try`, add `Assert.fail()`, and check for `RateException` in `catch`. Tests can never make a real failing callout.",
       "wrong": [
         "Tests can't make real callouts, whatever the URL.",
         "A `null` mock gives no response at all.",
@@ -4448,7 +4484,7 @@
       "answer": [
         3
       ],
-      "explain": "Coverage counts only executable lines. Comments, blank lines and `System.debug()` calls are left out. So it's 24 of 30, which is 80%.",
+      "explain": "Coverage counts only executable lines, because only those can run. Comments, blank lines and `System.debug()` calls are left out of both the top and bottom of the fraction. So it's 24 covered out of 30 executable statements, which is 80%.",
       "wrong": [
         "`System.debug()` calls aren't counted in coverage.",
         "Comments and blank lines aren't counted either.",
