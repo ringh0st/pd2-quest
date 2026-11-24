@@ -18,7 +18,7 @@
         {
           "type": "tip",
           "title": "Think of it like…",
-          "body": "A car wash. Every car goes through the same stations in the same order: rinse, soap, brush, dry. Each station only sees what earlier stations did. Where it stops working: a workflow field update or a flow update can send the car through the trigger stations again."
+          "body": "A car wash. Every car goes through the same stations in the same order: rinse, soap, brush, dry. Each station only sees what earlier stations did. Where the picture breaks: a workflow field update or a flow that updates the same record sends the car back through some stations again."
         },
         {
           "type": "list",
@@ -31,7 +31,7 @@
             "Duplicate rules",
             "Save to the database (not committed yet)",
             "After triggers",
-            "Assignment, auto-response and workflow rules",
+            "Assignment, auto-response, workflow and escalation rules",
             "After-save record-triggered flows",
             "Roll-up summaries + parent record updates",
             "Commit, then post-commit work (emails, async jobs)"
@@ -40,23 +40,34 @@
         {
           "type": "text",
           "title": "Free field updates",
-          "body": "A **before trigger** (code that runs just before the record is saved) can change fields on `Trigger.new` for free. No DML needed. Changing the same record in an after trigger needs another `update`. That costs DML and fires the triggers again."
+          "body": "A **before trigger** (code that runs just before the record is saved) can change fields on `Trigger.new` for free. No DML needed: your changes are saved with the record. Changing the same record in an after trigger is not allowed on `Trigger.new`. You need another `update`, which costs a DML statement and fires the triggers again."
+        },
+        {
+          "type": "list",
+          "title": "Before or after trigger?",
+          "items": [
+            "**Before:** set or fix fields on the same records (defaults, stamps)",
+            "**Before:** block a bad record with `addError` before it is saved",
+            "**After:** you need the record's `Id` or system fields like `CreatedDate`",
+            "**After:** create or change *other* records (child Tasks, the parent Account)",
+            "**After:** queue async work or publish events about the saved record"
+          ]
         },
         {
           "type": "text",
           "title": "Workflow re-fire",
-          "body": "A **workflow field update** saves the record a second time. Before update and after update triggers run **one more time**. System validation runs again. Custom validation rules, duplicate rules and flows do not."
+          "body": "A **workflow field update** saves the record a second time. Before update and after update triggers run **one more time**, and system validation runs again. Custom validation rules, duplicate rules and flows do not. So code that creates records in an after update trigger can create them twice. Fix: act only when a field really changed (compare with `Trigger.oldMap`)."
         },
         {
           "type": "trap",
-          "body": "A `static Boolean` 'already ran' flag looks safe, but it breaks bulk loads. Triggers get records in chunks of **200**, all in the SAME transaction. Chunk 2 sees the flag already set and gets skipped."
+          "body": "A `static Boolean` 'already ran' flag looks safe, but it breaks bulk saves. When one DML statement holds more than 200 records, the trigger runs once per chunk of **200**, all in the SAME transaction, and static variables keep their value. Chunk 2 sees the flag already set and is skipped. No error appears, so the bug hides until a big load."
         },
         {
           "type": "code",
           "title": "Safer recursion guard",
           "lang": "apex",
           "code": "public class AccountTriggerGuard {\n    public static Set<Id> processed = new Set<Id>();\n}\n// in handler (after update)\nfor (Account a : newList) {\n    if (AccountTriggerGuard.processed.add(a.Id)) {\n        // first time this record is seen\n    }\n}",
-          "body": "`Set.add()` returns false when the Id is already there. So each record is handled once, not each transaction."
+          "body": "`Set.add()` returns false when the Id is already there. So each record is handled once per transaction, and records in later chunks still get through. Even better: also check `Trigger.oldMap` so you only act when the field you care about really changed."
         },
         {
           "type": "tip",
@@ -135,40 +146,40 @@
           "type": "list",
           "title": "Framework rules",
           "items": [
-            "**One trigger per object**",
+            "**One trigger per object**, listing every event it needs",
             "Keep the trigger thin: it hands work to a **handler class**",
             "The handler checks `Trigger.operationType` to pick a method",
-            "No SOQL or DML inside loops",
-            "Use Maps keyed by Id to look things up"
+            "No SOQL or DML inside loops: each query or save counts toward a per-transaction limit",
+            "Use Maps keyed by Id to look things up instead of querying again"
           ]
         },
         {
           "type": "text",
           "title": "Why one trigger?",
-          "body": "Say one object has several triggers for the same event. Salesforce **does not guarantee their order**, and it can change between releases. One trigger plus a handler means you choose the order."
+          "body": "Say one object has several triggers for the same event. Salesforce **does not guarantee their order**, and it can change between releases. Example: trigger A sets Region, trigger B reads Region. Some days B runs first and sees a blank value. One trigger plus a handler means you choose the order in code, and every developer adds logic in the same place."
         },
         {
           "type": "code",
-          "title": "Thin trigger",
+          "title": "Thin trigger, fat handler",
           "lang": "apex",
-          "code": "trigger OpportunityTrigger on Opportunity (\n    before insert, before update, after update) {\n    new OpportunityTriggerHandler().run();\n}",
-          "body": "The trigger only starts the handler. All the logic lives in an Apex class you can test."
+          "code": "trigger OpportunityTrigger on Opportunity (\n    before insert, before update, after update) {\n    new OpportunityTriggerHandler().run();\n}\n\npublic class OpportunityTriggerHandler {\n    public void run() {\n        switch on Trigger.operationType {\n            when BEFORE_INSERT { setDefaults(Trigger.new); }\n            when BEFORE_UPDATE { checkAmounts(Trigger.new); }\n            when AFTER_UPDATE  { createTasks(Trigger.new); }\n        }\n    }\n    // setDefaults, checkAmounts, createTasks ...\n}",
+          "body": "The trigger only starts the handler. The handler picks a method for each event, in the order you choose. Each method takes the whole list, so it works for 1 record or 200, and you can unit test it."
         },
         {
           "type": "code",
           "title": "Block one bad record",
           "lang": "apex",
           "code": "for (Opportunity o : Trigger.new) {\n    if (o.Amount < 0) {\n        o.Amount.addError('Amount cannot be negative');\n    }\n}",
-          "body": "`addError` stops just this record (or field) from saving. The user sees the message."
+          "body": "`addError` stops just this record (or field) from saving, and the user sees the message. Use it for rules a validation rule can't express, like checks that need a query. It works in before and after triggers, but before is faster: nothing has been saved yet."
         },
         {
           "type": "text",
           "title": "Custom exceptions",
-          "body": "A **custom exception** is your own error type. It must extend `Exception`, and its name **must end in Exception**. Example: `public class PaymentException extends Exception {}`"
+          "body": "A **custom exception** is your own error type. It must extend `Exception`, and its name **must end in Exception**. Why bother? Callers can catch *your* problem by name and handle it, instead of catching every error. Example: `public class PaymentException extends Exception {}`, then `throw new PaymentException('Card declined');`."
         },
         {
           "type": "trap",
-          "body": "With plain DML or `allOrNone = true`, one `addError` fails the whole batch. With `Database.insert(list, false)`, only the flagged records fail. The rest save."
+          "body": "With plain DML (`insert`, `update`) or `allOrNone = true`, one `addError` fails the whole statement, and nothing saves. With `Database.insert(list, false)`, only the flagged records fail and the rest save. The catch: Salesforce rolls back the first try and runs the triggers again on the good records, so a static guard can skip them."
         },
         {
           "type": "tip",
@@ -239,7 +250,7 @@
         {
           "type": "text",
           "title": "In plain words",
-          "body": "Some work is too slow, or not allowed, during a save. Calling another system is one example. **Asynchronous Apex** (code that runs a bit later, in its own transaction) moves that work out. `@future` and Queueable are the two simplest ways."
+          "body": "Some work is too slow, or not allowed, during a save. Calling another system from a trigger is one example. **Asynchronous Apex** (code that runs a bit later, in its own transaction) moves that work out. The user doesn't wait, and the job gets its own, often higher, limits. `@future` and Queueable are the two simplest ways."
         },
         {
           "type": "tip",
@@ -251,14 +262,25 @@
           "title": "`@future`",
           "lang": "apex",
           "code": "@future(callout=true)\npublic static void syncAccounts(Set<Id> accountIds) {\n    // re-query records here\n}",
-          "body": "A future method is `static` and `void`. It takes **only primitives or collections of primitives**, so pass Ids and re-query."
+          "body": "A future method is `static` and `void`. It takes **only primitives or collections of primitives** (like `Set<Id>`), never sObjects. Why? The record could change before the job runs, so you pass Ids and re-query fresh data inside. Add `callout=true` when it calls another system."
         },
         {
           "type": "code",
           "title": "Queueable",
           "lang": "apex",
           "code": "public class SyncJob implements Queueable, Database.AllowsCallouts {\n    private List<Account> accts;\n    public SyncJob(List<Account> accts) { this.accts = accts; }\n    public void execute(QueueableContext ctx) { /* work */ }\n}\nId jobId = System.enqueueJob(new SyncJob(accts));",
-          "body": "A Queueable can hold **sObjects and complex types**. `System.enqueueJob` returns a **job Id** you can track."
+          "body": "A Queueable can hold **sObjects and complex types** in member variables. They are saved with the job and restored when it runs, except `transient` ones, which come back null. `System.enqueueJob` returns a **job Id** you can look up in `AsyncApexJob` to see its status."
+        },
+        {
+          "type": "list",
+          "title": "Future or Queueable?",
+          "items": [
+            "**Need a job Id to track it?** Queueable",
+            "**Need to pass records or objects?** Queueable",
+            "**Need step 2 to start after step 1?** Queueable (chain it)",
+            "**Just a tiny fire-and-forget call with Ids?** `@future` still works",
+            "Salesforce now **recommends Queueable** for new code: same uses, more control"
+          ]
         },
         {
           "type": "list",
@@ -273,16 +295,16 @@
         {
           "type": "text",
           "title": "Delay and control",
-          "body": "`System.enqueueJob(job, delayMinutes)` waits **0-10 minutes** before the job can start. `AsyncOptions` gives more control: `MinimumQueueableDelayInMinutes`, `MaximumQueueableStackDepth`, and a `DuplicateSignature` that blocks the same job being queued twice."
+          "body": "`System.enqueueJob(job, delayMinutes)` waits **0-10 minutes** before the job can start, for example to let another system catch up. `AsyncOptions` gives more control: `MinimumQueueableDelayInMinutes`, `MaximumQueueableStackDepth` (to cap a chain), and a `DuplicateSignature` that blocks the same job being queued twice. Apex tests ignore the delay."
         },
         {
           "type": "trap",
-          "body": "You **can't call a future method from a future or batch** context. It throws an error. Check `System.isFuture()` and `System.isBatch()` first, or use a Queueable."
+          "body": "You **can't call a future method from a future or batch** context. It throws an error at run time. This bites when a trigger calls `@future` and a batch job later updates the same records. Check `System.isFuture()` and `System.isBatch()` first, or use a Queueable instead."
         },
         {
           "type": "tip",
           "title": "Remember it",
-          "body": "**Future = Fire and Forget. Queueable = Queue it, Track it, Chain it.**"
+          "body": "**Future = Fire and Forget. Queueable = Queue it, Track it, Chain it.** Pass Ids to a future; pass anything to a Queueable. From async code, only one child job."
         }
       ],
       "terms": [
@@ -360,14 +382,14 @@
           "title": "Attach a finalizer",
           "lang": "apex",
           "code": "public class RetryFinalizer implements Finalizer {\n    public void execute(FinalizerContext ctx) {\n        if (ctx.getResult() ==\n            ParentJobResult.UNHANDLED_EXCEPTION) {\n            System.debug(ctx.getException().getMessage());\n            // log, or re-enqueue a Queueable\n        }\n    }\n}\n// inside Queueable.execute():\nSystem.attachFinalizer(new RetryFinalizer());",
-          "body": "Implement `Finalizer`, then call `System.attachFinalizer()` inside `execute()`. It runs after the Queueable finishes, success OR failure."
+          "body": "Implement `Finalizer`, then call `System.attachFinalizer()` inside `execute()` (not in the constructor, which runs before the job is queued). The finalizer runs after the Queueable finishes, success OR failure, so one class handles both outcomes by checking `getResult()`."
         },
         {
           "type": "list",
           "title": "`FinalizerContext` gives you",
           "items": [
             "`getResult()`: `SUCCESS` or `UNHANDLED_EXCEPTION`",
-            "`getException()`: the error that ended the job",
+            "`getException()`: the error that ended the job (null when it succeeded)",
             "`getAsyncApexJobId()`: the job Id (matches `AsyncApexJob`)",
             "`getRequestId()`: the request Id, for Event Monitoring logs"
           ]
@@ -377,9 +399,20 @@
           "title": "Rules",
           "items": [
             "**One** finalizer per Queueable",
-            "Runs in its **own transaction** with fresh limits",
+            "Runs in its **own transaction** with fresh limits (mostly the synchronous ones, like 100 SOQL queries)",
+            "Its DML commits even when the Queueable's DML rolled back",
             "Can enqueue **one** async job and make callouts",
             "A failing Queueable can be re-enqueued **5** consecutive times, then it stops"
+          ]
+        },
+        {
+          "type": "list",
+          "title": "When to reach for it",
+          "items": [
+            "**try/catch** handles errors you expect, but can't catch a governor limit",
+            "**A finalizer** runs even after a limit error: log it, alert someone, or retry",
+            "**Polling `AsyncApexJob`** later also finds failures, but it's slow and needs a scheduled job",
+            "For **Batch Apex**, the matching tool is the `BatchApexErrorEvent` platform event, not a finalizer"
           ]
         },
         {
@@ -389,7 +422,7 @@
         },
         {
           "type": "trap",
-          "body": "A `static` retry counter doesn't work. Statics reset in every new transaction, and the finalizer runs in its own. Pass the attempt count through the Queueable's constructor instead."
+          "body": "A `static` retry counter doesn't work. Statics reset in every new transaction, and the finalizer runs in its own, so it always sees 0. The job retries until the platform's 5-retry cap, not your limit. Pass the attempt count through the Queueable's constructor instead: `new SyncJob(ids, attempt + 1)`."
         },
         {
           "type": "tip",
@@ -457,7 +490,7 @@
         {
           "type": "text",
           "title": "In plain words",
-          "body": "Some jobs touch millions of records. No single transaction can do that. **Batch Apex** splits the records into chunks and runs each chunk as its own transaction. **Schedulable Apex** starts code at a set time, like every night at 2 AM."
+          "body": "Some jobs touch millions of records. No single transaction can do that: limits cap queries, rows and CPU time. **Batch Apex** splits the records into chunks and runs each chunk as its own transaction. **Schedulable Apex** starts code at a set time, like every night at 2 AM. Use Batch for big data; use a Queueable for smaller jobs."
         },
         {
           "type": "tip",
@@ -469,7 +502,7 @@
           "title": "Batch skeleton",
           "lang": "apex",
           "code": "public class CleanupBatch implements\n    Database.Batchable<SObject>, Database.Stateful {\n    Integer total = 0;\n    public Database.QueryLocator start(Database.BatchableContext bc) {\n        return Database.getQueryLocator('SELECT Id FROM Case');\n    }\n    public void execute(Database.BatchableContext bc, List<Case> scope) {\n        total += scope.size();\n    }\n    public void finish(Database.BatchableContext bc) {}\n}",
-          "body": "`start()` finds the records, `execute()` runs once per chunk, and `finish()` runs once at the end. Each `execute()` gets **fresh governor limits**."
+          "body": "`start()` finds the records once, `execute()` runs once per chunk, and `finish()` runs once at the end (send a summary, start the next job). Each `execute()` gets **fresh governor limits**, so one bad chunk fails alone and the others still save. Start it with `Database.executeBatch(new CleanupBatch(), 200)`."
         },
         {
           "type": "list",
@@ -484,15 +517,16 @@
         {
           "type": "text",
           "title": "`Database.Stateful`",
-          "body": "`Database.Stateful` keeps **instance variables** (like counters and error lists) from one chunk to the next. Without it, each chunk starts with a fresh copy. `Static` variables never carry over, even with it."
+          "body": "`Database.Stateful` keeps **instance variables** (like counters and error lists) from one chunk to the next. Without it, each chunk starts with a fresh copy, so a total in `finish()` is 0. The cost: the job's state is saved after every chunk, which makes it slower, so use it only when you need it. `Static` variables never carry over, even with it."
         },
         {
           "type": "list",
-          "title": "Queue limits",
+          "title": "Queue, chain, recover",
           "items": [
             "**5** batch jobs queued or active at once",
-            "Up to **100** more wait in the **Apex flex queue** (Holding)",
-            "Chain batches by calling `Database.executeBatch` in `finish()`"
+            "Up to **100** more wait in the **Apex flex queue** (status Holding)",
+            "Chain batches by calling `Database.executeBatch` in `finish()`, so B starts only after A is done",
+            "Add `Database.RaisesPlatformEvents`: a crashed chunk publishes a `BatchApexErrorEvent` with the failed record Ids"
           ]
         },
         {
@@ -500,11 +534,11 @@
           "title": "Schedule it",
           "lang": "apex",
           "code": "public class NightlyJob implements Schedulable {\n    public void execute(SchedulableContext sc) {\n        Database.executeBatch(new CleanupBatch(), 500);\n    }\n}\n// sec min hour day month weekday\nSystem.schedule('Nightly 2am', '0 0 2 * * ?', new NightlyJob());",
-          "body": "The cron string reads seconds, minutes, hours, day of month, month, day of week. An org can have at most **100** scheduled Apex jobs."
+          "body": "The cron string reads seconds, minutes, hours, day of month, month, day of week. `?` means 'any' and goes in one of the two day fields. An org can have at most **100** scheduled Apex jobs. To run a batch just once later, `System.scheduleBatch(job, 'name', 60)` needs no Schedulable class."
         },
         {
           "type": "trap",
-          "body": "Scheduled Apex **can't make synchronous callouts**. From its `execute()`, start a Queueable or Batch that implements `Database.AllowsCallouts`, or a `@future(callout=true)` method."
+          "body": "Scheduled Apex **can't make synchronous callouts**, and `callout=true` doesn't exist for it. From its `execute()`, start a Queueable or Batch that implements `Database.AllowsCallouts`, or a `@future(callout=true)` method. Inside a batch, make callouts before any DML in the same `execute()`, or you get 'uncommitted work pending'."
         },
         {
           "type": "tip",
@@ -569,7 +603,7 @@
         {
           "type": "text",
           "title": "In plain words",
-          "body": "Salesforce gives you several ways to run code later. Each fits a different job, and the exam loves asking which to pick. Look for the clues: how much data, what inputs, a set time, or many listeners."
+          "body": "Salesforce gives you several ways to run code later, and the exam loves asking which to pick. Why it matters: the wrong tool hits a limit (too many rows, too many jobs) or can't do the job at all (no callouts, no records as input). Look for the clues: how much data, what inputs, a set time, or many listeners."
         },
         {
           "type": "tip",
@@ -582,6 +616,7 @@
           "items": [
             "Simple callout from a trigger: `@future(callout=true)` or Queueable",
             "sObject inputs, a job Id, chaining: **Queueable**",
+            "Wait a few minutes first: **Queueable with a delay** (0-10 min)",
             "Guaranteed cleanup on failure: **Queueable + Finalizer**",
             "Millions of records: **Batch Apex**",
             "Run at a set time: **Schedulable**",
@@ -591,16 +626,27 @@
         {
           "type": "text",
           "title": "Triggers + callouts",
-          "body": "A trigger **can't make a synchronous callout** (a call to another system that waits for the answer). The record is still in the middle of saving. Hand the work to async Apex that allows callouts."
+          "body": "A trigger **can't make a synchronous callout** (a call to another system that waits for the answer). The record is still in the middle of saving, holding database locks, and the user would wait on a slow server. Hand the work to async Apex that allows callouts, and pass record Ids. Example: after insert on Order, enqueue `new OrderSyncJob(orderIds)`."
+        },
+        {
+          "type": "list",
+          "title": "Key limits side by side",
+          "items": [
+            "**Future:** 50 calls per transaction; primitives only; none from batch or future code",
+            "**Queueable:** 50 jobs from synchronous code, only 1 from async code",
+            "**Batch:** 5 active jobs, 100 more in the flex queue; up to 50 million records with a `QueryLocator`",
+            "**Scheduled:** at most 100 scheduled Apex jobs in the org",
+            "**Callouts:** 100 per transaction, in sync and async code alike"
+          ]
         },
         {
           "type": "text",
           "title": "Monitoring",
-          "body": "Batch, Queueable and future jobs all show up in `AsyncApexJob` and on the Apex Jobs page. Only Queueable and Batch hand you the job Id directly."
+          "body": "Batch, Queueable and future jobs all show up in `AsyncApexJob` and on the Apex Jobs page, with status and error counts. `System.enqueueJob` and `Database.executeBatch` return the job Id, so you can query that one job. A future method returns nothing, so you have to search for it. `System.schedule` returns a `CronTrigger` Id."
         },
         {
           "type": "trap",
-          "body": "Calling `Database.executeBatch` from a trigger on every save floods the limit of **5** active batch jobs and the flex queue. Batch is for **big bulk work**, not quick per-record reactions."
+          "body": "Calling `Database.executeBatch` from a trigger on every save floods the limit of **5** active batch jobs and the 100-slot flex queue. A busy day of edits soon fails with an error. Batch is for **big bulk work**, not quick per-record reactions. For those, enqueue one Queueable per transaction with all the record Ids."
         },
         {
           "type": "tip",
@@ -665,7 +711,7 @@
         {
           "type": "text",
           "title": "In plain words",
-          "body": "A **platform event** is a message one part of your system sends out for others to hear. The sender doesn't know who is listening. Listeners can be Apex, flows, LWC or outside systems. This keeps the pieces loosely tied together."
+          "body": "A **platform event** is a message one part of your system sends out for others to hear. The sender doesn't know who is listening. Listeners can be Apex, flows, LWC or outside systems. Why it matters: when a team adds a new reaction, they add a listener, and the sender's code doesn't change. The pieces stay loosely tied together."
         },
         {
           "type": "tip",
@@ -677,7 +723,7 @@
           "title": "Publish",
           "lang": "apex",
           "code": "Order_Shipped__e evt = new Order_Shipped__e(\n    Order_Number__c = 'A-100');\nDatabase.SaveResult sr = EventBus.publish(evt);\nif (!sr.isSuccess()) { /* handle sr.getErrors() */ }",
-          "body": "Event objects end in `__e`. `EventBus.publish` counts as a DML statement and returns a `SaveResult`."
+          "body": "Event objects end in `__e`. `EventBus.publish` returns a `SaveResult`. For **Publish After Commit** events, each call counts as one DML statement (150 per transaction). Publish Immediately calls have their own limit of 150. So build a list and publish it in one call, not one call per record."
         },
         {
           "type": "list",
@@ -702,7 +748,7 @@
         {
           "type": "text",
           "title": "Event triggers are different",
-          "body": "By default they run as the **Automated Process** user. Change that with `PlatformEventSubscriberConfig`. They get batches of up to **2,000** events, in a separate transaction from the publisher."
+          "body": "By default they run as the **Automated Process** user, so new records show it as creator. Change that with `PlatformEventSubscriberConfig`. They get batches of up to **2,000** events, in a separate transaction from the publisher, and use the synchronous limits. Like other triggers, they generally can't make callouts: enqueue a Queueable for that."
         },
         {
           "type": "code",
@@ -713,7 +759,7 @@
         },
         {
           "type": "trap",
-          "body": "Events published **immediately** are **not** undone by `Database.rollback`. And you can't query or update events like records."
+          "body": "Events published **immediately** are **not** undone by `Database.rollback` or a failed transaction. And you can't query or update events like records: there is no SOQL on `__e` objects. To catch up on missed events, a subscriber replays them from a saved Replay ID. High-volume events are kept for 72 hours."
         },
         {
           "type": "tip",
@@ -728,7 +774,7 @@
         },
         {
           "term": "EventBus.publish",
-          "say": "The Apex call that sends out platform events. It counts as a DML statement, a save command, and gives back a SaveResult."
+          "say": "The Apex call that sends out platform events. Each call counts toward a limit of 150 per transaction, and gives back a SaveResult. Publish a whole list in one call."
         },
         {
           "term": "SaveResult",
@@ -778,7 +824,7 @@
         {
           "type": "text",
           "title": "In plain words",
-          "body": "**Change Data Capture (CDC)** tells other systems when records change. Salesforce sends a change event each time a record is created, updated, deleted or undeleted. You just **select the objects** in Setup. No publishing code."
+          "body": "**Change Data Capture (CDC)** tells other systems when records change. Salesforce sends a change event each time a record is created, updated, deleted or undeleted. You just **select the objects** in Setup. No publishing code. Why it matters: a data warehouse or ERP can stay in sync in near real time, without polling Salesforce for changes every hour."
         },
         {
           "type": "tip",
@@ -800,12 +846,12 @@
           "title": "Read the header",
           "lang": "apex",
           "code": "trigger AcctCDC on AccountChangeEvent (after insert) {\n    for (AccountChangeEvent e : Trigger.new) {\n        EventBus.ChangeEventHeader h = e.ChangeEventHeader;\n        if (h.changeType == 'UPDATE' &&\n            h.changedFields.contains('Phone')) {\n            // react to phone change\n        }\n    }\n}",
-          "body": "The `ChangeEventHeader` says what happened: `changeType`, `recordIds`, `changedFields`, `commitUser`, `entityName`."
+          "body": "The `ChangeEventHeader` says what happened: `changeType` (CREATE, UPDATE, DELETE, UNDELETE), `recordIds`, `changedFields`, `commitUser`, `entityName`. `changeOrigin` names the API client that made the change, so a sync can skip its own write-backs and avoid an endless loop."
         },
         {
           "type": "text",
           "title": "Commit-only",
-          "body": "Change events go out only **after the transaction commits**. Rolled-back changes make no events. Events are kept for **3 days**, so subscribers can replay them."
+          "body": "Change events go out only **after the transaction commits**. Rolled-back changes make no events, and there is no Publish Immediately option. Events are kept for **3 days**, so a subscriber that was down can replay what it missed. Note: formula fields are never included in change events."
         },
         {
           "type": "text",
@@ -814,7 +860,18 @@
         },
         {
           "type": "trap",
-          "body": "A change event trigger has **no Trigger.old**. It's an after insert trigger on the event, not on the record. To see what changed, read `changedFields` in the header."
+          "body": "A change event trigger has **no Trigger.old**. It's an after insert trigger on the event, not on the record, and it runs later, in its own transaction, as the Automated Process user. To see what changed, read `changedFields` in the header. Never send null fields on to another system as if they were real values."
+        },
+        {
+          "type": "list",
+          "title": "CDC or platform event?",
+          "items": [
+            "**CDC:** Salesforce publishes for you, whenever selected records change",
+            "**CDC:** fixed shape: the record's fields plus a header",
+            "**Platform event:** you design the fields and publish it yourself",
+            "**Platform event:** for business moments that aren't just a record change, like 'payment failed'",
+            "**Platform event:** can publish immediately; CDC only after commit"
+          ]
         },
         {
           "type": "tip",
@@ -882,7 +939,7 @@
         {
           "type": "text",
           "title": "In plain words",
-          "body": "A **callout** is your Apex calling another system over the internet, like a tax or shipping service. You send a request and wait for the answer. Salesforce limits how many calls you make and how long you wait."
+          "body": "A **callout** is your Apex calling another system over the internet, like a tax or shipping service. You send a request and wait for the answer. While Apex waits, the user often waits too. That's why Salesforce limits how many calls you make and how long you wait, and why slow calls belong in async Apex."
         },
         {
           "type": "tip",
@@ -894,7 +951,7 @@
           "title": "REST callout",
           "lang": "apex",
           "code": "HttpRequest req = new HttpRequest();\nreq.setEndpoint('callout:Billing_API/v1/invoices');\nreq.setMethod('POST');\nreq.setHeader('Content-Type', 'application/json');\nreq.setBody(JSON.serialize(payload));\nreq.setTimeout(30000); // ms\nHttpResponse res = new Http().send(req);",
-          "body": "The `callout:` prefix uses a Named Credential, so no Remote Site Setting is needed."
+          "body": "The `callout:` prefix uses a Named Credential, so no Remote Site Setting is needed and no password sits in code. `send()` returns a response for any HTTP status, even 500 or 503. Check `res.getStatusCode()` before you read the body."
         },
         {
           "type": "list",
@@ -909,21 +966,21 @@
         {
           "type": "text",
           "title": "Named + External Credentials",
-          "body": "A **Named Credential** holds the URL. An **External Credential** holds the login method (OAuth, JWT, custom headers) and its principals. Users get a principal through a **permission set**."
+          "body": "A **Named Credential** holds the URL. An **External Credential** holds the login method (OAuth, JWT, custom headers) and its principals. Why split them? Secrets stay out of code, and one login setup can serve several endpoints. A named principal is one shared login; a per-user principal lets each user sign in as themselves. Users get a principal through a **permission set**."
         },
         {
           "type": "trap",
-          "body": "DML **then** a callout in one transaction throws **CalloutException: You have uncommitted work pending**. Queuing a future job counts as pending work too. Call out first, or move the callout to async."
+          "body": "DML **then** a callout in one transaction throws **CalloutException: You have uncommitted work pending**. Salesforce can't hold your unsaved changes while it waits on another server. Queuing async Apex (future, Queueable, batch), scheduling Apex or sending email count as pending work too. Call out first, or move the callout to async. Queries and debug lines are fine."
         },
         {
           "type": "text",
           "title": "SOAP and test mocks",
-          "body": "For SOAP, import the WSDL with **WSDL2Apex** (Generate from WSDL) to get typed classes. Test them with `WebServiceMock`. Test REST with `HttpCalloutMock` through `Test.setMock`."
+          "body": "For SOAP, import the WSDL with **WSDL2Apex** (Generate from WSDL) to get typed classes instead of building XML by hand. Tests can't make real callouts, so you fake the reply. Test SOAP with `WebServiceMock`; test REST with `HttpCalloutMock` through `Test.setMock`. If the test inserts data first, put the callout between `Test.startTest()` and `Test.stopTest()`."
         },
         {
           "type": "text",
           "title": "Continuation",
-          "body": "A **Continuation** runs a long callout from LWC, Aura or Visualforce without tying up a server thread. Use `@AuraEnabled(continuation=true cacheable=true)`. Up to **3** callouts per Continuation, timeout up to **120 s**."
+          "body": "A **Continuation** runs a long callout from LWC, Aura or Visualforce without tying up a server thread. Why: every org has a limit on requests running longer than 5 seconds, and slow callouts eat it up. The method returns the Continuation; a callback method gets the response. Use `@AuraEnabled(continuation=true cacheable=true)`. Up to **3** parallel callouts per Continuation, timeout up to **120 s**."
         },
         {
           "type": "tip",
@@ -991,7 +1048,7 @@
         {
           "type": "text",
           "title": "In plain words",
-          "body": "Sometimes outside systems need to call **into** Salesforce and run your logic. You can turn an Apex class into a web service. **Apex REST** uses URLs and JSON. **Apex SOAP** uses a WSDL contract and XML."
+          "body": "Sometimes outside systems need to call **into** Salesforce and run your logic. You can turn an Apex class into a web service. **Apex REST** uses URLs and JSON. **Apex SOAP** uses a WSDL contract and XML. When? The standard APIs already create and read records. Build your own only for custom logic, like creating an order and its lines in one transaction."
         },
         {
           "type": "tip",
@@ -1003,7 +1060,7 @@
           "title": "Apex REST",
           "lang": "apex",
           "code": "@RestResource(urlMapping='/orders/*')\nglobal with sharing class OrderApi {\n    @HttpGet\n    global static Order__c getOrder() {\n        String id = RestContext.request.requestURI\n            .substringAfterLast('/');\n        return [SELECT Id, Name FROM Order__c WHERE Id = :id];\n    }\n}",
-          "body": "This class answers GET calls at `/services/apexrest/orders/{id}`."
+          "body": "This class answers GET calls at `/services/apexrest/orders/{id}`. The caller must be signed in (OAuth token or session Id). Apex runs in system mode, so add `with sharing` and use `WITH USER_MODE` queries to respect the caller's access."
         },
         {
           "type": "list",
@@ -1012,13 +1069,27 @@
             "Class is `global`; methods are `global static`",
             "Annotations: `@HttpGet`, `@HttpPost`, `@HttpPut`, `@HttpPatch`, `@HttpDelete`",
             "Only **one method per annotation** in a class",
-            "Read and write with `RestContext.request` and `RestContext.response`",
-            "To send 201 or 422, set the status code on `RestContext.response` yourself"
+            "`@HttpGet` and `@HttpDelete` take **no parameters** (no body); read `RestContext.request.params`",
+            "JSON keys must match parameter names; order doesn't matter",
+            "Read and write with `RestContext.request` and `RestContext.response`"
           ]
         },
         {
           "type": "trap",
-          "body": "If an `@HttpPost` method **has parameters**, the JSON body fills them and **requestBody stays empty**. Need the raw body? Use **no parameters** and read `RestContext.request.requestBody`."
+          "body": "If an `@HttpPost` method **has parameters**, the JSON body fills them and **requestBody stays empty**. Need the raw body, for logging or a custom format? Use **no parameters** and read `RestContext.request.requestBody` (a Blob, so call `toString()`). Then parse it with `JSON.deserialize`."
+        },
+        {
+          "type": "list",
+          "title": "Status codes you get for free",
+          "items": [
+            "**200**: success with a return value",
+            "**204**: a successful `void` PATCH",
+            "**400**: an unhandled custom (user) exception",
+            "**404**: no `urlMapping` matches the URL",
+            "**500**: an unhandled system exception, like a null pointer",
+            "Anything else, like **201** or **422**: set `RestContext.response.statusCode` yourself",
+            "Fields that are null are left out of the returned JSON"
+          ]
         },
         {
           "type": "code",
@@ -1030,7 +1101,7 @@
         {
           "type": "text",
           "title": "SOAP rules",
-          "body": "`webservice` methods can't be overloaded (two methods with one name). They can't take or return a **Map** or Set. To send a custom type, use an inner class with `webservice` member variables."
+          "body": "`webservice` methods can't be overloaded (two methods with one name). They can't take or return a **Map** or Set. To send a custom type, use an inner class with `webservice` member variables. The caller needs the WSDL generated from your class, plus a session Id or OAuth token on every call."
         },
         {
           "type": "tip",
@@ -1103,7 +1174,7 @@
         {
           "type": "text",
           "title": "In plain words",
-          "body": "Admins build lots of automation in **Flow**, a point-and-click tool. Sometimes Flow needs code it can't do alone. An **invocable method** is Apex that Flow can call like any other action. The exam also asks when to pick Flow and when to pick code."
+          "body": "Admins build lots of automation in **Flow**, a point-and-click tool. Sometimes Flow needs something it can't do alone, like complex math or a callout. An **invocable method** is Apex that Flow can call like any other action. Why it matters: admins keep owning the process; developers write only the hard part. The exam asks when to pick Flow and when to pick code."
         },
         {
           "type": "tip",
@@ -1115,7 +1186,7 @@
           "title": "Invocable action",
           "lang": "apex",
           "code": "public class ScoreLeads {\n    public class Request {\n        @InvocableVariable(required=true) public Id leadId;\n        @InvocableVariable public String source;\n    }\n    @InvocableMethod(label='Score Leads' callout=false)\n    public static List<Integer> score(List<Request> reqs) {\n        // bulkified: one query for all reqs\n        return new List<Integer>();\n    }\n}",
-          "body": "Flow can now call **Score Leads**. The inner class bundles several inputs with `@InvocableVariable`."
+          "body": "Flow can now call **Score Leads**; the `label` is the name admins see, and `category` groups it in Flow Builder. The inner class bundles several inputs with `@InvocableVariable` (fields must be `public` or `global`). Set `callout=true` when the action calls another system."
         },
         {
           "type": "list",
@@ -1123,13 +1194,21 @@
           "items": [
             "**One** per class; the class must be an outer class",
             "`static`, and `public` or `global`",
-            "**One** parameter: a List (or List of Lists)",
-            "Returns a List or `void`"
+            "**One** parameter: a List (or List of Lists) of primitives, sObjects or an `@InvocableVariable` class",
+            "Returns a List or `void`",
+            "No other annotation alongside it except `@Deprecated`, so it can't also be `@AuraEnabled`"
           ]
         },
         {
           "type": "trap",
-          "body": "Flow **batches interviews**. 200 records can reach your method as **one call with a 200-item list**. SOQL in a loop over that list hits the limit. Also return outputs in the **same size and order** as the inputs."
+          "body": "Flow **batches interviews**. 200 records can reach your method as **one call with a 200-item list**. SOQL in a loop over that list hits the limit. Return outputs in the **same size and order** as the inputs: output 5 goes to interview 5. An uncaught exception fails every interview in the batch, so catch errors per input."
+        },
+        {
+          "type": "code",
+          "title": "One result per input, in order",
+          "lang": "apex",
+          "code": "@InvocableMethod(label='Get Credit Score')\npublic static List<Integer> getScores(List<Id> ids) {\n    Map<Id, Account> byId = new Map<Id, Account>(\n        [SELECT Credit_Score__c FROM Account WHERE Id IN :ids]);\n    List<Integer> out = new List<Integer>();\n    for (Id i : ids) {               // loop the INPUTS\n        Account a = byId.get(i);\n        out.add(a?.Credit_Score__c?.intValue()); // null if none\n    }\n    return out;\n}",
+          "body": "One query for the whole batch. Looping over the inputs (not the query rows) keeps every output lined up with its interview, even when a record has no score."
         },
         {
           "type": "list",
@@ -1138,14 +1217,14 @@
             "Simple updates to the same record: **before-save flow**",
             "Logic admins will maintain: **Flow**",
             "Complex logic, heavy data, bulk callouts: **Apex**",
-            "Undelete, or a roll-up over a lookup: **Apex trigger**",
+            "Undelete (flows can't start on it), or a roll-up over a lookup: **Apex trigger**",
             "Reusable Apex inside Flow: **invocable action**"
           ]
         },
         {
           "type": "text",
           "title": "Apex types and callouts in Flow",
-          "body": "Flow can hold an **Apex-defined** variable: a class whose fields use `@AuraEnabled`. Flow reads and sets each field. Need a callout from a record-triggered flow? Put the action on the **Run Asynchronously** path."
+          "body": "Flow can hold an **Apex-defined** variable: a class whose fields use `@AuraEnabled`. Flow reads and sets each field, so one variable can carry a whole structured result, like a weather report. Need a callout from a record-triggered flow? Put the action on the **Run Asynchronously** path, which runs after the record is committed."
         },
         {
           "type": "tip",
@@ -1210,47 +1289,47 @@
         {
           "type": "text",
           "title": "In plain words",
-          "body": "Plain `insert` or `update` is all-or-nothing. The `Database` class gives you more control. You can save the good rows and report the bad ones, undo work, and build queries at run time. Careless run-time queries can let users inject their own SOQL."
+          "body": "Plain `insert` or `update` is all-or-nothing: one bad row and every row rolls back. The `Database` class gives you more control. You can save the good rows and report the bad ones, undo part of your work, and build queries at run time. Why care? Imports and integrations rarely have perfect data. The risk: careless run-time queries can let users inject their own SOQL."
         },
         {
           "type": "tip",
           "title": "Think of it like…",
-          "body": "A teacher grading a stack of tests. Plain DML throws out the whole stack if one test is wrong. `Database.insert(list, false)` grades each test alone and returns notes on the bad ones. Where it stops working: undoing work with a savepoint still costs DML."
+          "body": "A teacher grading a stack of tests. Plain DML throws out the whole stack if one test is wrong. `Database.insert(list, false)` grades each test alone and returns notes on the bad ones. Where it stops working: the teacher keeps no notes for you unless you read the results, and a failed test never gets a record Id."
         },
         {
           "type": "code",
           "title": "Partial success",
           "lang": "apex",
           "code": "Database.SaveResult[] results = Database.insert(contacts, false);\nfor (Database.SaveResult r : results) {\n    if (!r.isSuccess()) {\n        for (Database.Error e : r.getErrors()) {\n            System.debug(e.getStatusCode() + ': ' + e.getMessage());\n        }\n    }\n}",
-          "body": "`allOrNone = false`: good rows save, and bad rows report errors. Results come back in the same order as your list."
+          "body": "`allOrNone = false`: good rows save, and bad rows report errors. Results come back in the same order as your list, so result `i` belongs to row `i`. A failed row has no Id (`getId()` is null), so log something from `rows[i]`, like its external key, to find it later."
         },
         {
           "type": "code",
           "title": "Upsert by external Id",
           "lang": "apex",
           "code": "Database.UpsertResult[] ur =\n    Database.upsert(accts, Account.ERP_Id__c, false);\nBoolean wasNew = ur[0].isCreated();",
-          "body": "Upsert matches on the **external Id field**, so you need no Salesforce Ids. `isCreated()` says if a row was new."
+          "body": "Upsert matches on the **external Id field**, so you need no Salesforce Ids. A match updates the record; no match inserts a new one, and `isCreated()` tells you which. If two records share that external Id, that row fails with an error. Typical use: a nightly sync where the ERP sends its own customer numbers."
         },
         {
           "type": "text",
           "title": "Mixed DML",
-          "body": "DML on **setup objects** (`User`, `Group`, `GroupMember`, `PermissionSetAssignment`, `UserRole`) plus normal objects in one transaction throws `MIXED_DML_OPERATION`. Move one side to `@future` or Queueable. In tests, wrap it in `System.runAs`."
+          "body": "DML on **setup objects** (`User`, `Group`, `GroupMember`, `PermissionSetAssignment`, `UserRole`) plus normal objects in one transaction throws `MIXED_DML_OPERATION`. Why? Changing users and access recalculates sharing, which can't mix with normal record saves. Changing the order doesn't help. Move one side to `@future` or Queueable, passing Ids. In tests, wrap the setup DML in `System.runAs`."
         },
         {
           "type": "code",
           "title": "Safe dynamic SOQL",
           "lang": "apex",
           "code": "Map<String, Object> binds = new Map<String, Object>{\n    'nameFilter' => userInput + '%'\n};\nList<Account> rows = Database.queryWithBinds(\n    'SELECT Id FROM Account WHERE Name LIKE :nameFilter',\n    binds, AccessLevel.USER_MODE);",
-          "body": "Pass values through a bind Map. Field and object names **can't be bound**, so check them against Schema describe results."
+          "body": "Pass values through a bind Map, so input stays data, never query text. `Database.query` binds only simple variables (`:acctId`, not `:acct.Id`). Field and object names **can't be bound**, so check them against Schema describe results (does the field exist, `isAccessible()`) before adding them to the string. `USER_MODE` also enforces the user's access."
         },
         {
           "type": "trap",
-          "body": "Gluing user input into the string for `Database.query` invites **SOQL injection**. Use bind variables, `Database.queryWithBinds` or `String.escapeSingleQuotes`. `WITH SECURITY_ENFORCED` does not stop it."
+          "body": "Gluing user input into the string for `Database.query` invites **SOQL injection**. Example: input `x' OR Name != '` turns a filter into 'return everything'. Use bind variables, `Database.queryWithBinds` or `String.escapeSingleQuotes`. `WITH SECURITY_ENFORCED` does not stop it: it checks field access, not what the query means."
         },
         {
           "type": "text",
           "title": "Undo button",
-          "body": "`Database.setSavepoint()` marks a spot, and `Database.rollback(sp)` undoes the DML since then. Each one counts as a DML statement. A rollback doesn't reset static variables or clear Ids on your sObjects."
+          "body": "`Database.setSavepoint()` marks a spot, and `Database.rollback(sp)` undoes the DML since then. Each one counts as a DML statement. A rollback doesn't reset static variables or clear Ids on your sObjects, so clone a record before inserting it again. Rolling back to an earlier savepoint voids later ones. Before a callout, call `Database.releaseSavepoint(sp)`."
         },
         {
           "type": "tip",
@@ -1330,7 +1409,7 @@
     {
       "id": "auto-f3",
       "front": "How many records does a trigger get at a time?",
-      "back": "Up to 200 per chunk. A bigger DML runs the trigger several times, all in the same transaction."
+      "back": "Up to 200 per chunk. One DML statement with more records runs the trigger once per 200-record chunk, all in the same transaction, so static variables carry over between chunks."
     },
     {
       "id": "auto-f4",
@@ -1360,7 +1439,7 @@
     {
       "id": "auto-f9",
       "front": "How many `@future` calls can one transaction make?",
-      "back": "50."
+      "back": "50 per transaction (synchronous code or a Queueable). From batch or future code: none at all, so use a Queueable there."
     },
     {
       "id": "auto-f10",
@@ -1385,7 +1464,7 @@
     {
       "id": "auto-f14",
       "front": "How do you let a Queueable make callouts?",
-      "back": "Make the class implement `Database.AllowsCallouts`."
+      "back": "Make the class implement `Database.AllowsCallouts`. Without it, a callout inside `execute()` fails."
     },
     {
       "id": "auto-f15",
@@ -1395,7 +1474,7 @@
     {
       "id": "auto-f16",
       "front": "What can `ctx.getResult()` return in a finalizer?",
-      "back": "A `ParentJobResult`: `SUCCESS` or `UNHANDLED_EXCEPTION`."
+      "back": "A `ParentJobResult`: `SUCCESS` or `UNHANDLED_EXCEPTION`. On `UNHANDLED_EXCEPTION`, `ctx.getException()` returns the error; on success it returns null."
     },
     {
       "id": "auto-f17",
@@ -1460,7 +1539,7 @@
     {
       "id": "auto-f29",
       "front": "How do you deliver platform events in a test?",
-      "back": "Call `Test.stopTest()` or `Test.getEventBus().deliver()`."
+      "back": "Publish between `Test.startTest()` and `Test.stopTest()`; events are delivered at `stopTest()`. Or call `Test.getEventBus().deliver()` to deliver them right away."
     },
     {
       "id": "auto-f30",
@@ -1480,7 +1559,7 @@
     {
       "id": "auto-f33",
       "front": "What causes 'You have uncommitted work pending'?",
-      "back": "A callout made after DML in the same transaction. Do the callout first, or move it to async Apex."
+      "back": "A callout made after pending work in the same transaction: DML, queued async Apex (like `@future`), scheduled Apex or sending email. Do the callout first, or move it to async Apex."
     },
     {
       "id": "auto-f34",
@@ -1556,22 +1635,22 @@
       "id": "auto-q2",
       "lesson": "auto-1",
       "difficulty": 3,
-      "q": "An after update trigger on Account updates related records. A workflow field update made the trigger fire twice, so the developer added a `static Boolean` `'hasRun'` flag. Now a Data Loader update of 600 Accounts only processes the first 200. What is the best fix?",
+      "q": "An after update trigger on Account updates related records. A workflow field update made the trigger fire twice, so the developer added a `static Boolean` `'hasRun'` flag. Now an Apex data fix that runs one `update` on 600 Accounts only processes the first 200. What is the best fix?",
       "code": "public class AccountHandler {\n    public static Boolean hasRun = false;\n    public static void afterUpdate(List<Account> accts) {\n        if (hasRun) return;\n        hasRun = true;\n        // process accts\n    }\n}",
       "lang": "apex",
       "options": [
         "Reset `hasRun` to false at the end of the before update trigger",
-        "Set the Data Loader batch size to 600 (Bulk API) so all Accounts reach the trigger in a single chunk",
+        "Split the trigger into three triggers so each one handles 200 of the 600 Accounts",
         "Swap the Boolean for a `static Set<Id>` and skip only records already in the set",
         "Move the logic to a before update trigger, which only fires once per transaction"
       ],
       "answer": [
         2
       ],
-      "explain": "Triggers get 200 records per chunk, all in one transaction. A `static Boolean` stays true, so chunks 2 and 3 are skipped. A `static Set<Id>` guards each record and still lets new ones through.",
+      "explain": "One DML statement with 600 records runs the trigger three times (200 per chunk) in one transaction. A `static Boolean` stays true after chunk 1, so chunks 2 and 3 are skipped. A `static Set<Id>` remembers each record, so new records in later chunks still get processed.",
       "wrong": [
         "The flag would still be shared by every chunk, and the timing gets messy fast.",
-        "Triggers still get records in chunks of 200, whatever the API batch size.",
+        "Several triggers on one event run in no set order, and every one of them still sees all three chunks and the same shared flag.",
         "",
         "Workflow field updates fire before update triggers again too."
       ],
@@ -1593,7 +1672,7 @@
         0,
         3
       ],
-      "explain": "After triggers come before the rest of the save steps. Assignment rules run next, and roll-up summaries on the parent come near the end.",
+      "explain": "After triggers run right after the record is saved. Then come assignment, auto-response, workflow and escalation rules, then after-save flows, then roll-up summaries on the parent. Before-save flows, custom validation rules and duplicate rules all run before the save, so before after triggers.",
       "wrong": [
         "",
         "These run before the before triggers.",
@@ -1711,7 +1790,7 @@
       "answer": [
         3
       ],
-      "explain": "A custom exception extends the `Exception` class. Its name must end with 'Exception'.",
+      "explain": "A custom exception is a class that extends the built-in `Exception` class. Apex also requires its name to end with 'Exception'. Only option D does both; you then throw it with `throw new PaymentException('message');`.",
       "wrong": [
         "The name must end with 'Exception'.",
         "`Exception` is a class you extend, not an interface you implement.",
@@ -1734,7 +1813,7 @@
       "answer": [
         2
       ],
-      "explain": "Future methods only take primitives, so sObjects are out. A Queueable can keep sObjects and other complex types in member variables.",
+      "explain": "Future methods accept only primitives and collections of primitives, so any parameter holding sObjects (List or Map) won't compile. A Queueable keeps sObjects and other complex types in member variables, so the in-memory changes travel with the job.",
       "wrong": [
         "Future methods can't take sObjects.",
         "A Map of sObjects isn't allowed either.",
@@ -1877,7 +1956,7 @@
       "answer": [
         0
       ],
-      "explain": "Each Queueable gets exactly one finalizer. That single finalizer checks `getResult()` to handle both success and failure.",
+      "explain": "Only one finalizer can be attached to each Queueable job; attaching a second throws an error. That's enough, because the one finalizer runs on success and failure alike and checks `getResult()` to tell which happened.",
       "wrong": [
         "",
         "One finalizer handles both outcomes.",
@@ -1948,7 +2027,7 @@
         1,
         2
       ],
-      "explain": "Scheduled Apex can't make synchronous callouts. It must hand the work to async code that allows callouts, like a Batch or a Queueable with `Database.AllowsCallouts`.",
+      "explain": "Scheduled Apex can't make synchronous callouts, so its `execute()` must hand the work to async code that may call out. A Batch or Queueable class that implements `Database.AllowsCallouts` does exactly that, and the schedule still decides the 1 AM start.",
       "wrong": [
         "Scheduled Apex doesn't support synchronous callouts.",
         "",
@@ -2326,7 +2405,7 @@
       "answer": [
         2
       ],
-      "explain": "A single callout can wait up to 120 seconds. The default is 10 seconds, and `setTimeout()` takes up to 120,000 milliseconds.",
+      "explain": "`setTimeout()` takes milliseconds, from 1 up to 120,000. So one callout can wait at most 120 seconds; the default is 10. Also remember the 120-second total for all callouts in one transaction.",
       "wrong": [
         "You can set more than 30 seconds.",
         "You can set more than 60 seconds.",
@@ -2515,7 +2594,7 @@
       "answer": [
         2
       ],
-      "explain": "An invocable method is `static`, `public` or `global`, and takes exactly one List. It returns a List or `void`.",
+      "explain": "An invocable method must be `static`, `public` or `global`, and take at most one parameter, which must be a List. It returns a List or `void`. Option C is the only one that meets every rule; use a wrapper class when you need more inputs.",
       "wrong": [
         "It must be `static`.",
         "The input and output must be Lists.",
@@ -2638,7 +2717,7 @@
       "answer": [
         2
       ],
-      "explain": "Setup objects and normal objects can't be changed in the same transaction. Move the `PermissionSetAssignment` insert to an `@future` method that takes Ids.",
+      "explain": "Setup objects (like `PermissionSetAssignment`) and normal objects can't be changed in the same transaction, in any order. An `@future` method runs in a separate transaction, so pass it the Ids and insert the assignment there. `System.runAs` is only for tests, and partial success doesn't avoid the error.",
       "wrong": [
         "Partial success doesn't avoid mixed DML.",
         "`System.runAs` only works in test methods.",
@@ -3726,7 +3805,7 @@
         0,
         4
       ],
-      "explain": "A finalizer runs in its own transaction after the Queueable. It can make callouts and enqueue one async job.",
+      "explain": "A finalizer runs in its own transaction after the Queueable, so it can't undo the job's DML. Inside it you may make callouts and enqueue one async job (Queueable, future or batch). Only one finalizer is allowed per job, and it doesn't count against the daily async limit.",
       "wrong": [
         "",
         "The Queueable and its finalizer run in separate transactions.",
@@ -3833,7 +3912,7 @@
         1,
         2
       ],
-      "explain": "Scheduled Apex can't make synchronous callouts. Hand the callout to async code that allows it: a Queueable with `Database.AllowsCallouts`, or a `@future(callout=true)` method.",
+      "explain": "Scheduled Apex can't make synchronous callouts, and adding `Database.AllowsCallouts` to a Schedulable does nothing. Move the callout into async code that allows it: a Queueable with `Database.AllowsCallouts`, or a `@future(callout=true)` method. A Schedulable's `execute()` may call either.",
       "wrong": [
         "`Database.AllowsCallouts` works for Queueable and Batch Apex, not a Schedulable class.",
         "",
@@ -5553,8 +5632,8 @@
       "q": "A partner calls an Apex REST class that has no custom status handling. Which two default responses will they see? (Choose 2)",
       "options": [
         "201 whenever an `@HttpPost` method succeeds",
-        "400 when the method throws an unhandled exception",
-        "500 Internal Server Error when the method throws an unhandled exception",
+        "400 when the method throws a custom exception that nothing catches",
+        "A 302 redirect to the login page when the method throws an unhandled exception",
         "204 when a `@HttpPatch` method with a `void` return succeeds",
         "400 when the URL doesn't match any `urlMapping`"
       ],
@@ -5562,11 +5641,11 @@
         1,
         3
       ],
-      "explain": "Apex REST sets status codes for you. An unhandled exception returns **400**, an unmapped URL returns 404, and a successful `void` PATCH returns 204. For anything else, set `RestContext.response.statusCode` yourself.",
+      "explain": "Apex REST sets status codes for you. A custom (user) exception that nothing catches returns **400**; a system exception returns 500. A successful `void` PATCH returns 204, and an unmapped URL returns 404. For anything else, like 201, set `RestContext.response.statusCode` yourself.",
       "wrong": [
         "Apex doesn't send 201 by itself; set `statusCode` to 201 in code.",
         "",
-        "An unhandled exception in Apex REST returns 400, not 500.",
+        "An unhandled exception returns an error code: 400 for a custom (user) exception, 500 for a system exception.",
         "",
         "An unmapped URL returns 404."
       ],
