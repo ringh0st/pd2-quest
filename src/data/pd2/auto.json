@@ -18,7 +18,9 @@
         {
           "type": "tip",
           "title": "Think of it like…",
-          "body": "A car wash. Every car goes through the same stations in the same order: rinse, soap, brush, dry. Each station only sees what earlier stations did. Where the picture breaks: a workflow field update or a flow that updates the same record sends the car back through some stations again."
+          "body": "A car wash. Every car goes through the same stations in the same order: rinse, soap, brush, dry. Each station only sees what earlier stations did. Where the picture breaks: a workflow field update or a flow that updates the same record sends the car back through some stations again.",
+          "art": "auto-order-carwash",
+          "alt": "A car wash with four numbered stations: rinse, soap, brush and dry, while a dotted loop sends a finished car back to the start."
         },
         {
           "type": "list",
@@ -140,7 +142,9 @@
         {
           "type": "tip",
           "title": "Think of it like…",
-          "body": "A restaurant with one host at the door. Every guest goes through the host, who seats them in order. Three hosts shouting at once would be chaos. That is why you want one trigger per object."
+          "body": "A restaurant with one host at the door. Every guest goes through the host, who seats them in order. Three hosts shouting at once would be chaos. That is why you want one trigger per object.",
+          "art": "auto-trigger-host",
+          "alt": "Guests wait in one line behind a velvet rope while a single host at a podium welcomes them into the restaurant."
         },
         {
           "type": "list",
@@ -377,7 +381,9 @@
         {
           "type": "tip",
           "title": "Think of it like…",
-          "body": "The cleanup crew after a party. It shows up when the party ends, even if the party crashed. It writes down what happened and can book one new party. Where it stops working: the crew can't save the party's work. The Queueable's DML is already rolled back."
+          "body": "The cleanup crew after a party. It shows up when the party ends, even if the party crashed. It writes down what happened and can book one new party. Where it stops working: the crew can't save the party's work. The Queueable's DML is already rolled back.",
+          "art": "auto-finalizer-cleanup",
+          "alt": "After a collapsed party tent and a toppled cake, a cleanup worker writes notes on a clipboard next to a cart and a calendar with one new date starred."
         },
         {
           "type": "code",
@@ -497,7 +503,9 @@
         {
           "type": "tip",
           "title": "Think of it like…",
-          "body": "A dishwasher run one rack at a time. Each rack (chunk) gets fresh water (fresh governor limits). Schedulable is the timer that starts the machine at night. Where it stops working: racks share nothing unless you add `Database.Stateful`."
+          "body": "A bakery with one small oven and a huge pile of dough. It bakes one tray (chunk) at a time, and each tray gets a fresh oven (fresh governor limits), so a burnt tray doesn't ruin the others. Schedulable is the timer that lights the oven at night. Where it stops working: trays share nothing unless you add `Database.Stateful`.",
+          "art": "auto-batch-bakery",
+          "alt": "A huge bowl of dough, a small brick oven baking one tray, an alarm clock by a night window, one burnt tray and racks of good buns."
         },
         {
           "type": "code",
@@ -610,7 +618,9 @@
         {
           "type": "tip",
           "title": "Think of it like…",
-          "body": "Ways to send things. A postcard is quick and simple (future). A tracked parcel can hand off to the next stop (Queueable). A moving truck carries huge loads (Batch). An alarm clock starts things on time (Schedulable). A radio show reaches anyone tuned in (Platform Events)."
+          "body": "Ways to send things. A postcard is quick and simple (future). A tracked parcel can hand off to the next stop (Queueable). A moving truck carries huge loads (Batch). An alarm clock starts things on time (Schedulable). A radio show reaches anyone tuned in (Platform Events).",
+          "art": "auto-async-delivery",
+          "alt": "A postcard flies from a mailbox topped by an alarm clock, a tagged parcel heads to its next stop, a loaded moving truck waits and a radio tower broadcasts."
         },
         {
           "type": "list",
@@ -718,7 +728,9 @@
         {
           "type": "tip",
           "title": "Think of it like…",
-          "body": "A school loudspeaker announcement. The office speaks once, and every class that cares reacts. Nobody phones each room. Where it stops working: you can't edit or look up an announcement later. Events can't be updated or queried like records."
+          "body": "A radio station. The tower broadcasts once and moves on, and every radio tuned in (a trigger, a flow, an LWC) reacts in its own way. Nobody phones each listener. Where it stops working: you can't edit or look up a broadcast later. Events can't be updated or queried like records.",
+          "art": "auto-events-radio",
+          "alt": "A radio tower sends one broadcast while a vintage radio, a portable radio and a phone tune in and react with a gear, a flow chart and a bell."
         },
         {
           "type": "code",
@@ -831,7 +843,9 @@
         {
           "type": "tip",
           "title": "Think of it like…",
-          "body": "A diary Salesforce keeps for you. Every change to a chosen object gets an entry, and other systems read it to stay in sync. Where it stops working: only committed changes get written. Rolled-back changes leave no entry."
+          "body": "A diary Salesforce keeps for you. Every change to a chosen object gets an entry, and other systems read it to stay in sync. Where it stops working: only committed changes get written. Rolled-back changes leave no entry.",
+          "art": "auto-cdc-diary",
+          "alt": "An open diary on a desk gets a new entry while a server and a laptop read it, and a crumpled page lies in the wastebasket."
         },
         {
           "type": "list",
@@ -946,7 +960,9 @@
         {
           "type": "tip",
           "title": "Think of it like…",
-          "body": "Phoning a shop from your desk. A **Named Credential** is the saved contact: number plus login, so the password never sits on a sticky note. Where it stops working: you can't phone while unsaved work sits on your desk (pending DML)."
+          "body": "Phoning a shop from your desk. A **Named Credential** is the saved contact: number plus login, so the password never sits on a sticky note. Where it stops working: you can't phone while unsaved work sits on your desk (pending DML).",
+          "art": "auto-callout-phone",
+          "alt": "A desk phone beside a contact card with a key, a pile of unsaved papers with a warning sign, and a dotted call to a shop."
         },
         {
           "type": "code",
@@ -1055,7 +1071,9 @@
         {
           "type": "tip",
           "title": "Think of it like…",
-          "body": "A drive-through window. The menu board (`urlMapping` or WSDL) says what you can order. The window must face the street (`global`), and it's always open, no setup needed (`static`). You decide what to hand back, including the status code."
+          "body": "A drive-through window. The menu board (`urlMapping` or WSDL) says what you can order. The window must face the street (`global`), and it's always open, no setup needed (`static`). You decide what to hand back, including the status code.",
+          "art": "auto-rest-drivethru",
+          "alt": "A car waits at a drive-through window where a worker hands out a bag tagged 200, beside a menu board and a 24-hour clock sign."
         },
         {
           "type": "code",
@@ -1181,7 +1199,9 @@
         {
           "type": "tip",
           "title": "Think of it like…",
-          "body": "Flow is a LEGO set, and Apex is a custom-made brick. An invocable method is a brick shaped to snap into the set. Where it stops working: Flow hands your brick a whole bag of requests at once, not one at a time."
+          "body": "Flow is a LEGO set, and Apex is a custom-made brick. An invocable method is a brick shaped to snap into the set. Where it stops working: Flow hands your brick a whole bag of requests at once, not one at a time.",
+          "art": "auto-invocable-bricks",
+          "alt": "A golden custom brick marked with code braces drops into a gap in a toy brick castle, while a bag full of bricks is handed over."
         },
         {
           "type": "code",
@@ -1296,7 +1316,9 @@
         {
           "type": "tip",
           "title": "Think of it like…",
-          "body": "A teacher grading a stack of tests. Plain DML throws out the whole stack if one test is wrong. `Database.insert(list, false)` grades each test alone and returns notes on the bad ones. Where it stops working: the teacher keeps no notes for you unless you read the results, and a failed test never gets a record Id."
+          "body": "A teacher grading a stack of tests. Plain DML throws out the whole stack if one test is wrong. `Database.insert(list, false)` grades each test alone and returns notes on the bad ones. Where it stops working: the teacher keeps no notes for you unless you read the results, and a failed test never gets a record Id.",
+          "art": "auto-dml-grading",
+          "alt": "A whole stack of papers is tossed in a bin, while a teacher grades sheets one by one and sticks a note on the one marked wrong."
         },
         {
           "type": "code",
