@@ -5,34 +5,37 @@ metaphor. Each of those cards gets **one hand-made SVG illustration of that exac
 one reference picture; every new one must look like it belongs to the same set.
 
 **Reference:** `src/assets/art/auto-queueable-train.svg` (shown on lesson auto-3). Open it, read it, and render it
-before you start. Match its style, level of detail, palette, and finish.
+before you start. Match its style, level of detail, palette, and finish exactly.
 
-## The style ("flat editorial, light and shadow")
+## The style ("line art with colour patches", chosen by the owner)
 
 - **Canvas:** `viewBox="0 0 360 220"`, `xmlns` and `xmlns:xlink` set; use `xlink:href` for `<use>`.
-- **Scene, not icons:** a small, complete world: a sky with a soft vertical gradient (warm cream/peach), then layered
-  hills or a room/backdrop, a ground band, and the main subject in the middle third. Objects stand on the ground and
-  cast nothing heavier than a faint shadow line.
-- **Real silhouettes, evolved shapes:** draw objects the way they really look, with parts and details (the train has
-  a boiler with bands, chimney with a rim, domes, cab with roof overhang, spoked wheels, a rod, cowcatcher with slats,
-  planked wagons, crates with cross braces). Mix straight edges, angles and curves. **Not boxes, not blobs, not
-  circles**: no shape should be a plain rectangle or circle unless the real object is.
-- **Light and shadow:** each solid object has a light side and a darker side (a second, darker fill over part of
-  it), plus a thin highlight strip where useful. No outlines/strokes around shapes (small detail lines are fine).
-- **Small story details:** 2–4 tiny touches that make it feel alive and support the meaning (a ticket on a string,
-  steam puffs, a headlamp beam, birds, speed lines, a dotted motion trail).
-- **Palette (only these, plus tints/shades of them):** ink `#1E1B2E`/`#35304A`/`#25212F`, berry `#B3125F`/`#8E0D4C`/
-  `#E24E92`, teal `#0A6C80`/`#075566`, green `#0B7A5C`/`#086049`, gold `#FFC94D`/`#E7A92E`/`#FFE7A0`, orange
-  `#B4470A`/`#E07A3A`, sky `#FBE6D6`→`#FCF3E8`, hills `#EAD6C4`, `#CFE4D7`, `#BCDACB`, pines `#A9CFBA`/`#93C2AA`,
-  ground `#EBDDCB`/`#DCC9B2`, wood `#D9A35A`/`#E9BD7A`/`#B9823A`, white clouds. Never blue or purple as a main colour.
+- **Look:** a detailed ink drawing on a warm paper background `#FBF6EF`. Every object is drawn with dark lines
+  (`#1E1B2E`, stroke-width 1.8 for outlines, 1.2–1.4 for inner details, round joins and caps, `fill="none"`), and
+  under it a **flat pastel colour patch of the same shape, offset by +5,+5** (`<g transform="translate(5 5)">`), so the
+  colour sits slightly off the lines like a risograph print. Define each shape once in `<defs>` and `<use>` it twice
+  (patch, then lines) so they always match.
+- **Scene, not icons:** a small, complete world drawn in line: a sun with rays, a few line clouds, small sparkles
+  (`+`), a hill line with a very soft fill (`#E2EFE7`), a ground line, short ground details. The main subject sits
+  in the middle third and is big.
+- **Real silhouettes, rich detail:** draw objects the way they really look, with parts and details (the train has a
+  boiler with bands, a chimney with a rim, domes, a cab with a roof and a window, spoked wheels, a rod, a cowcatcher
+  with slats, planked wagons, crates with cross braces, tags on strings). Mix straight edges, angles and curves.
+  Not plain boxes, blobs or circles.
+- **Colour:** pastel patches only, from: pink `#F6C9DC`/`#EDA3C3`, teal `#BFE3EA`, mint `#C4E8D9`/`#BFE0CE`,
+  gold `#FFD978`/`#FFE08A`, warm grey `#D9D2CB`, wood `#F0D3A4`, peach `#F8D1B8`. Accent lines (rays, a beam) may
+  use gold `#E7A92E`. Small solid fills inside lines are fine for windows/lamps (`#FFF1C2`, `#FFE08A`). Never blue or
+  purple as a main colour. Not every object needs a patch; leave some white space.
+- **Small story details:** 2–4 tiny touches that support the meaning (a ticket on a string, steam puffs, a beam,
+  birds, speed lines, a dotted motion trail).
 - **Grain:** finish with the same paper grain as the reference (`feTurbulence` filter rect over everything,
-  alpha .07).
+  alpha .06).
 - **Labels (optional, at most 3):** short uppercase words that tie the picture to the code idea (`@FUTURE`,
-  `QUEUEABLE`), set on the ground band like the reference, using the reference's text attributes
+  `QUEUEABLE`), under the ground line like the reference, with the reference's text attributes
   (`font-family="system-ui,-apple-system,Segoe UI,Roboto,sans-serif" font-size="10.5" font-weight="700"
-  letter-spacing="1.3"`) and a dark colour from the palette. No sentences in the picture.
+  letter-spacing="1.3"`) in `#7A0A40`, `#075566` or `#086049`. No sentences in the picture.
 - **Readable at phone size:** the picture shows about 330 px wide. Keep the main subject big; nothing important
-  smaller than ~8 px; nothing clipped at the edges; nothing overlapping awkwardly.
+  smaller than ~8 px; nothing clipped at the edges; nothing overlapping awkwardly; lines never so dense they tangle.
 - **Self-contained:** no external images or fonts, no `<style>` blocks, no scripts. Ids must be unique within the
   file and prefixed with the file's slug (e.g. `bk-sky`) so files never clash. Keep each file under ~16 KB.
 
