@@ -35,6 +35,8 @@ for (const l of d.lessons) {
   }
   for (const c of l.cards) {
     const w = ((c.body||'')+' '+(c.items||[]).map(itemText).join(' ')).split(/\s+/).length; if (w > 65 + (c.type === 'examples' ? 40 : 0)) err.push(`${l.id} card words ${w}: ${(c.title||c.body||'').slice(0,30)}`);
+    if (c.art !== undefined && !(typeof c.art === 'string' && existsSync(new URL(`../src/assets/art/${c.art}.svg`, import.meta.url)))) err.push(`${l.id} art not found: ${c.art}`);
+    if (c.art && !(typeof c.alt === 'string' && c.alt.split(/\s+/).length >= 4 && c.alt.split(/\s+/).length <= 35)) err.push(`${l.id} art needs an alt text of 4–35 words`);
     if (c.type === 'examples' && !(c.items?.length >= 1 && c.items.every((it) => it?.fi && it?.en))) err.push(`${l.id} examples need items with fi and en`);
     if (c.type === 'table' && !(Array.isArray(c.rows) && c.rows.length >= 1 && c.rows.length <= 8 && c.rows.every((r) => Array.isArray(r) && r.length <= 6))) err.push(`${l.id} table rows`);
   }

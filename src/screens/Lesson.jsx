@@ -29,6 +29,7 @@ import { FeedbackButton } from '../components/FeedbackButton.jsx';
 import { AdminEditButton } from '../components/admin/AdminEditButton.jsx';
 import { ExampleList, FormTable } from '../components/language/LanguageCards.jsx';
 import { useContentVersion } from '../hooks/useContentVersion.js';
+import { artUrl } from '../lib/art.js';
 
 const KIND_LABEL = {
   text: '', code: 'Code', list: '',
@@ -58,6 +59,7 @@ function CardContent({ card, glossary, tools }) {
     <>
       {cardLabel(card).label && <div className="kind">{cardLabel(card).label}</div>}
       <div className="lesson-card-tools">{tools}</div>
+      {artUrl(card.art) && <figure className="card-art"><img src={artUrl(card.art)} alt={card.alt ?? ''} width="360" height="220" decoding="async" /></figure>}
       {cardLabel(card).title && <h2><Rich text={cardLabel(card).title} /></h2>}
       {card.body && card.type !== 'code' && <p><Rich text={card.body} glossary={glossary(0)} /></p>}
       {card.type === 'list' && <ul>{card.items.map((it, k) => <li key={k}><Rich text={it} glossary={glossary(1 + k)} /></li>)}</ul>}
