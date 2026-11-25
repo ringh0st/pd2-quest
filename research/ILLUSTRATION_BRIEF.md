@@ -62,3 +62,80 @@ keep it ≤ 65 words, and keep the title.
 2. Make one contact sheet PNG of all your pictures (a grid, each with its lesson id) at the path you're given.
 3. `node scripts/validate-content.mjs src/data/pd2/<section>.json` must print OK.
 4. Don't commit. Report the list of files, and anything you changed in card text.
+
+## Variety pass (owner: the set must not look AI-made)
+
+Seen together, the first set repeats one template: sun with rays in a top corner, 2–3 line clouds, "+" sparkles,
+a hill line, a ground line, and three uppercase labels underneath, with the same round-headed people. Real
+illustrators vary framing, light, time of day and composition. Keep the line-art style (ink lines, offset pastel
+patches, paper grain) but break the template:
+
+- **Use the framing assigned below.** *close-up*: one object fills the frame, no sky, no horizon. *indoor*: a room
+  with walls/floor/lamps, no sun or clouds. *night* or *dusk*: dark sky background `#2B2738` (or a dusky `#F3D9C8`
+  for dusk), lines in cream `#FBF6EF` where they sit on the dark, lit windows/lamps glowing `#FFE08A`; patches still
+  pastel. *top-down*: seen from above (a table, a map, a desk), no horizon. *cutaway*: a building cut open.
+  *outdoor*: a wide day scene, and only these may have a sun.
+- **Across the whole set:** a sun in at most 6 pictures, clouds in at most 8, "+" sparkles in at most 8. Not every
+  picture needs a ground line. Put the horizon at different heights; let the main subject sit off-centre sometimes;
+  crop things at the edges on purpose sometimes.
+- **Labels:** only the pictures marked "labels" below keep them (at most 3, ideally 2). Better still, put the
+  word *in* the scene (on a sign, a tag, a screen, a sticker) instead of a row under the ground. Everyone else: no
+  labels.
+- **People:** vary them: different ages, heights, builds, hair (curly, bun, short, hijab, cap, bald), clothes and
+  poses. Show hands doing things. Some pictures need only hands or no people at all.
+- **Details that feel observed:** a scuffed edge, a coffee ring, a cable, a plant leaning to the light, uneven
+  stacks. Small imperfections make it feel drawn by a person.
+
+| Lesson | Framing | Labels |
+|---|---|---|
+| fund-1 library card | close-up: a hand holds the card to a scanner, shelves cropped behind | WITH SHARING, WITHOUT SHARING (on signs) |
+| fund-2 locked columns | close-up of a laptop screen with the sheet and a padlock, robot hand on the keys | FLS |
+| fund-3 guest list | night: garden party with string lights, host with the clipboard at the gate | none |
+| fund-4 restaurant menus | top-down: a town map, a delivery van's route to two branches with their own boards | none |
+| fund-5 departures board | indoor terminal, no sky | LOCAL, GMT (on the boards) |
+| fund-6 vending machine | night: a glowing vending machine on a quiet street | none |
+| fund-7 LEGO | top-down: bricks scattered on a rug, two hands building | none |
+| fund-8 checkpoint | close-up: a handheld game console, the scene on its screen | none |
+| fund-9 fridge note | close-up of the fridge door: magnets, the pizza note, a kid's drawing | none |
+| auto-1 car wash | outdoor (may have a sun) | none |
+| auto-2 trigger host | indoor: restaurant entrance seen from inside, host's back to us | none |
+| auto-3 train | keep as is (approved) | keep |
+| auto-4 finalizer | indoor: hall the morning after, low light through tall windows | none |
+| auto-5 bakery | indoor (keep the night window) | BATCH APEX |
+| auto-6 async delivery | top-down: a town map with a postcard, a parcel van and a moving truck on their routes | FUTURE, QUEUEABLE, BATCH (on the vehicles) |
+| auto-7 radio | night: tower with a blinking light, houses with lit windows | none |
+| auto-8 CDC diary | close-up: the diary under a desk lamp, evening | none |
+| auto-9 callout | close-up: desk phone and the saved contact card | NAMED CREDENTIAL (on the card) |
+| auto-10 drive-through | night: lit menu board and window, a car's headlights | none |
+| auto-11 invocable | close-up: a hand pressing the custom brick into the set | none |
+| auto-12 grading | top-down: a teacher's desk with papers being marked one by one | none |
+| ui-1 scoreboard | night: stadium floodlights on the scoreboard | none |
+| ui-2 whiteboard | indoor classroom (remove sky things) | none |
+| ui-3 newspaper | outdoor dawn: low sun on the horizon, paper on the doorstep, phone by the window | @WIRE, IMPERATIVE |
+| ui-4 hotel | cutaway: hotel floors as small stages (built, check-in, housekeeping, check-out) | CONSTRUCTOR, CONNECTED, RENDERED |
+| ui-5 house notes | cutaway (keep), no sun/clouds | @API, EVENTS, LMS |
+| ui-6 plug | close-up: the plug with its tag in front of three wall sockets | none |
+| ui-7 dolls | indoor close-up: dolls on a wooden shelf in lamplight | none |
+| ui-8 pizza | indoor kitchen | STANDARD, EXTENSION, CUSTOM (on order tickets) |
+| ui-9 mosaic | close-up: two hands setting one new tile in a wall | none |
+| ui-10 note glass | close-up (remove sun/clouds) | none |
+| test-1 cooking show | indoor studio | none |
+| test-2 race | top-down: an aerial view of a running track | STARTTEST, STOPTEST |
+| test-3 library card | indoor library, evening lamps | none |
+| test-4 fire drill | outdoor, overcast (no sun) | none |
+| test-5 stunt double | indoor film set with studio lights | none |
+| test-6 simulator | indoor hangar | none |
+| test-7 camera | night (keep) | none |
+| test-8 house build | outdoor (may have a sun) | SANDBOX, SCRATCH ORG |
+| test-9 airport | indoor terminal from the x-ray belt | none |
+| perf-1 allowance | dusk: fair lights coming on | 100 SOQL, 150 DML (on the booth) |
+| perf-2 shopping list | close-up: a hand holding the long list over full bags | none |
+| perf-3 book index | close-up (remove window sun) | none |
+| perf-4 route map | close-up: a phone in a car holder, dashboard cropped | none |
+| perf-5 checkout | indoor supermarket, no sparkles | none |
+| perf-6 office cache | indoor office at night (keep) | ORG CACHE, SESSION |
+| perf-7 waiter | indoor restaurant, warm lamps | none |
+| perf-8 backpack | indoor: the backpack on a chair by the door | none |
+| perf-9 library | indoor | SOSL, SOQL |
+
+Check the full section side by side at the end: if two pictures share a composition, change one.
