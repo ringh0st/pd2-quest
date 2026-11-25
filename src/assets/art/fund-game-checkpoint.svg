@@ -1,44 +1,64 @@
 <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 360 220">
 <defs>
 <filter id="save-grain" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency=".85" numOctaves="2" stitchTiles="stitch"/><feColorMatrix values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 .06 0"/></filter>
-<g id="save-base"><path d="M66 176 V166 H96 V176"/><path d="M70 166 V160 H92 V166"/></g>
-<g id="save-pole"><path d="M79 160 V62 H83 V160 Z"/><path d="M76.5 58 A4.5 4.5 0 1 0 85.5 58 A4.5 4.5 0 1 0 76.5 58 Z"/></g>
-<g id="save-flag"><path d="M83 66 C96 60 108 72 128 64 V96 C108 104 96 92 83 98 Z"/></g>
-<g id="save-hero"><path d="M-11 -40 A12 12 0 0 1 13 -40 V-30 H-11 Z"/><path d="M-10 -30 H12 L15 -12 H-13 Z"/><path d="M-8 -12 V-4 H-2 V-12"/><path d="M4 -12 V-4 H10 V-12"/><path d="M-10 0 V-4 H0 V0 Z"/><path d="M2 0 V-4 H12 V0 Z"/><path d="M-10 -29 C-18 -22 -20 -14 -22 -9 L-12 -13"/><path d="M12 -27 L20 -21 L18 -18 L11 -22"/><path d="M20 -22 L31 -40 L33.5 -38 L23 -20 Z"/></g>
-<g id="save-ghost"><path d="M-11 -40 A12 12 0 0 1 13 -40 V-30 H-11 Z"/><path d="M-10 -30 H12 L15 -12 H-13 Z"/></g>
-<g id="save-qblock"><path d="M158 86 H178 V106 H158 Z"/></g>
-<g id="save-coins"><path d="M204 106 A4 6 0 1 0 204 118 A4 6 0 1 0 204 106 Z"/><path d="M220 118 A4 6 0 1 0 220 130 A4 6 0 1 0 220 118 Z"/></g>
-<g id="save-hud"><path d="M297 76 H339 Q344 76 344 81 V91 Q344 96 339 96 H297 Q292 96 292 91 V81 Q292 76 297 76 Z"/></g>
-<g id="save-hcoin"><path d="M304 80 A4 6 0 1 0 304 92 A4 6 0 1 0 304 80 Z"/></g>
+<g id="save-fingL"><path d="M14 186 Q18 206 30 204 Q38 212 48 204 Q56 210 64 200 L66 186 Z"/></g>
+<g id="save-fingR"><path d="M346 186 Q342 206 330 204 Q322 212 312 204 Q304 210 296 200 L294 186 Z"/></g>
+<g id="save-body"><path d="M54 34 H306 Q348 34 348 76 V152 Q348 194 306 194 H54 Q12 194 12 152 V76 Q12 34 54 34 Z"/></g>
+<g id="save-shoulders"><path d="M40 34 Q44 26 60 26 H90 V34"/><path d="M320 34 Q316 26 300 26 H270 V34"/></g>
+<g id="save-star"><path d="M58 150 l4 8 l9 1 l-7 6 l2 9 l-8 -5 l-8 5 l2 -9 l-7 -6 l9 -1 Z"/></g>
+<g id="save-dpad"><path d="M50 92 H62 V104 H74 V116 H62 V128 H50 V116 H38 V104 H50 Z"/></g>
+<g id="save-btnA"><path d="M300 98 A10 10 0 1 0 320 98 A10 10 0 1 0 300 98 Z"/></g>
+<g id="save-btnB"><path d="M278 122 A10 10 0 1 0 298 122 A10 10 0 1 0 278 122 Z"/></g>
+<g id="save-pills"><path d="M145 182 H157 Q160 182 160 185 V185 Q160 188 157 188 H145 Q142 188 142 185 V185 Q142 182 145 182 Z"/><path d="M203 182 H215 Q218 182 218 185 V185 Q218 188 215 188 H203 Q200 188 200 185 V185 Q200 182 203 182 Z"/></g>
+<g id="save-bezel"><path d="M100 46 H260 Q268 46 268 54 V170 Q268 178 260 178 H100 Q92 178 92 170 V54 Q92 46 100 46 Z"/></g>
+<g id="save-flag"><path d="M123 94 C130 90 136 98 146 92 V108 C136 114 130 106 123 110 Z"/></g>
+<g id="save-hero"><path d="M136 120 A5 5 0 0 1 146 120 V124 H136 Z"/><path d="M136.5 124 H145.5 L147 133 H135 Z"/><path d="M137 133 V140 H140 V133 M142 133 V140 H145 V133"/></g>
+<g id="save-ghost"><path d="M216 146 A5 5 0 0 1 226 146 V150 H216 Z"/><path d="M216.5 150 H225.5 L227 158 H215 Z"/></g>
+<g id="save-qb"><path d="M176 96 H188 V108 H176 Z"/></g>
+<g id="save-coins"><path d="M198 112 a2.5 4 0 1 0 0.01 0 Z"/><path d="M206 106 a2.5 4 0 1 0 0.01 0 Z"/></g>
+<g id="save-hcoin"><path d="M110 64 a2.5 4 0 1 0 0.01 0 Z"/></g>
+<g id="save-hearts"><path d="M232 62 c-2 -3 -6 -1 -4 2 l4 4 l4 -4 c2 -3 -2 -5 -4 -2 Z"/><path d="M244 62 c-2 -3 -6 -1 -4 2 l4 4 l4 -4 c2 -3 -2 -5 -4 -2 Z"/></g>
+<g id="save-thumbL"><path d="M-6 124 C14 116 34 108 50 106 C60 105 63 113 55 117 C40 124 22 134 -6 150 Z"/></g>
+<g id="save-thumbR"><path d="M366 116 C346 112 330 104 316 100 C307 98 302 106 309 110 C322 118 340 128 366 142 Z"/></g>
 </defs>
 <rect width="360" height="220" fill="#FBF6EF"/>
-<circle cx="330" cy="38" r="14" fill="#FFE08A"/><g fill="none" stroke="#1E1B2E" stroke-width="1.6" stroke-linecap="round"><circle cx="326" cy="34" r="14"/><path d="M346.0 34.0 L352.0 34.0 M340.1 48.1 L344.4 52.4 M326.0 54.0 L326.0 60.0 M311.9 48.1 L307.6 52.4 M306.0 34.0 L300.0 34.0 M311.9 19.9 L307.6 15.6 M326.0 14.0 L326.0 8.0 M340.1 19.9 L344.4 15.6" opacity=".7"/></g>
-<path d="M20 44 H66.5 A6.75 6.75 0 0 0 60.5 34.25 A10.5 10.5 0 0 0 42.5 29 A8.25 8.25 0 0 0 28.25 35 A6 6 0 0 0 20 44Z" fill="none" stroke="#1E1B2E" stroke-width="1.6" stroke-linejoin="round" opacity="1"/>
-<path d="M196 30 H233.2 A5.3999999999999995 5.3999999999999995 0 0 0 228.4 22.2 A8.4 8.4 0 0 0 214 18 A6.6 6.6 0 0 0 202.6 22.8 A4.8 4.8 0 0 0 196 30Z" fill="none" stroke="#1E1B2E" stroke-width="1.6" stroke-linejoin="round" opacity="0.8"/>
-<path d="M150 19 v6 M147 22 h6" stroke="#1E1B2E" stroke-width="1.6" stroke-linecap="round" opacity=".8"/>
-<path d="M266 52 q4 -4 8 0 q4 -4 8 0 M284 44 q3 -3 6 0 q3 -3 6 0" fill="none" stroke="#1E1B2E" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"/>
-<path d="M0 150 C50 136 100 136 150 144 C200 152 240 140 300 138 C330 137 350 142 360 144 V176 H0Z" fill="#E2EFE7"/><path d="M0 150 C50 136 100 136 150 144 C200 152 240 140 300 138 C330 137 350 142 360 144" fill="none" stroke="#1E1B2E" stroke-width="1.4" stroke-linecap="round" opacity=".55"/>
-<path d="M232 176 V190 H276 V176" fill="#FBF6EF"/>
-<path d="M0 176 H232 V190 M276 190 V176 H360" fill="none" stroke="#1E1B2E" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"/>
-<path d="M232 190 H276" fill="none" stroke="#1E1B2E" stroke-width="1.4" stroke-linejoin="round" stroke-linecap="round" stroke-dasharray="3 4" opacity=".6"/>
-<path d="M14 176 l3 -6 l3 6 M150 176 l3 -6 l3 6 M196 176 l2 -5 l2 5 M300 176 l3 -6 l3 6 M340 176 l2 -5 l2 5" fill="none" stroke="#1E1B2E" stroke-width="1.4" stroke-linejoin="round" stroke-linecap="round"/>
-<g><g transform="translate(5 5)" fill="#D9D2CB"><use xlink:href="#save-base"/></g><g fill="none" stroke="#1E1B2E" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"><use xlink:href="#save-base"/></g><path d="M80 170 h4 M76 163 h4" fill="none" stroke="#1E1B2E" stroke-width="1.3" stroke-linejoin="round" stroke-linecap="round"/></g>
-<g><g transform="translate(5 5)" fill="#FFD978"><use xlink:href="#save-pole"/></g><g fill="none" stroke="#1E1B2E" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"><use xlink:href="#save-pole"/></g></g>
-<g><g transform="translate(5 5)" fill="#F6C9DC"><use xlink:href="#save-flag"/></g><g fill="none" stroke="#1E1B2E" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"><use xlink:href="#save-flag"/></g><path d="M97 74 H111 L115 78 V92 H97 Z M101 74 V80 H110 V74 M100 92 V86 H112 V92" fill="none" stroke="#1E1B2E" stroke-width="1.3" stroke-linejoin="round" stroke-linecap="round"/></g>
-<path d="M64 80 l-6 -3 M64 92 h-7 M64 104 l-6 3" fill="none" stroke="#E7A92E" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-<g transform="translate(128 176)"><g transform="translate(5 5)" fill="#BFE3EA"><use xlink:href="#save-hero"/></g><g fill="none" stroke="#1E1B2E" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"><use xlink:href="#save-hero"/></g><path d="M-4 -38 H10 V-33 H-4 Z M-12 -19 H14 M0 -21 h3 v4 h-3 z M17 -25 L24 -18 M1 -52 C6 -60 14 -58 16 -54 C12 -52 8 -52 1 -52 Z M1 -52 V-50" fill="none" stroke="#1E1B2E" stroke-width="1.3" stroke-linejoin="round" stroke-linecap="round"/></g>
-<rect x="131" y="140" width="5" height="2" fill="#1E1B2E"/>
-<path d="M112 124 l-3 -4 M144 120 l3 -4 M126 116 v-5" fill="none" stroke="#1E1B2E" stroke-width="1.4" stroke-linejoin="round" stroke-linecap="round" opacity=".7"/>
-<g transform="translate(253 196)"><g fill="none" stroke="#1E1B2E" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round" opacity="0.45" stroke-dasharray="3 3"><use xlink:href="#save-ghost"/></g><path d="M-4 -37 l3 3 M-1 -37 l-3 3 M4 -37 l3 3 M7 -37 l-3 3" stroke="#1E1B2E" stroke-width="1.3" opacity=".55"/></g>
-<path d="M152 128 C156 108 168 108 184 140 C192 116 214 112 230 150" fill="none" stroke="#1E1B2E" stroke-width="1.8" stroke-dasharray="1 6" stroke-linecap="round"/>
-<g><g transform="translate(5 5)" fill="#FFD978"><use xlink:href="#save-qblock"/></g><g fill="none" stroke="#1E1B2E" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"><use xlink:href="#save-qblock"/></g><path d="M163 89 v2 M173 89 v2 M163 101 v2 M173 101 v2" fill="none" stroke="#1E1B2E" stroke-width="1.3" stroke-linejoin="round" stroke-linecap="round"/></g>
-<text x="168" y="101" font-family="system-ui,-apple-system,Segoe UI,Roboto,sans-serif" font-size="13" font-weight="700" text-anchor="middle" fill="#1E1B2E">?</text>
-<g><g transform="translate(5 5)" fill="#FFE08A"><use xlink:href="#save-coins"/></g><g fill="none" stroke="#1E1B2E" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"><use xlink:href="#save-coins"/></g><path d="M204 109 V115 M220 121 V127" fill="none" stroke="#1E1B2E" stroke-width="1.3" stroke-linejoin="round" stroke-linecap="round"/></g>
-<path d="M262 140 C276 70 200 38 140 44 C112 47 100 54 96 60" fill="none" stroke="#1E1B2E" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" stroke-dasharray="6 5"/>
-<path d="M94 50 L95 61 L106 58" fill="none" stroke="#1E1B2E" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/>
-<g><g transform="translate(5 5)" fill="#F0D3A4"><use xlink:href="#save-hud"/></g><g fill="none" stroke="#1E1B2E" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"><use xlink:href="#save-hud"/></g></g>
-<g><g transform="translate(5 5)" fill="#FFE08A"><use xlink:href="#save-hcoin"/></g><g fill="none" stroke="#1E1B2E" stroke-width="1.3" stroke-linejoin="round" stroke-linecap="round"><use xlink:href="#save-hcoin"/></g></g>
-<text x="326" y="90.5" font-family="system-ui,-apple-system,Segoe UI,Roboto,sans-serif" font-size="10" font-weight="700" text-anchor="middle" fill="#1E1B2E">×12</text>
-<g font-family="system-ui,-apple-system,Segoe UI,Roboto,sans-serif" font-size="10.5" font-weight="700" letter-spacing="1.3" text-anchor="middle"><text x="90" y="204" fill="#086049">SAVEPOINT</text><text x="254" y="204" fill="#7A0A40">ROLLBACK</text></g>
+<g stroke-linejoin="round" stroke-linecap="round">
+<path d="M-4 16 L60 -4 M-4 34 L110 -4 M260 224 L364 186 M300 224 L364 204" fill="none" stroke="#1E1B2E" stroke-width="1.2" opacity=".3"/>
+<g><g transform="translate(5 5)" fill="#F0D3A4"><use xlink:href="#save-fingL"/></g><g fill="none" stroke="#1E1B2E" stroke-width="1.6"><use xlink:href="#save-fingL"/></g><path d="M30 204 L32 194 M48 204 L48 194" fill="none" stroke="#1E1B2E" stroke-width="1.3"/></g>
+<g><g transform="translate(5 5)" fill="#F8D1B8"><use xlink:href="#save-fingR"/></g><g fill="none" stroke="#1E1B2E" stroke-width="1.6"><use xlink:href="#save-fingR"/></g><path d="M330 204 L328 194 M312 204 L312 194" fill="none" stroke="#1E1B2E" stroke-width="1.3"/></g>
+<g><g fill="#FBF6EF"><use xlink:href="#save-body"/></g><g transform="translate(5 5)" fill="#F6C9DC"><use xlink:href="#save-body"/></g><g fill="none" stroke="#1E1B2E" stroke-width="1.8"><use xlink:href="#save-body"/></g><path d="M46 36 H96 M264 36 H314 M300 182 l6 -6 M310 184 l6 -6 M320 182 l6 -6 M330 176 l6 -6" fill="none" stroke="#1E1B2E" stroke-width="1.3"/></g>
+<g><g transform="translate(5 5)" fill="#D9D2CB"><use xlink:href="#save-shoulders"/></g><g fill="none" stroke="#1E1B2E" stroke-width="1.6"><use xlink:href="#save-shoulders"/></g></g>
+<path d="M22 70 q2 4 6 4" fill="none" stroke="#1E1B2E" stroke-width="1.1" opacity=".6"/>
+<g><g transform="translate(5 5)" fill="#FFD978"><use xlink:href="#save-star"/></g><g fill="none" stroke="#1E1B2E" stroke-width="1.3"><use xlink:href="#save-star"/></g><path d="M66 172 l3 -2" fill="none" stroke="#1E1B2E" stroke-width="1.3"/></g>
+<g><g transform="translate(5 5)" fill="#D9D2CB"><use xlink:href="#save-dpad"/></g><g fill="none" stroke="#1E1B2E" stroke-width="1.8"><use xlink:href="#save-dpad"/></g><path d="M53.5 110 A2.5 2.5 0 1 0 58.5 110 A2.5 2.5 0 1 0 53.5 110 Z M56 95 v4 M56 121 v4 M41 110 h4 M67 110 h4" fill="none" stroke="#1E1B2E" stroke-width="1.3"/></g>
+<g><g transform="translate(5 5)" fill="#FFE08A"><use xlink:href="#save-btnA"/></g><g fill="none" stroke="#1E1B2E" stroke-width="1.6"><use xlink:href="#save-btnA"/></g></g>
+<g><g transform="translate(5 5)" fill="#C4E8D9"><use xlink:href="#save-btnB"/></g><g fill="none" stroke="#1E1B2E" stroke-width="1.6"><use xlink:href="#save-btnB"/></g></g>
+<text x="310" y="101.5" font-family="system-ui,-apple-system,Segoe UI,Roboto,sans-serif" font-size="9" font-weight="700" text-anchor="middle" fill="#1E1B2E">A</text>
+<text x="288" y="125.5" font-family="system-ui,-apple-system,Segoe UI,Roboto,sans-serif" font-size="9" font-weight="700" text-anchor="middle" fill="#1E1B2E">B</text>
+<g><g transform="translate(5 5)" fill="#D9D2CB"><use xlink:href="#save-pills"/></g><g fill="none" stroke="#1E1B2E" stroke-width="1.3"><use xlink:href="#save-pills"/></g></g>
+<g><g fill="#FBF6EF"><use xlink:href="#save-bezel"/></g><g transform="translate(5 5)" fill="#D9D2CB"><use xlink:href="#save-bezel"/></g><g fill="none" stroke="#1E1B2E" stroke-width="1.8"><use xlink:href="#save-bezel"/></g></g>
+<rect x="102" y="54" width="156" height="104" fill="#FFF1C2"/>
+<path d="M102 54 H258 V158 H102 Z" fill="none" stroke="#1E1B2E" stroke-width="1.4"/>
+<circle cx="108" cy="168" r="2" fill="#E7A92E"/>
+<path d="M102 132 C130 124 160 124 186 130 C210 136 236 126 258 128 V158 H102 Z" fill="#E2EFE7"/>
+<path d="M102 140 H210 V158 M234 158 V140 H258" fill="none" stroke="#1E1B2E" stroke-width="1.5"/>
+<path d="M110 140 v-3 M124 140 v-3 M150 140 v-3 M180 140 v-3 M246 140 v-3" fill="none" stroke="#1E1B2E" stroke-width="1.1"/>
+<path d="M122 140 V92" fill="none" stroke="#1E1B2E" stroke-width="1.6"/>
+<g><g transform="translate(5 5)" fill="#F6C9DC"><use xlink:href="#save-flag"/></g><g fill="none" stroke="#1E1B2E" stroke-width="1.4"><use xlink:href="#save-flag"/></g><path d="M128 97 H137 L139 99 V106 H128 Z M130.5 97 V100 H136 V97" fill="none" stroke="#1E1B2E" stroke-width="1.3"/></g>
+<circle cx="122" cy="91" r="2.2" fill="#FFD978" stroke="#1E1B2E" stroke-width="1.2"/>
+<g><g transform="translate(5 5)" fill="#BFE3EA"><use xlink:href="#save-hero"/></g><g fill="none" stroke="#1E1B2E" stroke-width="1.3"><use xlink:href="#save-hero"/></g><path d="M138.5 121 H143.5" fill="none" stroke="#1E1B2E" stroke-width="1.3"/></g>
+<path d="M132 118 l-2 -2 M150 118 l2 -2 M141 112 v-3" fill="none" stroke="#1E1B2E" stroke-width="1.1" opacity=".8"/>
+<g><g fill="none" stroke="#1E1B2E" stroke-width="1.2" opacity="0.5" stroke-dasharray="2 2"><use xlink:href="#save-ghost"/></g></g>
+<path d="M222 138 C214 100 176 88 154 98" fill="none" stroke="#B4470A" stroke-width="1.8" stroke-dasharray="4 3" stroke-linecap="round"/>
+<path d="M150 95 L156 92 L156 101 Z" fill="#B4470A"/>
+<g><g transform="translate(5 5)" fill="#FFD978"><use xlink:href="#save-qb"/></g><g fill="none" stroke="#1E1B2E" stroke-width="1.3"><use xlink:href="#save-qb"/></g></g>
+<text x="182" y="105.5" font-family="system-ui,-apple-system,Segoe UI,Roboto,sans-serif" font-size="9" font-weight="700" text-anchor="middle" fill="#1E1B2E">?</text>
+<g><g transform="translate(5 5)" fill="#FFE08A"><use xlink:href="#save-coins"/></g><g fill="none" stroke="#1E1B2E" stroke-width="1.1"><use xlink:href="#save-coins"/></g></g>
+<g><g transform="translate(5 5)" fill="#FFE08A"><use xlink:href="#save-hcoin"/></g><g fill="none" stroke="#1E1B2E" stroke-width="1.1"><use xlink:href="#save-hcoin"/></g></g>
+<text x="117" y="67" font-family="system-ui,-apple-system,Segoe UI,Roboto,sans-serif" font-size="8" font-weight="700" text-anchor="start" fill="#1E1B2E">×12</text>
+<g><g transform="translate(5 5)" fill="#EDA3C3"><use xlink:href="#save-hearts"/></g><g fill="none" stroke="#1E1B2E" stroke-width="1.1"><use xlink:href="#save-hearts"/></g></g>
+<g><g fill="#FBF6EF"><use xlink:href="#save-thumbL"/></g><g transform="translate(5 5)" fill="#F0D3A4"><use xlink:href="#save-thumbL"/></g><g fill="none" stroke="#1E1B2E" stroke-width="1.7"><use xlink:href="#save-thumbL"/></g><path d="M48 108 Q55 108 54 114" fill="none" stroke="#1E1B2E" stroke-width="1.3"/></g>
+<g><g fill="#FBF6EF"><use xlink:href="#save-thumbR"/></g><g transform="translate(5 5)" fill="#F8D1B8"><use xlink:href="#save-thumbR"/></g><g fill="none" stroke="#1E1B2E" stroke-width="1.7"><use xlink:href="#save-thumbR"/></g><path d="M314 102 Q308 103 309 108" fill="none" stroke="#1E1B2E" stroke-width="1.3"/></g>
+</g>
 <rect width="360" height="220" filter="url(#save-grain)"/>
 </svg>
