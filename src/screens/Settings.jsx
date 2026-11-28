@@ -1,10 +1,11 @@
 import { track, TRACKS, visibleTrackIds, switchTrack } from '../lib/track.js';
 import { APP_NAME, APP_VERSION, STUDIO_NAME } from '../lib/appInfo.js';
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import { useStore, updateSettings, setState, resetProgress, exportProgress, importProgress } from '../state/store.js';
 import { FEEL_PRESETS, presetFor } from '../state/feelPresets.js';
 import { InstallHelpButton } from '../components/InstallHelp.jsx';
 import { Switch, Segmented } from '../components/Controls.jsx';
+import { hasAnalytics, analyticsAllowed, setAnalyticsAllowed } from '../lib/analytics.js';
 import { go } from '../hooks/useRoute.js';
 import { useFeedback } from '../components/Feedback.jsx';
 import { ReminderSettings } from '../components/ReminderSettings.jsx';
@@ -65,9 +66,10 @@ export function Settings() {
           <input id="exam-date" className="input" type="date" value={s.examDate} onChange={(e) => setState({ examDate: e.target.value })} />
         </div>
         <div className="field">
-          <label htmlFor="name">Your name (optional)</label>
+          <label htmlFor="name">Your name (optional, stays on this device)</label>
           <input id="name" className="input" value={s.name} maxLength={24} onChange={(e) => setState({ name: e.target.value })} autoComplete="given-name" />
         </div>
+        {hasAnalytics() && <AnalyticsSwitch />}
       </section>
 
       <ReminderSettings />
@@ -107,5 +109,15 @@ export function Settings() {
       </section>
       <p className="small muted center">{APP_NAME} v{APP_VERSION} · by {STUDIO_NAME} · Original practice content, not affiliated with Salesforce.</p>
     </main>
+  );
+}
+
+function AnalyticsSwitch() {
+  const [on, setOn] = useState(analyticsAllowed);
+  return (
+    <Switch
+      label="Help count visits" hint="Anonymous, cookie-free visit counts (Cloudflare). Off unless you switch it on."
+      checked={on} onChange={(v) => { setAnalyticsAllowed(v); setOn(v); }}
+    />
   );
 }

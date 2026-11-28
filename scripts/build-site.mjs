@@ -13,7 +13,7 @@
 //
 // Every page links into the app at the same spot (#/go/…). Name, address and wording come from site.json, so a
 // rename or a new domain is one edit. Usage: node scripts/build-site.mjs [outDir=dist]
-import { mkdirSync, readFileSync, writeFileSync, statSync } from 'node:fs';
+import { mkdirSync, readFileSync, writeFileSync, statSync, existsSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { ownerTags } from './ownerTags.mjs';
 
@@ -23,8 +23,11 @@ const site = JSON.parse(readFileSync(join(root, 'site.json'), 'utf8'));
 const { version } = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8'));
 const BASE = site.url.endsWith('/') ? site.url : `${site.url}/`;
 const TODAY = new Date().toISOString().slice(0, 10);
+const LEGAL_UPDATED = site.legalUpdated || TODAY; // the date the privacy and terms text last changed (site.json)
 // Who runs the app (GDPR: the controller's identity and contact). Filled in site.json → operator.
 const op = site.operator ?? {};
+if (!op.name || !op.email) console.warn('note: site.json operator.name / operator.email are empty: the privacy page needs them (GDPR Art. 13)');
+const contactHtml = () => (op.email ? `<a href="mailto:${esc(op.email)}">${esc(op.email)}</a>` : 'a note through the app (Me → Contact us)');
 const operatorHtml = () => (op.name
   ? `<p>${esc(site.name)} is run by <strong>${esc(op.name)}</strong>${op.country ? ` (${esc(op.country)})` : ''}, who decides how your data is used (the “controller”).${op.email ? ` Contact: <a href="mailto:${esc(op.email)}">${esc(op.email)}</a>.` : ''}</p>`
   : `<p>${esc(site.name)} is run by ${esc(site.studio)}${op.country ? ` (${esc(op.country)})` : ''}. Contact us through the app: Me → Contact us.</p>`);
@@ -91,7 +94,7 @@ ${body}
 <div class="box"><strong>Study this in the free app.</strong> Bite-size lessons, tap-to-explain key terms, hundreds of practice questions with explanations, flashcards and mock exams. Works on your phone, no account. <a href="${esc(cta || BASE)}">Open ${esc(site.name)} →</a></div>
 </main>
 <footer><div class="in">${esc(site.name)} is an independent study app by ${esc(site.studio)}. It is not affiliated with, sponsored by or endorsed by Salesforce, Inc. Salesforce, Trailhead and related names are trademarks of Salesforce, Inc., used here only to name the exams this app helps you prepare for. All questions are original and are not real exam questions.
-<br><a href="${esc(url('about/'))}">About</a> · <a href="${esc(url('privacy/'))}">Privacy</a> · <a href="${esc(url('terms/'))}">Terms</a> · <a href="${esc(url('guides/'))}">All study guides</a> · v${esc(version)}</div></footer>
+<br><a href="${esc(url('about/'))}">About</a> · <a href="${esc(url('privacy/'))}">Privacy</a> · <a href="${esc(url('terms/'))}">Terms</a> · <a href="${esc(url('licenses/'))}">Licences</a> · <a href="${esc(url('guides/'))}">All study guides</a> · v${esc(version)}</div></footer>
 </body></html>
 `;
 }
@@ -242,6 +245,34 @@ ${allExams.map(({ meta, examPath, exam, sections }) => `<div class="card"><h2 st
 }));
 sitemap.unshift('guides/');
 
+
+// ---------- licences ----------
+// Everything the app ships that someone else made: the runtime packages (and what they depend on), the service-worker
+// library and the fonts, each with its licence text. Generated at every build so it never goes stale.
+function shippedPackages() {
+  const pkgJson = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8'));
+  const found = new Map();
+  const visit = (name, from) => {
+    if (found.has(name)) return;
+    const dir = [join(from, 'node_modules', name), join(root, 'node_modules', name)].find((d) => existsSync(join(d, 'package.json')));
+    if (!dir) return;
+    const pkg = JSON.parse(readFileSync(join(dir, 'package.json'), 'utf8'));
+    const file = readdirSync(dir).find((f) => /^(licen[sc]e|copying)(\.|-|$)/i.test(f));
+    found.set(name, { name, version: pkg.version, license: typeof pkg.license === 'string' ? pkg.license : pkg.license?.type || 'see package', text: file ? readFileSync(join(dir, file), 'utf8').trim() : '' });
+    for (const dep of Object.keys(pkg.dependencies ?? {})) visit(dep, dir);
+  };
+  for (const name of Object.keys(pkgJson.dependencies ?? {})) visit(name, root);
+  for (const name of ['workbox-core', 'workbox-precaching', 'workbox-routing', 'workbox-strategies', 'workbox-expiration', 'workbox-window']) visit(name, root); // the service worker (vite-plugin-pwa)
+  return [...found.values()].sort((a, b) => a.name.localeCompare(b.name));
+}
+function licensesHtml() {
+  const pkgs = shippedPackages();
+  return `<p class="lead">${esc(site.name)} is built with open-source software and fonts. Thank you to their authors. Here is each one with its licence.</p>
+<h2>Made for ${esc(site.name)}</h2><p>The lessons, questions, illustrations, sound effects and music are original work by ${esc(site.studio)}. The natural read-aloud voice was recorded with the open Kokoro-82M speech model (Apache License 2.0) and the kokoro-js library (Apache License 2.0).</p>
+<h2>Software and fonts (${pkgs.length})</h2>
+${pkgs.map((p) => `<details><summary><strong>${esc(p.name)}</strong> ${esc(p.version)} · ${esc(p.license)}</summary>${p.text ? `<pre style="white-space:pre-wrap;font-size:13px">${esc(p.text)}</pre>` : '<p class="note">No licence file in the package; its licence is stated as above.</p>'}</details>`).join('\n')}`;
+}
+
 // trust pages
 const trust = (path, title, description, body) => { add(path, page({ path, title, description, crumbs: [], body: `<h1>${esc(title)}</h1>${body}` })); sitemap.push(path); };
 trust('about/', `About ${site.name}`, clip(`${site.name} is a free, independent, ADHD-friendly study app for Salesforce certification exams, with original questions checked against the official documentation.`), `
@@ -250,31 +281,54 @@ trust('about/', `About ${site.name}`, clip(`${site.name} is a free, independent,
 <h2>Where the content comes from</h2><p>Every lesson and question is original. It is written from Salesforce’s official exam guides and documentation (Salesforce Help, the Apex and Lightning developer guides, Trailhead) and, for the JavaScript exam, MDN and the official Node.js and Jest docs. Each question names the page it was checked against. It does not use, and never will use, real exam questions or “dumps”: they break Salesforce’s certification rules and can cost candidates their credentials.</p>
 <h2>Not affiliated with Salesforce</h2><p>${esc(site.name)} is an independent project by ${esc(site.studio)}. It is not affiliated with, sponsored by or endorsed by Salesforce, Inc. Salesforce, Trailhead, Agentforce and the certification names are trademarks of Salesforce, Inc. and are used only to say which exams this app helps you prepare for.</p>
 <h2>Found a mistake?</h2><p>${esc(site.contactNote)} Every report goes to the person who fixes the content, with the exact card or question it is about.</p>`);
-trust('privacy/', 'Privacy', clip(`${site.name} has no ads and no tracking. An account is optional; without one your progress stays on your device. What we store if you sign in with Google or send feedback.`), `
-<p class="lead">Short version: no ads, no tracking cookies, and an account is optional. Without one, your progress stays on your device.</p>
-${operatorHtml()}
-<h2>What stays on your device</h2><p>Your progress, settings, notes and streaks are saved in your browser’s storage on your device. Without an account we never receive them. Clearing your browser data or removing the app deletes them; use Settings → Save backup to keep a copy.</p>
-<h2>If you sign in with Google (optional)</h2><p>Signing in lets your progress follow you to other devices. Google tells us your name, email address and profile picture; we use them only to show who is signed in and to keep your account. We then save your study progress for each exam (lessons done, answers and review schedule, XP, streaks and rewards) with our database provider (Supabase), where only your account can read it. Your settings stay on each device. We don’t use your Google account for anything else, never post anything, and never share or sell your data. You can delete your account and everything saved to it at any time on the Me screen (Delete my account).</p>
-<h2>Feedback you send</h2><p>If you use “Report a problem” or “Send feedback”, we receive what you write, what you were looking at (for example a lesson card or a question id), the app version, your device type and screen size, and a random id for your device (so several reports from one device can be grouped; it says nothing about who you are). An email address is sent only if you type one in, and is used only to reply to you. If you’re signed in, the report is also linked to your account. Feedback is stored with our database provider (Supabase) and is readable only by us.</p>
-${site.cloudflareAnalyticsToken ? `<h2>Visit counts</h2><p>We count visits with Cloudflare Web Analytics, which uses no cookies, does not track you across sites and does not identify you. It tells us things like how many people opened a page and which country and kind of device they used.</p>` : ''}
-<h2>Top players lists</h2><p>The weekly and monthly Top lists show the name you chose in the app (or “Learner” and a few random characters if you didn’t choose one) and the XP you earned in that period. To keep the score, the app gives your device an anonymous account the first time you earn XP; it holds only that name and your daily points, nothing about you. You can hide yourself from the lists at any time on the Top players screen.</p>
+trust('privacy/', 'Privacy', clip(`How ${site.name} handles your data: no ads, no tracking, an optional account, a Top list you join only if you want, and how long anything is kept.`), `
+<p class="lead">Short version: no ads, no tracking cookies, and an account is optional. Without one, your progress stays on your device. Nothing is ever sold or shared for marketing.</p>
+<h2>Who is responsible</h2>${operatorHtml()}
+<h2>What stays on your device</h2><p>Your progress, settings, notes and streaks are saved in your browser’s storage on your device, together with a few random ids the app needs (for example to group feedback from one device). Without an account we never receive them. This storage is needed for the app to work, so there is no cookie banner; ${esc(site.name)} sets no cookies of its own. Clearing your browser data, removing the app or Settings → Reset deletes it; Settings → Save backup gives you a copy.</p>
+<h2>If you sign in with Google (optional)</h2><p>Signing in lets your progress follow you to other devices. Google tells us your name, email address and profile picture; we use them only to show who is signed in and to keep your account. Your picture is loaded straight from Google’s servers when it is shown. We save your study progress for each exam (lessons done, answers and review schedule, XP, streaks and rewards) so that only your account can read it. We never post anything or use your Google account for anything else.</p>
+<h2>Top players lists (only if you join)</h2><p>You are on the weekly and monthly Top lists only if you choose to join on the Top players screen. You then pick a nickname, which everyone can see next to the XP you earn from then on; please don’t use your real name. If you aren’t signed in, joining creates an anonymous guest account that holds only your nickname, your daily points and any prizes you collected. You can leave at any time (you disappear at once), and Me → Delete my data removes it all.</p>
+<h2>Feedback you send</h2><p>If you use “Report a problem”, “Send feedback” or “Contact us”, we receive what you write, what you were looking at (for example a lesson card or a question id), the app version, your device type and screen size, and the random id of your device. An email address is sent only if you type one in, and is used only to reply to you. If you’re signed in, the report is also linked to your account. Only we can read feedback; our replies are shown to you in the app.</p>
+${site.cloudflareAnalyticsToken ? `<h2>Visit counts</h2><p>We count visits with Cloudflare Web Analytics, only if you allow it. It uses no cookies, does not track you across sites and does not identify you.</p>` : ''}
 <h2>Read-aloud</h2><p>The natural voice plays recorded audio files from this website. The device voice uses your phone’s own speech feature. Neither sends us anything.</p>
-<h2>Services that handle data for us</h2><ul>
-<li><strong>Supabase</strong>: our database and sign-in service. It stores accounts, synced progress, feedback and Top list scores${op.dataRegion ? ` in ${esc(op.dataRegion)}` : ''}.</li>
-<li><strong>Google</strong>: only if you choose Sign in with Google.</li>
-<li><strong>GitHub Pages</strong>: hosts this website and app; like any web server it briefly processes your IP address to deliver the pages.</li>
-${site.cloudflareAnalyticsToken ? '<li><strong>Cloudflare Web Analytics</strong>: cookie-free visit counts.</li>' : ''}
+<h2>Why we may use this data</h2><ul>
+<li><strong>To provide what you asked for</strong> (your account, sync, the Top list once you join, replies to your messages): performing the service, GDPR Art. 6(1)(b).</li>
+<li><strong>To fix mistakes, keep the app working and stop abuse</strong> (feedback details, the server’s daily point limits, basic server logs): our legitimate interest in a correct and safe app, Art. 6(1)(f).</li>
+<li><strong>Your email on a report</strong>: your consent, Art. 6(1)(a), which you can withdraw at any time.</li>
 </ul>
-<h2>Why we may use this data</h2><p>To provide the features you use (your account, sync, the Top lists, answering feedback): that’s the legal basis of performing the service you asked for. For optional extras such as your email on a report, your consent, which you can withdraw at any time.</p>
-<h2>Your rights</h2><p>You can see, correct, download or delete your data. Delete your account and its saved progress yourself (Me → Delete my account), and hide yourself from the Top lists on the Top players screen. For anything else (a copy of your data, deleting feedback you sent), ${op.email ? `email <a href="mailto:${esc(op.email)}">${esc(op.email)}</a>` : 'send a note through the app (Me → Contact us)'}; we answer within 30 days. If you think we handle your data wrongly, you can also complain to the Finnish Data Protection Ombudsman (<a href="https://tietosuoja.fi/en">tietosuoja.fi</a>). ${esc(site.name)} is not intended for children under 13.</p>
-<p class="note">Last updated ${TODAY}.</p>`);
+<h2>Services that handle data for us</h2><ul>
+<li><strong>Supabase</strong> (Supabase, Inc.): our database and sign-in service. It stores accounts, synced progress, Top list scores and feedback${op.dataRegion ? ` in ${esc(op.dataRegion)}` : ''}. Its staff in the United States may access data for support; this is covered by the EU Standard Contractual Clauses in its data processing agreement.</li>
+<li><strong>Google</strong> (Google LLC, USA): only if you choose Sign in with Google, and for your profile picture. Certified under the EU–US Data Privacy Framework.</li>
+<li><strong>GitHub Pages</strong> (GitHub, Inc., a Microsoft company, USA): hosts this website and app; like any web server it briefly processes your IP address to deliver the pages. Certified under the EU–US Data Privacy Framework.</li>
+${site.cloudflareAnalyticsToken ? '<li><strong>Cloudflare</strong> (Cloudflare, Inc., USA): cookie-free visit counts, only with your permission. Certified under the EU–US Data Privacy Framework.</li>' : ''}
+</ul>
+<h2>How long we keep it</h2><ul>
+<li>Data on your device: until you delete it.</li>
+<li>A Google account and its synced progress: until you delete it, or after 3 years without use.</li>
+<li>A guest Top list account: deleted after 12 months without use.</li>
+<li>Daily Top list points and prize records: 13 months.</li>
+<li>Feedback and our replies: 2 years, or sooner if you ask.</li>
+</ul>
+<p>Old data is removed automatically every night.</p>
+<h2>Your rights</h2><p>You can see, correct, download or delete your data, object to how we use it, and withdraw consent. Do it yourself where you can: <strong>Me → Delete my data</strong> deletes your account (Google or guest), synced progress, Top list scores and the feedback sent from your device or account; the Top players screen lets you leave the list; Settings → Save backup gives you your progress as a file. For anything else, contact ${contactHtml()}; we answer within one month. You can also complain to the Finnish Data Protection Ombudsman: <a href="https://tietosuoja.fi/en">tietosuoja.fi</a>, tietosuoja@om.fi.</p>
+<h2>Children</h2><p>${esc(site.name)} is a study app for adults and teenagers preparing for professional exams. If you are under 13, please ask a parent or guardian before signing in or joining the Top list.</p>
+<h2>Changes</h2><p>If this page changes in a way that matters, the app will tell you.</p>
+<p class="note">Last updated ${LEGAL_UPDATED}.</p>`);
 trust('terms/', 'Terms of use', clip(`Terms for using ${site.name}: a free study aid, provided as is, independent of Salesforce, with original content you may use for personal study.`), `
 <h2>A study aid, not a guarantee</h2><p>${esc(site.name)} helps you prepare for Salesforce certification exams. Using it does not guarantee that you will pass. Salesforce changes its products and exams; always check the official exam guide and documentation, especially limits and recent releases.</p>
 <h2>Accuracy</h2><p>We check content against official documentation and fix reported mistakes quickly, but it is provided “as is”, without warranty. Please report anything that looks wrong.</p>
 <h2>Your use</h2><p>The lessons and questions are original work by ${esc(site.studio)}. You may use them for your own study. Please don’t copy them in bulk or republish them. Don’t submit real exam content through feedback: sharing exam questions breaks Salesforce’s certification agreement.</p>
-<h2>Independent</h2><p>${esc(site.name)} is not affiliated with, sponsored by or endorsed by Salesforce, Inc. Salesforce and related marks belong to Salesforce, Inc.</p>
+<h2>Top players lists</h2><ul>
+<li>Joining is optional. Your nickname must be 2–24 characters, with no links, no one else’s identity and nothing rude, hateful or personal about anyone. We may change or remove a nickname that breaks this and will tell you in the app.</li>
+<li>Points are the XP you earn while studying, with a daily limit. Trying to fake points (for example with modified apps) can get you removed from the lists.</li>
+<li>Prizes are in-app coins only. Coins have no money value and can’t be bought, sold, exchanged or cashed out.</li>
+<li>To report a nickname, use Me → Contact us.</li>
+</ul>
+<h2>Your account</h2><p>An account is optional. You can delete your data at any time (Me → Delete my data). If you are under 13, ask a parent or guardian before signing in or joining the Top list.</p>
+<h2>Independent</h2><p>${esc(site.name)} is not affiliated with, sponsored by or endorsed by Salesforce, Inc. Salesforce, Trailhead and related marks belong to Salesforce, Inc.</p>
+<h2>Free, and changes</h2><p>${esc(site.name)} is free. We may change or stop features; if these terms change in a way that matters, the app will tell you. Finnish law applies, without taking away any protection the law of your own country gives you.</p>
 <h2>Who we are</h2>${operatorHtml()}
-<p class="note">Last updated ${TODAY}.</p>`);
+<p class="note">Last updated ${LEGAL_UPDATED}.</p>`);
+trust('licenses/', 'Licences and credits', clip(`Open-source software, fonts and other parts used in ${site.name}, with their licences.`), licensesHtml());
 
 // GitHub Pages shows this for any address that doesn't exist (not in the sitemap)
 writeFileSync(join(outDir, '404.html'), page({

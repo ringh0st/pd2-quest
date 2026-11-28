@@ -57,6 +57,10 @@ You do steps 1–4 (they need your accounts). Then send me the two values from s
   **Authentication → Sign In / Providers → Allow anonymous sign-ins**, so guests can join.
 - [`content.sql`](content.sql): your edits to lessons, questions and flashcards (the pencil buttons), and replies
   to feedback that the sender sees in the app.
+- [`privacy.sql`](privacy.sql): privacy by default. The Top lists show only people who joined with a nickname,
+  **Me → Delete my data** works for guests and Google accounts, and a nightly clean-up removes old data (the periods
+  are on the privacy page). It turns on the pg_cron extension for the clean-up; if it can't, turn on **pg_cron** in
+  **Database → Extensions** and run the file again.
 
 ## Reading feedback
 

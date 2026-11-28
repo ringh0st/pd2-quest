@@ -1,13 +1,14 @@
-// The Weekly and Monthly Top lists (supabase/top.sql). XP earned anywhere in the app is reported to the server,
-// which keeps the score (with daily caps); the list shows learners' chosen names. Guests take part through an
-// automatic anonymous account, created the first time they earn XP. Top 3 of each finished week and month
-// collect coins (200 / 100 / 50) the next time they open the app.
-import { getState, onEarn, subscribe, addCoins, pushEvent } from '../state/store.js';
+// The Weekly and Monthly Top lists (supabase/top.sql, privacy.sql). Joining is a choice: on the Top players screen you
+// pick a nickname and join; only then does the app report your XP (the server keeps the score, with daily caps).
+// Guests take part through an anonymous account created when they join. Top 3 of each finished week and month
+// collect coins (200 / 100 / 50) the next time they open the app. Leaving hides you; Me → Delete my data removes it.
+import { onEarn, addCoins, pushEvent } from '../state/store.js';
 import { hasBackend } from './backend.js';
 import { playerClient, hasPlayerSession, supabase } from './auth.js';
 
 const PENDING_KEY = 'devquest.top.pending';  // XP earned but not yet reported (offline, or a report failed)
 const NAME_KEY = 'devquest.top.name';        // the name last sent, per account: "<user id>|<name>"
+const JOINED_KEY = 'devquest.top.joined';    // your nickname while you're on the list (empty: not joined)
 const MAX_PER_CALL = 200;                    // the server's cap per report (top.sql)
 const SEND_DELAY_MS = 5000;
 
@@ -23,11 +24,16 @@ let sending = null;
 let guestsBlocked = false; // anonymous sign-ins are off in Supabase, so guests can't join yet
 export const guestsCantJoin = () => guestsBlocked;
 
+/** Your nickname on the Top list, or '' if you haven't joined (on this device). */
+export const topNickname = () => read(JOINED_KEY);
+export const isOnTop = () => !!topNickname();
+
 async function sendName(client, force = false) {
   const { data } = await client.auth.getSession();
   const uid = data.session?.user?.id;
   if (!uid) return null;
-  const name = getState().name || '';
+  const name = topNickname();
+  if (!name) return null;
   if (!force && read(NAME_KEY) === `${uid}|${name}`) return null;
   const { data: used, error } = await client.rpc('set_player_name', { p_name: name });
   if (!error) write(NAME_KEY, `${uid}|${name}`);
@@ -36,7 +42,7 @@ async function sendName(client, force = false) {
 
 /** Reports XP earned since the last report. */
 export function sendPoints() {
-  if (!hasBackend() || !navigator.onLine) return Promise.resolve();
+  if (!hasBackend() || !navigator.onLine || !isOnTop()) return Promise.resolve();
   // One send at a time. `.finally` is attached after the assignment, so it always runs after it
   // (clearing it inside the function could happen before the assignment when there's nothing to send).
   sending ??= (async () => {
@@ -84,9 +90,9 @@ export async function fetchTop(kind) {
   return data;
 }
 
-/** You on the list: { name, hidden, week_points, month_points }, or null before your first points. */
+/** You on the list: { name, hidden, week_points, month_points }, or null if you haven't joined. */
 export async function fetchMyStatus() {
-  if (!(await hasPlayerSession())) return null;
+  if (!isOnTop() || !(await hasPlayerSession())) return null;
   const client = await playerClient();
   await sendName(client);
   const { data, error } = await client.rpc('my_top_status');
@@ -94,12 +100,24 @@ export async function fetchMyStatus() {
   return data?.[0] ?? null;
 }
 
-/** Show or hide yourself on the list. Returns the name used. */
-export async function setShownOnTop(shown) {
-  const client = await playerClient();
-  const { data, error } = await client.rpc('set_player_name', { p_name: getState().name || '', p_hidden: !shown });
+/** Join the list under a nickname (2–24 characters). Returns the nickname the server used. */
+export async function joinTop(nickname) {
+  const client = await playerClient(); // a guest gets an anonymous account here, not before
+  const { data, error } = await client.rpc('set_player_name', { p_name: nickname.trim(), p_hidden: false });
   if (error) throw error;
+  write(JOINED_KEY, data || nickname.trim());
+  write(NAME_KEY, '');
   return data;
+}
+
+/** Leave the list: you're hidden at once and no more XP is reported. */
+export async function leaveTop() {
+  if (await hasPlayerSession()) {
+    const client = await playerClient();
+    const { error } = await client.rpc('set_player_name', { p_name: topNickname(), p_hidden: true });
+    if (error) throw error;
+  }
+  try { [JOINED_KEY, NAME_KEY, PENDING_KEY, 'devquest.top.mine'].forEach((k) => localStorage.removeItem(k)); } catch { /* storage blocked */ }
 }
 
 /** "3 days 4 h" / "5 hours" until `date`. */
@@ -135,13 +153,11 @@ export function lastMyPlace() {
 export function startTopList() {
   if (!hasBackend()) return;
   onEarn((n) => {
+    if (!isOnTop()) return; // only XP earned after joining counts
     write(PENDING_KEY, readNum(PENDING_KEY) + n);
     clearTimeout(timer);
     timer = setTimeout(sendPoints, SEND_DELAY_MS);
   });
-  // A changed name reaches the list the next time points are sent or the list is opened
-  let name = getState().name;
-  subscribe(() => { if (getState().name !== name) { name = getState().name; write(NAME_KEY, ''); } });
   window.addEventListener('online', () => sendPoints());
   setTimeout(() => { sendPoints(); claimPrizes(); }, 3000);
 }

@@ -1,17 +1,17 @@
-// Weekly and Monthly Top lists: everyone who earned XP (guests by the name they chose, Google users too), ranked by
-// XP earned in the period. The top 3 win coins when it ends. Medals carry their place as a number, never only a color.
+// Weekly and Monthly Top lists: everyone who chose to join (under a nickname), ranked by XP earned in the period. The top 3 win coins when it ends. Medals carry their place as a number, never only a color.
 import { useCallback, useEffect, useState } from 'react';
-import { useStore } from '../state/store.js';
 import { Icon } from '../components/icons/Icon.jsx';
-import { Segmented, Switch } from '../components/Controls.jsx';
-import { fetchTop, fetchMyStatus, setShownOnTop, claimPrizes, periodEnds, sendPoints, guestsCantJoin, rememberMyPlace, timeLeft, TOP_PRIZES, MAX_POINTS_PER_DAY } from '../lib/topList.js';
+import { Segmented } from '../components/Controls.jsx';
+import { fetchTop, fetchMyStatus, joinTop, leaveTop, isOnTop, claimPrizes, periodEnds, sendPoints, guestsCantJoin, rememberMyPlace, timeLeft, TOP_PRIZES, MAX_POINTS_PER_DAY } from '../lib/topList.js';
 import { sfx } from '../audio/sfx.js';
 import { TopPlace } from '../components/game/TopPlace.jsx';
 
 const KINDS = [['week', 'This week'], ['month', 'This month']];
 
 export function Top() {
-  const name = useStore((s) => s.name);
+  const [joined, setJoined] = useState(isOnTop);
+  const [nick, setNick] = useState('');
+  const [busy, setBusy] = useState(false);
   const [kind, setKind] = useState('week');
   const [rows, setRows] = useState(null);
   const [me, setMe] = useState(undefined);
@@ -37,7 +37,21 @@ export function Top() {
 
   const mine = rows?.find((r) => r.me);
   const myPoints = me ? (kind === 'week' ? me.week_points : me.month_points) : 0;
-  const shown = me ? !me.hidden : true;
+  const nickOk = nick.trim().length >= 2 && nick.trim().length <= 24;
+
+  const join = async (e) => {
+    e.preventDefault();
+    if (!nickOk || busy) return;
+    setBusy(true);
+    try { await joinTop(nick); setJoined(true); sfx.tap(); await load(); }
+    catch (err) { setFailed(/anonymous/i.test(String(err?.message)) ? 'guests' : 'offline'); }
+    setBusy(false);
+  };
+  const leave = async () => {
+    setBusy(true);
+    try { await leaveTop(); setJoined(false); setMe(null); sfx.tap(); await load(); } catch { setFailed('offline'); }
+    setBusy(false);
+  };
 
   return (
     <main className="screen" id="main">
@@ -78,19 +92,28 @@ export function Top() {
             </ol>
           )}
 
-          <section className="card stack-s" aria-label="You on the list">
-            <p className="small">
-              {mine ? <>You’re <strong>#{mine.place}</strong> this {kind} with <strong>{mine.points} XP</strong>.</>
-                : myPoints > 0 && !shown ? <>You have <strong>{myPoints} XP</strong> this {kind} (hidden from the list).</>
-                  : <>Earn XP in any lesson or practice round to join the list.</>}
-            </p>
-            <p className="small muted">Shown as <strong>{me?.name || name || 'Learner'}</strong>. Change your name in Settings.</p>
-            <Switch
-              label="Show me on the Top list" hint="Hidden players keep their XP but don’t appear or win prizes."
-              checked={shown}
-              onChange={async (on) => { try { await setShownOnTop(on); sfx.tap(); load(); } catch { setFailed('offline'); } }}
-            />
-          </section>
+          {joined ? (
+            <section className="card stack-s" aria-label="You on the list">
+              <p className="small">
+                {mine ? <>You’re <strong>#{mine.place}</strong> this {kind} with <strong>{mine.points} XP</strong>.</>
+                  : myPoints > 0 ? <>You have <strong>{myPoints} XP</strong> this {kind}.</>
+                    : <>Earn XP in any lesson or practice round to climb the list.</>}
+              </p>
+              <p className="small muted">Shown as <strong>{me?.name || '…'}</strong>.</p>
+              <button type="button" className="btn" onClick={leave} disabled={busy}>Leave the Top list</button>
+              <p className="small muted">Leaving hides you right away. To delete your scores too, use Me → Delete my data.</p>
+            </section>
+          ) : (
+            <form className="card stack-s" aria-labelledby="top-join-title" onSubmit={join}>
+              <strong id="top-join-title">Join the Top list</strong>
+              <p className="small muted">Pick a nickname. Everyone can see it with your XP, so <strong>don’t use your real name</strong>. Only XP you earn after joining counts, and you can leave at any time.</p>
+              <label className="field">
+                <span className="label">Nickname</span>
+                <input className="input" type="text" value={nick} onChange={(e) => setNick(e.target.value)} minLength={2} maxLength={24} autoComplete="off" spellCheck={false} placeholder="e.g. Apex Otter" />
+              </label>
+              <button type="submit" className="btn primary" disabled={!nickOk || busy}><Icon name="trophy" /> Join</button>
+            </form>
+          )}
         </>
       )}
 

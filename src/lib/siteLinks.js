@@ -15,4 +15,5 @@ export const INFO_LINKS = [
   { id: 'about', label: 'About', href: `${SITE_URL}about/` },
   { id: 'privacy', label: 'Privacy', href: `${SITE_URL}privacy/` },
   { id: 'terms', label: 'Terms', href: `${SITE_URL}terms/` },
+  { id: 'licenses', label: 'Licences', href: `${SITE_URL}licenses/` },
 ];

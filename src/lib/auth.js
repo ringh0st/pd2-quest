@@ -92,18 +92,29 @@ export async function signOut() {
   rememberAdmin(false);
 }
 
-/** Deletes the account and its synced progress on the server (progress on this device stays). */
-export async function deleteAccount() {
+// Keys that link this device to data on the server; cleared when that data is deleted
+const SERVER_LINK_KEYS = ['devquest.feedback.reporter.v1', 'devquest.top.joined', 'devquest.top.name', 'devquest.top.pending', 'devquest.top.mine'];
+
+/**
+ * Deletes everything the server holds about you (supabase/privacy.sql, delete_my_data): your account (Google or
+ * guest), synced progress, Top list scores and the feedback sent from this device or account. Progress saved on this
+ * device stays. Works for guests too.
+ */
+export async function deleteMyData() {
   set({ busy: true, error: '' });
   try {
     const client = await supabase();
-    const { error } = await client.rpc('delete_my_account');
+    let reporter = null;
+    try { reporter = localStorage.getItem('devquest.feedback.reporter.v1'); } catch { /* storage blocked */ }
+    const { error } = await client.rpc('delete_my_data', { p_reporter: reporter });
     if (error) throw error;
     await client.auth.signOut();
-    set({ busy: false, user: null, admin: false });
+    try { SERVER_LINK_KEYS.forEach((k) => localStorage.removeItem(k)); } catch { /* storage blocked */ }
+    set({ busy: false, user: null, guest: false, admin: false });
+    rememberAdmin(false);
     return true;
   } catch {
-    set({ busy: false, error: 'Couldn’t delete the account right now. Check the connection and try again.' });
+    set({ busy: false, error: 'Couldn’t delete your data right now. Check the connection and try again.' });
     return false;
   }
 }

@@ -1,8 +1,9 @@
 // The account card on the Me screen: sign in with Google (optional), see that progress is synced, sign out,
-// delete the account, and (for the owner) open the Feedback inbox. Hidden until the server is set up.
-import { useState, useSyncExternalStore } from 'react';
+// delete my data (guests too), and (for the owner) open the Feedback inbox. Hidden until the server is set up.
+import { useSyncExternalStore } from 'react';
 import { hasSignIn } from '../../lib/backend.js';
-import { signInWithGoogle, signOut, deleteAccount } from '../../lib/auth.js';
+import { signInWithGoogle, signOut } from '../../lib/auth.js';
+import { DeleteMyData } from './DeleteMyData.jsx';
 import { subscribeSync, syncSnapshot, syncNow } from '../../lib/cloudSync.js';
 import { useAuth } from '../../hooks/useAuth.js';
 import { GoogleButton } from './GoogleButton.jsx';
@@ -20,7 +21,6 @@ function syncText({ state, at }) {
 export function AccountCard() {
   const { ready, user, busy, error } = useAuth();
   const sync = useSyncExternalStore(subscribeSync, syncSnapshot, syncSnapshot);
-  const [confirmDelete, setConfirmDelete] = useState(false);
   if (!hasSignIn()) return null;
 
   if (!ready) {
@@ -34,6 +34,7 @@ export function AccountCard() {
         <p className="small muted">Sign in to save your progress and pick up on any device. It’s optional: everything works without an account.</p>
         <GoogleButton busy={busy} onClick={() => { sfx.tap(); signInWithGoogle(); }} />
         {error && <p className="small account-error" role="alert"><Icon name="warn" /> {error}</p>}
+        <DeleteMyData />
       </section>
     );
   }
@@ -54,13 +55,7 @@ export function AccountCard() {
         <button type="button" className="btn" onClick={() => { sfx.tap(); syncNow(); }} disabled={sync.state === 'syncing'}><Icon name="retry" /> Sync now</button>
         <button type="button" className="btn" onClick={() => { sfx.tap(); signOut(); }} disabled={busy}>Sign out</button>
       </div>
-      <details className="account-danger">
-        <summary className="small">Delete my account</summary>
-        <p className="small muted">This deletes your account and the progress saved to it. Progress on this device stays.</p>
-        {confirmDelete
-          ? <button type="button" className="btn danger" onClick={async () => { if (await deleteAccount()) setConfirmDelete(false); }} disabled={busy}>Yes, delete my account</button>
-          : <button type="button" className="btn" onClick={() => setConfirmDelete(true)}>Delete account…</button>}
-      </details>
+      <DeleteMyData />
       {error && <p className="small account-error" role="alert"><Icon name="warn" /> {error}</p>}
     </section>
   );
